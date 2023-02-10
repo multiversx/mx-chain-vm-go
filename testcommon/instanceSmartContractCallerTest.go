@@ -48,14 +48,11 @@ func (mockSC *InstanceTestSmartContract) WithCode(code []byte) *InstanceTestSmar
 // InstancesTestTemplate holds the data to build a contract call test
 type InstancesTestTemplate struct {
 	testTemplateConfig
-	contracts          []*InstanceTestSmartContract
-	gasSchedule        config.GasScheduleMap
-	setup              func(vmhost.VMHost, *contextmock.BlockchainHookStub)
-	assertResults      func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host               vmhost.VMHost
-	blockchainHookStub *contextmock.BlockchainHookStub
-	executorLogger     executorwrapper.ExecutorLogger
-	executorFactory    executor.ExecutorAbstractFactory
+	contracts     []*InstanceTestSmartContract
+	setup         func(vmhost.VMHost, *contextmock.BlockchainHookStub)
+	assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host          vmhost.VMHost
+	hostBuilder   *TestHostBuilder
 }
 
 // BuildInstanceCallTest starts the building process for a contract call test
@@ -66,8 +63,8 @@ func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
 			useMocks:                 false,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup:          func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
-		executorLogger: nil,
+		hostBuilder: NewTestHostBuilder(tb),
+		setup:       func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 	}
 }
 
@@ -91,25 +88,25 @@ func (callerTest *InstancesTestTemplate) WithSetup(setup func(vmhost.VMHost, *co
 
 // WithGasSchedule provides gas schedule for the test
 func (callerTest *InstancesTestTemplate) WithGasSchedule(gasSchedule config.GasScheduleMap) *InstancesTestTemplate {
-	callerTest.gasSchedule = gasSchedule
-	return callerTest
-}
-
-// WithExecutorLogs sets an ExecutorLogger
-func (callerTest *InstancesTestTemplate) WithExecutorLogs(executorLogger executorwrapper.ExecutorLogger) *InstancesTestTemplate {
-	callerTest.executorLogger = executorLogger
+	callerTest.hostBuilder.WithGasSchedule(gasSchedule)
 	return callerTest
 }
 
 // WithExecutorFactory provides the wasmer executor for the test
 func (callerTest *InstancesTestTemplate) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *InstancesTestTemplate {
-	callerTest.executorFactory = executorFactory
+	callerTest.hostBuilder.WithExecutorFactory(executorFactory)
+	return callerTest
+}
+
+// WithExecutorLogs sets an ExecutorLogger
+func (callerTest *InstancesTestTemplate) WithExecutorLogs(executorLogger executorwrapper.ExecutorLogger) *InstancesTestTemplate {
+	callerTest.hostBuilder.WithExecutorLogs(executorLogger)
 	return callerTest
 }
 
 // WithWasmerSIGSEGVPassthrough sets the wasmerSIGSEGVPassthrough flag
-func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *InstancesTestTemplate {
-	callerTest.wasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
+func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(passthrough bool) *InstancesTestTemplate {
+	callerTest.hostBuilder.WithWasmerSIGSEGVPassthrough(passthrough)
 	return callerTest
 }
 
@@ -131,21 +128,12 @@ func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResu
 }
 
 func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
+	var blhookStub *contextmock.BlockchainHookStub
 	if callerTest.host == nil {
-		if callerTest.executorLogger != nil {
-			callerTest.executorFactory = executorwrapper.NewWrappedExecutorFactory(
-				callerTest.executorLogger,
-				callerTest.executorFactory)
-		}
-
-		callerTest.blockchainHookStub = BlockchainHookStubForContracts(callerTest.contracts)
-		callerTest.host = NewTestHostBuilder(callerTest.tb).
-			WithExecutorFactory(callerTest.executorFactory).
-			WithBlockchainHook(callerTest.blockchainHookStub).
-			WithGasSchedule(callerTest.gasSchedule).
-			WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
-			Build()
-		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+		blhookStub = BlockchainHookStubForContracts(callerTest.contracts)
+		callerTest.hostBuilder.WithBlockchainHook(blhookStub)
+		callerTest.host = callerTest.hostBuilder.Build()
+		callerTest.setup(callerTest.host, blhookStub)
 	}
 
 	defer func() {
@@ -163,6 +151,6 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.assertResults != nil {
 		allErrors := callerTest.host.Runtime().GetAllErrors()
 		verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
-		callerTest.assertResults(callerTest.host, callerTest.blockchainHookStub, verify)
+		callerTest.assertResults(callerTest.host, blhookStub, verify)
 	}
 }

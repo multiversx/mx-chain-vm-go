@@ -18,6 +18,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -76,12 +77,12 @@ func MakeTestSCAddress(identifier string) []byte {
 // MakeTestSCAddressWithDefaultVM generates a new smart contract address to be used for
 // testing based on the given identifier.
 func MakeTestSCAddressWithDefaultVM(identifier string) []byte {
-	return MakeTestSCAddressWithVmType(identifier, worldmock.DefaultVMType)
+	return MakeTestSCAddressWithVMType(identifier, worldmock.DefaultVMType)
 }
 
-// MakeTestSCAddressWithVmType generates a new smart contract address to be used for
+// MakeTestSCAddressWithVMType generates a new smart contract address to be used for
 // testing based on the given identifier.
-func MakeTestSCAddressWithVmType(identifier string, vmType []byte) []byte {
+func MakeTestSCAddressWithVMType(identifier string, vmType []byte) []byte {
 	address := MakeTestSCAddress(identifier)
 	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], vmType)
 	return address
@@ -179,10 +180,23 @@ func (thb *TestHostBuilder) WithBuiltinFunctions() *TestHostBuilder {
 	return thb
 }
 
-// WithExecutorFactory allows tests to choose what executor to use. The default is wasmer 1.
+// WithExecutorFactory allows tests to choose what executor to use.
 func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *TestHostBuilder {
 	thb.vmHostParameters.OverrideVMExecutor = executorFactory
 	return thb
+}
+
+// WithExecutorLogs sets an ExecutorLogger, which wraps the existing OverrideVMExecutor
+func (thb *TestHostBuilder) WithExecutorLogs(executorLogger executorwrapper.ExecutorLogger) *TestHostBuilder {
+	if thb.vmHostParameters.OverrideVMExecutor == nil {
+		thb.tb.Fatal("WithExecutorLogs() requires WithExecutorFactory()")
+	}
+
+	wrapper := executorwrapper.NewWrappedExecutorFactory(
+		executorLogger,
+		thb.vmHostParameters.OverrideVMExecutor)
+
+	return thb.WithExecutorFactory(wrapper)
 }
 
 // WithWasmerSIGSEGVPassthrough allows tests to configure the WasmerSIGSEGVPassthrough flag.

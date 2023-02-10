@@ -13,7 +13,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
@@ -128,7 +127,6 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			WithGasProvided(test.GasProvided).
 			WithFunction("callNonexistingBuiltin").
 			Build()).
-		WithExecutorLogs(executorwrapper.NewConsoleLogger()).
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
