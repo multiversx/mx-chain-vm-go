@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -31,7 +31,6 @@ func NewReservedFunctions(scAPINames vmcommon.FunctionNames, builtInFuncContaine
 	}
 
 	var empty struct{}
-	result.functionNames[vmhost.UpgradeFunctionName] = empty
 	result.functionNames[vmhost.DeleteFunctionName] = empty
 
 	return result

@@ -59,7 +59,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err = host.performCodeDeployment(codeDeployInput)
+	vmOutput, err = host.performCodeDeploymentAtContractCreate(codeDeployInput)
 	if err != nil {
 		log.Trace("doRunSmartContractCreate", "error", err)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -74,7 +74,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	return vmOutput
 }
 
-func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunction func() error) (*vmcommon.VMOutput, error) {
 	log.Trace("performCodeDeployment", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
@@ -99,7 +99,7 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcomm
 		}
 	}()
 
-	err = host.callInitFunction()
+	err = initFunction()
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +111,14 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcomm
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
+}
+
+func (host *vmHost) performCodeDeploymentAtContractCreate(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	return host.performCodeDeployment(input, host.callInitFunction)
+}
+
+func (host *vmHost) performCodeDeploymentAtContractUpgrade(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	return host.performCodeDeployment(input, host.callUpgradeFunction)
 }
 
 // doRunSmartContractUpgrade upgrades a contract directly
@@ -157,7 +165,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err = host.performCodeDeployment(codeDeployInput)
+	vmOutput, err = host.performCodeDeploymentAtContractUpgrade(codeDeployInput)
 	if err != nil {
 		log.Trace("doRunSmartContractUpgrade", "error", err)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -1029,12 +1037,20 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 }
 
 func (host *vmHost) callInitFunction() error {
+	return host.callSCFunction(vmhost.InitFunctionName)
+}
+
+func (host *vmHost) callUpgradeFunction() error {
+	return host.callSCFunction(vmhost.UpgradeFunctionName)
+}
+
+func (host *vmHost) callSCFunction(functionName string) error {
 	runtime := host.Runtime()
-	if !runtime.HasFunction(vmhost.InitFunctionName) {
+	if !runtime.HasFunction(functionName) {
 		return nil
 	}
 
-	err := runtime.CallSCFunction(vmhost.InitFunctionName)
+	err := runtime.CallSCFunction(functionName)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}

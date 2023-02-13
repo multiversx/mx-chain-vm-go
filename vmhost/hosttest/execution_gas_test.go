@@ -1929,6 +1929,59 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 	}
 }
 
+func TestGasUsed_MockCreateContract(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.InitFunctionMock, contracts.WasteGasParentMock)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("wasteGas").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndCreateAndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				ReturnData([]byte(vmhost.InitFunctionName))
+		})
+	assert.Nil(t, err)
+}
+
+func TestGasUsed_MockUpgradeContract(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	codeMetadata := []byte{vmcommon.MetadataUpgradeable, 0}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress).
+				WithCodeMetadata(codeMetadata).
+				WithMethods(contracts.UpgradeFunctionMock, contracts.WasteGasParentMock)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction(vmhost.UpgradeFunctionName).
+			WithArguments(test.ParentAddress, codeMetadata).
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				ReturnData([]byte(vmhost.UpgradeFunctionName))
+		})
+	assert.Nil(t, err)
+}
+
 type MockClaimBuiltin struct {
 	test.MockBuiltin
 	AmountToGive int64
