@@ -12,11 +12,13 @@ import (
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_RunDEXPairBenchmark(t *testing.T) {
-	logger.SetLogLevel("arwen/benchmark:TRACE")
+	wasmer2.SetLogLevel(wasmer2.LogLevelOff)
+	logger.SetLogLevel("vm/benchmark:TRACE")
 	owner := vmhost.MakeTestSCAddress("owner")
 	user := vmhost.MakeTestSCAddress("user")
 
