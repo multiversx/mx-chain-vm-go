@@ -10,7 +10,6 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
@@ -71,9 +70,8 @@ func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
-
 	totalTokenSupply := big.NewInt(int64(nTransfers * nRuns))
-	mockWorld, ownerAccount, host, err := prepare(tb)
+	mockWorld, ownerAccount, host, err := prepare(tb, owner)
 	require.Nil(tb, err)
 
 	code := testcommon.GetTestSCCode("erc20", "../../")
@@ -145,7 +143,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 
 func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	totalTokenSupply := big.NewInt(int64(nTransfers))
-	mockWorld, ownerAccount, host, err := prepare(tb)
+	mockWorld, ownerAccount, host, err := prepare(tb, owner)
 	require.Nil(tb, err)
 
 	defer func() {
@@ -203,7 +201,7 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 
 func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	totalTokenSupply := big.NewInt(int64(nTransfers))
-	mockWorld, ownerAccount, host, err := prepare(tb)
+	mockWorld, ownerAccount, host, err := prepare(tb, owner)
 	require.Nil(tb, err)
 
 	defer func() {
@@ -231,16 +229,18 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	}
 }
 
-func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, vmhost.VMHost, error) {
+func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmock.Account, vmhost.VMHost, error) {
+	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+
 	mockWorld := worldmock.NewMockWorld()
+	mockWorld.InitBuiltinFunctions(gasMap)
 	ownerAccount := &worldmock.Account{
-		Address: owner,
+		Address: ownerAddress,
 		Nonce:   1024,
 		Balance: big.NewInt(0),
 	}
 	mockWorld.AcctMap.PutAccount(ownerAccount)
 
-	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
@@ -250,8 +250,8 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, vmhost.VM
 			VMType:                   testcommon.DefaultVMType,
 			BlockGasLimit:            uint64(1000),
 			GasSchedule:              gasMap,
-			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
+			BuiltInFuncContainer:     mockWorld.BuiltinFuncs.Container,
+			ProtectedKeyPrefix:       []byte("ELROND"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
