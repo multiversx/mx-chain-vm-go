@@ -14,7 +14,7 @@ import (
 
 // InstanceCreatorTestTemplate holds the data to build a contract creation test
 type InstanceCreatorTestTemplate struct {
-	t                       *testing.T
+	tb                      testing.TB
 	address                 []byte
 	input                   *vmcommon.ContractCreateInput
 	setup                   func(vmhost.VMHost, *contextmock.BlockchainHookStub)
@@ -26,11 +26,11 @@ type InstanceCreatorTestTemplate struct {
 }
 
 // BuildInstanceCreatorTest starts the building process for a contract creation test
-func BuildInstanceCreatorTest(t *testing.T) *InstanceCreatorTestTemplate {
+func BuildInstanceCreatorTest(tb testing.TB) *InstanceCreatorTestTemplate {
 	return &InstanceCreatorTestTemplate{
-		t:                       t,
+		tb:                      tb,
 		setup:                   func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
-		hostBuilder:             NewTestHostBuilder(t),
+		hostBuilder:             NewTestHostBuilder(tb),
 		stubAccountInitialNonce: 24,
 	}
 }
@@ -98,12 +98,12 @@ func (template *InstanceCreatorTestTemplate) runTest(reset bool) {
 
 		// Extra verification for instance leaks
 		err := template.host.Runtime().ValidateInstances()
-		require.Nil(template.t, err)
+		require.Nil(template.tb, err)
 	}()
 
 	vmOutput, err := template.host.RunSmartContractCreate(template.input)
 
-	verify := NewVMOutputVerifier(template.t, vmOutput, err)
+	verify := NewVMOutputVerifier(template.tb, vmOutput, err)
 	template.assertResults(blhookStub, verify)
 }
 
