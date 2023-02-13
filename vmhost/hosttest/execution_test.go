@@ -19,6 +19,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
@@ -300,7 +301,8 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
+	defaultFactory := testexecutor.NewDefaultTestExecutorFactory(t)
+	executorFactory := executorwrapper.SimpleWrappedExecutorFactory(defaultFactory)
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).

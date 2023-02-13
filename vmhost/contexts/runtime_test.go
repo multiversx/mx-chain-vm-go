@@ -16,6 +16,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
@@ -46,7 +47,8 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 }
 
 func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
-	exec, err := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
+	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
@@ -67,7 +69,8 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 	bfc := builtInFunctions.NewBuiltInFunctionContainer()
 	hasher := defaultHasher
 
-	exec, err := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
+	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
@@ -334,7 +337,8 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	host := &contextmock.VMHostMock{}
 
 	testVMType := []byte("type")
-	exec, err := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
+	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)

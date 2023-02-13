@@ -2,6 +2,7 @@ package vmserver
 
 import (
 	"math/big"
+	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -9,6 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
@@ -35,13 +37,13 @@ func newWorldDataModel(worldID string) *worldDataModel {
 }
 
 // newWorld creates a new debugging world
-func newWorld(dataModel *worldDataModel) (*world, error) {
+func newWorld(tb testing.TB, dataModel *worldDataModel) (*world, error) {
 	blockchainHook := worldmock.NewMockWorld()
 	blockchainHook.AcctMap = dataModel.Accounts
 
 	vm, err := hostCore.NewVMHost(
 		blockchainHook,
-		getHostParameters(),
+		getHostParameters(tb),
 	)
 	if err != nil {
 		return nil, err
@@ -54,11 +56,11 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 	}, nil
 }
 
-func getHostParameters() *vmhost.VMHostParameters {
+func getHostParameters(tb testing.TB) *vmhost.VMHostParameters {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &vmhost.VMHostParameters{
 		VMType:                   []byte{5, 0},
-		OverrideVMExecutor:       nil,
+		OverrideVMExecutor:       testexecutor.NewDefaultTestExecutorFactory(tb),
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),

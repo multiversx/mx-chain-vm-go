@@ -3,12 +3,14 @@ package vmjsonintegrationtest
 import (
 	"testing"
 
+	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
 func TestRustCompareAdderLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("adder/scenarios").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -16,8 +18,8 @@ func TestRustCompareAdderLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("adder/scenarios").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -26,6 +28,7 @@ func TestRustCompareAdderLog(t *testing.T) {
 func TestRustFactorialLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("factorial/scenarios").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -33,8 +36,8 @@ func TestRustFactorialLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("factorial/scenarios").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -45,6 +48,7 @@ func TestRustErc20Log(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("erc20-rust/scenarios").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -52,8 +56,8 @@ func TestRustErc20Log(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("erc20-rust/scenarios").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -62,6 +66,7 @@ func TestRustErc20Log(t *testing.T) {
 func TestCErc20Log(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("erc20-c").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -69,8 +74,8 @@ func TestCErc20Log(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("erc20-c").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -79,6 +84,7 @@ func TestCErc20Log(t *testing.T) {
 func TestDigitalCashLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("digital-cash").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -86,8 +92,8 @@ func TestDigitalCashLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("digital-cash").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -97,6 +103,7 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -105,8 +112,8 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -118,6 +125,7 @@ func TestCreateAsyncCallLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -126,8 +134,8 @@ func TestCreateAsyncCallLog(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -137,6 +145,7 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -145,8 +154,8 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -157,6 +166,7 @@ func TestMultisigLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("multisig/scenarios").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -164,8 +174,8 @@ func TestMultisigLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("multisig/scenarios").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -180,14 +190,16 @@ func TestDnsContractLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("dns").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		ExtractLog()
 
 	ScenariosTest(t).
 		Folder("dns").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -196,6 +208,7 @@ func TestDnsContractLog(t *testing.T) {
 func TestCrowdfundingEsdtLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("crowdfunding-esdt").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -203,8 +216,8 @@ func TestCrowdfundingEsdtLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("crowdfunding-esdt").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -213,6 +226,7 @@ func TestCrowdfundingEsdtLog(t *testing.T) {
 func TestEgldEsdtSwapLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("egld-esdt-swap").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -220,8 +234,8 @@ func TestEgldEsdtSwapLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("egld-esdt-swap").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -230,6 +244,7 @@ func TestEgldEsdtSwapLog(t *testing.T) {
 func TestPingPongEgldLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("ping-pong-egld").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -237,8 +252,8 @@ func TestPingPongEgldLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("ping-pong-egld").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -251,6 +266,7 @@ func TestRustAttestationLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("attestation-rust").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -258,8 +274,8 @@ func TestRustAttestationLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("attestation-rust").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)
@@ -272,6 +288,7 @@ func TestCAttestationLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("attestation-c").
+		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
@@ -279,8 +296,8 @@ func TestCAttestationLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("attestation-c").
-		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		CheckLog(expected)

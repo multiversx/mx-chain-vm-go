@@ -15,10 +15,10 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,8 +48,8 @@ func makeAsyncContext(t testing.TB, host vmhost.VMHost, address []byte) *asyncCo
 	return async
 }
 
-func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.MockWorld) {
-	testVmType := []byte("type")
+func initializeVMAndWasmerAsyncContext(tb testing.TB) (*contextmock.VMHostMock, *worldmock.MockWorld) {
+	testVMType := []byte("type")
 
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
@@ -65,13 +65,14 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 	host.BlockchainContext, _ = NewBlockchainContext(host, world)
 
 	mockWasmerInstance = contextmock.NewInstanceMock(nil)
-	exec, _ := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	execFactory := testexecutor.NewDefaultTestExecutorFactory(tb)
+	exec, _ := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
 	})
 	runtimeCtx, _ := NewRuntimeContext(
 		host,
-		testVmType,
+		testVMType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
@@ -90,12 +91,12 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 	return host, world
 }
 
-func initializeVMAndWasmerAsyncContextWithAliceAndBob() (
+func initializeVMAndWasmerAsyncContextWithAliceAndBob(tb testing.TB) (
 	*contextmock.VMHostMock,
 	*worldmock.MockWorld,
 	*vmcommon.ContractCallInput,
 ) {
-	host, world := initializeVMAndWasmerAsyncContext()
+	host, world := initializeVMAndWasmerAsyncContext(tb)
 	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: Alice,
 		Balance: big.NewInt(88),
@@ -123,7 +124,7 @@ func initializeVMAndWasmerAsyncContextWithAliceAndBob() (
 }
 
 func TestNewAsyncContext(t *testing.T) {
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 	async := makeAsyncContext(t, host, nil)
 
 	require.NotNil(t, async.host)
@@ -135,7 +136,7 @@ func TestNewAsyncContext(t *testing.T) {
 }
 
 func TestAsyncContext_InitState(t *testing.T) {
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
@@ -154,7 +155,7 @@ func TestAsyncContext_InitState(t *testing.T) {
 
 func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 	contract := []byte("contract")
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
@@ -182,7 +183,7 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 }
 
 func TestAsyncContext_GettersAndSetters(t *testing.T) {
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
@@ -196,7 +197,7 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 }
 
 func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 
 	async := makeAsyncContext(t, host, nil)
 
@@ -227,7 +228,7 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 }
 
 func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 
 	async := makeAsyncContext(t, host, nil)
 	require.Equal(t, 0, len(async.asyncCallGroups))
@@ -271,7 +272,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 		ShardID: 0,
 	}
 
-	host, world := initializeVMAndWasmerAsyncContext()
+	host, world := initializeVMAndWasmerAsyncContext(t)
 	world.AcctMap.PutAccount(leftAccount)
 	world.AcctMap.PutAccount(rightAccount)
 	runtime := host.Runtime()
@@ -331,7 +332,7 @@ func initRuntime(runtime vmhost.RuntimeContext, address []byte) {
 }
 
 func TestAsyncContext_IsValidCallbackName(t *testing.T) {
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 	async := makeAsyncContext(t, host, nil)
 
 	mockWasmerInstance.AddMockMethod("a", nil)
@@ -375,7 +376,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 		RecipientAddr: contract,
 	}
 
-	host, _ := initializeVMAndWasmerAsyncContext()
+	host, _ := initializeVMAndWasmerAsyncContext(t)
 	async := makeAsyncContext(t, host, contract)
 
 	storedAsync := &asyncContext{}
@@ -498,7 +499,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 }
 
 func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
-	host, world := initializeVMAndWasmerAsyncContext()
+	host, world := initializeVMAndWasmerAsyncContext(t)
 	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: []byte("smartcontract"),
 		Balance: big.NewInt(88),
@@ -553,7 +554,7 @@ func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	// Scenario 1
 	// Assert error propagation in async.executeSyncCall() from
 	// async.createContractCallInput()
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 
@@ -568,7 +569,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Scenario 3
 	// Successful execution at destination, and successful callback execution;
 	// the AsyncCall contains sufficient gas this time.
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 
 	mockWasmerInstance.AddMockMethod("successCallback", nil)
@@ -644,7 +645,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 }
 
 func TestAsyncContext_CreateContractCallInput(t *testing.T) {
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 	asyncCall := &vmhost.AsyncCall{
@@ -676,7 +677,7 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T) {
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, Alice)
 
@@ -702,7 +703,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, Alice)
 
@@ -732,7 +733,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 
 func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	// Due to dynamic gas locking, this situation should never happen
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 
@@ -753,7 +754,7 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 }
 
 func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 	async.finishAsyncLocalCallbackExecution(nil, nil, 0)
@@ -771,7 +772,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 }
 
 func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 
@@ -796,7 +797,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 }
 
 func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
-	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 

@@ -55,7 +55,7 @@ func (f *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRespons
 }
 
 func (f *DebugFacade) loadDatabase(rootPath string) *database {
-	database := newDatabase(rootPath)
+	database := newDatabase(nil, rootPath)
 	return database
 }
 
