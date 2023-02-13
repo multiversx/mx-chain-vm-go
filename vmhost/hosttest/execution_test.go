@@ -148,7 +148,7 @@ func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
 
 func testExecution_DeployWASM_WrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
 	test.BuildInstanceCreatorTest(t).
-		WithExecutor(executorFactory).
+		WithExecutorFactory(executorFactory).
 		WithInput(test.CreateTestContractCreateInputBuilder().
 			WithGasProvided(1000).
 			WithContractCode(test.GetTestSCCode("init-wrong", "../../")).
@@ -324,7 +324,6 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	}
 	require.False(t, len(vmHooksPtr) > 1)
 }
-
 
 func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	t.Skip()
