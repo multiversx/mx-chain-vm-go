@@ -484,8 +484,6 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	}
 
 	t.Run("blockchain hook errors", func(t *testing.T) {
-		t.Parallel()
-
 		errTooManyRequests := errors.New("too many requests")
 		bcHook := makeBcHookStub(
 			scAddress,
@@ -511,8 +509,6 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		require.Equal(t, errTooManyRequests, err)
 	})
 	t.Run("should work when blockchain hook does not error", func(t *testing.T) {
-		t.Parallel()
-
 		internalData := []byte("internalData")
 
 		bcHook := makeBcHookStub(
