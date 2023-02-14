@@ -17,7 +17,7 @@ import (
 )
 
 func Test_RunDEXPairBenchmark(t *testing.T) {
-	logger.SetLogLevel("vm/benchmark:TRACE")
+	_ = logger.SetLogLevel("vm/benchmark:TRACE")
 	owner := vmhost.MakeTestSCAddress("owner")
 	user := vmhost.MakeTestSCAddress("user")
 
@@ -225,12 +225,12 @@ func (mex *MEXSetup) setRequiredTokenRoles() {
 	pairAccount := world.AcctMap.GetAccount(mex.PairAddress)
 
 	roles := []string{core.ESDTRoleLocalMint, core.ESDTRoleLocalBurn}
-	pairAccount.SetTokenRolesAsStrings(mex.LPToken, roles)
+	_ = pairAccount.SetTokenRolesAsStrings(mex.LPToken, roles)
 }
 
 func (mex *MEXSetup) setESDTBalances() {
-	mex.UserAccount.SetTokenBalanceUint64(mex.WEGLDToken, 0, mex.UserWEGLDBalance)
-	mex.UserAccount.SetTokenBalanceUint64(mex.MEXToken, 0, mex.UserMEXBalance)
+	_ = mex.UserAccount.SetTokenBalanceUint64(mex.WEGLDToken, 0, mex.UserWEGLDBalance)
+	_ = mex.UserAccount.SetTokenBalanceUint64(mex.MEXToken, 0, mex.UserMEXBalance)
 }
 
 func (mex *MEXSetup) AddLiquidity(

@@ -231,9 +231,12 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 
 func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmock.Account, vmhost.VMHost, error) {
 	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+	require.Nil(tb, err)
 
 	mockWorld := worldmock.NewMockWorld()
-	mockWorld.InitBuiltinFunctions(gasMap)
+	err = mockWorld.InitBuiltinFunctions(gasMap)
+	require.Nil(tb, err)
+
 	ownerAccount := &worldmock.Account{
 		Address: ownerAddress,
 		Nonce:   1024,
