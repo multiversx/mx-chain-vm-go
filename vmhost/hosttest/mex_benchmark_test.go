@@ -1,6 +1,7 @@
 package hostCoretest
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -13,10 +14,12 @@ import (
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+
 	"github.com/stretchr/testify/require"
 )
 
 func Test_RunDEXPairBenchmark(t *testing.T) {
+	fmt.Printf("-----------------SETUP----------------------\n\n")
 	wasmer2.SetLogLevel(wasmer2.LogLevelOff)
 	logger.SetLogLevel("vm/benchmark:TRACE")
 	owner := vmhost.MakeTestSCAddress("owner")
@@ -33,10 +36,13 @@ func Test_RunDEXPairBenchmark(t *testing.T) {
 	mexToWegldESDT, mexToWegldSwap := mex.CreateSwapVMInputs(mex.MEXToken, 100, mex.WEGLDToken, 1)
 
 	for batch := 0; batch < numBatches; batch++ {
+		fmt.Printf("\n-----------------SWAPS----------------------\n\n")
+		logger.SetLogLevel("vm/benchmark:TRACE")
 		start := time.Now()
 		for i := 0; i < numSwapsPerBatch/2; i++ {
 			mex.ExecuteSwap(wegldToMexESDT, wegldToMexESDTSwap)
 			mex.ExecuteSwap(mexToWegldESDT, mexToWegldSwap)
+			fmt.Println("-------------------------------------------")
 		}
 		elapsedTime := time.Since(start)
 		logBenchmark.Trace(
