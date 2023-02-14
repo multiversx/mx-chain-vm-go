@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
+	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
+	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
+	oj "github.com/multiversx/mx-chain-scenario-go/orderedjson"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/esdtconvert"
-	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
-	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/write"
-	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
-	oj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/orderedjson"
 )
 
 const includeProtectedStorage = false
@@ -99,11 +99,11 @@ func (ae *VMTestExecutor) convertMockAccountToScenarioFormat(account *worldmock.
 				})
 			}
 
-			var attributes mj.JSONBytesFromString
+			var attributes mj.JSONBytesFromTree
 			if len(mockInstance.TokenMetaData.Attributes) > 0 {
-				attributes = mj.JSONBytesFromString{
+				attributes = mj.JSONBytesFromTree{
 					Value:    mockInstance.TokenMetaData.Attributes,
-					Original: ae.exprReconstructor.Reconstruct(mockInstance.TokenMetaData.Attributes, er.NoHint),
+					Original: &oj.OJsonString{Value: ae.exprReconstructor.Reconstruct(mockInstance.TokenMetaData.Attributes, er.NoHint)},
 				}
 			}
 
