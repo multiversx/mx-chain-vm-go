@@ -10,7 +10,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
@@ -39,7 +38,7 @@ func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubAllFlags(),
-			OverrideVMExecutor:       testexecutor.NewDefaultTestExecutorFactory(tb),
+			OverrideVMExecutor:       nil,
 			WasmerSIGSEGVPassthrough: false,
 			Hasher:                   defaultHasher,
 		},
