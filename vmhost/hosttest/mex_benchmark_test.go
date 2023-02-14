@@ -17,6 +17,9 @@ import (
 )
 
 func Test_RunDEXPairBenchmark(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
 	_ = logger.SetLogLevel("vm/benchmark:TRACE")
 	owner := vmhost.MakeTestSCAddress("owner")
 	user := vmhost.MakeTestSCAddress("user")
