@@ -9,9 +9,9 @@ import (
 	"time"
 
 	logger "github.com/multiversx/mx-chain-logger-go"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
-	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )

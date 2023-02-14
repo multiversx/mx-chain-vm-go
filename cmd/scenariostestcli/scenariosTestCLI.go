@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
-	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 )
 
 func resolveArgument(exeDir string, arg string) (string, bool, error) {

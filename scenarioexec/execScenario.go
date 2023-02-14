@@ -4,10 +4,10 @@ import (
 	"errors"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
-	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
-	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
