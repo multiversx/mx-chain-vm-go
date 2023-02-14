@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
@@ -21,7 +20,6 @@ type InstanceCreatorTestTemplate struct {
 	assertResults           func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
 	host                    vmhost.VMHost
 	hostBuilder             *TestHostBuilder
-	gasSchedule             config.GasScheduleMap
 	stubAccountInitialNonce uint64
 }
 
