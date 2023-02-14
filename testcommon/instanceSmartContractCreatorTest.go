@@ -4,101 +4,108 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
-// TestCreateTemplateConfig holds the data to build a contract creation test
-type TestCreateTemplateConfig struct {
-	t                        *testing.T
-	address                  []byte
-	input                    *vmcommon.ContractCreateInput
-	setup                    func(vmhost.VMHost, *contextmock.BlockchainHookStub)
-	assertResults            func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host                     vmhost.VMHost
-	gasSchedule              config.GasScheduleMap
-	wasmerSIGSEGVPassthrough bool
-	overrideExecutorFactory  executor.ExecutorAbstractFactory
-	stubAccountInitialNonce  uint64
-	blockchainHookStub       *contextmock.BlockchainHookStub
+// InstanceCreatorTestTemplate holds the data to build a contract creation test
+type InstanceCreatorTestTemplate struct {
+	tb                      testing.TB
+	address                 []byte
+	input                   *vmcommon.ContractCreateInput
+	setup                   func(vmhost.VMHost, *contextmock.BlockchainHookStub)
+	assertResults           func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host                    vmhost.VMHost
+	hostBuilder             *TestHostBuilder
+	stubAccountInitialNonce uint64
 }
 
 // BuildInstanceCreatorTest starts the building process for a contract creation test
-func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
-	return &TestCreateTemplateConfig{
-		t:                        t,
-		setup:                    func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
-		gasSchedule:              config.MakeGasMapForTests(),
-		wasmerSIGSEGVPassthrough: true,
-		overrideExecutorFactory:  nil,
-		stubAccountInitialNonce:  24,
+func BuildInstanceCreatorTest(tb testing.TB) *InstanceCreatorTestTemplate {
+	return &InstanceCreatorTestTemplate{
+		tb:                      tb,
+		setup:                   func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
+		hostBuilder:             NewTestHostBuilder(tb),
+		stubAccountInitialNonce: 24,
 	}
 }
 
-// WithExecutor allows caller to choose the Executor type.
-func (callerTest *TestCreateTemplateConfig) WithExecutor(executorFactory executor.ExecutorAbstractFactory) *TestCreateTemplateConfig {
-	callerTest.overrideExecutorFactory = executorFactory
-	return callerTest
+// WithExecutorFactory allows caller to choose the Executor type.
+func (template *InstanceCreatorTestTemplate) WithExecutorFactory(factory executor.ExecutorAbstractFactory) *InstanceCreatorTestTemplate {
+	template.hostBuilder.WithExecutorFactory(factory)
+	return template
+}
+
+// WithExecutorLogs sets an ExecutorLogger
+func (template *InstanceCreatorTestTemplate) WithExecutorLogs(executorLogger executorwrapper.ExecutorLogger) *InstanceCreatorTestTemplate {
+	template.hostBuilder.WithExecutorLogs(executorLogger)
+	return template
 }
 
 // WithInput provides the ContractCreateInput for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithInput(input *vmcommon.ContractCreateInput) *TestCreateTemplateConfig {
-	callerTest.input = input
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithInput(input *vmcommon.ContractCreateInput) *InstanceCreatorTestTemplate {
+	template.input = input
+	return template
+}
+
+// WithWasmerSIGSEGVPassthrough sets the wasmerSIGSEGVPassthrough flag
+func (template *InstanceCreatorTestTemplate) WithWasmerSIGSEGVPassthrough(passthrough bool) *InstanceCreatorTestTemplate {
+	template.hostBuilder.WithWasmerSIGSEGVPassthrough(passthrough)
+	return template
 }
 
 // WithAddress provides the address for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithAddress(address []byte) *TestCreateTemplateConfig {
-	callerTest.address = address
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithAddress(address []byte) *InstanceCreatorTestTemplate {
+	template.address = address
+	return template
 }
 
 // WithSetup provides the setup function for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
-	callerTest.setup = setup
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstanceCreatorTestTemplate {
+	template.setup = setup
+	return template
 }
 
 // AndAssertResults provides the function that will aserts the results
-func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	callerTest.runTest(true)
+func (template *InstanceCreatorTestTemplate) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	template.assertResults = assertResults
+	template.runTest(true)
 }
 
 // AndAssertResultsWithoutReset provides the function that will aserts the results
-func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	callerTest.runTest(false)
+func (template *InstanceCreatorTestTemplate) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	template.assertResults = assertResults
+	template.runTest(false)
 }
 
-func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
-	if callerTest.blockchainHookStub == nil {
-		callerTest.blockchainHookStub = callerTest.createBlockchainStub()
-	}
-	if callerTest.host == nil {
-		callerTest.host = callerTest.createTestVMVM()
-		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+func (template *InstanceCreatorTestTemplate) runTest(reset bool) {
+	var blhookStub *contextmock.BlockchainHookStub
+	if template.host == nil {
+		blhookStub = template.createBlockchainStub()
+		template.hostBuilder.WithBlockchainHook(blhookStub)
+		template.host = template.hostBuilder.Build()
+		template.setup(template.host, blhookStub)
 	}
 	defer func() {
 		if reset {
-			callerTest.host.Reset()
+			template.host.Reset()
 		}
 
 		// Extra verification for instance leaks
-		err := callerTest.host.Runtime().ValidateInstances()
-		require.Nil(callerTest.t, err)
+		err := template.host.Runtime().ValidateInstances()
+		require.Nil(template.tb, err)
 	}()
 
-	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)
+	vmOutput, err := template.host.RunSmartContractCreate(template.input)
 
-	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
-	callerTest.assertResults(callerTest.blockchainHookStub, verify)
+	verify := NewVMOutputVerifier(template.tb, vmOutput, err)
+	template.assertResults(blhookStub, verify)
 }
 
-func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.BlockchainHookStub {
+func (template *InstanceCreatorTestTemplate) createBlockchainStub() *contextmock.BlockchainHookStub {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &contextmock.StubAccount{
@@ -106,16 +113,7 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.
 		}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-		return callerTest.address, nil
+		return template.address, nil
 	}
 	return stubBlockchainHook
-}
-
-func (callerTest *TestCreateTemplateConfig) createTestVMVM() vmhost.VMHost {
-	return NewTestHostBuilder(callerTest.t).
-		WithExecutorFactory(callerTest.overrideExecutorFactory).
-		WithBlockchainHook(callerTest.blockchainHookStub).
-		WithGasSchedule(callerTest.gasSchedule).
-		WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
-		Build()
 }
