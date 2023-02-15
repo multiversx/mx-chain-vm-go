@@ -115,6 +115,10 @@ func (context *runtimeContext) InitState() {
 	context.iTracker.InitState()
 	context.errors = nil
 
+	if context.host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
+		context.codeSize = 0
+	}
+
 	logRuntime.Trace("init state")
 }
 

@@ -52,6 +52,7 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 
 	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
+	host.EnableEpochsHandlerField = &mock.EnableEpochsHandlerStub{}
 
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
@@ -77,6 +78,7 @@ func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext
 
 func TestNewRuntimeContextErrors(t *testing.T) {
 	host := InitializeVMAndWasmer()
+
 	bfc := builtInFunctions.NewBuiltInFunctionContainer()
 	hasher := defaultHasher
 
@@ -104,6 +106,7 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 
 func TestNewRuntimeContext(t *testing.T) {
 	host := InitializeVMAndWasmer()
+	host.EnableEpochsHandlerField = &mock.EnableEpochsHandlerStub{}
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -111,11 +114,14 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
+	require.Equal(t, uint64(0), runtimeContext.codeSize)
 	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
 	host := InitializeVMAndWasmer()
+	host.EpochsStub().IsRuntimeCodeSizeFixEnabledField = true
+
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -123,6 +129,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.codeAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
+	runtimeContext.codeSize = 1024
 	runtimeContext.asyncCallInfo = &vmhost.AsyncCallInfo{}
 
 	runtimeContext.InitState()
@@ -131,7 +138,27 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
+	require.Equal(t, uint64(0), runtimeContext.codeSize)
 	require.Nil(t, runtimeContext.asyncCallInfo)
+}
+
+func TestRuntimeContext_CodeSizeFix(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	epochs := host.EpochsStub()
+	host.EnableEpochsHandlerField = epochs
+
+	runtimeContext := makeDefaultRuntimeContext(t, host)
+	defer runtimeContext.ClearWarmInstanceCache()
+
+	runtimeContext.codeSize = 1024
+
+	epochs.IsRuntimeCodeSizeFixEnabledField = false
+	runtimeContext.InitState()
+	require.Equal(t, uint64(1024), runtimeContext.codeSize)
+
+	epochs.IsRuntimeCodeSizeFixEnabledField = true
+	runtimeContext.InitState()
+	require.Equal(t, uint64(0), runtimeContext.codeSize)
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
@@ -193,6 +220,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	imports := MakeAPIImports()
 	host := &contextmock.VMHostMock{}
+	host.EnableEpochsHandlerField = &mock.EnableEpochsHandlerStub{}
 	host.SCAPIMethods = imports
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
@@ -276,6 +304,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 func TestRuntimeContext_PushPopState(t *testing.T) {
 	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = MakeAPIImports()
+	host.EnableEpochsHandlerField = &mock.EnableEpochsHandlerStub{}
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -612,10 +641,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 
 func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
 	host := InitializeVMAndWasmer()
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
-		IsRuntimeMemStoreLimitEnabledField: true,
-	}
-	host.EnableEpochsHandlerField = enableEpochsHandler
+	host.EpochsStub().IsRuntimeMemStoreLimitEnabledField = true
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
