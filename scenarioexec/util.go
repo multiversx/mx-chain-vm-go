@@ -6,11 +6,11 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
+	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
-	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
-	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {

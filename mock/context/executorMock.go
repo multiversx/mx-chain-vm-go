@@ -53,7 +53,7 @@ func (executorMock *ExecutorMock) SetOpcodeCosts(_ *executor.WASMOpcodeCost) {
 
 // FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
-	return nil
+	return functionNames
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
