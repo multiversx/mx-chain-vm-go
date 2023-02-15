@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	logger "github.com/multiversx/mx-chain-logger-go"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	am "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec"
-	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,7 +34,7 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 	require.Nil(t, err)
 	defer executor.Close()
 
-	runner := mc.NewScenarioRunner(
+	runner := mc.NewScenarioController(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)
@@ -58,7 +58,7 @@ func runSingleTestReturnError(folder string, filename string) error {
 	}
 	defer executor.Close()
 
-	runner := mc.NewScenarioRunner(
+	runner := mc.NewScenarioController(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)

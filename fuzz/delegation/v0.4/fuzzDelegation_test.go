@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	fuzzutil "github.com/multiversx/mx-chain-vm-v1_4-go/fuzz/util"
-	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 
