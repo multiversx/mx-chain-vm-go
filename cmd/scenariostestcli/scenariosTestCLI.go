@@ -64,7 +64,7 @@ func ScenariosTestCLI() {
 	// execute
 	switch {
 	case isDir:
-		runner := mc.NewScenarioRunner(
+		runner := mc.NewScenarioController(
 			executor,
 			mc.NewDefaultFileResolver(),
 		)
@@ -75,7 +75,7 @@ func ScenariosTestCLI() {
 			[]string{},
 			options)
 	case strings.HasSuffix(jsonFilePath, ".scen.json"):
-		runner := mc.NewScenarioRunner(
+		runner := mc.NewScenarioController(
 			executor,
 			mc.NewDefaultFileResolver(),
 		)

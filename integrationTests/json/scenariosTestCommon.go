@@ -34,7 +34,7 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 	require.Nil(t, err)
 	defer executor.Close()
 
-	runner := mc.NewScenarioRunner(
+	runner := mc.NewScenarioController(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)
@@ -58,7 +58,7 @@ func runSingleTestReturnError(folder string, filename string) error {
 	}
 	defer executor.Close()
 
-	runner := mc.NewScenarioRunner(
+	runner := mc.NewScenarioController(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)

@@ -36,7 +36,7 @@ type VMTestExecutor struct {
 }
 
 var _ mc.TestExecutor = (*VMTestExecutor)(nil)
-var _ mc.ScenarioExecutor = (*VMTestExecutor)(nil)
+var _ mc.ScenarioRunner = (*VMTestExecutor)(nil)
 
 // NewVMTestExecutor prepares a new VMTestExecutor instance.
 func NewVMTestExecutor() (*VMTestExecutor, error) {
