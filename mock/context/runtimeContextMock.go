@@ -147,6 +147,11 @@ func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
 	return r.SCCodeSize
 }
 
+// SetSCCodeSize mocked method
+func (r *RuntimeContextMock) SetSCCodeSize(size uint64) {
+	r.SCCodeSize = size
+}
+
 // Function mocked method
 func (r *RuntimeContextMock) Function() string {
 	return r.CallFunctionName
