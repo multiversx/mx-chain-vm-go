@@ -30,6 +30,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCCodeSizeFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetSCCodeSizeFunc func(size uint64)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetVMTypeFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	FunctionFunc func() string
@@ -172,6 +174,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 
 	runtimeWrapper.GetSCCodeSizeFunc = func() uint64 {
 		return runtimeWrapper.runtimeContext.GetSCCodeSize()
+	}
+
+	runtimeWrapper.SetSCCodeSizeFunc = func(size uint64) {
+		runtimeWrapper.runtimeContext.SetSCCodeSize(size)
 	}
 
 	runtimeWrapper.GetVMTypeFunc = func() []byte {
@@ -424,6 +430,11 @@ func (contextWrapper *RuntimeContextWrapper) GetSCCode() ([]byte, error) {
 // GetSCCodeSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetSCCodeSize() uint64 {
 	return contextWrapper.GetSCCodeSizeFunc()
+}
+
+// SetSCCodeSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetSCCodeSize(size uint64) {
+	contextWrapper.SetSCCodeSizeFunc(size)
 }
 
 // GetVMType calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

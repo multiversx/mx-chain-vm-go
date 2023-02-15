@@ -79,6 +79,10 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcomm
 
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
+	if host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
+		runtime.SetSCCodeSize(uint64(len(input.ContractCode)))
+	}
+
 	err := metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)

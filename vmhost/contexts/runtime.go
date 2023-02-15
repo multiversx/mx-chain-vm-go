@@ -329,6 +329,11 @@ func (context *runtimeContext) saveCompiledCode() {
 	context.saveWarmInstance()
 }
 
+// SetSCCodeSize sets the internal codeSize field
+func (context *runtimeContext) SetSCCodeSize(size uint64) {
+	context.codeSize = size
+}
+
 func (context *runtimeContext) saveWarmInstance() {
 	if !WarmInstancesEnabled {
 		return

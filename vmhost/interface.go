@@ -115,6 +115,7 @@ type RuntimeContext interface {
 	GetContextAddress() []byte
 	SetCodeAddress(scAddress []byte)
 	GetSCCode() ([]byte, error)
+	SetSCCodeSize(size uint64)
 	GetSCCodeSize() uint64
 	GetVMType() []byte
 	Function() string
