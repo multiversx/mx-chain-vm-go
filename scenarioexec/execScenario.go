@@ -27,8 +27,8 @@ func (ae *VMTestExecutor) Close() {
 	}
 }
 
-// ExecuteScenario executes an individual test.
-func (ae *VMTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
+// RunScenario executes an individual test.
+func (ae *VMTestExecutor) RunScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 	resetGasTracesIfNewTest(ae, scenario)
@@ -86,7 +86,7 @@ func (ae *VMTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error 
 
 	fileResolverBackup := ae.fileResolver
 	clonedFileResolver := ae.fileResolver.Clone()
-	externalStepsRunner := mc.NewScenarioRunner(ae, clonedFileResolver)
+	externalStepsRunner := mc.NewScenarioController(ae, clonedFileResolver)
 
 	extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
 	setExternalStepGasTracing(ae, step)

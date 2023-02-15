@@ -85,7 +85,7 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 			wasmer.ExecutorFactory())
 	}
 
-	runner := mc.NewScenarioRunner(
+	runner := mc.NewScenarioController(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)
