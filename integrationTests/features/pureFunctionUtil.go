@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
+	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
-	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
