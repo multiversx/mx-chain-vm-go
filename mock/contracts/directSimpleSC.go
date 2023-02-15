@@ -185,7 +185,7 @@ func InitFunctionMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 // InitFunctionMock is the exposed upgrade function
 func UpgradeFunctionMock(instanceMock *mock.InstanceMock, config interface{}) {
-	instanceMock.AddMockMethod(vmhost.UpgradeFunctionName, func() *mock.InstanceMock {
+	instanceMock.AddMockMethod(vmhost.ContractsUpgradeFunctionName, func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		host.Output().Finish([]byte(vmhost.UpgradeFunctionName))

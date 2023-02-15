@@ -1041,7 +1041,7 @@ func (host *vmHost) callInitFunction() error {
 }
 
 func (host *vmHost) callUpgradeFunction() error {
-	return host.callSCFunction(vmhost.UpgradeFunctionName)
+	return host.callSCFunction(vmhost.ContractsUpgradeFunctionName)
 }
 
 func (host *vmHost) callSCFunction(functionName string) error {
