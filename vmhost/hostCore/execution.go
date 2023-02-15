@@ -1219,6 +1219,10 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	if isInit {
 		return vmhost.ErrInitFuncCalledInRun
 	}
+	isUpgrade := functionName == vmhost.ContractsUpgradeFunctionName
+	if isUpgrade {
+		return vmhost.ErrInitFuncCalledInRun
+	}
 
 	isCallBack := functionName == vmhost.CallbackFunctionName
 	isInAsyncCallBack := runtime.GetVMInput().CallType == vm.AsynchronousCallBack

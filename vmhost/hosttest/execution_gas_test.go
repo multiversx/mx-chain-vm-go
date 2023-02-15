@@ -1969,7 +1969,7 @@ func TestGasUsed_MockUpgradeContract(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
-			WithFunction(vmhost.ContractsUpgradeFunctionName).
+			WithFunction(vmhost.UpgradeFunctionName).
 			WithArguments(test.ParentAddress, codeMetadata).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
