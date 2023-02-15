@@ -16,6 +16,9 @@ endif
 	cp ./cmd/vmserver/vmserver ${VMSERVER_PATH}
 
 test: clean
+	export VMEXECUTOR="wasmer1"
+	go test ./...
+	export VMEXECUTOR="wasmer2"
 	go test ./...
 
 test-v: clean
