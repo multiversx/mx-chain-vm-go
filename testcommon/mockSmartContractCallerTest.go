@@ -12,6 +12,13 @@ import (
 
 var logMock = logger.GetOrCreate("vm/mock")
 
+type TestType int
+
+const (
+	RunTest TestType = iota
+	CreateTest
+)
+
 // SetupFunction -
 type SetupFunction func(vmhost.VMHost, *worldmock.MockWorld)
 
@@ -74,7 +81,14 @@ func (callerTest *MockInstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmer
 
 // AndAssertResults provides the function that will aserts the results
 func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults AssertResultsFunc) (*vmcommon.VMOutput, error) {
-	return callerTest.AndAssertResultsWithWorld(nil, true, nil, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
+	return callerTest.andAssertResultsWithWorld(nil, true, nil, RunTest, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
+		assertResults(world, verify)
+	})
+}
+
+// AndCreateAndAssertResults provides the function that will create the contract and aserts the results
+func (callerTest *MockInstancesTestTemplate) AndCreateAndAssertResults(assertResults AssertResultsFunc) (*vmcommon.VMOutput, error) {
+	return callerTest.andAssertResultsWithWorld(nil, true, nil, CreateTest, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
 		assertResults(world, verify)
 	})
 }
@@ -86,17 +100,34 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
 	startNode *TestCallNode,
 	expectedErrorsForRound []string,
 	assertResults AssertResultsWithStartNodeFunc) (*vmcommon.VMOutput, error) {
+	return callerTest.andAssertResultsWithWorld(world, createAccount, startNode, RunTest, expectedErrorsForRound, assertResults)
+}
+
+func (callerTest *MockInstancesTestTemplate) andAssertResultsWithWorld(
+	world *worldmock.MockWorld,
+	createAccount bool,
+	startNode *TestCallNode,
+	testType TestType,
+	expectedErrorsForRound []string,
+	assertResults AssertResultsWithStartNodeFunc) (*vmcommon.VMOutput, error) {
 	callerTest.assertResults = assertResults
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}
-	return callerTest.runTest(startNode, world, createAccount, expectedErrorsForRound)
+	return callerTest.runTest(startNode, world, createAccount, testType, expectedErrorsForRound)
 }
 
-func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, world *worldmock.MockWorld, createAccount bool, expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
+func (callerTest *MockInstancesTestTemplate) runTest(
+	startNode *TestCallNode,
+	world *worldmock.MockWorld,
+	createContractAccounts bool,
+	testType TestType,
+	expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}
+	world.AcctMap.CreateAccount(UserAddress, world)
+
 	executorFactory := mock.NewExecutorMockFactory(world)
 	host := NewTestHostBuilder(callerTest.tb).
 		WithExecutorFactory(executorFactory).
@@ -108,14 +139,25 @@ func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, wo
 	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.Initialize(callerTest.tb, host, executorFactory.LastCreatedExecutor, createAccount)
+		mockSC.Initialize(callerTest.tb, host, executorFactory.LastCreatedExecutor, createContractAccounts)
 	}
 
 	callerTest.setup(host, world)
 	// create snapshot (normaly done by node)
 	world.CreateStateBackup()
 
-	vmOutput, err := host.RunSmartContractCall(callerTest.input)
+	var vmOutput *vmcommon.VMOutput
+	var err error
+	switch testType {
+	case RunTest:
+		vmOutput, err = host.RunSmartContractCall(callerTest.input)
+	case CreateTest:
+		vmOutput, err = host.RunSmartContractCreate(&vmcommon.ContractCreateInput{
+			VMInput:      callerTest.input.VMInput,
+			ContractCode: callerTest.input.RecipientAddr,
+		})
+	}
+
 	allErrors := host.Runtime().GetAllErrors()
 	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
 	if callerTest.assertResults != nil {
