@@ -97,6 +97,10 @@ void init() {
   bigIntStorageStoreUnsigned(currentKey, 32, totalSupply);
 }
 
+void upgrade() {
+  init();
+}
+
 // getter function: retrieves total token supply
 void totalSupply() {
   if (getNumArguments() != 0) {
