@@ -2611,11 +2611,30 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 		})
 }
 
-func TestExecution_RuntimeCodeSize_UpgradeContract(t *testing.T) {
+func TestExecution_RuntimeCodeSize_UpgradeContract_FlagDisabled(t *testing.T) {
+	runTestExecution_RuntimeCodeSize_UpgradeContract(t, false)
+}
+
+func TestExecution_RuntimeCodeSize_UpgradeContract_FlagEnabled(t *testing.T) {
+	runTestExecution_RuntimeCodeSize_UpgradeContract(t, true)
+}
+
+func runTestExecution_RuntimeCodeSize_UpgradeContract(t *testing.T, fixEpochFlag bool) {
 	oldCode := test.GetTestSCCode("answer", "../../")
 	newCode := test.GetTestSCCode("counter", "../../")
 
+	var expectedCodeSize uint64
+	if !fixEpochFlag {
+		expectedCodeSize = uint64(len(oldCode))
+	} else {
+		expectedCodeSize = uint64(len(newCode))
+	}
+
 	testCase := test.BuildInstanceCallTest(t).
+		WithSetup(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub) {
+			epochs := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
+			epochs.IsRuntimeCodeSizeFixEnabledField = fixEpochFlag
+		}).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(oldCode)).
@@ -2642,10 +2661,9 @@ func TestExecution_RuntimeCodeSize_UpgradeContract(t *testing.T) {
 
 	testCase.AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, _ *test.VMOutputVerifier) {
 		require.Equal(t,
-			uint64(len(newCode)),
+			expectedCodeSize,
 			host.Runtime().GetSCCodeSize())
 	})
-
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
