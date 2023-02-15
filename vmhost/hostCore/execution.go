@@ -838,7 +838,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0, it will call multi transfer if multiple tokens are sent
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, originalCaller []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if len(transfers) == 0 {
 		return nil, 0, vmhost.ErrFailedTransfer
 	}
@@ -851,13 +851,14 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   make([][]byte, 0),
-			CallValue:   big.NewInt(0),
-			CallType:    callType,
-			GasPrice:    runtime.GetVMInput().GasPrice,
-			GasProvided: metering.GasLeft(),
-			GasLocked:   0,
+			OriginalCallerAddr: originalCaller,
+			CallerAddr:         sender,
+			Arguments:          make([][]byte, 0),
+			CallValue:          big.NewInt(0),
+			CallType:           callType,
+			GasPrice:           runtime.GetVMInput().GasPrice,
+			GasProvided:        metering.GasLeft(),
+			GasLocked:          0,
 		},
 		RecipientAddr:     destination,
 		Function:          core.BuiltInFunctionESDTTransfer,
@@ -1257,16 +1258,17 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	// just for hashing, or hash the VMInput itself)
 	newVMInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     vmInput.CallerAddr,
-			Arguments:      arguments,
-			CallValue:      big.NewInt(0),
-			CallType:       callType,
-			GasPrice:       vmInput.GasPrice,
-			GasProvided:    scCallOutTransfer.GasLimit,
-			GasLocked:      scCallOutTransfer.GasLocked,
-			OriginalTxHash: vmInput.OriginalTxHash,
-			CurrentTxHash:  vmInput.CurrentTxHash,
-			PrevTxHash:     vmInput.PrevTxHash,
+			OriginalCallerAddr: vmInput.OriginalCallerAddr,
+			CallerAddr:         vmInput.CallerAddr,
+			Arguments:          arguments,
+			CallValue:          big.NewInt(0),
+			CallType:           callType,
+			GasPrice:           vmInput.GasPrice,
+			GasProvided:        scCallOutTransfer.GasLimit,
+			GasLocked:          scCallOutTransfer.GasLocked,
+			OriginalTxHash:     vmInput.OriginalTxHash,
+			CurrentTxHash:      vmInput.CurrentTxHash,
+			PrevTxHash:         vmInput.PrevTxHash,
 		},
 		RecipientAddr:     parsedTransfer.RcvAddr,
 		Function:          function,

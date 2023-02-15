@@ -705,6 +705,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
+	originalCaller := runtime.GetOriginalCallerAddress()
 	value, err := managedType.GetBigInt(valueHandle)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
@@ -729,7 +730,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, host, runtime)
+	newAddress, err := createContract(originalCaller, sender, data, value, metering, gas, code, codeMetadata, host, runtime)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}

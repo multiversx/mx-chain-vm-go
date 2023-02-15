@@ -480,6 +480,7 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	if len(vmInput.CallerAddr) > 0 {
 		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
 		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
+		context.vmInput.OriginalCallerAddr = context.vmInput.CallerAddr
 	}
 
 	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
@@ -512,6 +513,11 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 			copy(context.vmInput.Arguments[i], arg)
 		}
 	}
+}
+
+// GetOriginalCallerAddress returns the original caller's address
+func (context *runtimeContext) GetOriginalCallerAddress() []byte {
+	return context.vmInput.OriginalCallerAddr
 }
 
 // GetContextAddress returns the SC address from the current context.

@@ -359,6 +359,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
 func (context *outputContext) TransferESDT(
 	destination []byte,
+	originalCaller []byte,
 	sender []byte,
 	transfers []*vmcommon.ESDTTransfer,
 	callInput *vmcommon.ContractCallInput,
@@ -375,7 +376,7 @@ func (context *outputContext) TransferESDT(
 		callType = vm.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, transfers, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, originalCaller, sender, transfers, callType)
 	if err != nil {
 		return 0, err
 	}

@@ -272,10 +272,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeCtx.SetMaxInstanceStackSize(1)
 
 	vmInput := vmcommon.VMInput{
-		CallerAddr:    []byte("caller"),
-		GasProvided:   1000,
-		CallValue:     big.NewInt(0),
-		ESDTTransfers: make([]*vmcommon.ESDTTransfer, 0),
+		OriginalCallerAddr: []byte("caller"),
+		CallerAddr:         []byte("caller"),
+		GasProvided:        1000,
+		CallValue:          big.NewInt(0),
+		ESDTTransfers:      make([]*vmcommon.ESDTTransfer, 0),
 	}
 
 	funcName := "test_func"

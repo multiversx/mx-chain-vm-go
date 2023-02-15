@@ -106,13 +106,14 @@ func initializeVMAndWasmerAsyncContextWithAliceAndBob() (
 
 	originalVMInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     OriginalCaller,
-			Arguments:      nil,
-			CallType:       vm.DirectCall,
-			GasPrice:       1,
-			CurrentTxHash:  []byte("txhash"),
-			PrevTxHash:     []byte("txhash"),
-			OriginalTxHash: []byte("txhash"),
+			OriginalCallerAddr: OriginalCaller,
+			CallerAddr:         OriginalCaller,
+			Arguments:          nil,
+			CallType:           vm.DirectCall,
+			GasPrice:           1,
+			CurrentTxHash:      []byte("txhash"),
+			PrevTxHash:         []byte("txhash"),
+			OriginalTxHash:     []byte("txhash"),
 		},
 		RecipientAddr: Alice,
 		Function:      "alice_function",

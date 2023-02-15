@@ -73,6 +73,7 @@ func MakeContractCallInput(
 
 // SetCallParties sets the caller and recipient of the given ContractCallInput
 func SetCallParties(input *vmcommon.ContractCallInput, caller []byte, recipient []byte) {
+	input.OriginalCallerAddr = []byte("address_original_caller")
 	input.CallerAddr = caller
 	input.RecipientAddr = recipient
 }
