@@ -118,8 +118,8 @@ github.com/multiversx/mx-chain-logger-go v1.0.11/go.mod h1:1srDkP0DQucWQ+rYfaq0B
 github.com/multiversx/mx-chain-scenario-go v1.1.0 h1:egksOnqdlzNhpgm7YHf/T4Hy6RvZ5u4gunNZ41vP+kY=
 github.com/multiversx/mx-chain-scenario-go v1.1.0/go.mod h1:sVS6cEaF5k4IFEbHabhbgsve/Fk9qz3wIUIB0MpRMdI=
 github.com/multiversx/mx-chain-vm-common-go v1.3.33-0.20230123162357-c6f6931a3dec/go.mod h1:sZ2COLCxvf2GxAAJHGmGqWybObLtFuk2tZUyGqnMXE8=
-github.com/multiversx/mx-chain-vm-common-go v1.3.36 h1:9TViMK+vqTHss9cnGKtzOWzsxI/LWIetAYzrgf4H/w0=
-github.com/multiversx/mx-chain-vm-common-go v1.3.36/go.mod h1:sZ2COLCxvf2GxAAJHGmGqWybObLtFuk2tZUyGqnMXE8=
+github.com/multiversx/mx-chain-vm-common-go v1.3.37-0.20230215181710-ceb9ee2ce315 h1:v7z4+RckmVca3TWomYkus7fB0I6peFHJGhrP2pVFatA=
+github.com/multiversx/mx-chain-vm-common-go v1.3.37-0.20230215181710-ceb9ee2ce315/go.mod h1:sZ2COLCxvf2GxAAJHGmGqWybObLtFuk2tZUyGqnMXE8=
 github.com/multiversx/mx-components-big-int v0.1.1 h1:695mYPKYOrmGEGgRH4/pZruDoe3CPP1LHrBxKfvj5l4=
 github.com/multiversx/mx-components-big-int v0.1.1/go.mod h1:0QrcFdfeLgJ/am10HGBeH0G0DNF+0Qx1E4DS/iozQls=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
