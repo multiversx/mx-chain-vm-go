@@ -2611,15 +2611,16 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 		})
 }
 
-func TestExecution_RuntimeCodeSize_UpgradeContract_FlagDisabled(t *testing.T) {
-	runTestExecution_RuntimeCodeSize_UpgradeContract(t, false)
+func TestExecutionRuntimeCodeSizeUpgradeContract(t *testing.T) {
+	t.Run("fix flag disabled", func(t *testing.T) {
+		runTestExecutionRuntimeCodeSizeUpgradeContract(t, false)
+	})
+	t.Run("fix flag enabled", func(t *testing.T) {
+		runTestExecutionRuntimeCodeSizeUpgradeContract(t, true)
+	})
 }
 
-func TestExecution_RuntimeCodeSize_UpgradeContract_FlagEnabled(t *testing.T) {
-	runTestExecution_RuntimeCodeSize_UpgradeContract(t, true)
-}
-
-func runTestExecution_RuntimeCodeSize_UpgradeContract(t *testing.T, fixEpochFlag bool) {
+func runTestExecutionRuntimeCodeSizeUpgradeContract(t *testing.T, fixEpochFlag bool) {
 	oldCode := test.GetTestSCCode("answer", "../../")
 	newCode := test.GetTestSCCode("counter", "../../")
 
