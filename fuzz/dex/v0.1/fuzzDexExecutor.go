@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-scenario-go/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
-	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
-	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
-	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
-	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 

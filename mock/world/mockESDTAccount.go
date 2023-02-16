@@ -4,7 +4,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
-	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
+	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
 )
 
 // GetTokenBalance returns the ESDT balance of the account, specified by the

@@ -3,7 +3,7 @@ package scenarioexec
 import (
 	"fmt"
 
-	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
 )
 
 // ExecuteTest executes an individual test.

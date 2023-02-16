@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 )
 
 func main() {

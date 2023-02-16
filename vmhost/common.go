@@ -147,6 +147,9 @@ const (
 	// UpgradeFunctionName specifies if the call is an upgradeContract call
 	UpgradeFunctionName = "upgradeContract"
 
+	// ContractsUpgradeFunctionName specifies the contract's function called at upgrade
+	ContractsUpgradeFunctionName = "upgrade"
+
 	// DeleteFunctionName specifies if the call is an deleteContract call
 	DeleteFunctionName = "deleteContract"
 )

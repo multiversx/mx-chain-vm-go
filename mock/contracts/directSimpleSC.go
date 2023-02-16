@@ -173,6 +173,26 @@ func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByParent))
 }
 
+// InitFunctionMock is the exposed init function
+func InitFunctionMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod(vmhost.InitFunctionName, func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Output().Finish([]byte(vmhost.InitFunctionName))
+		return instance
+	})
+}
+
+// InitFunctionMock is the exposed upgrade function
+func UpgradeFunctionMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod(vmhost.ContractsUpgradeFunctionName, func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Output().Finish([]byte(vmhost.UpgradeFunctionName))
+		return instance
+	})
+}
+
 const (
 	esdtOnCallbackSuccess int = iota
 	esdtOnCallbackWrongNumOfArgs
