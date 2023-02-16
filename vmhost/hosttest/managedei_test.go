@@ -11,12 +11,12 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
-	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing/secp256k1"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/esdtconvert"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/cryptoapi"

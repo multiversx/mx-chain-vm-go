@@ -8,8 +8,8 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
-	mj "github.com/multiversx/mx-chain-scenario-go/model"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 )
 
 func (ae *VMTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
