@@ -150,6 +150,7 @@ func TestRuntimeContext_CodeSizeFix(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
+	runtimeContext.codeSize = 1024
 	runtimeContext.iTracker.codeSize = 1024
 
 	epochs.IsRuntimeCodeSizeFixEnabledField = false
@@ -312,13 +313,14 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 		return runtimeContext
 	}
 
-	t.Run("fix code size disabled, stacking nothing", func(t *testing.T) {
+	t.Run("fix code size disabled", func(t *testing.T) {
 		epochs.IsRuntimeCodeSizeFixEnabledField = false
 		runtimeContext := prepare()
 		defer runtimeContext.ClearWarmInstanceCache()
 		require.Equal(t, uint64(0), runtimeContext.GetSCCodeSize())
 		instance := runtimeContext.iTracker.instance
 		runtimeContext.pushInstance()
+		runtimeContext.codeSize = newCodeSize
 		runtimeContext.iTracker.codeSize = newCodeSize
 		require.Equal(t, newCodeSize, runtimeContext.GetSCCodeSize())
 		runtimeContext.iTracker.instance = &wasmer.Instance{}
@@ -326,6 +328,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 		runtimeContext.popInstance()
 		require.Equal(t, newCodeSize, runtimeContext.GetSCCodeSize())
+		require.Equal(t, oldCodeSize, runtimeContext.iTracker.codeSize)
 		require.NotNil(t, runtimeContext.iTracker.instance)
 		require.Equal(t, instance, runtimeContext.iTracker.instance)
 		require.Equal(t, 0, len(runtimeContext.iTracker.instanceStack))
@@ -333,7 +336,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 		runtimeContext.pushInstance()
 		require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
 	})
-	t.Run("fix code size enabled, stacking codeSize", func(t *testing.T) {
+	t.Run("fix code size enabled", func(t *testing.T) {
 		epochs.IsRuntimeCodeSizeFixEnabledField = true
 		runtimeContext := prepare()
 		defer runtimeContext.ClearWarmInstanceCache()

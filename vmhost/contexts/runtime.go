@@ -36,6 +36,7 @@ type runtimeContext struct {
 	host               vmhost.VMHost
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
+	codeSize           uint64
 	callFunction       string
 	vmType             []byte
 	readOnly           bool
@@ -88,7 +89,7 @@ func NewRuntimeContext(
 		errors:     nil,
 	}
 
-	iTracker, err := NewInstanceTracker(host.EnableEpochsHandler())
+	iTracker, err := NewInstanceTracker()
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +114,10 @@ func (context *runtimeContext) InitState() {
 	}
 	context.iTracker.InitState()
 	context.errors = nil
+
+	if context.host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
+		context.codeSize = 0
+	}
 
 	logRuntime.Trace("init state")
 }
@@ -146,9 +151,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		codeHash = blockchain.GetCodeHash(context.codeAddress)
 	}
 
-	if context.host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
-		context.iTracker.SetCodeSize(uint64(len(contract)))
-	}
+	context.iTracker.SetCodeSize(uint64(len(contract)))
 	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
@@ -298,15 +301,17 @@ func (context *runtimeContext) GetSCCode() ([]byte, error) {
 		return nil, err
 	}
 
-	if !context.host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
-		context.iTracker.SetCodeSize(uint64(len(code)))
-	}
+	context.codeSize = uint64(len(code))
+	context.iTracker.SetCodeSize(uint64(len(code)))
 	return code, nil
 }
 
 // GetSCCodeSize returns the size of the current SC code.
 func (context *runtimeContext) GetSCCodeSize() uint64 {
-	return context.iTracker.GetCodeSize()
+	if context.host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
+		return context.iTracker.GetCodeSize()
+	}
+	return context.codeSize
 }
 
 func (context *runtimeContext) saveCompiledCode() {

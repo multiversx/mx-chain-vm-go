@@ -7,7 +7,6 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/storage/lrucache"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
@@ -40,24 +39,17 @@ type instanceTracker struct {
 	codeHashStack       [][]byte
 	codeSizeStack       []uint64
 
-	epochsHandler vmcommon.EnableEpochsHandler
-
 	instances map[string]wasmer.InstanceHandler
 }
 
 // NewInstanceTracker creates a new instanceTracker instance
-func NewInstanceTracker(epochsHandler vmcommon.EnableEpochsHandler) (*instanceTracker, error) {
-	if check.IfNil(epochsHandler) {
-		return nil, vmhost.ErrNilEnableEpochsHandler
-	}
-
+func NewInstanceTracker() (*instanceTracker, error) {
 	tracker := &instanceTracker{
 		instances:           make(map[string]wasmer.InstanceHandler),
 		instanceStack:       make([]wasmer.InstanceHandler, 0),
 		codeHashStack:       make([][]byte, 0),
 		codeSizeStack:       make([]uint64, 0),
 		numRunningInstances: 0,
-		epochsHandler:       epochsHandler,
 	}
 
 	var err error
@@ -80,10 +72,7 @@ func (tracker *instanceTracker) InitState() {
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 	tracker.instances = make(map[string]wasmer.InstanceHandler)
-
-	if tracker.epochsHandler.IsRuntimeCodeSizeFixEnabled() {
-		tracker.codeSize = 0
-	}
+	tracker.codeSize = 0
 }
 
 // PushState pushes the active instance and codeHash on the state stacks
@@ -119,9 +108,7 @@ func (tracker *instanceTracker) PopSetActiveState() {
 	tracker.codeHash = tracker.codeHashStack[instanceStackLen-1]
 	tracker.codeHashStack = tracker.codeHashStack[:instanceStackLen-1]
 
-	if tracker.epochsHandler.IsRuntimeCodeSizeFixEnabled() {
-		tracker.codeSize = tracker.codeSizeStack[instanceStackLen-1]
-	}
+	tracker.codeSize = tracker.codeSizeStack[instanceStackLen-1]
 	tracker.codeSizeStack = tracker.codeSizeStack[:instanceStackLen-1]
 }
 
