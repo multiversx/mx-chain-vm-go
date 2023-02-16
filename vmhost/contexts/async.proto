@@ -77,4 +77,5 @@ message SerializableAsyncContext {
     uint64                  CallsCounter = 12;
     uint64                  TotalCallsCounter = 13;
     SerializableVMOutput    ChildResults = 14;
+    bytes                   OriginalCallerAddress = 15;
 }

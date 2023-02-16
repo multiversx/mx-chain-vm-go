@@ -139,6 +139,7 @@ func (context *asyncContext) toSerializable() *SerializableAsyncContext {
 		CallsCounter:                 context.callsCounter,
 		TotalCallsCounter:            context.totalCallsCounter,
 		ChildResults:                 toSerializableVMOutput(context.childResults),
+		OriginalCallerAddress:        context.originalCallerAddr,
 	}
 }
 
@@ -160,6 +161,7 @@ func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext
 		returnData:                   serializedContext.ReturnData,
 		asyncCallGroups:              vmhost.FromSerializableAsyncCallGroups(serializedContext.AsyncCallGroups),
 		childResults:                 fromSerializableVMOutput(serializedContext.ChildResults),
+		originalCallerAddr:           serializedContext.OriginalCallerAddress,
 	}
 }
 
