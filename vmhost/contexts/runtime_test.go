@@ -114,7 +114,7 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Equal(t, uint64(0), runtimeContext.codeSize)
+	require.Equal(t, uint64(0), runtimeContext.GetSCCodeSize())
 	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
@@ -129,7 +129,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.codeAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.codeSize = 1024
+	runtimeContext.iTracker.codeSize = 1024
 	runtimeContext.asyncCallInfo = &vmhost.AsyncCallInfo{}
 
 	runtimeContext.InitState()
@@ -138,7 +138,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Equal(t, uint64(0), runtimeContext.codeSize)
+	require.Equal(t, uint64(0), runtimeContext.iTracker.codeSize)
 	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
@@ -150,19 +150,22 @@ func TestRuntimeContext_CodeSizeFix(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.codeSize = 1024
+	runtimeContext.iTracker.codeSize = 1024
 
 	epochs.IsRuntimeCodeSizeFixEnabledField = false
 	runtimeContext.InitState()
-	require.Equal(t, uint64(1024), runtimeContext.codeSize)
+	require.Equal(t, uint64(1024), runtimeContext.GetSCCodeSize())
 
 	epochs.IsRuntimeCodeSizeFixEnabledField = true
 	runtimeContext.InitState()
-	require.Equal(t, uint64(0), runtimeContext.codeSize)
+	require.Equal(t, uint64(0), runtimeContext.GetSCCodeSize())
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	host := InitializeVMAndWasmer()
+	epochs := host.EpochsStub()
+	host.EnableEpochsHandlerField = epochs
+
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -181,9 +184,27 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 
 	path := counterWasmCode
 	contractCode := vmhost.GetSCCode(path)
-	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
-	require.Nil(t, err)
-	require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+
+	t.Run("fix code size disabled", func(t *testing.T) {
+		epochs.IsRuntimeCodeSizeFixEnabledField = false
+		runtimeContext := makeDefaultRuntimeContext(t, host)
+		runtimeContext.SetMaxInstanceCount(1)
+		defer runtimeContext.ClearWarmInstanceCache()
+		err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+		require.Nil(t, err)
+		require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+		require.Equal(t, uint64(0), runtimeContext.GetSCCodeSize())
+	})
+	t.Run("fix code size enabled", func(t *testing.T) {
+		epochs.IsRuntimeCodeSizeFixEnabledField = true
+		runtimeContext := makeDefaultRuntimeContext(t, host)
+		runtimeContext.SetMaxInstanceCount(1)
+		defer runtimeContext.ClearWarmInstanceCache()
+		err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+		require.Nil(t, err)
+		require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+		require.Equal(t, uint64(len(contractCode)), runtimeContext.GetSCCodeSize())
+	})
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
@@ -275,30 +296,64 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	host := InitializeVMAndWasmer()
-	runtimeContext := makeDefaultRuntimeContext(t, host)
-	defer runtimeContext.ClearWarmInstanceCache()
-
-	runtimeContext.SetMaxInstanceCount(1)
-
+	epochs := host.EpochsStub()
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
 	contractCode := vmhost.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
-	require.Nil(t, err)
+	oldCodeSize := uint64(len(contractCode))
+	newCodeSize := oldCodeSize + 84
 
-	instance := runtimeContext.iTracker.instance
+	prepare := func() *runtimeContext {
+		runtimeContext := makeDefaultRuntimeContext(t, host)
+		runtimeContext.SetMaxInstanceCount(1)
 
-	runtimeContext.pushInstance()
-	runtimeContext.iTracker.instance = &wasmer.Instance{}
-	require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
+		err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+		require.Nil(t, err)
+		return runtimeContext
+	}
 
-	runtimeContext.popInstance()
-	require.NotNil(t, runtimeContext.iTracker.instance)
-	require.Equal(t, instance, runtimeContext.iTracker.instance)
-	require.Equal(t, 0, len(runtimeContext.iTracker.instanceStack))
+	t.Run("fix code size disabled, stacking nothing", func(t *testing.T) {
+		epochs.IsRuntimeCodeSizeFixEnabledField = false
+		runtimeContext := prepare()
+		defer runtimeContext.ClearWarmInstanceCache()
+		require.Equal(t, uint64(0), runtimeContext.GetSCCodeSize())
+		instance := runtimeContext.iTracker.instance
+		runtimeContext.pushInstance()
+		runtimeContext.iTracker.codeSize = newCodeSize
+		require.Equal(t, newCodeSize, runtimeContext.GetSCCodeSize())
+		runtimeContext.iTracker.instance = &wasmer.Instance{}
+		require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
 
-	runtimeContext.pushInstance()
-	require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
+		runtimeContext.popInstance()
+		require.Equal(t, newCodeSize, runtimeContext.GetSCCodeSize())
+		require.NotNil(t, runtimeContext.iTracker.instance)
+		require.Equal(t, instance, runtimeContext.iTracker.instance)
+		require.Equal(t, 0, len(runtimeContext.iTracker.instanceStack))
+
+		runtimeContext.pushInstance()
+		require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
+	})
+	t.Run("fix code size enabled, stacking codeSize", func(t *testing.T) {
+		epochs.IsRuntimeCodeSizeFixEnabledField = true
+		runtimeContext := prepare()
+		defer runtimeContext.ClearWarmInstanceCache()
+		require.Equal(t, oldCodeSize, runtimeContext.GetSCCodeSize())
+		instance := runtimeContext.iTracker.instance
+		runtimeContext.pushInstance()
+		runtimeContext.iTracker.codeSize = newCodeSize
+		require.Equal(t, newCodeSize, runtimeContext.GetSCCodeSize())
+		runtimeContext.iTracker.instance = &wasmer.Instance{}
+		require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
+
+		runtimeContext.popInstance()
+		require.Equal(t, oldCodeSize, runtimeContext.GetSCCodeSize())
+		require.NotNil(t, runtimeContext.iTracker.instance)
+		require.Equal(t, instance, runtimeContext.iTracker.instance)
+		require.Equal(t, 0, len(runtimeContext.iTracker.instanceStack))
+
+		runtimeContext.pushInstance()
+		require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
+	})
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {

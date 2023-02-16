@@ -5,12 +5,14 @@ import (
 	"testing"
 
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	vmmock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
 func TestInstanceTracker_TrackInstance(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	newInstance := &wasmer.Instance{
@@ -33,7 +35,8 @@ func TestInstanceTracker_TrackInstance(t *testing.T) {
 }
 
 func TestInstanceTracker_InitState(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	for i := 0; i < 5; i++ {
@@ -49,10 +52,24 @@ func TestInstanceTracker_InitState(t *testing.T) {
 	require.Equal(t, 0, iTracker.numRunningInstances)
 	require.Len(t, iTracker.codeHash, 0)
 	require.Len(t, iTracker.instances, 0)
+
+	t.Run("fix code size disabled", func(t *testing.T) {
+		epochs.IsRuntimeCodeSizeFixEnabledField = false
+		iTracker.codeSize = 12
+		iTracker.InitState()
+		require.Equal(t, uint64(12), iTracker.GetCodeSize())
+	})
+	t.Run("fix code size enabled", func(t *testing.T) {
+		epochs.IsRuntimeCodeSizeFixEnabledField = true
+		iTracker.codeSize = 12
+		iTracker.InitState()
+		require.Equal(t, uint64(0), iTracker.GetCodeSize())
+	})
 }
 
 func TestInstanceTracker_GetWarmInstance(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"warm1", "bytecode1", "bytecode2", "warm2"}
@@ -84,7 +101,8 @@ func TestInstanceTracker_GetWarmInstance(t *testing.T) {
 }
 
 func TestInstanceTracker_UseWarmInstance(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"warm1", "bytecode1", "warm2", "bytecode2"}
@@ -113,7 +131,8 @@ func TestInstanceTracker_UseWarmInstance(t *testing.T) {
 }
 
 func TestInstanceTracker_IsCodeHashOnStack_Ok(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"alpha", "beta", "alpha", "active"}
@@ -146,7 +165,8 @@ func TestInstanceTracker_IsCodeHashOnStack_Ok(t *testing.T) {
 
 // stack: alpha<-alpha(cold)<-alpha(cold)<-alpha(cold)
 func TestInstanceTracker_PopSetActiveSelfScenario(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"alpha", "alpha", "alpha", "alpha", "active"}
@@ -176,7 +196,8 @@ func TestInstanceTracker_PopSetActiveSelfScenario(t *testing.T) {
 
 // stack: alpha<-beta<-alpha(cold)<-beta(cold)
 func TestInstanceTracker_PopSetActiveSimpleScenario(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"alpha", "beta", "alpha", "beta", "active"}
@@ -206,7 +227,8 @@ func TestInstanceTracker_PopSetActiveSimpleScenario(t *testing.T) {
 
 // stack: alpha<-beta<-gamma<-beta(cold)<-gamma(cold)<-delta<-alpha(cold)
 func TestInstanceTracker_PopSetActiveComplexScenario(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"alpha", "beta", "gamma", "beta", "gamma", "delta", "alpha", "active"}
@@ -235,7 +257,8 @@ func TestInstanceTracker_PopSetActiveComplexScenario(t *testing.T) {
 }
 
 func TestInstanceTracker_PopSetActiveWarmOnlyScenario(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"alpha", "beta", "gamma", "delta", "active"}
@@ -263,7 +286,8 @@ func TestInstanceTracker_PopSetActiveWarmOnlyScenario(t *testing.T) {
 }
 
 func TestInstanceTracker_ForceCleanInstanceWithBypass(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	testData := []string{"warm1", "bytecode1"}
@@ -295,7 +319,8 @@ func TestInstanceTracker_ForceCleanInstanceWithBypass(t *testing.T) {
 }
 
 func TestInstanceTracker_DoubleForceClean(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	iTracker.SetNewInstance(mock.NewInstanceMock(nil), Bytecode)
@@ -312,7 +337,8 @@ func TestInstanceTracker_DoubleForceClean(t *testing.T) {
 }
 
 func TestInstanceTracker_UnsetInstance_AlreadyNil_Ok(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	iTracker.instance = nil
@@ -321,7 +347,8 @@ func TestInstanceTracker_UnsetInstance_AlreadyNil_Ok(t *testing.T) {
 }
 
 func TestInstanceTracker_UnsetInstance_Ok(t *testing.T) {
-	iTracker, err := NewInstanceTracker()
+	epochs := &vmmock.EnableEpochsHandlerStub{}
+	iTracker, err := NewInstanceTracker(epochs)
 	require.Nil(t, err)
 
 	iTracker.instance = &wasmer.Instance{

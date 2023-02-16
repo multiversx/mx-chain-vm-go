@@ -7,6 +7,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/storage/lrucache"
 	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
@@ -30,22 +31,33 @@ var logTracker = logger.GetOrCreate("vm/tracker")
 
 type instanceTracker struct {
 	codeHash            []byte
+	codeSize            uint64
 	numRunningInstances int
 	warmInstanceCache   Cacher
 	instance            wasmer.InstanceHandler
 	cacheLevel          instanceCacheLevel
 	instanceStack       []wasmer.InstanceHandler
 	codeHashStack       [][]byte
+	codeSizeStack       []uint64
+
+	epochsHandler vmcommon.EnableEpochsHandler
 
 	instances map[string]wasmer.InstanceHandler
 }
 
 // NewInstanceTracker creates a new instanceTracker instance
-func NewInstanceTracker() (*instanceTracker, error) {
+func NewInstanceTracker(epochsHandler vmcommon.EnableEpochsHandler) (*instanceTracker, error) {
+	if check.IfNil(epochsHandler) {
+		return nil, vmhost.ErrNilEnableEpochsHandler
+	}
+
 	tracker := &instanceTracker{
 		instances:           make(map[string]wasmer.InstanceHandler),
 		instanceStack:       make([]wasmer.InstanceHandler, 0),
+		codeHashStack:       make([][]byte, 0),
+		codeSizeStack:       make([]uint64, 0),
 		numRunningInstances: 0,
+		epochsHandler:       epochsHandler,
 	}
 
 	var err error
@@ -68,12 +80,17 @@ func (tracker *instanceTracker) InitState() {
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 	tracker.instances = make(map[string]wasmer.InstanceHandler)
+
+	if tracker.epochsHandler.IsRuntimeCodeSizeFixEnabled() {
+		tracker.codeSize = 0
+	}
 }
 
 // PushState pushes the active instance and codeHash on the state stacks
 func (tracker *instanceTracker) PushState() {
 	tracker.instanceStack = append(tracker.instanceStack, tracker.instance)
 	tracker.codeHashStack = append(tracker.codeHashStack, tracker.codeHash)
+	tracker.codeSizeStack = append(tracker.codeSizeStack, tracker.codeSize)
 	logTracker.Trace("pushing instance", "id", tracker.instance.ID(), "codeHash", tracker.codeHash)
 }
 
@@ -101,6 +118,11 @@ func (tracker *instanceTracker) PopSetActiveState() {
 	tracker.instanceStack = tracker.instanceStack[:instanceStackLen-1]
 	tracker.codeHash = tracker.codeHashStack[instanceStackLen-1]
 	tracker.codeHashStack = tracker.codeHashStack[:instanceStackLen-1]
+
+	if tracker.epochsHandler.IsRuntimeCodeSizeFixEnabled() {
+		tracker.codeSize = tracker.codeSizeStack[instanceStackLen-1]
+	}
+	tracker.codeSizeStack = tracker.codeSizeStack[:instanceStackLen-1]
 }
 
 func (tracker *instanceTracker) cleanPoppedInstance(instance wasmer.InstanceHandler, codeHash []byte) {
@@ -121,6 +143,7 @@ func (tracker *instanceTracker) PopDiscard() {
 func (tracker *instanceTracker) ClearStateStack() {
 	tracker.codeHashStack = make([][]byte, 0)
 	tracker.instanceStack = make([]wasmer.InstanceHandler, 0)
+	tracker.codeSizeStack = make([]uint64, 0)
 }
 
 // StackSize returns the size of the instance stack
@@ -260,6 +283,16 @@ func (tracker *instanceTracker) SaveAsWarmInstance() {
 // SetCodeHash sets the active codeHash; it must correspond with the active instance
 func (tracker *instanceTracker) SetCodeHash(codeHash []byte) {
 	tracker.codeHash = codeHash
+}
+
+// SetCodeSize sets the size of the active code
+func (tracker *instanceTracker) SetCodeSize(codeSize uint64) {
+	tracker.codeSize = codeSize
+}
+
+// GetCodeSize returns the size of the active code
+func (tracker *instanceTracker) GetCodeSize() uint64 {
+	return tracker.codeSize
 }
 
 // SetNewInstance sets the given instance as active and tracks its creation
