@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	am "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
 )
 
 func resolveArgument(exeDir string, arg string) (string, bool, error) {
@@ -64,7 +64,7 @@ func ScenariosTestCLI() {
 	// execute
 	switch {
 	case isDir:
-		runner := mc.NewScenarioController(
+		runner := mc.NewScenarioRunner(
 			executor,
 			mc.NewDefaultFileResolver(),
 		)
@@ -75,7 +75,7 @@ func ScenariosTestCLI() {
 			[]string{},
 			options)
 	case strings.HasSuffix(jsonFilePath, ".scen.json"):
-		runner := mc.NewScenarioController(
+		runner := mc.NewScenarioRunner(
 			executor,
 			mc.NewDefaultFileResolver(),
 		)

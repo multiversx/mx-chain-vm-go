@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math/big"
 
-	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
-	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
-	mj "github.com/multiversx/mx-chain-scenario-go/model"
-	oj "github.com/multiversx/mx-chain-scenario-go/orderedjson"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
+	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/orderedjson"
 )
 
 func (ae *VMTestExecutor) checkTxResults(

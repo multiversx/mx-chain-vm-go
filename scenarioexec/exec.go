@@ -5,15 +5,15 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
-	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
-	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
-	mj "github.com/multiversx/mx-chain-scenario-go/model"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec/gasSchedules"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/fileresolver"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
@@ -36,7 +36,7 @@ type VMTestExecutor struct {
 }
 
 var _ mc.TestExecutor = (*VMTestExecutor)(nil)
-var _ mc.ScenarioRunner = (*VMTestExecutor)(nil)
+var _ mc.ScenarioExecutor = (*VMTestExecutor)(nil)
 
 // NewVMTestExecutor prepares a new VMTestExecutor instance.
 func NewVMTestExecutor() (*VMTestExecutor, error) {
