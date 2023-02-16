@@ -298,7 +298,6 @@ func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	}
 
 	context.codeSize = uint64(len(code))
-	context.iTracker.SetCodeSize(uint64(len(code)))
 	return code, nil
 }
 
