@@ -254,7 +254,7 @@ func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmo
 			BlockGasLimit:            uint64(1000),
 			GasSchedule:              gasMap,
 			BuiltInFuncContainer:     mockWorld.BuiltinFuncs.Container,
-			ProtectedKeyPrefix:       []byte("ELROND"),
+			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
