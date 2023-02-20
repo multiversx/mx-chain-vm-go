@@ -73,6 +73,15 @@ func (am AccountMap) PutAccount(account *Account) {
 		hash := DefaultHasher.Compute(string(account.Code))
 		account.CodeHash = hash
 	}
+	if account.Balance == nil {
+		account.Balance = big.NewInt(0)
+	}
+	if account.BalanceDelta == nil {
+		account.BalanceDelta = big.NewInt(0)
+	}
+	if account.DeveloperReward == nil {
+		account.DeveloperReward = big.NewInt(0)
+	}
 	am[string(account.Address)] = account
 }
 
