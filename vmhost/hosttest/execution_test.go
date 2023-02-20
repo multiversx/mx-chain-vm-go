@@ -502,7 +502,6 @@ func TestExecution_CallWasmerError(t *testing.T) {
 }
 
 func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
-	t.Skip("test will be reworked")
 	contractCode := test.GetTestSCCode("misc", "../../")
 
 	log := logger.GetOrCreate("vm/test")
