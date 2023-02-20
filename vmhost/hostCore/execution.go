@@ -846,8 +846,8 @@ func (host *vmHost) callSCMethodIndirect() error {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0, it will call multi transfer if multiple tokens are sent
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, originalCaller []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
-	if len(transfers) == 0 {
+func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+	if len(transfersArgs.Transfers) == 0 {
 		return nil, 0, vmhost.ErrFailedTransfer
 	}
 
@@ -859,8 +859,8 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, originalCaller []byt
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			OriginalCallerAddr: originalCaller,
-			CallerAddr:         sender,
+			OriginalCallerAddr: transfersArgs.OriginalCaller,
+			CallerAddr:         transfersArgs.Sender,
 			Arguments:          make([][]byte, 0),
 			CallValue:          big.NewInt(0),
 			CallType:           callType,
@@ -868,24 +868,25 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, originalCaller []byt
 			GasProvided:        metering.GasLeft(),
 			GasLocked:          0,
 		},
-		RecipientAddr:     destination,
+		RecipientAddr:     transfersArgs.Destination,
 		Function:          core.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
+	transfers := transfersArgs.Transfers
 	if len(transfers) == 1 {
 		if transfers[0].ESDTTokenNonce > 0 {
 			esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
 			nonceAsBytes := big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()
-			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, nonceAsBytes, transfers[0].ESDTValue.Bytes(), destination)
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, nonceAsBytes, transfers[0].ESDTValue.Bytes(), transfersArgs.Destination)
 		} else {
 			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, transfers[0].ESDTValue.Bytes())
 		}
 	} else {
 		esdtTransferInput.Function = core.BuiltInFunctionMultiESDTNFTTransfer
 		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
-		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, destination, big.NewInt(int64(len(transfers))).Bytes())
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfersArgs.Destination, big.NewInt(int64(len(transfers))).Bytes())
 		for _, transfer := range transfers {
 			nonceAsBytes := big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()
 			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfer.ESDTTokenName, nonceAsBytes, transfer.ESDTValue.Bytes())
@@ -893,7 +894,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, originalCaller []byt
 	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
-	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
+	log.Trace("ESDT transfer", "sender", transfersArgs.Sender, "dest", transfersArgs.Destination)
 	for _, transfer := range transfers {
 		log.Trace("ESDT transfer", "token", transfer.ESDTTokenName, "nonce", transfer.ESDTTokenNonce, "value", transfer.ESDTValue)
 	}

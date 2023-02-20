@@ -103,7 +103,7 @@ func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ *vmhost.ESDTTransfersArgs, _ vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 

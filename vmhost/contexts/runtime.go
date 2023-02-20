@@ -480,7 +480,8 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	if len(vmInput.CallerAddr) > 0 {
 		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
 		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
-		context.vmInput.OriginalCallerAddr = context.vmInput.CallerAddr
+		context.vmInput.OriginalCallerAddr = make([]byte, len(vmInput.OriginalCallerAddr))
+		copy(context.vmInput.OriginalCallerAddr, vmInput.OriginalCallerAddr)
 	}
 
 	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))

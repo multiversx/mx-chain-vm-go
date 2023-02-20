@@ -358,25 +358,22 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
 func (context *outputContext) TransferESDT(
-	destination []byte,
-	originalCaller []byte,
-	sender []byte,
-	transfers []*vmcommon.ESDTTransfer,
+	transfersArgs *vmhost.ESDTTransfersArgs,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	if len(transfers) == 0 {
+	if len(transfersArgs.Transfers) == 0 {
 		return 0, vmhost.ErrTransferValueOnESDTCall
 	}
 
-	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
-	sameShard := context.host.AreInSameShard(sender, destination)
+	isSmartContract := context.host.Blockchain().IsSmartContract(transfersArgs.Destination)
+	sameShard := context.host.AreInSameShard(transfersArgs.Sender, transfersArgs.Destination)
 	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
 	if isExecution {
 		callType = vm.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, originalCaller, sender, transfers, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, callType)
 	if err != nil {
 		return 0, err
 	}
@@ -402,17 +399,17 @@ func (context *outputContext) TransferESDT(
 		}
 	}
 
-	destAcc, _ := context.GetOutputAccount(destination)
+	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputTransfer := vmcommon.OutputTransfer{
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
 		Data:          []byte{},
 		CallType:      vm.DirectCall,
-		SenderAddress: sender,
+		SenderAddress: transfersArgs.Sender,
 	}
 
-	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfers, vmOutput, sameShard, destination)
+	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfersArgs.Transfers, vmOutput, sameShard, transfersArgs.Destination)
 
 	if sameShard {
 		outputTransfer.GasLimit = 0

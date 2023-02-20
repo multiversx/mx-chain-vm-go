@@ -260,3 +260,10 @@ func (ac *AsyncGeneratedCall) GetValueBytes() []byte {
 func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 	return ac == nil
 }
+
+type ESDTTransfersArgs struct {
+	Destination    []byte
+	OriginalCaller []byte
+	Sender         []byte
+	Transfers      []*vmcommon.ESDTTransfer
+}

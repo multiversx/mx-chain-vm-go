@@ -176,7 +176,7 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ *vmcommon.ContractCallInput) (uint64, error) {
+func (o *OutputContextMock) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs, _ *vmcommon.ContractCallInput) (uint64, error) {
 	return 0, nil
 }
 

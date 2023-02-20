@@ -132,6 +132,51 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGasUsed_ExecuteOnDestChain(t *testing.T) {
+	alphaAddress := test.MakeTestSCAddress("alpha")
+	betaAddress := test.MakeTestSCAddress("beta")
+	gammaAddress := test.MakeTestSCAddress("gamma")
+
+	testConfig := &test.TestConfig{
+		GasUsedByParent:    uint64(400),
+		GasProvidedToChild: uint64(1000),
+		GasProvided:        uint64(2000),
+		GasUsedByChild:     uint64(200),
+	}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(alphaAddress).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecOnDestCtxSingleCallParentMock),
+			test.CreateMockContract(betaAddress).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecOnDestCtxSingleCallParentMock),
+			test.CreateMockContract(gammaAddress).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.ReportOriginalCaller),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(alphaAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execOnDestCtxSingleCall").
+			WithArguments(betaAddress, []byte("execOnDestCtxSingleCall"),
+				gammaAddress, []byte("reportOriginalCaller")).
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				ReturnData(test.UserAddress, test.UserAddress, test.UserAddress)
+		})
+
+	assert.Nil(t, err)
+}
+
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 	testConfig := makeTestConfig()
 
