@@ -49,6 +49,10 @@ func TestInstanceTracker_InitState(t *testing.T) {
 	require.Equal(t, 0, iTracker.numRunningInstances)
 	require.Len(t, iTracker.codeHash, 0)
 	require.Len(t, iTracker.instances, 0)
+
+	iTracker.codeSize = 12
+	iTracker.InitState()
+	require.Equal(t, uint64(0), iTracker.GetCodeSize())
 }
 
 func TestInstanceTracker_GetWarmInstance(t *testing.T) {

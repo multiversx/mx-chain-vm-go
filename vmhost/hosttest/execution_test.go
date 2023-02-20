@@ -2611,6 +2611,62 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 		})
 }
 
+func TestExecutionRuntimeCodeSizeUpgradeContract(t *testing.T) {
+	t.Run("fix flag disabled", func(t *testing.T) {
+		runTestExecutionRuntimeCodeSizeUpgradeContract(t, false)
+	})
+	t.Run("fix flag enabled", func(t *testing.T) {
+		runTestExecutionRuntimeCodeSizeUpgradeContract(t, true)
+	})
+}
+
+func runTestExecutionRuntimeCodeSizeUpgradeContract(t *testing.T, fixEpochFlag bool) {
+	oldCode := test.GetTestSCCode("answer", "../../")
+	newCode := test.GetTestSCCode("counter", "../../")
+
+	var expectedCodeSize uint64
+	if !fixEpochFlag {
+		expectedCodeSize = uint64(len(oldCode))
+	} else {
+		expectedCodeSize = uint64(len(newCode))
+	}
+
+	testCase := test.BuildInstanceCallTest(t).
+		WithSetup(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub) {
+			epochs := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
+			epochs.IsRuntimeCodeSizeFixEnabledField = fixEpochFlag
+		}).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(oldCode)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1_000_000).
+			WithFunction("answer").
+			Build())
+
+	testCase.
+		AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, _ *test.VMOutputVerifier) {
+			require.Equal(t,
+				uint64(len(oldCode)),
+				host.Runtime().GetSCCodeSize())
+		})
+
+	testCase.
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1_000_000).
+			WithFunction(vmhost.UpgradeFunctionName).
+			WithArguments(newCode, test.DefaultCodeMetadata).
+			Build())
+
+	testCase.AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, _ *test.VMOutputVerifier) {
+		require.Equal(t,
+			expectedCodeSize,
+			host.Runtime().GetSCCodeSize())
+	})
+}
+
 func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
 	childAddress := []byte("newAddress")
