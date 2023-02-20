@@ -4,7 +4,7 @@ package wasmer2
 import logger "github.com/multiversx/mx-chain-logger-go"
 
 // VM logger.
-var logWasmer2 = logger.GetOrCreate("vm/wasmer2")
+var logWasmer2 = logger.GetOrCreate("vm/executor")
 
 // Executor logger.
 type LogLevel uint64
