@@ -36,6 +36,15 @@ var ParentFinishB = []byte("parentFinishB")
 // ChildFinish value exposed for test usage
 var ChildFinish = []byte("childFinish")
 
+// OriginalCallerParent value exposed for test usage
+var OriginalCallerParent = []byte("originalCallerParent")
+
+// OriginalCallerChild value exposed for test usage
+var OriginalCallerChild = []byte("originalCallerChild")
+
+// OriginalCallerCallback value exposed for test usage
+var OriginalCallerCallback = []byte("originalCallerCallback")
+
 // ParentTransferReceiver value exposed for test usage
 var ParentTransferReceiver = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentTransferReceiver")
 

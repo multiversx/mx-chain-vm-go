@@ -530,7 +530,8 @@ func testGasUsedAsyncCallCrossShardInitCall(t *testing.T, isLegacy bool) {
 	expectedStorages := make([]testcommon.StoreEntry, 0)
 	expectedStorages = append(expectedStorages,
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
-		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB))
+		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
+		test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress))
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
@@ -1029,6 +1030,8 @@ func testGasUsedAsyncCallChildFails(t *testing.T, isLegacy bool) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.CallbackKey).WithValue(test.CallbackData),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerCallback).WithValue(test.UserAddress),
 				).
 				Transfers(
 					test.CreateTransferEntry(test.ParentAddress, test.VaultAddress).
@@ -1108,7 +1111,9 @@ func testGasUsedAsyncCallCallBackFails(t *testing.T, isLegacy bool) {
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
+					test.CreateStoreEntry(test.ChildAddress).WithKey(test.OriginalCallerChild).WithValue(test.UserAddress),
 				).
 				Transfers(
 					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
@@ -1923,7 +1928,9 @@ func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					// overriden by ExecutedOnSameContextByCallback called from CallbackWithOnSameContext
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataA),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
+					test.CreateStoreEntry(test.ChildAddress).WithKey(test.OriginalCallerChild).WithValue(test.UserAddress),
 				)
 		})
 	assert.Nil(t, err)
