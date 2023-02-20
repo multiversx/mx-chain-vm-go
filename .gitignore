@@ -32,6 +32,8 @@ tags
 wasm32-unknown-unknown
 test/contracts/**/target
 test/contracts/**/wasm/target
+**/output/*.abi.json
+**/output/*.wat
 
 # Mac
 **/.DS_Store
