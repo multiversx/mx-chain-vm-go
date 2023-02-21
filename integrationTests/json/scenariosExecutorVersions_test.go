@@ -22,7 +22,22 @@ func TestCErc20Executors_AlsoWorks(t *testing.T) {
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 }
 
-func TestCErc20Executors_Fails(t *testing.T) {
+func TestCErc20Executors_Works3(t *testing.T) {
+	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+}
+
+func TestCErc20Executors_Fails1(t *testing.T) {
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+}
+
+func TestCErc20Executors_Fails2(t *testing.T) {
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
