@@ -137,6 +137,7 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["BuiltInCost"] = FillGasMapBuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMapBaseOperationCosts(value)
 	gasMap["BaseOpsAPICost"] = FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock)
+	// EthAPICost needed on node for VM tests < 1.5
 	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMapBigIntAPICosts(value)
 	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
@@ -240,6 +241,7 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	return gasMap
 }
 
+// EthAPICost needed on node for VM tests < 1.5
 func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["UseGas"] = value
