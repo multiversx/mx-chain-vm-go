@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -140,14 +141,14 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
-	testExecution_DeployWASM_WrongInit(t, wasmer.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
-	testExecution_DeployWASM_WrongInit(t, wasmer2.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
 }
 
-func testExecution_DeployWASM_WrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
+func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
 	test.BuildInstanceCreatorTest(t).
 		WithExecutorFactory(executorFactory).
 		WithInput(test.CreateTestContractCreateInputBuilder().
@@ -1187,6 +1188,34 @@ func TestExecution_Call_Breakpoints_UserError(t *testing.T) {
 				ReturnData().
 				ReturnMessage("exit here")
 		})
+}
+
+func TestExecution_UserError_SwitchingWasmerVersions(t *testing.T) {
+	runTestExecutionUserError(t, wasmer2.ExecutorFactory())
+	runTestExecutionUserError(t, wasmer.ExecutorFactory())
+	runTestExecutionUserError(t, wasmer2.ExecutorFactory())
+}
+
+func runTestExecutionUserError(t *testing.T, factory executor.ExecutorAbstractFactory) {
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("breakpoint", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("testFunc").
+			WithArguments([]byte{1}).
+			Build())
+
+	if !check.IfNil(factory) {
+		testCase.WithExecutorFactory(factory)
+	}
+
+	testCase.AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.UserError().
+			ReturnData().
+			ReturnMessage("exit here")
+	})
 }
 
 func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
