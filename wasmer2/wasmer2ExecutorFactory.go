@@ -28,3 +28,8 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 
 	return executor, nil
 }
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (wef *Wasmer2ExecutorFactory) IsInterfaceNil() bool {
+	return wef == nil
+}

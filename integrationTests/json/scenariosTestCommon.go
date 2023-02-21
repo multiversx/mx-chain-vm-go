@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
@@ -94,7 +95,7 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	require.Nil(mtb.t, err)
 	defer executor.Close()
 
-	if mtb.executorFactory == nil {
+	if check.IfNil(mtb.executorFactory) {
 		mtb.executorFactory = testexecutor.NewDefaultTestExecutorFactory(mtb.t)
 	}
 
