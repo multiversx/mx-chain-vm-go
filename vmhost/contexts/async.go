@@ -111,7 +111,10 @@ func (context *asyncContext) InitState() {
 // information provided by a ContractCallInput.
 func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) error {
 	context.InitState()
-	context.originalCallerAddr = input.OriginalCallerAddr
+
+	context.originalCallerAddr = make([]byte, len(input.OriginalCallerAddr))
+	copy(context.originalCallerAddr, input.OriginalCallerAddr)
+
 	context.callerAddr = input.CallerAddr
 	context.callType = input.CallType
 
@@ -204,6 +207,7 @@ func (context *asyncContext) PopSetActiveState() {
 	context.address = prevState.address
 	context.callID = prevState.callID
 
+	context.originalCallerAddr = prevState.originalCallerAddr
 	context.callerAddr = prevState.callerAddr
 	context.callerCallID = prevState.callerCallID
 	context.callType = prevState.callType
@@ -223,6 +227,7 @@ func (context *asyncContext) Clone() vmhost.AsyncContext {
 	return &asyncContext{
 		address:                      context.address,
 		callerAddr:                   context.callerAddr,
+		originalCallerAddr:           context.originalCallerAddr,
 		callerCallID:                 context.callerCallID,
 		callType:                     context.callType,
 		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
