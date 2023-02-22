@@ -118,6 +118,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeCtx.codeAddress = []byte("some address")
 	runtimeCtx.callFunction = "a function"
 	runtimeCtx.readOnly = true
+	runtimeCtx.iTracker.codeSize = 1024
 
 	runtimeCtx.InitState()
 
@@ -125,6 +126,19 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeCtx.codeAddress)
 	require.Equal(t, "", runtimeCtx.callFunction)
 	require.Equal(t, false, runtimeCtx.readOnly)
+	require.Equal(t, uint64(0), runtimeCtx.iTracker.codeSize)
+}
+
+func TestRuntimeContext_CodeSizeFix(t *testing.T) {
+	host := InitializeVMAndWasmer()
+
+	runtimeContext := makeDefaultRuntimeContext(t, host)
+	defer runtimeContext.ClearWarmInstanceCache()
+
+	runtimeContext.iTracker.codeSize = 1024
+
+	runtimeContext.InitState()
+	require.Equal(t, uint64(0), runtimeContext.GetSCCodeSize())
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
@@ -139,17 +153,20 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
 	require.True(t, errors.Is(err, wasmer.ErrInvalidBytecode))
+	require.Zero(t, runtimeCtx.GetSCCodeSize())
 
 	gasLimit = uint64(100000000)
 	dummy = []byte("contract")
 	err = runtimeCtx.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
+	require.Zero(t, runtimeCtx.GetSCCodeSize())
 
 	path := counterWasmCode
 	contractCode := vmhost.GetSCCode(path)
 	err = runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, uint64(len(contractCode)), runtimeCtx.GetSCCodeSize())
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
@@ -243,19 +260,26 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 	runtimeCtx.SetMaxInstanceStackSize(1)
 
-	gasLimit := uint64(100000000)
 	path := counterWasmCode
 	contractCode := vmhost.GetSCCode(path)
+	oldCodeSize := uint64(len(contractCode))
+	newCodeSize := oldCodeSize + 84
+
+	gasLimit := uint64(100000000)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
+	require.Equal(t, oldCodeSize, runtimeCtx.GetSCCodeSize())
 
 	instance := runtimeCtx.iTracker.instance
 
 	runtimeCtx.pushInstance()
 	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.codeSize = newCodeSize
+	require.Equal(t, newCodeSize, runtimeCtx.GetSCCodeSize())
 	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
 
 	runtimeCtx.popInstance()
+	require.Equal(t, oldCodeSize, runtimeCtx.GetSCCodeSize())
 	require.NotNil(t, runtimeCtx.iTracker.instance)
 	require.Equal(t, instance, runtimeCtx.iTracker.instance)
 	require.Equal(t, 0, len(runtimeCtx.iTracker.instanceStack))

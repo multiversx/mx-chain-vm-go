@@ -3397,6 +3397,44 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		})
 }
 
+func TestExecutionRuntimeCodeSizeUpgradeContract(t *testing.T) {
+	oldCode := test.GetTestSCCode("answer", "../../")
+	newCode := test.GetTestSCCode("counter", "../../")
+
+	expectedCodeSize := uint64(len(newCode))
+
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(oldCode)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1_000_000).
+			WithFunction("answer").
+			Build())
+
+	testCase.
+		AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, _ *test.VMOutputVerifier) {
+			require.Equal(t,
+				uint64(len(oldCode)),
+				host.Runtime().GetSCCodeSize())
+		})
+
+	testCase.
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1_000_000).
+			WithFunction(vmhost.UpgradeFunctionName).
+			WithArguments(newCode, test.DefaultCodeMetadata).
+			Build())
+
+	testCase.AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, _ *test.VMOutputVerifier) {
+		require.Equal(t,
+			expectedCodeSize,
+			host.Runtime().GetSCCodeSize())
+	})
+}
+
 func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
