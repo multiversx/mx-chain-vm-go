@@ -52,7 +52,8 @@ func initializeVMAndWasmerAsyncContext(tb testing.TB) (*contextmock.VMHostMock, 
 	testVMType := []byte("type")
 
 	gasSchedule := config.MakeGasMapForTests()
-	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
+	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	require.Nil(tb, err)
 	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
@@ -62,25 +63,30 @@ func initializeVMAndWasmerAsyncContext(tb testing.TB) (*contextmock.VMHostMock, 
 	host.MeteringContext = mockMetering
 
 	world := worldmock.NewMockWorld()
-	host.BlockchainContext, _ = NewBlockchainContext(host, world)
+	host.BlockchainContext, err = NewBlockchainContext(host, world)
+	require.Nil(tb, err)
 
 	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(tb)
-	exec, _ := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
+	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
 	})
-	runtimeCtx, _ := NewRuntimeContext(
+	require.Nil(tb, err)
+	runtimeCtx, err := NewRuntimeContext(
 		host,
 		testVMType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
 	)
+	require.Nil(tb, err)
+
 	runtimeCtx.iTracker.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeCtx
 
-	storageCtx, _ := NewStorageContext(host, world, reservedTestPrefix)
+	storageCtx, err := NewStorageContext(host, world, reservedTestPrefix)
+	require.Nil(tb, err)
 	host.StorageContext = storageCtx
 
 	host.OutputContext, _ = NewOutputContext(host)
