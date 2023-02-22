@@ -336,7 +336,7 @@ func TestBigUintBitwiseXor(t *testing.T) {
 		}
 	}
 
-	runTestCases(t, testCases, "bit_or")
+	runTestCases(t, testCases, "bit_xor")
 }
 
 func runTestCases(t *testing.T, testCases []*pureFunctionIO, opName string) {
