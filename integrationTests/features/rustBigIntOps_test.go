@@ -278,6 +278,8 @@ func TestBigUintBitwise(t *testing.T) {
 		t.Skip("long test")
 	}
 
+	t.Parallel()
+
 	var testCases []*pureFunctionIO
 
 	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
