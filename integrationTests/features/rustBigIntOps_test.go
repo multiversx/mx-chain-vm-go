@@ -274,8 +274,6 @@ func TestBigUintArith(t *testing.T) {
 }
 
 func TestBigUintBitwiseAnd(t *testing.T) {
-	t.Parallel()
-
 	var testCases []*pureFunctionIO
 
 	numbers := makeBigIntsForBitwiseOps()
@@ -298,8 +296,6 @@ func TestBigUintBitwiseAnd(t *testing.T) {
 }
 
 func TestBigUintBitwiseOr(t *testing.T) {
-	t.Parallel()
-
 	var testCases []*pureFunctionIO
 
 	numbers := makeBigIntsForBitwiseOps()
@@ -322,8 +318,6 @@ func TestBigUintBitwiseOr(t *testing.T) {
 }
 
 func TestBigUintBitwiseXor(t *testing.T) {
-	t.Parallel()
-
 	var testCases []*pureFunctionIO
 
 	numbers := makeBigIntsForBitwiseOps()
