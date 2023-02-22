@@ -11,7 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
-var defaultExecutorString = "wasmer2"
+var defaultExecutorString = "wasmer1"
 
 // NewDefaultTestExecutorFactory instantiates an executor factory based on a CLI flag specified to `go test`
 func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorAbstractFactory {

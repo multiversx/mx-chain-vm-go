@@ -20,7 +20,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -142,7 +141,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	var dummy []byte
 	err := runtimeCtx.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
-	require.True(t, errors.Is(err, wasmer2.ErrInvalidBytecode))
+	require.EqualError(t, err, "invalid bytecode: ")
 
 	gasLimit = uint64(100000000)
 	dummy = []byte("contract")
