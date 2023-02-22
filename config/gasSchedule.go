@@ -137,6 +137,8 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["BuiltInCost"] = FillGasMapBuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMapBaseOperationCosts(value)
 	gasMap["BaseOpsAPICost"] = FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock)
+	// EthAPICost needed on node for VM tests < 1.5
+	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMapBigIntAPICosts(value)
 	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
@@ -235,6 +237,46 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetReturnDataSize"] = value
 	gasMap["CleanReturnData"] = value
 	gasMap["DeleteFromReturnData"] = value
+
+	return gasMap
+}
+
+// EthAPICost needed on node for VM tests < 1.5
+func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
+	gasMap["UseGas"] = value
+	gasMap["GetAddress"] = value
+	gasMap["GetExternalBalance"] = value
+	gasMap["GetBlockHash"] = value
+	gasMap["Call"] = value
+	gasMap["CallDataCopy"] = value
+	gasMap["GetCallDataSize"] = value
+	gasMap["CallCode"] = value
+	gasMap["CallDelegate"] = value
+	gasMap["CallStatic"] = value
+	gasMap["StorageStore"] = value
+	gasMap["StorageLoad"] = value
+	gasMap["GetCaller"] = value
+	gasMap["GetCallValue"] = value
+	gasMap["CodeCopy"] = value
+	gasMap["GetCodeSize"] = value
+	gasMap["GetBlockCoinbase"] = value
+	gasMap["Create"] = value
+	gasMap["GetBlockDifficulty"] = value
+	gasMap["ExternalCodeCopy"] = value
+	gasMap["GetExternalCodeSize"] = value
+	gasMap["GetGasLeft"] = value
+	gasMap["GetBlockGasLimit"] = value
+	gasMap["GetTxGasPrice"] = value
+	gasMap["Log"] = value
+	gasMap["GetBlockNumber"] = value
+	gasMap["GetTxOrigin"] = value
+	gasMap["Finish"] = value
+	gasMap["Revert"] = value
+	gasMap["GetReturnDataSize"] = value
+	gasMap["ReturnDataCopy"] = value
+	gasMap["SelfDestruct"] = value
+	gasMap["GetBlockTimeStamp"] = value
 
 	return gasMap
 }

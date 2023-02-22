@@ -12,6 +12,7 @@ var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 type RuntimeContextMock struct {
 	Err                      error
 	VMInput                  *vmcommon.ContractCallInput
+	OriginalCallerAddr       []byte
 	SCAddress                []byte
 	SCCode                   []byte
 	SCCodeSize               uint64
@@ -149,9 +150,19 @@ func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 
+// GetOriginalCallerAddress mocked method
+func (r *RuntimeContextMock) GetOriginalCallerAddress() []byte {
+	return r.OriginalCallerAddr
+}
+
 // SetCodeAddress mocked method
 func (r *RuntimeContextMock) SetCodeAddress(scAddress []byte) {
 	r.SCAddress = scAddress
+}
+
+// SetOriginalCallerAddress mocked method
+func (r *RuntimeContextMock) SetOriginalCallerAddress(scAddress []byte) {
+	r.OriginalCallerAddr = scAddress
 }
 
 // GetSCCode mocked method

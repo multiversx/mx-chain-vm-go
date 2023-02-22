@@ -132,6 +132,51 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGasUsed_ExecuteOnDestChain(t *testing.T) {
+	alphaAddress := test.MakeTestSCAddress("alpha")
+	betaAddress := test.MakeTestSCAddress("beta")
+	gammaAddress := test.MakeTestSCAddress("gamma")
+
+	testConfig := &test.TestConfig{
+		GasUsedByParent:    uint64(400),
+		GasProvidedToChild: uint64(1000),
+		GasProvided:        uint64(2000),
+		GasUsedByChild:     uint64(200),
+	}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(alphaAddress).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecOnDestCtxSingleCallParentMock),
+			test.CreateMockContract(betaAddress).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecOnDestCtxSingleCallParentMock),
+			test.CreateMockContract(gammaAddress).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.ReportOriginalCaller),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(alphaAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execOnDestCtxSingleCall").
+			WithArguments(betaAddress, []byte("execOnDestCtxSingleCall"),
+				gammaAddress, []byte("reportOriginalCaller")).
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				ReturnData(test.UserAddress, test.UserAddress, test.UserAddress)
+		})
+
+	assert.Nil(t, err)
+}
+
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 	testConfig := makeTestConfig()
 
@@ -485,7 +530,8 @@ func testGasUsedAsyncCallCrossShardInitCall(t *testing.T, isLegacy bool) {
 	expectedStorages := make([]testcommon.StoreEntry, 0)
 	expectedStorages = append(expectedStorages,
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
-		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB))
+		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
+		test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress))
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
@@ -984,6 +1030,8 @@ func testGasUsedAsyncCallChildFails(t *testing.T, isLegacy bool) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.CallbackKey).WithValue(test.CallbackData),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerCallback).WithValue(test.UserAddress),
 				).
 				Transfers(
 					test.CreateTransferEntry(test.ParentAddress, test.VaultAddress).
@@ -1063,7 +1111,9 @@ func testGasUsedAsyncCallCallBackFails(t *testing.T, isLegacy bool) {
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
+					test.CreateStoreEntry(test.ChildAddress).WithKey(test.OriginalCallerChild).WithValue(test.UserAddress),
 				).
 				Transfers(
 					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
@@ -1878,7 +1928,9 @@ func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					// overriden by ExecutedOnSameContextByCallback called from CallbackWithOnSameContext
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataA),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
+					test.CreateStoreEntry(test.ChildAddress).WithKey(test.OriginalCallerChild).WithValue(test.UserAddress),
 				)
 		})
 	assert.Nil(t, err)

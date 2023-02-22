@@ -23,6 +23,7 @@ type asyncContext struct {
 	stateStack  []*asyncContext
 	marshalizer *marshal.GogoProtoMarshalizer
 
+	originalCallerAddr []byte
 	callerAddr         []byte
 	callback           string
 	callbackData       []byte
@@ -70,6 +71,7 @@ func NewAsyncContext(
 	context := &asyncContext{
 		host:                   host,
 		stateStack:             nil,
+		originalCallerAddr:     nil,
 		callerAddr:             nil,
 		callback:               "",
 		callbackData:           nil,
@@ -88,6 +90,7 @@ func NewAsyncContext(
 
 // InitState initializes the internal state of the AsyncContext.
 func (context *asyncContext) InitState() {
+	context.originalCallerAddr = nil
 	context.address = nil
 	context.callID = nil
 	context.callerCallID = nil
@@ -108,6 +111,10 @@ func (context *asyncContext) InitState() {
 // information provided by a ContractCallInput.
 func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) error {
 	context.InitState()
+
+	context.originalCallerAddr = make([]byte, len(input.OriginalCallerAddr))
+	copy(context.originalCallerAddr, input.OriginalCallerAddr)
+
 	context.callerAddr = input.CallerAddr
 	context.callType = input.CallType
 
@@ -150,14 +157,15 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 // internal state stack.
 func (context *asyncContext) PushState() {
 	newState := &asyncContext{
-		callID:          context.callID,
-		callerCallID:    context.callerCallID,
-		callerAddr:      context.callerAddr,
-		callback:        context.callback,
-		callbackData:    context.callbackData,
-		gasAccumulated:  context.gasAccumulated,
-		returnData:      context.returnData,
-		asyncCallGroups: context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
+		originalCallerAddr: context.originalCallerAddr,
+		callID:             context.callID,
+		callerCallID:       context.callerCallID,
+		callerAddr:         context.callerAddr,
+		callback:           context.callback,
+		callbackData:       context.callbackData,
+		gasAccumulated:     context.gasAccumulated,
+		returnData:         context.returnData,
+		asyncCallGroups:    context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
 
 		callType:                     context.callType,
 		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
@@ -199,6 +207,7 @@ func (context *asyncContext) PopSetActiveState() {
 	context.address = prevState.address
 	context.callID = prevState.callID
 
+	context.originalCallerAddr = prevState.originalCallerAddr
 	context.callerAddr = prevState.callerAddr
 	context.callerCallID = prevState.callerCallID
 	context.callType = prevState.callType
@@ -218,6 +227,7 @@ func (context *asyncContext) Clone() vmhost.AsyncContext {
 	return &asyncContext{
 		address:                      context.address,
 		callerAddr:                   context.callerAddr,
+		originalCallerAddr:           context.originalCallerAddr,
 		callerCallID:                 context.callerCallID,
 		callType:                     context.callType,
 		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,

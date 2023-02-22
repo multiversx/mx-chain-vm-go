@@ -729,7 +729,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, host, runtime)
+	newAddress, err := createContract(sender, data, value, gas, code, codeMetadata, host)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}

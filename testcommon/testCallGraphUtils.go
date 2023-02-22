@@ -326,6 +326,7 @@ func createFinishDataFromArguments(output vmhost.OutputContext, arguments [][]by
 
 // CallFinishDataItem -
 type CallFinishDataItem struct {
+	OriginalCallerAddr           []byte
 	ContractAndFunction          string
 	GasProvided                  uint64
 	GasRemaining                 uint64
@@ -360,6 +361,7 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host vmhost.VMH
 	}
 
 	return &CallFinishDataItem{
+		OriginalCallerAddr:           testRuntime.GetOriginalCallerAddress(),
 		ContractAndFunction:          string(testRuntime.GetContextAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
 		GasProvided:                  testRuntime.GetVMInput().GasProvided,
 		GasRemaining:                 gasLeft,
