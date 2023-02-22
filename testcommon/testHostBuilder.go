@@ -126,9 +126,10 @@ func (thb *TestHostBuilder) initializeHost() {
 
 func (thb *TestHostBuilder) newHost() vmhost.VMHost {
 	if check.IfNil(thb.vmHostParameters.OverrideVMExecutor) {
-		thb.vmHostParameters.OverrideVMExecutor =
-			testexecutor.NewDefaultTestExecutorFactory(thb.tb)
+		exec := testexecutor.NewDefaultTestExecutorFactory(thb.tb)
+		thb.vmHostParameters.OverrideVMExecutor = exec
 	}
+
 	thb.initializeBuiltInFuncContainer()
 	host, err := hostCore.NewVMHost(
 		thb.blockchainHook,
