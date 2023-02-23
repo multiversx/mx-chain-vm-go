@@ -326,7 +326,6 @@ func (tracker *instanceTracker) UnsetInstance() {
 		"codeHash", tracker.codeHash)
 	tracker.instance = nil
 	tracker.codeHash = nil
-	tracker.codeSize = 0
 }
 
 // LogCounts prints the instance counter to the log

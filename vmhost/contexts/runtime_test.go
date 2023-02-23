@@ -159,7 +159,6 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	dummy = []byte("contract")
 	err = runtimeCtx.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
-	require.Zero(t, runtimeCtx.GetSCCodeSize())
 
 	path := counterWasmCode
 	contractCode := vmhost.GetSCCode(path)
