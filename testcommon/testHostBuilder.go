@@ -3,6 +3,7 @@ package testcommon
 import (
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
@@ -10,6 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
@@ -123,6 +125,11 @@ func (thb *TestHostBuilder) initializeHost() {
 }
 
 func (thb *TestHostBuilder) newHost() vmhost.VMHost {
+	if check.IfNil(thb.vmHostParameters.OverrideVMExecutor) {
+		exec := testexecutor.NewDefaultTestExecutorFactory(thb.tb)
+		thb.vmHostParameters.OverrideVMExecutor = exec
+	}
+
 	thb.initializeBuiltInFuncContainer()
 	host, err := hostCore.NewVMHost(
 		thb.blockchainHook,

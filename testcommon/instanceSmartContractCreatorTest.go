@@ -1,3 +1,4 @@
+// Package testcommon contains utility definitions used in unit and integration tests
 package testcommon
 
 import (

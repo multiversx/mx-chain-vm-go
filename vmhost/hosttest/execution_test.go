@@ -19,6 +19,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
@@ -139,14 +140,14 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
-	testExecution_DeployWASM_WrongInit(t, wasmer.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
-	testExecution_DeployWASM_WrongInit(t, wasmer2.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
 }
 
-func testExecution_DeployWASM_WrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
+func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
 	test.BuildInstanceCreatorTest(t).
 		WithExecutorFactory(executorFactory).
 		WithInput(test.CreateTestContractCreateInputBuilder().
@@ -300,7 +301,8 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
+	defaultFactory := testexecutor.NewDefaultTestExecutorFactory(t)
+	executorFactory := executorwrapper.SimpleWrappedExecutorFactory(defaultFactory)
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).

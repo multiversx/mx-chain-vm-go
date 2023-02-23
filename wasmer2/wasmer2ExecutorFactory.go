@@ -1,6 +1,8 @@
 package wasmer2
 
-import "github.com/multiversx/mx-chain-vm-go/executor"
+import (
+	"github.com/multiversx/mx-chain-vm-go/executor"
+)
 
 var _ = (executor.ExecutorAbstractFactory)((*Wasmer2ExecutorFactory)(nil))
 
@@ -25,4 +27,9 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 	}
 
 	return executor, nil
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (wef *Wasmer2ExecutorFactory) IsInterfaceNil() bool {
+	return wef == nil
 }

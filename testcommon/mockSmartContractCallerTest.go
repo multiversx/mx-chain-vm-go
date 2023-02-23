@@ -93,7 +93,12 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
 	return callerTest.runTest(startNode, world, createAccount, expectedErrorsForRound)
 }
 
-func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, world *worldmock.MockWorld, createAccount bool, expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
+func (callerTest *MockInstancesTestTemplate) runTest(
+	startNode *TestCallNode,
+	world *worldmock.MockWorld,
+	createAccount bool,
+	expectedErrorsForRound []string,
+) (*vmcommon.VMOutput, error) {
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}

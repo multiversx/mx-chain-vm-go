@@ -1,6 +1,8 @@
 package wasmer
 
-import "github.com/multiversx/mx-chain-vm-go/executor"
+import (
+	"github.com/multiversx/mx-chain-vm-go/executor"
+)
 
 // WasmerExecutorFactory builds Wasmer Executors.
 type WasmerExecutorFactory struct{}
@@ -27,4 +29,9 @@ func (wef *WasmerExecutorFactory) CreateExecutor(args executor.ExecutorFactoryAr
 	}
 
 	return exec, nil
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (wef *WasmerExecutorFactory) IsInterfaceNil() bool {
+	return wef == nil
 }
