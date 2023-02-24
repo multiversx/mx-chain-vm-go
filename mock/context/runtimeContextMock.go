@@ -31,6 +31,7 @@ type RuntimeContextMock struct {
 	FailBigIntAPI            bool
 	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
+	FailManagedMapAPI        bool
 	AsyncCallInfo            *vmhost.AsyncCallInfo
 	InstanceStackSize        uint64
 	CurrentTxHash            []byte
@@ -307,6 +308,11 @@ func (r *RuntimeContextMock) BigFloatAPIErrorShouldFailExecution() bool {
 // ManagedBufferAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return r.FailManagedBuffersAPI
+}
+
+// ManagedMapAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) ManagedMapAPIErrorShouldFailExecution() bool {
+	return r.FailManagedMapAPI
 }
 
 // FailExecution mocked method

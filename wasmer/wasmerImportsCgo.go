@@ -208,6 +208,11 @@ package wasmer
 // extern int32_t   v1_5_mBufferGetArgument(void* context, int32_t id, int32_t destinationHandle);
 // extern int32_t   v1_5_mBufferFinish(void* context, int32_t sourceHandle);
 // extern int32_t   v1_5_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
+// extern int32_t   v1_5_managedMapNew(void* context);
+// extern int32_t   v1_5_managedMapPut(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t valueHandle);
+// extern int32_t   v1_5_managedMapGet(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern int32_t   v1_5_managedMapRemove(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern int32_t   v1_5_managedMapContains(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
 // extern long long v1_5_smallIntGetUnsignedArgument(void* context, int32_t id);
 // extern long long v1_5_smallIntGetSignedArgument(void* context, int32_t id);
 // extern void      v1_5_smallIntFinishUnsigned(void* context, long long value);
@@ -1250,6 +1255,31 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("mBufferSetRandom", v1_5_mBufferSetRandom, C.v1_5_mBufferSetRandom)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMapNew", v1_5_managedMapNew, C.v1_5_managedMapNew)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMapPut", v1_5_managedMapPut, C.v1_5_managedMapPut)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMapGet", v1_5_managedMapGet, C.v1_5_managedMapGet)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMapRemove", v1_5_managedMapRemove, C.v1_5_managedMapRemove)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMapContains", v1_5_managedMapContains, C.v1_5_managedMapContains)
 	if err != nil {
 		return err
 	}
@@ -2687,6 +2717,36 @@ func v1_5_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 func v1_5_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.MBufferSetRandom(destinationHandle, length)
+}
+
+//export v1_5_managedMapNew
+func v1_5_managedMapNew(context unsafe.Pointer) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapNew()
+}
+
+//export v1_5_managedMapPut
+func v1_5_managedMapPut(context unsafe.Pointer, mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+}
+
+//export v1_5_managedMapGet
+func v1_5_managedMapGet(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+}
+
+//export v1_5_managedMapRemove
+func v1_5_managedMapRemove(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+}
+
+//export v1_5_managedMapContains
+func v1_5_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapContains(mMapHandle, keyHandle, outValueHandle)
 }
 
 //export v1_5_smallIntGetUnsignedArgument

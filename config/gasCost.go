@@ -11,6 +11,7 @@ type GasCost struct {
 	BigFloatAPICost      BigFloatAPICost
 	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
+	ManagedMapAPICost    ManagedMapAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       *executor.WASMOpcodeCost
 }
@@ -187,4 +188,13 @@ type ManagedBufferAPICost struct {
 	MBufferGetArgument        uint64
 	MBufferFinish             uint64
 	MBufferSetRandom          uint64
+}
+
+// ManagedMapAPICost defines the managed map operations gas cost config structure
+type ManagedMapAPICost struct {
+	ManagedMapNew      uint64
+	ManagedMapPut      uint64
+	ManagedMapGet      uint64
+	ManagedMapRemove   uint64
+	ManagedMapContains uint64
 }
