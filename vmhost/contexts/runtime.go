@@ -27,7 +27,6 @@ type runtimeContext struct {
 	host                 vmhost.VMHost
 	vmInput              *vmcommon.ContractCallInput
 	codeAddress          []byte
-	codeSize             uint64
 	callFunction         string
 	vmType               []byte
 	readOnly             bool
@@ -145,6 +144,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		codeHash = blockchain.GetCodeHash(context.codeAddress)
 	}
 
+	context.iTracker.SetCodeSize(uint64(len(contract)))
 	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
@@ -285,13 +285,12 @@ func (context *runtimeContext) GetSCCode() ([]byte, error) {
 		return nil, err
 	}
 
-	context.codeSize = uint64(len(code))
 	return code, nil
 }
 
 // GetSCCodeSize returns the cached size of the current SC code.
 func (context *runtimeContext) GetSCCodeSize() uint64 {
-	return context.codeSize
+	return context.iTracker.GetCodeSize()
 }
 
 func (context *runtimeContext) saveCompiledCode() {

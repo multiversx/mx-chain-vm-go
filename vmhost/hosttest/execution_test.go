@@ -2933,16 +2933,20 @@ func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(sourceAddress).
+				WithOwner(test.UserAddress).
 				WithCode(sourceCode).
 				WithBalance(1000),
 			test.CreateInstanceContract(initialAddress).
+				WithOwner(test.ParentAddress).
 				WithCode(initialCode).
 				WithBalance(1000),
 			test.CreateInstanceContract(test.ParentAddress).
+				WithOwner(test.UserAddress).
 				WithCode(test.GetTestSCCode("upgrader-fromanother-contract", "../../")).
 				WithBalance(1000),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.UserAddress).
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction("upgradeCodeFromAnotherContract").
 			WithArguments(initialAddress, sourceAddress).
@@ -3395,6 +3399,49 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		AndAssertResults(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
 		})
+}
+
+func TestExecutionRuntimeCodeSizeUpgradeContract(t *testing.T) {
+	oldCode := test.GetTestSCCode("answer", "../../")
+	newCode := test.GetTestSCCode("counter", "../../")
+
+	expectedCodeSize := uint64(len(newCode))
+
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithOwner(test.UserAddress).
+				WithCode(oldCode)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.UserAddress).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1_000_000).
+			WithFunction("answer").
+			Build())
+
+	testCase.
+		AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+			require.Equal(t,
+				uint64(len(oldCode)),
+				host.Runtime().GetSCCodeSize())
+		})
+
+	testCase.
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.UserAddress).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1_000_000).
+			WithFunction(vmhost.UpgradeFunctionName).
+			WithArguments(newCode, test.DefaultCodeMetadata).
+			Build())
+
+	testCase.AndAssertResultsWithoutReset(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.Ok()
+		require.Equal(t,
+			expectedCodeSize,
+			host.Runtime().GetSCCodeSize())
+	})
 }
 
 func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
