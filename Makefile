@@ -17,11 +17,15 @@ endif
 
 test:
 	go clean -cache -testcache
-	export VMEXECUTOR="wasmer1"
-	go test ./...
+	VMEXECUTOR="wasmer1" go test ./...
 	go clean -cache -testcache
-	export VMEXECUTOR="wasmer2"
-	go test ./...
+	VMEXECUTOR="wasmer2" go test ./...
+
+test-w1: clean
+	VMEXECUTOR="wasmer1" go test ./...
+
+test-w2: clean
+	VMEXECUTOR="wasmer2" go test ./...
 
 test-v: clean
 	go test ./... -v

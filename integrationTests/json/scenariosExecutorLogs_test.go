@@ -3,11 +3,15 @@ package vmjsonintegrationtest
 import (
 	"testing"
 
+	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
 func TestRustCompareAdderLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
 	expected := ScenariosTest(t).
 		Folder("adder/scenarios").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -26,6 +30,10 @@ func TestRustCompareAdderLog(t *testing.T) {
 }
 
 func TestRustFactorialLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("factorial/scenarios").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -44,6 +52,10 @@ func TestRustFactorialLog(t *testing.T) {
 }
 
 func TestRustErc20Log(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	t.Skip("not a working test")
 
 	expected := ScenariosTest(t).
@@ -64,6 +76,10 @@ func TestRustErc20Log(t *testing.T) {
 }
 
 func TestCErc20Log(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("erc20-c").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -82,6 +98,10 @@ func TestCErc20Log(t *testing.T) {
 }
 
 func TestDigitalCashLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("digital-cash").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -100,6 +120,10 @@ func TestDigitalCashLog(t *testing.T) {
 }
 
 func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
@@ -120,6 +144,10 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 }
 
 func TestCreateAsyncCallLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	t.Skip("not a working test")
 
 	expected := ScenariosTest(t).
@@ -142,6 +170,10 @@ func TestCreateAsyncCallLog(t *testing.T) {
 }
 
 func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
@@ -162,6 +194,10 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 }
 
 func TestMultisigLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	t.Skip("not a working test")
 
 	expected := ScenariosTest(t).
@@ -182,6 +218,10 @@ func TestMultisigLog(t *testing.T) {
 }
 
 func TestDnsContractLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	t.Skip("not a working test")
 
 	if testing.Short() {
@@ -206,6 +246,10 @@ func TestDnsContractLog(t *testing.T) {
 }
 
 func TestCrowdfundingEsdtLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("crowdfunding-esdt").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -224,6 +268,10 @@ func TestCrowdfundingEsdtLog(t *testing.T) {
 }
 
 func TestEgldEsdtSwapLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("egld-esdt-swap").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -242,6 +290,10 @@ func TestEgldEsdtSwapLog(t *testing.T) {
 }
 
 func TestPingPongEgldLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	expected := ScenariosTest(t).
 		Folder("ping-pong-egld").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -260,6 +312,10 @@ func TestPingPongEgldLog(t *testing.T) {
 }
 
 func TestRustAttestationLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -282,6 +338,10 @@ func TestRustAttestationLog(t *testing.T) {
 }
 
 func TestCAttestationLog(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
