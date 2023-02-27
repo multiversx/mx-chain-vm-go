@@ -147,6 +147,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		codeHash = blockchain.GetCodeHash(context.codeAddress)
 	}
 
+	context.iTracker.SetCodeSize(uint64(len(contract)))
 	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
@@ -302,6 +303,9 @@ func (context *runtimeContext) GetSCCode() ([]byte, error) {
 
 // GetSCCodeSize returns the size of the current SC code.
 func (context *runtimeContext) GetSCCodeSize() uint64 {
+	if context.host.EnableEpochsHandler().IsRuntimeCodeSizeFixEnabled() {
+		return context.iTracker.GetCodeSize()
+	}
 	return context.codeSize
 }
 

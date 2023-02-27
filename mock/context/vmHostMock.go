@@ -6,6 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
@@ -33,6 +34,11 @@ type VMHostMock struct {
 // GetVersion mocked method
 func (host *VMHostMock) GetVersion() string {
 	return "mock"
+}
+
+// EpochsStub returns the EnableEpochsHandlerField casted to the corresponding stub
+func (host *VMHostMock) EpochsStub() *mock.EnableEpochsHandlerStub {
+	return host.EnableEpochsHandlerField.(*mock.EnableEpochsHandlerStub)
 }
 
 // Crypto mocked method
