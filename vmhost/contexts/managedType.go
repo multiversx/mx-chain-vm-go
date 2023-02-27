@@ -694,8 +694,6 @@ func (context *managedTypesContext) ManagedMapPut(mMapHandle int32, keyHandle in
 	if err != nil {
 		return err
 	}
-	keyCopy := make([]byte, len(key))
-	copy(keyCopy, key)
 
 	value, err := context.GetBytes(valueHandle)
 	if err != nil {
@@ -704,7 +702,9 @@ func (context *managedTypesContext) ManagedMapPut(mMapHandle int32, keyHandle in
 	valueCopy := make([]byte, len(value))
 	copy(valueCopy, value)
 
-	mMap[string(keyCopy)] = valueCopy
+	context.ConsumeGasForBytes(value)
+
+	mMap[string(key)] = valueCopy
 
 	return nil
 }
@@ -716,10 +716,8 @@ func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle in
 		return err
 	}
 
-	err = context.setBytesIfBufferCreated(value, outValueHandle)
-	if err != nil {
-		return err
-	}
+	context.SetBytes(outValueHandle, value)
+	context.ConsumeGasForBytes(value)
 
 	return nil
 }
