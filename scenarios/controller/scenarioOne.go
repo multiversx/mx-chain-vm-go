@@ -7,6 +7,7 @@ import (
 // RunScenarioOptions defines the scenario options component
 type RunScenarioOptions struct {
 	ForceTraceGas bool
+	UseWasmer1    bool
 	UseWasmer2    bool
 }
 

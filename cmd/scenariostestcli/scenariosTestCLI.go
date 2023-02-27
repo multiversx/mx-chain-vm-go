@@ -9,6 +9,7 @@ import (
 
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
 	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
+	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
@@ -27,11 +28,13 @@ func resolveArgument(exeDir string, arg string) (string, bool, error) {
 
 func parseOptionFlags() *mc.RunScenarioOptions {
 	forceTraceGas := flag.Bool("force-trace-gas", false, "overrides the traceGas option in the scenarios")
+	useWasmer1 := flag.Bool("wasmer1", false, "use the wasmer1 executor")
 	useWasmer2 := flag.Bool("wasmer2", false, "use the wasmer2 executor")
 	flag.Parse()
 
 	return &mc.RunScenarioOptions{
 		ForceTraceGas: *forceTraceGas,
+		UseWasmer1:    *useWasmer1,
 		UseWasmer2:    *useWasmer2,
 	}
 }
@@ -62,6 +65,9 @@ func ScenariosTestCLI() {
 	executor, err := am.NewVMTestExecutor()
 	if err != nil {
 		panic("Could not instantiate VM VM")
+	}
+	if options.UseWasmer1 {
+		executor.OverrideVMExecutor = wasmer.ExecutorFactory()
 	}
 	if options.UseWasmer2 {
 		executor.OverrideVMExecutor = wasmer2.ExecutorFactory()
