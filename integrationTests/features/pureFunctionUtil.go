@@ -158,6 +158,11 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 	resultInterpreter resultInterpreter,
 	logProgress logProgress) {
 
+	defer func() {
+		vmHost := pfe.vm.(vmhost.VMHost)
+		vmHost.Reset()
+	}()
+
 	// RUN!
 	for testCaseIndex, testCase := range testCases {
 		if logProgress != nil {
@@ -169,8 +174,5 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
-
-		vmHost := pfe.vm.(vmhost.VMHost)
-		vmHost.Reset()
 	}
 }
