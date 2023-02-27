@@ -52,6 +52,10 @@ func TestInstanceTracker_InitState(t *testing.T) {
 
 	// InitState() must not reset numRunningInstances
 	require.Equal(t, 5, iTracker.numRunningInstances)
+
+	iTracker.codeSize = 12
+	iTracker.InitState()
+	require.Equal(t, uint64(0), iTracker.GetCodeSize())
 }
 
 func TestInstanceTracker_GetWarmInstance(t *testing.T) {
