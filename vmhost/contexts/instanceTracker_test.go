@@ -44,11 +44,13 @@ func TestInstanceTracker_InitState(t *testing.T) {
 	require.Equal(t, 5, iTracker.numRunningInstances)
 	require.Len(t, iTracker.instances, 5)
 
+	iTracker.codeSize = 12
 	iTracker.InitState()
 
 	require.Nil(t, iTracker.instance)
 	require.Len(t, iTracker.codeHash, 0)
 	require.Len(t, iTracker.instances, 0)
+	require.Zero(t, iTracker.codeSize)
 
 	// InitState() must not reset numRunningInstances
 	require.Equal(t, 5, iTracker.numRunningInstances)

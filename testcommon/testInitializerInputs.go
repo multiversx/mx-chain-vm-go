@@ -76,12 +76,12 @@ func MakeTestSCAddress(identifier string) []byte {
 // MakeTestSCAddressWithDefaultVM generates a new smart contract address to be used for
 // testing based on the given identifier.
 func MakeTestSCAddressWithDefaultVM(identifier string) []byte {
-	return MakeTestSCAddressWithVmType(identifier, worldmock.DefaultVMType)
+	return MakeTestSCAddressWithVMType(identifier, worldmock.DefaultVMType)
 }
 
-// MakeTestSCAddressWithVmType generates a new smart contract address to be used for
+// MakeTestSCAddressWithVMType generates a new smart contract address to be used for
 // testing based on the given identifier.
-func MakeTestSCAddressWithVmType(identifier string, vmType []byte) []byte {
+func MakeTestSCAddressWithVMType(identifier string, vmType []byte) []byte {
 	address := MakeTestSCAddress(identifier)
 	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], vmType)
 	return address
@@ -320,7 +320,7 @@ func BlockchainHookStubForContracts(
 			Balance:      big.NewInt(contract.balance),
 			CodeHash:     codeHash,
 			CodeMetadata: DefaultCodeMetadata,
-			OwnerAddress: ParentAddress,
+			OwnerAddress: contract.ownerAddress,
 		}
 		codeMap[string(contract.address)] = &contract.code
 	}
