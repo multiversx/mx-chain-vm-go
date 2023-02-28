@@ -699,6 +699,11 @@ func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return true
 }
 
+// ManagedMapAPIErrorShouldFailExecution returns true
+func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
+	return true
+}
+
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
 	if check.IfNil(context.iTracker.Instance()) {

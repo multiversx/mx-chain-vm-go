@@ -528,6 +528,11 @@ func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExec
 	return contextWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 }
 
+// ManagedMapAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ManagedMapAPIErrorShouldFailExecution() bool {
+	return contextWrapper.runtimeContext.ManagedMapAPIErrorShouldFailExecution()
+}
+
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()

@@ -212,6 +212,9 @@ var ErrPointNotOnCurve = errors.New("point is not on curve")
 // ErrNoManagedBufferUnderThisHandle signals that there is no buffer for the given handle
 var ErrNoManagedBufferUnderThisHandle = errors.New("no managed buffer under the given handle")
 
+// ErrNoManagedMapUnderThisHandle signals that there is no buffer for the given handle
+var ErrNoManagedMapUnderThisHandle = errors.New("no managed map under the given handle")
+
 // ErrNilHostParameters signals that nil host parameters was provided
 var ErrNilHostParameters = errors.New("nil host parameters")
 

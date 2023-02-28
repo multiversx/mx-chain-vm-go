@@ -49,6 +49,7 @@ type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
 type bigFloatMap map[int32]*big.Float
 type ellipticCurveMap map[int32]*elliptic.CurveParams
+type managedMapMap map[int32]map[string][]byte
 
 type managedTypesContext struct {
 	host                vmhost.VMHost
@@ -62,6 +63,7 @@ type managedTypesState struct {
 	bigFloatValues bigFloatMap
 	ecValues       ellipticCurveMap
 	mBufferValues  managedBufferMap
+	mMapValues     managedMapMap
 }
 
 // NewManagedTypesContext creates a new managedTypesContext
@@ -77,6 +79,7 @@ func NewManagedTypesContext(host vmhost.VMHost) (*managedTypesContext, error) {
 			bigFloatValues: make(bigFloatMap),
 			ecValues:       make(ellipticCurveMap),
 			mBufferValues:  make(managedBufferMap),
+			mMapValues:     make(managedMapMap),
 		},
 		managedTypesStack:   make([]managedTypesState, 0),
 		randomnessGenerator: nil,
@@ -112,17 +115,19 @@ func (context *managedTypesContext) InitState() {
 		bigIntValues:   make(bigIntMap),
 		bigFloatValues: make(bigFloatMap),
 		ecValues:       make(ellipticCurveMap),
-		mBufferValues:  make(managedBufferMap)}
+		mBufferValues:  make(managedBufferMap),
+		mMapValues:     make(managedMapMap)}
 }
 
 // PushState appends the values map to the state stack
 func (context *managedTypesContext) PushState() {
-	newBigIntState, newBigFloatState, newEcState, newmBufferState := context.clone()
+	newBigIntState, newBigFloatState, newEcState, newmBufferState, newmMapState := context.clone()
 	context.managedTypesStack = append(context.managedTypesStack, managedTypesState{
 		bigIntValues:   newBigIntState,
 		bigFloatValues: newBigFloatState,
 		ecValues:       newEcState,
 		mBufferValues:  newmBufferState,
+		mMapValues:     newmMapState,
 	})
 }
 
@@ -138,10 +143,12 @@ func (context *managedTypesContext) PopSetActiveState() {
 	prevBigFloatValues := prevState.bigFloatValues
 	prevEcValues := prevState.ecValues
 	prevmBufferValues := prevState.mBufferValues
+	prevmMapValues := prevState.mMapValues
 	context.managedTypesValues.bigIntValues = prevBigIntValues
 	context.managedTypesValues.bigFloatValues = prevBigFloatValues
 	context.managedTypesValues.ecValues = prevEcValues
 	context.managedTypesValues.mBufferValues = prevmBufferValues
+	context.managedTypesValues.mMapValues = prevmMapValues
 	context.managedTypesStack = context.managedTypesStack[:managedTypesStackLen-1]
 }
 
@@ -160,11 +167,12 @@ func (context *managedTypesContext) ClearStateStack() {
 	context.randomnessGenerator = nil
 }
 
-func (context *managedTypesContext) clone() (bigIntMap, bigFloatMap, ellipticCurveMap, managedBufferMap) {
+func (context *managedTypesContext) clone() (bigIntMap, bigFloatMap, ellipticCurveMap, managedBufferMap, managedMapMap) {
 	newBigIntState := make(bigIntMap, len(context.managedTypesValues.bigIntValues))
 	newBigFloatState := make(bigFloatMap, len(context.managedTypesValues.bigFloatValues))
 	newEcState := make(ellipticCurveMap, len(context.managedTypesValues.ecValues))
 	newmBufferState := make(managedBufferMap, len(context.managedTypesValues.mBufferValues))
+	newmMapState := make(managedMapMap, len(context.managedTypesValues.mMapValues))
 	for bigIntHandle, bigInt := range context.managedTypesValues.bigIntValues {
 		newBigIntState[bigIntHandle] = big.NewInt(0).Set(bigInt)
 	}
@@ -177,7 +185,10 @@ func (context *managedTypesContext) clone() (bigIntMap, bigFloatMap, ellipticCur
 	for mBufferHandle, mBuffer := range context.managedTypesValues.mBufferValues {
 		newmBufferState[mBufferHandle] = mBuffer
 	}
-	return newBigIntState, newBigFloatState, newEcState, newmBufferState
+	for mMapHandle, mMap := range context.managedTypesValues.mMapValues {
+		newmMapState[mMapHandle] = mMap
+	}
+	return newBigIntState, newBigFloatState, newEcState, newmBufferState, newmMapState
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
@@ -656,4 +667,109 @@ func (context *managedTypesContext) WriteManagedVecOfManagedBuffers(
 	context.SetBytes(destinationHandle, destinationBytes)
 	metering := context.host.Metering()
 	metering.UseAndTraceGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+}
+
+// NewManagedMap creates a new empty managed map in the managed buffers map and returns the handle
+func (context *managedTypesContext) NewManagedMap() int32 {
+	newHandle := int32(len(context.managedTypesValues.mMapValues))
+	for {
+		if _, ok := context.managedTypesValues.mMapValues[newHandle]; !ok {
+			break
+		}
+		newHandle++
+	}
+	newmMap := make(map[string][]byte, 0)
+	context.managedTypesValues.mMapValues[newHandle] = newmMap
+	return newHandle
+}
+
+// ManagedMapPut puts the key and value bytes stored at those respective handles in the map
+func (context *managedTypesContext) ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) error {
+	mMap, ok := context.managedTypesValues.mMapValues[mMapHandle]
+	if !ok {
+		return vmhost.ErrNoManagedMapUnderThisHandle
+	}
+
+	key, err := context.GetBytes(keyHandle)
+	if err != nil {
+		return err
+	}
+
+	value, err := context.GetBytes(valueHandle)
+	if err != nil {
+		return err
+	}
+	valueCopy := make([]byte, len(value))
+	copy(valueCopy, value)
+
+	context.ConsumeGasForBytes(value)
+
+	mMap[string(key)] = valueCopy
+
+	return nil
+}
+
+// ManagedMapGet gets the bytes stored as the key handle in an output value handle
+func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error {
+	_, _, value, _, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
+	if err != nil {
+		return err
+	}
+
+	context.SetBytes(outValueHandle, value)
+	context.ConsumeGasForBytes(value)
+
+	return nil
+}
+
+// ManagedMapRemove removes the bytes stored as the key handle and returns it in an output value handle
+func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error {
+	mMap, key, value, _, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
+	if err != nil {
+		return err
+	}
+
+	err = context.setBytesIfBufferExists(value, outValueHandle)
+	if err != nil {
+		return err
+	}
+
+	delete(mMap, string(key))
+	return nil
+}
+
+// ManagedMapContains checks if the managed map contains the given key
+func (context *managedTypesContext) ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error) {
+	_, _, _, foundValue, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
+	if err != nil {
+		return false, err
+	}
+
+	return foundValue, nil
+}
+
+func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, keyHandle int32) (map[string][]byte, []byte, []byte, bool, error) {
+	mMap, ok := context.managedTypesValues.mMapValues[mMapHandle]
+	if !ok {
+		return nil, nil, nil, false, vmhost.ErrNoManagedMapUnderThisHandle
+	}
+
+	key, err := context.GetBytes(keyHandle)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+
+	value, foundValue := mMap[string(key)]
+
+	return mMap, key, value, foundValue, nil
+}
+
+func (context *managedTypesContext) setBytesIfBufferExists(value []byte, outValueHandle int32) error {
+	_, err := context.GetBytes(outValueHandle)
+	if err != nil {
+		return err
+	}
+
+	context.SetBytes(outValueHandle, value)
+	return nil
 }
