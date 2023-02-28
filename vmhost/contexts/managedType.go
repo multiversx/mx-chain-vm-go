@@ -722,7 +722,7 @@ func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle in
 	return nil
 }
 
-// ManagedMapRemove remove the bytes stored as the key handle and returns it in an output value handle
+// ManagedMapRemove removes the bytes stored as the key handle and returns it in an output value handle
 func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error {
 	mMap, key, value, _, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
 	if err != nil {
