@@ -729,7 +729,7 @@ func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle
 		return err
 	}
 
-	err = context.setBytesIfBufferCreated(value, outValueHandle)
+	err = context.setBytesIfBufferExists(value, outValueHandle)
 	if err != nil {
 		return err
 	}
