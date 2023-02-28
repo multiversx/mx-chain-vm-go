@@ -764,7 +764,7 @@ func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, 
 	return mMap, key, value, foundValue, nil
 }
 
-func (context *managedTypesContext) setBytesIfBufferCreated(value []byte, outValueHandle int32) error {
+func (context *managedTypesContext) setBytesIfBufferExists(value []byte, outValueHandle int32) error {
 	_, err := context.GetBytes(outValueHandle)
 	if err != nil {
 		return err
