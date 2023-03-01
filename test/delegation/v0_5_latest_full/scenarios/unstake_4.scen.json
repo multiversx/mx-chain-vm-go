@@ -200,8 +200,7 @@
                     "nonce": "*",
                     "balance": "1,000,000,000",
                     "storage": {},
-                    "code": "",
-                    "asyncCallData": "str:delegation stake unbond"
+                    "code": ""
                 },
                 "+": ""
             }
@@ -308,8 +307,7 @@
                     "nonce": "*",
                     "balance": "200,000,000,000,000",
                     "storage": {},
-                    "code": "",
-                    "asyncCallData": "str:delegation stake unbond"
+                    "code": ""
                 },
                 "+": ""
             }

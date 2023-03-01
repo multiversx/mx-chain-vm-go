@@ -222,8 +222,7 @@
                     "nonce": "*",
                     "balance": "33,333,499",
                     "storage": {},
-                    "code": "",
-                    "asyncCallData": "str:delegation rewards claim"
+                    "code": ""
                 },
                 "address:delegator2": {
                     "nonce": "*",
