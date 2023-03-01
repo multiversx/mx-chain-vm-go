@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +21,7 @@ func getSCCode(fileName string) []byte {
 
 func TestFunctionsGuard_Arity(t *testing.T) {
 	// Empty imports on purpose.
-	// We have currently no access to the elrondapi package here, due to cyclic imports.
+	// We have currently no access to the vmhooks package here, due to cyclic imports.
 	// Fortunately, imports are not necessary for this test.
 	_, err := injectCgoFunctionPointers()
 	require.Nil(t, err)

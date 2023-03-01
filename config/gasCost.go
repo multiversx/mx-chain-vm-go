@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // GasCost defines the gas cost config structure
@@ -9,9 +9,9 @@ type GasCost struct {
 	BaseOperationCost    BaseOperationCost
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
-	EthAPICost           EthAPICost
-	ElrondAPICost        ElrondAPICost
+	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
+	ManagedMapAPICost    ManagedMapAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       *executor.WASMOpcodeCost
 }
@@ -27,8 +27,8 @@ type BaseOperationCost struct {
 	GetCode           uint64
 }
 
-// ElrondAPICost defines the API operations gas cost config structure
-type ElrondAPICost struct {
+// BaseOpsAPICost defines the API operations gas cost config structure
+type BaseOpsAPICost struct {
 	GetSCAddress            uint64
 	GetOwnerAddress         uint64
 	IsSmartContract         uint64
@@ -78,44 +78,6 @@ type ElrondAPICost struct {
 	GetReturnDataSize       uint64
 	CleanReturnData         uint64
 	DeleteFromReturnData    uint64
-}
-
-// EthAPICost -
-// TODO remove this struct
-type EthAPICost struct {
-	UseGas              uint64
-	GetAddress          uint64
-	GetExternalBalance  uint64
-	GetBlockHash        uint64
-	Call                uint64
-	CallDataCopy        uint64
-	GetCallDataSize     uint64
-	CallCode            uint64
-	CallDelegate        uint64
-	CallStatic          uint64
-	StorageStore        uint64
-	StorageLoad         uint64
-	GetCaller           uint64
-	GetCallValue        uint64
-	CodeCopy            uint64
-	GetCodeSize         uint64
-	GetBlockCoinbase    uint64
-	Create              uint64
-	GetBlockDifficulty  uint64
-	ExternalCodeCopy    uint64
-	GetExternalCodeSize uint64
-	GetGasLeft          uint64
-	GetBlockGasLimit    uint64
-	GetTxGasPrice       uint64
-	Log                 uint64
-	GetBlockNumber      uint64
-	GetTxOrigin         uint64
-	Finish              uint64
-	Revert              uint64
-	GetReturnDataSize   uint64
-	ReturnDataCopy      uint64
-	SelfDestruct        uint64
-	GetBlockTimeStamp   uint64
 }
 
 // BigIntAPICost defines the big int operations gas cost config structure
@@ -226,4 +188,13 @@ type ManagedBufferAPICost struct {
 	MBufferGetArgument        uint64
 	MBufferFinish             uint64
 	MBufferSetRandom          uint64
+}
+
+// ManagedMapAPICost defines the managed map operations gas cost config structure
+type ManagedMapAPICost struct {
+	ManagedMapNew      uint64
+	ManagedMapPut      uint64
+	ManagedMapGet      uint64
+	ManagedMapRemove   uint64
+	ManagedMapContains uint64
 }

@@ -3,9 +3,11 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
+
+var WasmVirtualMachine = []byte{5, 0}
 
 // TestConfig is configuration for async call tests
 type TestConfig struct {
@@ -84,6 +86,7 @@ type testSmartContract struct {
 	codeHash     []byte
 	codeMetadata []byte
 	ownerAddress []byte
+	vmType       []byte
 }
 
 // MockTestSmartContract represents the config data for the mock smart contract instance to be tested
@@ -105,9 +108,16 @@ func CreateMockContractOnShard(address []byte, shardID uint32) *MockTestSmartCon
 		testSmartContract: testSmartContract{
 			address: address,
 			shardID: shardID,
+			vmType:  WasmVirtualMachine,
 		},
 		tempFunctionsList: make(map[string]bool, 0),
 	}
+}
+
+// WithBalance provides the balance for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithVMType(vmType []byte) *MockTestSmartContract {
+	mockSC.vmType = vmType
+	return mockSC
 }
 
 // WithBalance provides the balance for the MockTestSmartContract
@@ -157,10 +167,15 @@ func (mockSC *MockTestSmartContract) GetShardID() uint32 {
 	return mockSC.shardID
 }
 
+// GetVMType -
+func (mockSC *MockTestSmartContract) GetVMType() []byte {
+	return mockSC.vmType
+}
+
 // Initialize -
 func (mockSC *MockTestSmartContract) Initialize(
 	t testing.TB,
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	imb *mock.ExecutorMock,
 	createContractAccounts bool,
 ) {

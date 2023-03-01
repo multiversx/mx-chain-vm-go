@@ -1,8 +1,8 @@
 package executorwrapper
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // WrapperExecutor is a wrapper around an executor, who additionally caches all created instances.
@@ -74,4 +74,9 @@ func (wexec *WrapperExecutor) addContractInstanceToInstanceMap(code []byte, inst
 // GetContractInstances gets contract instances for code
 func (wexec *WrapperExecutor) GetContractInstances(code []byte) []executor.Instance {
 	return wexec.WrappedInstances[string(code)]
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (wexec *WrapperExecutor) IsInterfaceNil() bool {
+	return wexec == nil
 }

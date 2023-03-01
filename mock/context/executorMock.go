@@ -3,11 +3,11 @@ package mock
 import (
 	"testing"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
 // ExecutorMockFactory is the factory for the ExecutorRecorderMock.
@@ -53,12 +53,12 @@ func (executorMock *ExecutorMock) SetOpcodeCosts(_ *executor.WASMOpcodeCost) {
 
 // FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
-	return nil
+	return functionNames
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
-func (executorMock *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
+func (executorMock *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host vmhost.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
 	instance := NewInstanceMock(code)
 	instance.Address = code
 	instance.T = t
@@ -116,4 +116,9 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 		return instance, nil
 	}
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (executorMock *ExecutorMock) IsInterfaceNil() bool {
+	return executorMock == nil
 }

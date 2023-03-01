@@ -1,17 +1,18 @@
 package mock
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
+var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
 	Err                      error
 	VMInput                  *vmcommon.ContractCallInput
+	OriginalCallerAddr       []byte
 	SCAddress                []byte
 	SCCode                   []byte
 	SCCodeSize               uint64
@@ -19,18 +20,19 @@ type RuntimeContextMock struct {
 	VMType                   []byte
 	ReadOnlyFlag             bool
 	VerifyCode               bool
-	CurrentBreakpointValue   arwen.BreakpointValue
+	CurrentBreakpointValue   vmhost.BreakpointValue
 	PointsUsed               uint64
 	InstanceCtxID            int
 	MemLoadResult            []byte
 	MemLoadMultipleResult    [][]byte
 	FailCryptoAPI            bool
-	FailElrondAPI            bool
-	FailElrondSyncExecAPI    bool
+	FailBaseOpsAPI           bool
+	FailSyncExecAPI          bool
 	FailBigIntAPI            bool
 	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
-	AsyncCallInfo            *arwen.AsyncCallInfo
+	FailManagedMapAPI        bool
+	AsyncCallInfo            *vmhost.AsyncCallInfo
 	InstanceStackSize        uint64
 	CurrentTxHash            []byte
 	OriginalTxHash           []byte
@@ -51,6 +53,11 @@ func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 
 // ReplaceVMExecutor mocked method
 func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.Executor) {
+}
+
+// GetInstanceTracker mocked method
+func (context *RuntimeContextMock) GetInstanceTracker() vmhost.InstanceTracker {
+	return nil
 }
 
 // StartWasmerInstance mocked method
@@ -144,9 +151,19 @@ func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 
+// GetOriginalCallerAddress mocked method
+func (r *RuntimeContextMock) GetOriginalCallerAddress() []byte {
+	return r.OriginalCallerAddr
+}
+
 // SetCodeAddress mocked method
 func (r *RuntimeContextMock) SetCodeAddress(scAddress []byte) {
 	r.SCAddress = scAddress
+}
+
+// SetOriginalCallerAddress mocked method
+func (r *RuntimeContextMock) SetOriginalCallerAddress(scAddress []byte) {
+	r.OriginalCallerAddr = scAddress
 }
 
 // GetSCCode mocked method
@@ -198,11 +215,11 @@ func (r *RuntimeContextMock) SignalUserError(_ string) {
 }
 
 // SetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ arwen.BreakpointValue) {
+func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ vmhost.BreakpointValue) {
 }
 
 // GetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+func (r *RuntimeContextMock) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
@@ -241,6 +258,11 @@ func (r *RuntimeContextMock) GetInstance() executor.Instance {
 	return nil
 }
 
+// GetWarmInstance mocked method
+func (r *RuntimeContextMock) GetWarmInstance(codeHash []byte) (executor.Instance, bool) {
+	return nil, false
+}
+
 // ClearWarmInstanceCache mocked method
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
@@ -258,14 +280,14 @@ func (r *RuntimeContextMock) CallSCFunction(_ string) error {
 	return r.Err
 }
 
-// ElrondAPIErrorShouldFailExecution mocked method
-func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
-	return r.FailElrondAPI
+// BaseOpsErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) BaseOpsErrorShouldFailExecution() bool {
+	return r.FailBaseOpsAPI
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution mocked method
-func (r *RuntimeContextMock) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return r.FailElrondSyncExecAPI
+// SyncExecAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) SyncExecAPIErrorShouldFailExecution() bool {
+	return r.FailSyncExecAPI
 }
 
 // CryptoAPIErrorShouldFailExecution mocked method
@@ -288,12 +310,17 @@ func (r *RuntimeContextMock) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return r.FailManagedBuffersAPI
 }
 
+// ManagedMapAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) ManagedMapAPIErrorShouldFailExecution() bool {
+	return r.FailManagedMapAPI
+}
+
 // FailExecution mocked method
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
 // AddAsyncContextCall mocked method
-func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
+func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *vmhost.AsyncGeneratedCall) error {
 	return r.Err
 }
 
@@ -312,6 +339,15 @@ func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
+	return nil
+}
+
+// EndExecution -
+func (r *RuntimeContextMock) EndExecution() {
+}
+
+// ValidateInstances -
+func (r *RuntimeContextMock) ValidateInstances() error {
 	return nil
 }
 

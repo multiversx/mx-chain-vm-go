@@ -6,17 +6,35 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // WasteGasChildMock is an exposed mock contract method
 func WasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByChild))
+}
+
+// ReportOriginalCaller is an exposed mock contract method
+func ReportOriginalCaller(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*test.TestConfig)
+	instanceMock.AddMockMethod("reportOriginalCaller", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+		}
+
+		originalCaller := host.Runtime().GetOriginalCallerAddress()
+		host.Output().Finish(originalCaller)
+		return instance
+	})
 }
 
 // FailChildMock is an exposed mock contract method
@@ -65,7 +83,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -105,7 +123,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -146,8 +164,8 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		arguments := host.Runtime().Arguments()
-		if len(arguments) != 2 {
-			host.Runtime().SignalUserError("need 2 arguments")
+		if len(arguments) < 2 {
+			host.Runtime().SignalUserError("needs at least 2 arguments")
 			return instance
 		}
 
@@ -158,10 +176,17 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 		input.RecipientAddr = arguments[0]
 		input.Function = string(arguments[1])
 
+		if len(arguments) > 2 {
+			input.Arguments = arguments[2:]
+		}
+
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
 			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 		}
+
+		originalCaller := host.Runtime().GetOriginalCallerAddress()
+		host.Output().Finish(originalCaller)
 
 		return instance
 	})
@@ -171,6 +196,26 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByParent))
+}
+
+// InitFunctionMock is the exposed init function
+func InitFunctionMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod(vmhost.InitFunctionName, func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Output().Finish([]byte(vmhost.InitFunctionName))
+		return instance
+	})
+}
+
+// InitFunctionMock is the exposed upgrade function
+func UpgradeFunctionMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod(vmhost.ContractsUpgradeFunctionName, func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Output().Finish([]byte(vmhost.UpgradeFunctionName))
+		return instance
+	})
 }
 
 const (
@@ -242,8 +287,8 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
 				callbackName = ""
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-				Status:          arwen.AsyncCallPending,
+			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+				Status:          vmhost.AsyncCallPending,
 				Destination:     test.ParentAddress,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,

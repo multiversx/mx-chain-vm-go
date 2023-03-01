@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	roulette "github.com/ElrondNetwork/wasm-vm/fuzz/weightedroulette"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	roulette "github.com/multiversx/mx-chain-vm-go/fuzz/weightedroulette"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,8 +26,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../../test")
+	return vmTestRoot
 }
 
 func newExecutorWithPaths() *fuzzDelegationExecutor {

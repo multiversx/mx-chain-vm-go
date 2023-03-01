@@ -3,13 +3,13 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.OutputContext = (*OutputContextMock)(nil)
+var _ vmhost.OutputContext = (*OutputContextMock)(nil)
 
 // OutputContextMock is used in tests to check the OutputContext interface method calls
 type OutputContextMock struct {
@@ -176,7 +176,7 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ *vmcommon.ContractCallInput) (uint64, error) {
+func (o *OutputContextMock) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs, _ *vmcommon.ContractCallInput) (uint64, error) {
 	return 0, nil
 }
 
@@ -194,7 +194,7 @@ func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 }
 
 // DeployCode mocked method
-func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
+func (o *OutputContextMock) DeployCode(_ vmhost.CodeDeployInput) {
 }
 
 // CreateVMOutputInCaseOfError mocked method

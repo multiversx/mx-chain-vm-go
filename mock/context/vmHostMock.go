@@ -1,14 +1,14 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/crypto"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.VMHost = (*VMHostMock)(nil)
+var _ vmhost.VMHost = (*VMHostMock)(nil)
 
 // VMHostMock is used in tests to check the VMHost interface method calls
 type VMHostMock struct {
@@ -17,14 +17,14 @@ type VMHostMock struct {
 
 	EthInput []byte
 
-	BlockchainContext        arwen.BlockchainContext
-	RuntimeContext           arwen.RuntimeContext
-	AsyncContext             arwen.AsyncContext
-	OutputContext            arwen.OutputContext
-	MeteringContext          arwen.MeteringContext
-	StorageContext           arwen.StorageContext
+	BlockchainContext        vmhost.BlockchainContext
+	RuntimeContext           vmhost.RuntimeContext
+	AsyncContext             vmhost.AsyncContext
+	OutputContext            vmhost.OutputContext
+	MeteringContext          vmhost.MeteringContext
+	StorageContext           vmhost.StorageContext
 	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
-	ManagedTypesContext      arwen.ManagedTypesContext
+	ManagedTypesContext      vmhost.ManagedTypesContext
 
 	IsBuiltinFunc bool
 
@@ -46,27 +46,27 @@ func (host *VMHostMock) Crypto() crypto.VMCrypto {
 }
 
 // Blockchain mocked method
-func (host *VMHostMock) Blockchain() arwen.BlockchainContext {
+func (host *VMHostMock) Blockchain() vmhost.BlockchainContext {
 	return host.BlockchainContext
 }
 
 // Runtime mocked method
-func (host *VMHostMock) Runtime() arwen.RuntimeContext {
+func (host *VMHostMock) Runtime() vmhost.RuntimeContext {
 	return host.RuntimeContext
 }
 
 // Output mocked method
-func (host *VMHostMock) Output() arwen.OutputContext {
+func (host *VMHostMock) Output() vmhost.OutputContext {
 	return host.OutputContext
 }
 
 // Metering mocked method
-func (host *VMHostMock) Metering() arwen.MeteringContext {
+func (host *VMHostMock) Metering() vmhost.MeteringContext {
 	return host.MeteringContext
 }
 
 // Storage mocked method
-func (host *VMHostMock) Storage() arwen.StorageContext {
+func (host *VMHostMock) Storage() vmhost.StorageContext {
 	return host.StorageContext
 }
 
@@ -76,7 +76,7 @@ func (host *VMHostMock) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
 }
 
 // ManagedTypes mocked method
-func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
+func (host *VMHostMock) ManagedTypes() vmhost.ManagedTypesContext {
 	return host.ManagedTypesContext
 }
 
@@ -103,7 +103,7 @@ func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ *vmhost.ESDTTransfersArgs, _ vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 
@@ -182,24 +182,24 @@ func (host *VMHostMock) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (host *VMHostMock) GetContexts() (
-	arwen.ManagedTypesContext,
-	arwen.BlockchainContext,
-	arwen.MeteringContext,
-	arwen.OutputContext,
-	arwen.RuntimeContext,
-	arwen.AsyncContext,
-	arwen.StorageContext,
+	vmhost.ManagedTypesContext,
+	vmhost.BlockchainContext,
+	vmhost.MeteringContext,
+	vmhost.OutputContext,
+	vmhost.RuntimeContext,
+	vmhost.AsyncContext,
+	vmhost.StorageContext,
 ) {
 	return host.ManagedTypesContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.AsyncContext, host.StorageContext
 }
 
 // SetRuntimeContext mocked method
-func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
+func (host *VMHostMock) SetRuntimeContext(runtime vmhost.RuntimeContext) {
 	host.RuntimeContext = runtime
 }
 
 // Async mocked method
-func (host *VMHostMock) Async() arwen.AsyncContext {
+func (host *VMHostMock) Async() vmhost.AsyncContext {
 	return host.AsyncContext
 }
 

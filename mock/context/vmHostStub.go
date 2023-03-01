@@ -1,14 +1,14 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/crypto"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.VMHost = (*VMHostStub)(nil)
+var _ vmhost.VMHost = (*VMHostStub)(nil)
 
 // VMHostStub is used in tests to check the VMHost interface method calls
 type VMHostStub struct {
@@ -19,17 +19,17 @@ type VMHostStub struct {
 	GetVersionCalled      func() string
 
 	CryptoCalled              func() crypto.VMCrypto
-	BlockchainCalled          func() arwen.BlockchainContext
-	RuntimeCalled             func() arwen.RuntimeContext
-	OutputCalled              func() arwen.OutputContext
-	MeteringCalled            func() arwen.MeteringContext
-	AsyncCalled               func() arwen.AsyncContext
-	StorageCalled             func() arwen.StorageContext
+	BlockchainCalled          func() vmhost.BlockchainContext
+	RuntimeCalled             func() vmhost.RuntimeContext
+	OutputCalled              func() vmhost.OutputContext
+	MeteringCalled            func() vmhost.MeteringContext
+	AsyncCalled               func() vmhost.AsyncContext
+	StorageCalled             func() vmhost.StorageContext
 	EnableEpochsHandlerCalled func() vmcommon.EnableEpochsHandler
-	GetContextsCalled         func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
-	ManagedTypesCalled        func() arwen.ManagedTypesContext
+	GetContextsCalled         func() (vmhost.ManagedTypesContext, vmhost.BlockchainContext, vmhost.MeteringContext, vmhost.OutputContext, vmhost.RuntimeContext, vmhost.AsyncContext, vmhost.StorageContext)
+	ManagedTypesCalled        func() vmhost.ManagedTypesContext
 
-	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransferCalled   func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
@@ -43,11 +43,11 @@ type VMHostStub struct {
 	GasScheduleChangeCalled      func(newGasSchedule config.GasScheduleMap)
 	IsInterfaceNilCalled         func() bool
 
-	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
+	SetRuntimeContextCalled func(runtime vmhost.RuntimeContext)
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
 
-	UpdateCurrentAsyncCallStatusCalled func(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error)
+	UpdateCurrentAsyncCallStatusCalled func(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*vmhost.AsyncCall, error)
 }
 
 // GetVersion mocked method
@@ -96,7 +96,7 @@ func (vhs *VMHostStub) Crypto() crypto.VMCrypto {
 }
 
 // Blockchain mocked method
-func (vhs *VMHostStub) Blockchain() arwen.BlockchainContext {
+func (vhs *VMHostStub) Blockchain() vmhost.BlockchainContext {
 	if vhs.BlockchainCalled != nil {
 		return vhs.BlockchainCalled()
 	}
@@ -104,7 +104,7 @@ func (vhs *VMHostStub) Blockchain() arwen.BlockchainContext {
 }
 
 // Runtime mocked method
-func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
+func (vhs *VMHostStub) Runtime() vmhost.RuntimeContext {
 	if vhs.RuntimeCalled != nil {
 		return vhs.RuntimeCalled()
 	}
@@ -112,7 +112,7 @@ func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
 }
 
 // ManagedTypes mocked method
-func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
+func (vhs *VMHostStub) ManagedTypes() vmhost.ManagedTypesContext {
 	if vhs.ManagedTypesCalled != nil {
 		return vhs.ManagedTypesCalled()
 	}
@@ -135,7 +135,7 @@ func (vhs *VMHostStub) IsESDTFunctionsEnabled() bool {
 }
 
 // Output mocked method
-func (vhs *VMHostStub) Output() arwen.OutputContext {
+func (vhs *VMHostStub) Output() vmhost.OutputContext {
 	if vhs.OutputCalled != nil {
 		return vhs.OutputCalled()
 	}
@@ -143,7 +143,7 @@ func (vhs *VMHostStub) Output() arwen.OutputContext {
 }
 
 // Metering mocked method
-func (vhs *VMHostStub) Metering() arwen.MeteringContext {
+func (vhs *VMHostStub) Metering() vmhost.MeteringContext {
 	if vhs.MeteringCalled != nil {
 		return vhs.MeteringCalled()
 	}
@@ -151,7 +151,7 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 }
 
 // Storage mocked method
-func (vhs *VMHostStub) Storage() arwen.StorageContext {
+func (vhs *VMHostStub) Storage() vmhost.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
 	}
@@ -167,7 +167,7 @@ func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
 }
 
 // Async mocked method
-func (vhs *VMHostStub) Async() arwen.AsyncContext {
+func (vhs *VMHostStub) Async() vmhost.AsyncContext {
 	if vhs.AsyncCalled != nil {
 		return vhs.AsyncCalled()
 	}
@@ -175,9 +175,9 @@ func (vhs *VMHostStub) Async() arwen.AsyncContext {
 }
 
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
-		return vhs.ExecuteESDTTransferCalled(destination, sender, transfers, callType)
+		return vhs.ExecuteESDTTransferCalled(transfersArgs, callType)
 	}
 	return nil, 0, nil
 }
@@ -278,13 +278,13 @@ func (vhs *VMHostStub) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (vhs *VMHostStub) GetContexts() (
-	arwen.ManagedTypesContext,
-	arwen.BlockchainContext,
-	arwen.MeteringContext,
-	arwen.OutputContext,
-	arwen.RuntimeContext,
-	arwen.AsyncContext,
-	arwen.StorageContext,
+	vmhost.ManagedTypesContext,
+	vmhost.BlockchainContext,
+	vmhost.MeteringContext,
+	vmhost.OutputContext,
+	vmhost.RuntimeContext,
+	vmhost.AsyncContext,
+	vmhost.StorageContext,
 ) {
 	if vhs.GetContextsCalled != nil {
 		return vhs.GetContextsCalled()
@@ -293,7 +293,7 @@ func (vhs *VMHostStub) GetContexts() (
 }
 
 // SetRuntimeContext mocked method
-func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
+func (vhs *VMHostStub) SetRuntimeContext(runtime vmhost.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
 	}

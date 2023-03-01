@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	fuzzutil "github.com/multiversx/mx-chain-vm-go/fuzz/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,8 +22,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../../test")
+	return vmTestRoot
 }
 
 func newExecutorWithPaths() *fuzzDelegationExecutor {

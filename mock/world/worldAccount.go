@@ -5,9 +5,7 @@ import (
 	"errors"
 	"math/big"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // ErrOperationNotPermitted indicates an operation rejected due to insufficient
@@ -54,11 +52,7 @@ func (a *Account) StorageValue(key string) []byte {
 // The code metadata must be given explicitly.
 func (a *Account) SetCodeAndMetadata(code []byte, codeMetadata *vmcommon.CodeMetadata) {
 	a.Code = code
-	hasher := hashing.NewHasher()
-	hash, err := hasher.Sha256(code)
-	if err != nil {
-		logger.GetOrCreate("worldAccount").Trace("Account.SetCodeAndMetadata", "error", err)
-	}
+	hash := DefaultHasher.Compute(string(a.Code))
 
 	a.CodeHash = hash
 	a.IsSmartContract = true
@@ -128,8 +122,7 @@ func (a *Account) IsInterfaceNil() bool {
 // SetCode -
 func (a *Account) SetCode(code []byte) {
 	a.Code = code
-	hasher := hashing.NewHasher()
-	a.CodeHash, _ = hasher.Sha256(code)
+	a.CodeHash = DefaultHasher.Compute(string(code))
 	a.IsSmartContract = true
 }
 

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 // test variables
@@ -28,12 +28,13 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
 		_, _ = host.Storage().SetStorage(test.ParentKeyA, test.ParentDataA)
 		_, _ = host.Storage().SetStorage(test.ParentKeyB, test.ParentDataB)
+		_, _ = host.Storage().SetStorage(test.OriginalCallerParent, host.Runtime().GetOriginalCallerAddress())
 		host.Output().Finish(test.ParentFinishA)
 		host.Output().Finish(test.ParentFinishB)
 
@@ -46,7 +47,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		}
 
 		_, err = host.Async().GetCallbackClosure()
-		if err != arwen.ErrAsyncNoCallbackForClosure {
+		if err != vmhost.ErrAsyncNoCallbackForClosure {
 			host.Runtime().SignalUserError("should not be a closure")
 			return instance
 		}
@@ -63,7 +64,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 }
 
 // RegisterAsyncCallToChild is resued also in some tests before async context serialization
-func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [][]byte) error {
+func RegisterAsyncCallToChild(host vmhost.VMHost, config interface{}, arguments [][]byte) error {
 	testConfig := config.(*test.TestConfig)
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(AsyncChildFunction)
@@ -74,8 +75,8 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 	async := host.Async()
 	if !testConfig.IsLegacyAsync {
-		err := host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-			Status:          arwen.AsyncCallPending,
+		err := host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+			Status:          vmhost.AsyncCallPending,
 			Destination:     testConfig.GetChildAddress(),
 			Data:            callData.ToBytes(),
 			ValueBytes:      value,
@@ -104,7 +105,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -116,8 +117,8 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 		if string(arguments[1]) == "new_async" {
 			destination := arguments[2]
 			function := arguments[3]
-			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-				Status:          arwen.AsyncCallPending,
+			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+				Status:          vmhost.AsyncCallPending,
 				Destination:     destination,
 				Data:            function,
 				ValueBytes:      big.NewInt(0).Bytes(),
@@ -143,10 +144,12 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
 
+		_, _ = host.Storage().SetStorage(test.OriginalCallerCallback, host.Runtime().GetOriginalCallerAddress())
+
 		if !testConfig.IsLegacyAsync {
 			managed := host.ManagedTypes()
 			closureHandle := managed.NewManagedBuffer()
-			elrondapi.GetCallbackClosureWithHost(host, closureHandle)
+			vmhooks.GetCallbackClosureWithHost(host, closureHandle)
 			closure, err := managed.GetBytes(closureHandle)
 			if err != nil {
 				host.Runtime().SignalUserError("can't get closure")
@@ -160,7 +163,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -208,7 +211,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		retVal := elrondapi.ExecuteOnSameContextWithTypedArgs(
+		retVal := vmhooks.ExecuteOnSameContextWithTypedArgs(
 			host,
 			int64(host.Metering().GasLeft()),
 			big.NewInt(0),
@@ -226,7 +229,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	})
 }
 
-func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
+func handleParentBehaviorArgument(host vmhost.VMHost, behavior *big.Int) error {
 	if behavior.Cmp(big.NewInt(3)) == 0 {
 		host.Runtime().SignalUserError("callBack error")
 		return errors.New("behavior / parent error")
@@ -264,7 +267,7 @@ func mustTransferToVault(arguments [][]byte) bool {
 	return true
 }
 
-func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
+func handleTransferToVault(host vmhost.VMHost, arguments [][]byte) error {
 	err := error(nil)
 	if mustTransferToVault(arguments) {
 		valueToTransfer := big.NewInt(4)
@@ -274,7 +277,7 @@ func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
 	return err
 }
 
-func finishResult(host arwen.VMHost, result int) {
+func finishResult(host vmhost.VMHost, result int) {
 	outputContext := host.Output()
 	if result == 0 {
 		outputContext.Finish([]byte("succ"))

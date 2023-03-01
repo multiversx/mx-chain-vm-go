@@ -1,7 +1,7 @@
 package executorwrapper
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // WrapperExecutorFactory is the factory for the WrapperExecutor.
@@ -49,4 +49,9 @@ func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFact
 		WrappedInstances: make(map[string][]executor.Instance),
 	}
 	return factory.LastCreatedExecutor, nil
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (factory *WrapperExecutorFactory) IsInterfaceNil() bool {
+	return factory == nil
 }

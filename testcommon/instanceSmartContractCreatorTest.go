@@ -3,11 +3,12 @@ package testcommon
 import (
 	"testing"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/stretchr/testify/require"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
@@ -15,9 +16,9 @@ type TestCreateTemplateConfig struct {
 	t                        *testing.T
 	address                  []byte
 	input                    *vmcommon.ContractCreateInput
-	setup                    func(arwen.VMHost, *contextmock.BlockchainHookStub)
+	setup                    func(vmhost.VMHost, *contextmock.BlockchainHookStub)
 	assertResults            func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host                     arwen.VMHost
+	host                     vmhost.VMHost
 	gasSchedule              config.GasScheduleMap
 	wasmerSIGSEGVPassthrough bool
 	overrideExecutorFactory  executor.ExecutorAbstractFactory
@@ -29,7 +30,7 @@ type TestCreateTemplateConfig struct {
 func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 	return &TestCreateTemplateConfig{
 		t:                        t,
-		setup:                    func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
+		setup:                    func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 		gasSchedule:              config.MakeGasMapForTests(),
 		wasmerSIGSEGVPassthrough: true,
 		overrideExecutorFactory:  nil,
@@ -56,7 +57,7 @@ func (callerTest *TestCreateTemplateConfig) WithAddress(address []byte) *TestCre
 }
 
 // WithSetup provides the setup function for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(arwen.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
+func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
 	callerTest.setup = setup
 	return callerTest
 }
@@ -78,13 +79,17 @@ func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 		callerTest.blockchainHookStub = callerTest.createBlockchainStub()
 	}
 	if callerTest.host == nil {
-		callerTest.host = callerTest.createTestArwenVM()
+		callerTest.host = callerTest.createTestVMVM()
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 	defer func() {
 		if reset {
 			callerTest.host.Reset()
 		}
+
+		// Extra verification for instance leaks
+		err := callerTest.host.Runtime().ValidateInstances()
+		require.Nil(callerTest.t, err)
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)
@@ -106,7 +111,7 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.
 	return stubBlockchainHook
 }
 
-func (callerTest *TestCreateTemplateConfig) createTestArwenVM() arwen.VMHost {
+func (callerTest *TestCreateTemplateConfig) createTestVMVM() vmhost.VMHost {
 	return NewTestHostBuilder(callerTest.t).
 		WithExecutorFactory(callerTest.overrideExecutorFactory).
 		WithBlockchainHook(callerTest.blockchainHookStub).
