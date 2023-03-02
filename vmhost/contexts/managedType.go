@@ -729,10 +729,8 @@ func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle
 		return err
 	}
 
-	err = context.setBytesIfBufferExists(value, outValueHandle)
-	if err != nil {
-		return err
-	}
+	context.SetBytes(outValueHandle, value)
+	context.ConsumeGasForBytes(value)
 
 	delete(mMap, string(key))
 	return nil
@@ -740,12 +738,12 @@ func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle
 
 // ManagedMapContains checks if the managed map contains the given key
 func (context *managedTypesContext) ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error) {
-	_, _, _, foundValue, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
+	_, _, value, foundValue, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
 	if err != nil {
 		return false, err
 	}
 
-	return foundValue, nil
+	return foundValue && len(value) > 0, nil
 }
 
 func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, keyHandle int32) (map[string][]byte, []byte, []byte, bool, error) {
@@ -762,14 +760,4 @@ func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, 
 	value, foundValue := mMap[string(key)]
 
 	return mMap, key, value, foundValue, nil
-}
-
-func (context *managedTypesContext) setBytesIfBufferExists(value []byte, outValueHandle int32) error {
-	_, err := context.GetBytes(outValueHandle)
-	if err != nil {
-		return err
-	}
-
-	context.SetBytes(outValueHandle, value)
-	return nil
 }
