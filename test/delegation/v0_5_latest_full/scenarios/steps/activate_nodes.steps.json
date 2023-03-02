@@ -22,7 +22,7 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:auction",
+                        "address": "*",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",

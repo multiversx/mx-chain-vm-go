@@ -652,7 +652,6 @@ func TestGraph_SyncAndAsync3_CallGraph(t *testing.T) {
 }
 
 func TestGraph_SyncAndAsync4_CallGraph(t *testing.T) {
-	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync4())
 	RunGraphCallTestTemplate(t, callGraph)
 }
