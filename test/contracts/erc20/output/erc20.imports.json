@@ -1,0 +1,17 @@
+[
+    "bigIntGetUnsignedBytes",
+    "writeLog",
+    "getNumArguments",
+    "signalError",
+    "getCaller",
+    "bigIntNew",
+    "bigIntGetUnsignedArgument",
+    "bigIntStorageStoreUnsigned",
+    "bigIntStorageLoadUnsigned",
+    "bigIntFinishUnsigned",
+    "getArgument",
+    "bigIntCmp",
+    "bigIntSub",
+    "bigIntAdd",
+    "int64finish"
+]

@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
+	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
+	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
+	oj "github.com/multiversx/mx-chain-scenario-go/orderedjson"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
-	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
-	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
-	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
-	oj "github.com/multiversx/mx-chain-vm-go/scenarios/orderedjson"
 )
 
 const includeProtectedStorage = false

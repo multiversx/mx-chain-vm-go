@@ -237,6 +237,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall
 	host := context.host
 	runtime := host.Runtime()
 	sender := runtime.GetContextAddress()
+	originalCaller := runtime.GetOriginalCallerAddress()
 
 	function, arguments, err := context.callArgsParser.ParseData(string(asyncCall.GetData()))
 	if err != nil {
@@ -251,16 +252,17 @@ func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     sender,
-			Arguments:      arguments,
-			CallValue:      big.NewInt(0).SetBytes(asyncCall.GetValue()),
-			CallType:       vm.AsynchronousCall,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			GasLocked:      asyncCall.GetGasLocked(),
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-			PrevTxHash:     runtime.GetPrevTxHash(),
+			OriginalCallerAddr: originalCaller,
+			CallerAddr:         sender,
+			Arguments:          arguments,
+			CallValue:          big.NewInt(0).SetBytes(asyncCall.GetValue()),
+			CallType:           vm.AsynchronousCall,
+			GasPrice:           runtime.GetVMInput().GasPrice,
+			GasProvided:        gasLimit,
+			GasLocked:          asyncCall.GetGasLocked(),
+			CurrentTxHash:      runtime.GetCurrentTxHash(),
+			OriginalTxHash:     runtime.GetOriginalTxHash(),
+			PrevTxHash:         runtime.GetPrevTxHash(),
 		},
 		RecipientAddr: asyncCall.GetDestination(),
 		Function:      function,
@@ -307,9 +309,12 @@ func (context *asyncContext) createCallbackInput(
 		return nil, err
 	}
 
+	originalCaller := runtime.GetOriginalCallerAddress()
+
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
+			OriginalCallerAddr:   originalCaller,
 			CallerAddr:           actualCallbackInitiator,
 			Arguments:            arguments,
 			CallValue:            context.computeCallValueFromVMOutput(vmOutput),

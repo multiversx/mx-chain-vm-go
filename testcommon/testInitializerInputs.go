@@ -207,7 +207,7 @@ func BlockchainHookStubForContracts(
 			Balance:      big.NewInt(contract.balance),
 			CodeHash:     codeHash,
 			CodeMetadata: DefaultCodeMetadata,
-			OwnerAddress: ParentAddress,
+			OwnerAddress: contract.ownerAddress,
 		}
 		codeMap[string(contract.address)] = &contract.code
 	}
@@ -261,12 +261,13 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  UserAddress,
-			Arguments:   make([][]byte, 0),
-			CallValue:   big.NewInt(0),
-			CallType:    vm.DirectCall,
-			GasPrice:    0,
-			GasProvided: 0,
+			OriginalCallerAddr: UserAddress,
+			CallerAddr:         UserAddress,
+			Arguments:          make([][]byte, 0),
+			CallValue:          big.NewInt(0),
+			CallType:           vm.DirectCall,
+			GasPrice:           0,
+			GasProvided:        0,
 		},
 		RecipientAddr: ParentAddress,
 		Function:      "function",

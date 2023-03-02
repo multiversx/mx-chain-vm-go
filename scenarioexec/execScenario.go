@@ -4,10 +4,10 @@ import (
 	"errors"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
+	mj "github.com/multiversx/mx-chain-scenario-go/model"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
-	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
-	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -27,8 +27,8 @@ func (ae *VMTestExecutor) Close() {
 	}
 }
 
-// ExecuteScenario executes an individual test.
-func (ae *VMTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
+// RunScenario executes an individual test.
+func (ae *VMTestExecutor) RunScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 	resetGasTracesIfNewTest(ae, scenario)
@@ -86,7 +86,7 @@ func (ae *VMTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error 
 
 	fileResolverBackup := ae.fileResolver
 	clonedFileResolver := ae.fileResolver.Clone()
-	externalStepsRunner := mc.NewScenarioRunner(ae, clonedFileResolver)
+	externalStepsRunner := mc.NewScenarioController(ae, clonedFileResolver)
 
 	extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
 	setExternalStepGasTracing(ae, step)

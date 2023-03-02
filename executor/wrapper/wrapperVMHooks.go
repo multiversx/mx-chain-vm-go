@@ -1704,6 +1704,51 @@ func (w *WrapperVMHooks) MBufferSetRandom(destinationHandle int32, length int32)
 	return result
 }
 
+// ManagedMapNew VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapNew() int32 {
+	callInfo := "ManagedMapNew()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMapNew()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMapPut VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapPut(%d, %d, %d)", mMapHandle, keyHandle, valueHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMapGet VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapGet(%d, %d, %d)", mMapHandle, keyHandle, outValueHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMapRemove VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapRemove(%d, %d, %d)", mMapHandle, keyHandle, outValueHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMapContains VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapContains(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapContains(%d, %d, %d)", mMapHandle, keyHandle, outValueHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMapContains(mMapHandle, keyHandle, outValueHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // SmallIntGetUnsignedArgument VM hook wrapper
 func (w *WrapperVMHooks) SmallIntGetUnsignedArgument(id int32) int64 {
 	callInfo := fmt.Sprintf("SmallIntGetUnsignedArgument(%d)", id)

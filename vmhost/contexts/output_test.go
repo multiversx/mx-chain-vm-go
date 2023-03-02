@@ -187,38 +187,41 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		Data:     []byte("data1"),
 	}
 	left := &vmcommon.OutputAccount{
-		Address:                 []byte("addr1"),
-		Nonce:                   1,
-		Balance:                 big.NewInt(1000),
-		BalanceDelta:            big.NewInt(10000),
-		StorageUpdates:          nil,
-		Code:                    []byte("code1"),
-		OutputTransfers:         []vmcommon.OutputTransfer{transfer1},
-		BytesAddedToStorage:     10,
-		BytesDeletedFromStorage: 5,
+		Address:                       []byte("addr1"),
+		Nonce:                         1,
+		Balance:                       big.NewInt(1000),
+		BalanceDelta:                  big.NewInt(10000),
+		StorageUpdates:                nil,
+		Code:                          []byte("code1"),
+		OutputTransfers:               []vmcommon.OutputTransfer{transfer1},
+		BytesAddedToStorage:           10,
+		BytesDeletedFromStorage:       5,
+		BytesConsumedByTxAsNetworking: uint64(len(transfer1.Data)),
 	}
 	right := &vmcommon.OutputAccount{
-		Address:                 []byte("addr2"),
-		Nonce:                   2,
-		Balance:                 big.NewInt(2000),
-		BalanceDelta:            big.NewInt(20000),
-		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:                    []byte("code2"),
-		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
-		BytesAddedToStorage:     4,
-		BytesDeletedFromStorage: 12,
+		Address:                       []byte("addr2"),
+		Nonce:                         2,
+		Balance:                       big.NewInt(2000),
+		BalanceDelta:                  big.NewInt(20000),
+		StorageUpdates:                map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:                          []byte("code2"),
+		OutputTransfers:               []vmcommon.OutputTransfer{transfer1, transfer1},
+		BytesAddedToStorage:           4,
+		BytesDeletedFromStorage:       12,
+		BytesConsumedByTxAsNetworking: uint64(2 * len(transfer1.Data)),
 	}
 
 	expected := &vmcommon.OutputAccount{
-		Address:                 []byte("addr2"),
-		Nonce:                   2,
-		Balance:                 big.NewInt(2000),
-		BalanceDelta:            big.NewInt(20000),
-		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:                    []byte("code2"),
-		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
-		BytesAddedToStorage:     left.BytesAddedToStorage,
-		BytesDeletedFromStorage: right.BytesDeletedFromStorage,
+		Address:                       []byte("addr2"),
+		Nonce:                         2,
+		Balance:                       big.NewInt(2000),
+		BalanceDelta:                  big.NewInt(20000),
+		StorageUpdates:                map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:                          []byte("code2"),
+		OutputTransfers:               []vmcommon.OutputTransfer{transfer1, transfer1},
+		BytesAddedToStorage:           left.BytesAddedToStorage,
+		BytesDeletedFromStorage:       right.BytesDeletedFromStorage,
+		BytesConsumedByTxAsNetworking: uint64(2 * len(transfer1.Data)),
 	}
 
 	mergeOutputAccounts(left, right)
@@ -283,9 +286,10 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 	}
 	right = &vmcommon.OutputAccount{}
 	expected = &vmcommon.OutputAccount{
-		OutputTransfers: []vmcommon.OutputTransfer{{Data: []byte("left data")}},
-		StorageUpdates:  make(map[string]*vmcommon.StorageUpdate),
-		BalanceDelta:    big.NewInt(0),
+		OutputTransfers:               []vmcommon.OutputTransfer{{Data: []byte("left data")}},
+		StorageUpdates:                make(map[string]*vmcommon.StorageUpdate),
+		BalanceDelta:                  big.NewInt(0),
+		BytesConsumedByTxAsNetworking: uint64(len("left data")),
 	}
 	mergeOutputAccounts(left, right)
 	require.Equal(t, expected, left)

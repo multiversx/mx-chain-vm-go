@@ -11,6 +11,7 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -349,7 +350,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		CallType:      callType,
 		SenderAddress: sender,
 	}
-	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	logOutput.Trace("transfer value added")
 	return nil
@@ -357,24 +358,22 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
 func (context *outputContext) TransferESDT(
-	destination []byte,
-	sender []byte,
-	transfers []*vmcommon.ESDTTransfer,
+	transfersArgs *vmhost.ESDTTransfersArgs,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	if len(transfers) == 0 {
+	if len(transfersArgs.Transfers) == 0 {
 		return 0, vmhost.ErrTransferValueOnESDTCall
 	}
 
-	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
-	sameShard := context.host.AreInSameShard(sender, destination)
+	isSmartContract := context.host.Blockchain().IsSmartContract(transfersArgs.Destination)
+	sameShard := context.host.AreInSameShard(transfersArgs.Sender, transfersArgs.Destination)
 	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
 	if isExecution {
 		callType = vm.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, transfers, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, callType)
 	if err != nil {
 		return 0, err
 	}
@@ -400,17 +399,17 @@ func (context *outputContext) TransferESDT(
 		}
 	}
 
-	destAcc, _ := context.GetOutputAccount(destination)
+	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputTransfer := vmcommon.OutputTransfer{
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
 		Data:          []byte{},
 		CallType:      vm.DirectCall,
-		SenderAddress: sender,
+		SenderAddress: transfersArgs.Sender,
 	}
 
-	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfers, vmOutput, sameShard, destination)
+	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfersArgs.Transfers, vmOutput, sameShard, transfersArgs.Destination)
 
 	if sameShard {
 		outputTransfer.GasLimit = 0
@@ -424,10 +423,18 @@ func (context *outputContext) TransferESDT(
 		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
 	}
 
-	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 	return gasRemaining, nil
+}
+
+func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []vmcommon.OutputTransfer, transfers ...vmcommon.OutputTransfer) {
+	account.OutputTransfers = append(existingTransfers, transfers...)
+	for _, transfer := range transfers {
+		account.BytesConsumedByTxAsNetworking =
+			math.AddUint64(account.BytesConsumedByTxAsNetworking, uint64(len(transfer.Data)))
+	}
 }
 
 func (context *outputContext) getOutputTransferDataFromESDTTransfer(
@@ -707,7 +714,8 @@ func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.
 		leftOtherTransfers = append(leftOtherTransfers, rightOtherTransfers[lenLeftOtherTransfers:]...)
 	}
 
-	leftAccount.OutputTransfers = append(leftAsyncCallTransfers, leftOtherTransfers...)
+	leftAccount.BytesConsumedByTxAsNetworking = 0
+	AppendOutputTransfers(leftAccount, leftAsyncCallTransfers, leftOtherTransfers...)
 }
 
 func splitTransfers(account *vmcommon.OutputAccount) ([]vmcommon.OutputTransfer, []vmcommon.OutputTransfer) {

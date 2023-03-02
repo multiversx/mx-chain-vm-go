@@ -25,7 +25,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
-	TransferESDTCalled                func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, input *vmcommon.ContractCallInput) (uint64, error)
+	TransferESDTCalled                func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
 	ReturnCodeCalled                  func() vmcommon.ReturnCode
@@ -159,9 +159,9 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 }
 
 // TransferESDT mocked method
-func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error) {
+func (o *OutputContextStub) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error) {
 	if o.TransferESDTCalled != nil {
-		return o.TransferESDTCalled(destination, sender, transfers, callInput)
+		return o.TransferESDTCalled(transfersArgs, callInput)
 	}
 	return 0, nil
 }

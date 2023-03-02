@@ -1027,6 +1027,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) []*test.CallFinishDataI
 		}
 
 		expectedCallFinishData := &test.CallFinishDataItem{
+			OriginalCallerAddr:  test.UserAddress,
 			ContractAndFunction: string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix,
 			GasProvided:         parent.GasLimit,
 			GasRemaining:        parent.GasRemaining,
@@ -1132,6 +1133,7 @@ func checkCallFinishDataForGraphTesting(tb testing.TB, expectedCallsFinishData [
 	for idx := range expectedCallsFinishData {
 		expectedCallFinishData := expectedCallsFinishData[idx]
 		actualCallFinishData := callsFinishData[idx]
+		require.Equal(tb, expectedCallFinishData.OriginalCallerAddr, actualCallFinishData.OriginalCallerAddr, "OriginalCallerAddr - Call")
 		require.Equal(tb, expectedCallFinishData.ContractAndFunction, actualCallFinishData.ContractAndFunction, "CallFinishData - Call")
 		require.Equal(tb, int(expectedCallFinishData.GasProvided), int(actualCallFinishData.GasProvided), fmt.Sprintf("CallFinishData - Gas Limit for '%s'", actualCallFinishData.ContractAndFunction))
 		require.Equal(tb, int(expectedCallFinishData.GasRemaining), int(actualCallFinishData.GasRemaining), fmt.Sprintf("CallFinishData - Gas Remaining for '%s'", actualCallFinishData.ContractAndFunction))

@@ -12,6 +12,7 @@ var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 type RuntimeContextMock struct {
 	Err                      error
 	VMInput                  *vmcommon.ContractCallInput
+	OriginalCallerAddr       []byte
 	SCAddress                []byte
 	SCCode                   []byte
 	SCCodeSize               uint64
@@ -30,6 +31,7 @@ type RuntimeContextMock struct {
 	FailBigIntAPI            bool
 	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
+	FailManagedMapAPI        bool
 	AsyncCallInfo            *vmhost.AsyncCallInfo
 	InstanceStackSize        uint64
 	CurrentTxHash            []byte
@@ -149,9 +151,19 @@ func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 
+// GetOriginalCallerAddress mocked method
+func (r *RuntimeContextMock) GetOriginalCallerAddress() []byte {
+	return r.OriginalCallerAddr
+}
+
 // SetCodeAddress mocked method
 func (r *RuntimeContextMock) SetCodeAddress(scAddress []byte) {
 	r.SCAddress = scAddress
+}
+
+// SetOriginalCallerAddress mocked method
+func (r *RuntimeContextMock) SetOriginalCallerAddress(scAddress []byte) {
+	r.OriginalCallerAddr = scAddress
 }
 
 // GetSCCode mocked method
@@ -296,6 +308,11 @@ func (r *RuntimeContextMock) BigFloatAPIErrorShouldFailExecution() bool {
 // ManagedBufferAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return r.FailManagedBuffersAPI
+}
+
+// ManagedMapAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) ManagedMapAPIErrorShouldFailExecution() bool {
+	return r.FailManagedMapAPI
 }
 
 // FailExecution mocked method

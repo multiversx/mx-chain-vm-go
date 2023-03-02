@@ -41,7 +41,7 @@ type VMHost interface {
 	Storage() StorageContext
 	EnableEpochsHandler() vmcommon.EnableEpochsHandler
 
-	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
@@ -112,6 +112,7 @@ type RuntimeContext interface {
 	GetVMInput() *vmcommon.ContractCallInput
 	SetVMInput(vmInput *vmcommon.ContractCallInput)
 	GetContextAddress() []byte
+	GetOriginalCallerAddress() []byte
 	SetCodeAddress(scAddress []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
@@ -147,6 +148,7 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
+	ManagedMapAPIErrorShouldFailExecution() bool
 	CleanInstance()
 
 	AddError(err error, otherInfo ...string)
@@ -206,6 +208,11 @@ type ManagedTypesContext interface {
 	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
 	ReadManagedVecOfManagedBuffers(managedVecHandle int32) ([][]byte, uint64, error)
 	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32)
+	NewManagedMap() int32
+	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) error
+	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error
+	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error
+	ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
@@ -221,7 +228,7 @@ type OutputContext interface {
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
-	TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error)
+	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode

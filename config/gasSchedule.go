@@ -41,17 +41,6 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	ethOps := &EthAPICost{}
-	err = mapstructure.Decode(gasMap["EthAPICost"], ethOps)
-	if err != nil {
-		return nil, err
-	}
-
-	err = checkForZeroUint64Fields(*ethOps)
-	if err != nil {
-		return nil, err
-	}
-
 	bigFloatOps := &BigFloatAPICost{}
 	err = mapstructure.Decode(gasMap["BigFloatAPICost"], bigFloatOps)
 	if err != nil {
@@ -111,7 +100,6 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		BaseOperationCost:    *baseOps,
 		BigIntAPICost:        *bigIntOps,
 		BigFloatAPICost:      *bigFloatOps,
-		EthAPICost:           *ethOps,
 		BaseOpsAPICost:       *baseOpsAPI,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
@@ -149,7 +137,8 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["BuiltInCost"] = FillGasMapBuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMapBaseOperationCosts(value)
 	gasMap["BaseOpsAPICost"] = FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock)
-	gasMap["EthAPICost"] = FillGasMapEthereumAPICosts(value)
+	// EthAPICost needed on node for VM tests < 1.5
+	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMapBigIntAPICosts(value)
 	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
@@ -254,8 +243,8 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	return gasMap
 }
 
-// FillGasMapEthereumAPICosts fills the Ethereum API calls costs
-func FillGasMapEthereumAPICosts(value uint64) map[string]uint64 {
+// EthAPICost needed on node for VM tests < 1.5
+func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["UseGas"] = value
 	gasMap["GetAddress"] = value
