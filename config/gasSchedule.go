@@ -5,14 +5,19 @@ import (
 	"reflect"
 
 	"github.com/mitchellh/mapstructure"
+	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // GasValueForTests defines the gas value for tests
 const GasValueForTests = 1
 
+const isNegativeNumber = 1
+
 // AsyncCallbackGasLockForTests defines the gas lock for tests
 var AsyncCallbackGasLockForTests = uint64(100_000)
+
+var log = logger.GetOrCreate("vm/config")
 
 // GasScheduleMap (alias) is the map for gas schedule
 type GasScheduleMap = map[string]map[string]uint64
@@ -95,6 +100,19 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	if err != nil {
 		return nil, err
 	}
+	dynamicStorageLoadUnsigned := &DynamicStorageLoadUnsigned{}
+	err = mapstructure.Decode(gasMap["DynamicStorageLoad"], dynamicStorageLoadUnsigned)
+	if err != nil {
+		return nil, err
+	}
+	dynamicStorageLoadParams := convertFromUnsignedToSigned(dynamicStorageLoadUnsigned)
+
+	isCorrectlyDefined := isDynamicGasComputationFuncCorrectlyDefined(dynamicStorageLoadParams)
+	if !isCorrectlyDefined {
+		return nil, fmt.Errorf("dynamic gas computation func incorrectly defined, "+
+			"quadratic parameter = %d, linear parameter = %d, constant parameter = %d",
+			dynamicStorageLoadParams.Quadratic, dynamicStorageLoadParams.Linear, dynamicStorageLoadParams.Constant)
+	}
 
 	gasCost := &GasCost{
 		BaseOperationCost:    *baseOps,
@@ -104,9 +122,52 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       wasmOps,
+		DynamicStorageLoad:   *dynamicStorageLoadParams,
 	}
 
 	return gasCost, nil
+}
+
+func isDynamicGasComputationFuncCorrectlyDefined(parameters *DynamicStorageLoadCostCoefficients) bool {
+	if parameters.Quadratic <= 0 {
+		// the "a" from ax^2+bx+c needs to be > 0 in order for the func to be convex
+		log.Error("invalid parameters for dynamic gas computation func, the quadratic parameter is not > 0")
+		return false
+	}
+	stationaryPoint := float64(-1*parameters.Linear) / float64(2*parameters.Quadratic) // -b/2a
+	if stationaryPoint > 0 {
+		// the stationary point should be <= 0 because the func needs to be strictly increasing for x = [0,n)
+		log.Error("invalid parameters for dynamic gas computation func, the x of the stationary point is > 0")
+		return false
+	}
+	if parameters.Constant < 0 {
+		// f(x) = ax^2+bx+c. f(0) >= 0 only if c >= 0
+		log.Error("invalid parameters for dynamic gas computation func, f(x) is not >= 0 for x = [0,n) ")
+		return false
+	}
+
+	return true
+}
+
+func convertFromUnsignedToSigned(dynamicStorageLoadUnsigned *DynamicStorageLoadUnsigned) *DynamicStorageLoadCostCoefficients {
+	quadratic := getSignedCoefficient(dynamicStorageLoadUnsigned.QuadraticCoefficient, dynamicStorageLoadUnsigned.SignOfQuadratic)
+	linear := getSignedCoefficient(dynamicStorageLoadUnsigned.LinearCoefficient, dynamicStorageLoadUnsigned.SignOfLinear)
+	constant := getSignedCoefficient(dynamicStorageLoadUnsigned.ConstantCoefficient, dynamicStorageLoadUnsigned.SignOfConstant)
+
+	return &DynamicStorageLoadCostCoefficients{
+		Quadratic:  quadratic,
+		Linear:     linear,
+		Constant:   constant,
+		MinGasCost: dynamicStorageLoadUnsigned.MinimumGasCost,
+	}
+}
+
+func getSignedCoefficient(coefficient uint64, sign uint64) int64 {
+	if sign == isNegativeNumber {
+		return int64(coefficient) * -1
+	}
+
+	return int64(coefficient)
 }
 
 func checkForZeroUint64Fields(arg interface{}) error {
@@ -138,12 +199,13 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["BaseOperationCost"] = FillGasMapBaseOperationCosts(value)
 	gasMap["BaseOpsAPICost"] = FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock)
 	// EthAPICost needed on node for VM tests < 1.5
-	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
+	gasMap["EthAPICost"] = FillGasMapEthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMapBigIntAPICosts(value)
 	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
 	gasMap["ManagedBufferAPICost"] = FillGasMapManagedBufferAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMapWASMOpcodeValues(value)
+	gasMap["DynamicStorageLoad"] = FillGasMapDynamicStorageLoad()
 
 	customFillGasMapWASMOpcodeCosts(gasMap["WASMOpcodeCost"])
 
@@ -243,8 +305,8 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	return gasMap
 }
 
-// EthAPICost needed on node for VM tests < 1.5
-func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
+// FillGasMapEthereumAPICosts is needed for EthAPICost, which is needed on node for VM tests < 1.5
+func FillGasMapEthereumAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["UseGas"] = value
 	gasMap["GetAddress"] = value
@@ -405,7 +467,7 @@ func FillGasMapManagedBufferAPICosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-// FillGasMapWASMOpcodeValues dills the wasm opcodes costs
+// FillGasMapWASMOpcodeValues fills the wasm opcodes costs
 func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 
@@ -966,6 +1028,20 @@ func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["V8x16LoadSplat"] = value
 	gasMap["V8x16Shuffle"] = value
 	gasMap["V8x16Swizzle"] = value
+
+	return gasMap
+}
+
+// FillGasMapDynamicStorageLoad populates the gas map with the coefficients needed for dynamic storage load
+func FillGasMapDynamicStorageLoad() map[string]uint64 {
+	gasMap := make(map[string]uint64)
+
+	gasMap["QuadraticCoefficient"] = 688
+	gasMap["SignOfQuadratic"] = 0
+	gasMap["LinearCoefficient"] = 31858
+	gasMap["SignOfLinear"] = 0
+	gasMap["ConstantCoefficient"] = 15287
+	gasMap["SignOfConstant"] = 0
 
 	return gasMap
 }

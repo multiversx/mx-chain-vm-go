@@ -44,9 +44,11 @@ type EnableEpochsHandlerStub struct {
 	RemoveNonUpdatedStorageEnableEpochField              uint32
 	StorageAPICostOptimizationEnableEpochField           uint32
 	IsRuntimeMemStoreLimitEnabledField                   bool
+	IsRuntimeCodeSizeFixEnabledField                     bool
 	IsMaxBlockchainHookCountersFlagEnabledField          bool
 	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	IsAlwaysSaveTokenMetaDataEnabledField                bool
+	IsDynamicGasCostForDataTrieStorageLoadEnabledField   bool
 }
 
 // IsGlobalMintBurnFlagEnabled -
@@ -239,6 +241,10 @@ func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
 	return stub.IsRuntimeMemStoreLimitEnabledField
 }
 
+func (stub *EnableEpochsHandlerStub) IsRuntimeCodeSizeFixEnabled() bool {
+	return stub.IsRuntimeMemStoreLimitEnabledField
+}
+
 // IsMaxBlockchainHookCountersFlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsMaxBlockchainHookCountersFlagEnabled() bool {
 	return stub.IsMaxBlockchainHookCountersFlagEnabledField
@@ -252,6 +258,11 @@ func (stub *EnableEpochsHandlerStub) IsWipeSingleNFTLiquidityDecreaseEnabled() b
 // IsAlwaysSaveTokenMetaDataEnabled -
 func (stub *EnableEpochsHandlerStub) IsAlwaysSaveTokenMetaDataEnabled() bool {
 	return stub.IsAlwaysSaveTokenMetaDataEnabledField
+}
+
+// IsDynamicGasCostForDataTrieStorageLoadEnabled -
+func (stub *EnableEpochsHandlerStub) IsDynamicGasCostForDataTrieStorageLoadEnabled() bool {
+	return stub.IsDynamicGasCostForDataTrieStorageLoadEnabledField
 }
 
 // IsInterfaceNil -

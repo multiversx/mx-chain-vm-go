@@ -542,11 +542,11 @@ func (context *VMHooksImpl) MBufferStorageLoad(keyHandle int32, destinationHandl
 		return 1
 	}
 
-	storageBytes, usedCache, err := storage.GetStorage(key)
+	storageBytes, trieDepth, usedCache, err := storage.GetStorage(key)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 0
 	}
-	storage.UseGasForStorageLoad(mBufferStorageLoadName, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
+	storage.UseGasForStorageLoad(mBufferStorageLoadName, trieDepth, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
 

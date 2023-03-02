@@ -489,11 +489,11 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	esdtRoleKeyPrefix := []byte(core.ProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
-	data, usedCache, err := storage.GetStorage(key)
+	data, trieDepth, usedCache, err := storage.GetStorage(key)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
 
 	return getESDTRoles(data)
 }
@@ -1697,11 +1697,11 @@ func (context *VMHooksImpl) StorageLoadLength(keyOffset executor.MemPtr, keyLeng
 		return -1
 	}
 
-	data, usedCache, err := storage.GetStorageUnmetered(key)
+	data, trieDepth, usedCache, err := storage.GetStorageUnmetered(key)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(storageLoadLengthName, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(storageLoadLengthName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
 
 	return int32(len(data))
 }
@@ -1761,11 +1761,11 @@ func (context *VMHooksImpl) StorageLoadFromAddressWithHost(
 func StorageLoadFromAddressWithTypedArgs(host vmhost.VMHost, address []byte, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
-	data, usedCache, err := storage.GetStorageFromAddress(address, key)
+	data, trieDepth, usedCache, err := storage.GetStorageFromAddress(address, key)
 	if err != nil {
 		return nil, err
 	}
-	storage.UseGasForStorageLoad(storageLoadFromAddressName, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(storageLoadFromAddressName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
 	return data, nil
 }
 
@@ -1807,11 +1807,11 @@ func (context *VMHooksImpl) StorageLoadWithHost(host vmhost.VMHost, keyOffset ex
 func StorageLoadWithWithTypedArgs(host vmhost.VMHost, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
-	data, usedCache, err := storage.GetStorage(key)
+	data, trieDepth, usedCache, err := storage.GetStorage(key)
 	if err != nil {
 		return nil, err
 	}
-	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
 	return data, nil
 }
 
@@ -1875,11 +1875,11 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(vmhost.TimeLockKeyPrefix))
 	timeLockKey := vmhost.CustomStorageKey(timeLockKeyPrefix, key)
 
-	data, usedCache, err := storage.GetStorage(timeLockKey)
+	data, trieDepth, usedCache, err := storage.GetStorage(timeLockKey)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(getStorageLockName, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(getStorageLockName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
@@ -2086,7 +2086,7 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 	}
 
 	key := []byte(core.ProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
-	data, _, err := storage.GetStorageFromAddress(destination, key)
+	data, _, _, err := storage.GetStorageFromAddress(destination, key)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}

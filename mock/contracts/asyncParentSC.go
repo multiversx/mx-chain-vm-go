@@ -172,7 +172,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData, _, err := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _, _, err := host.Storage().GetStorage(test.ParentKeyB)
 		if err != nil {
 			host.Runtime().FailExecution(err)
 			return instance
