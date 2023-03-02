@@ -6,15 +6,20 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"testing"
 )
 
 type database struct {
+	tb       testing.TB
 	rootPath string
 }
 
 // newDatabase creates a new debugging database (basically, a folder with JSON files)
-func newDatabase(rootPath string) *database {
-	db := &database{rootPath: rootPath}
+func newDatabase(tb testing.TB, rootPath string) *database {
+	db := &database{
+		tb:       tb,
+		rootPath: rootPath,
+	}
 	db.initFolders()
 	return db
 }
@@ -43,7 +48,7 @@ func (db *database) loadWorld(worldID string) (*world, error) {
 		}
 	}
 
-	world, err := newWorld(dataModel)
+	world, err := newWorld(db.tb, dataModel)
 	if err != nil {
 		return nil, err
 	}

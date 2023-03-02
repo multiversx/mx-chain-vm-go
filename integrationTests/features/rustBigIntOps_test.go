@@ -273,23 +273,10 @@ func TestBigUintArith(t *testing.T) {
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
-func TestBigUintBitwise(t *testing.T) {
-	if testing.Short() {
-		t.Skip("long test")
-	}
-
+func TestBigUintBitwiseAnd(t *testing.T) {
 	var testCases []*pureFunctionIO
 
-	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
-	big2, _ := big.NewInt(0).SetString("123456789012345678901234567890", 10)
-	numbers := []*big.Int{
-		big.NewInt(0),
-		big.NewInt(1),
-		big.NewInt(2),
-		big.NewInt(12345),
-		big1,
-		big2,
-	}
+	numbers := makeBigIntsForBitwiseOps()
 
 	for _, num1 := range numbers {
 		for _, num2 := range numbers {
@@ -302,6 +289,21 @@ func TestBigUintBitwise(t *testing.T) {
 				"bit_and", false,
 				bytes1, bytes2, sumBytes,
 				vmi.Ok, "")
+		}
+	}
+
+	runTestCases(t, testCases, "bit_and")
+}
+
+func TestBigUintBitwiseOr(t *testing.T) {
+	var testCases []*pureFunctionIO
+
+	numbers := makeBigIntsForBitwiseOps()
+
+	for _, num1 := range numbers {
+		for _, num2 := range numbers {
+			bytes1 := num1.Bytes()
+			bytes2 := num2.Bytes()
 
 			// or
 			orBytes := big.NewInt(0).Or(num1, num2).Bytes()
@@ -309,6 +311,21 @@ func TestBigUintBitwise(t *testing.T) {
 				"bit_or", false,
 				bytes1, bytes2, orBytes,
 				vmi.Ok, "")
+		}
+	}
+
+	runTestCases(t, testCases, "bit_or")
+}
+
+func TestBigUintBitwiseXor(t *testing.T) {
+	var testCases []*pureFunctionIO
+
+	numbers := makeBigIntsForBitwiseOps()
+
+	for _, num1 := range numbers {
+		for _, num2 := range numbers {
+			bytes1 := num1.Bytes()
+			bytes2 := num2.Bytes()
 
 			// xor
 			xorBytes := big.NewInt(0).Xor(num1, num2).Bytes()
@@ -319,11 +336,11 @@ func TestBigUintBitwise(t *testing.T) {
 		}
 	}
 
-	logFunc := func(testCaseIndex, testCaseCount int) {
-		if testCaseIndex%100 == 0 {
-			fmt.Printf("Big uint bitwise operation test case %d/%d\n", testCaseIndex, len(testCases))
-		}
-	}
+	runTestCases(t, testCases, "bit_xor")
+}
+
+func runTestCases(t *testing.T, testCases []*pureFunctionIO, opName string) {
+	logFunc := makeLogFunc(opName)
 
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
@@ -334,6 +351,29 @@ func TestBigUintBitwise(t *testing.T) {
 
 	pfe.initAccounts(getFeaturesContractPath())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
+}
+
+func makeBigIntsForBitwiseOps() []*big.Int {
+	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
+	big2, _ := big.NewInt(0).SetString("123456789012345678901234567890", 10)
+	numbers := []*big.Int{
+		big.NewInt(0),
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(12345),
+		big1,
+		big2,
+	}
+
+	return numbers
+}
+
+func makeLogFunc(operation string) func(int, int) {
+	return func(testCaseIndex, testCaseCount int) {
+		if testCaseIndex%100 == 0 {
+			fmt.Printf("Big uint bitwise operation %s test case %d/%d\n", operation, testCaseIndex, testCaseCount)
+		}
+	}
 }
 
 func TestBigUintShift(t *testing.T) {

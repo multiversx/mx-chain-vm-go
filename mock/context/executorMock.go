@@ -32,6 +32,11 @@ func (emf *ExecutorMockFactory) CreateExecutor(_ executor.ExecutorFactoryArgs) (
 	return executorMock, nil
 }
 
+// IsInterfaceNil returns true if there is no value under the interface
+func (emf *ExecutorMockFactory) IsInterfaceNil() bool {
+	return emf == nil
+}
+
 // ExecutorMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type ExecutorMock struct {

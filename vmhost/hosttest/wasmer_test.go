@@ -10,6 +10,7 @@ import (
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -358,6 +359,21 @@ func TestWASMCreateAndCall(t *testing.T) {
 		verify = test.NewVMOutputVerifier(t, vmOutput, err)
 		verify.Ok()
 	}
+}
+
+func TestWASMMiddleware_GlobalsUnreachable(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/middleware-globals", "middleware-globals", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("getglobal").
+			Build()).
+		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
 }
 
 func extractSingleTrackedInstanceFromHost(tb testing.TB, host vmhost.VMHost) executor.Instance {

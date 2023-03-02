@@ -18,7 +18,7 @@ const pathToApiPackage = "./"
 const pathToRustRepoConfigFile = "wasm-vm-executor-rs-path.txt"
 
 // Until we merge the `feat/wasmer2`, there are some files that are not supposed to be generated.
-const wasmer2Branch = false
+const wasmer2Branch = true
 
 func initEIMetadata() *eapigen.EIMetadata {
 	return &eapigen.EIMetadata{
@@ -154,9 +154,9 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeExecutorOpcodeCosts() {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/opcodeCosts.go")
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/gasCostWASM.go")
 	defer out.Close()
-	eapigen.WriteWASMOpcodeCost(out)
+	eapigen.WriteExecutorOpcodeCost(out)
 }
 
 func writeWASMOpcodeCostFuncHelpers() {
@@ -174,7 +174,7 @@ func writeWASMOpcodeCostConfigHelpers() {
 func writeWasmer2OpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/opcodeCost.go")
 	defer out.Close()
-	eapigen.WriteOpcodeCost(out)
+	eapigen.WriteWasmer2OpcodeCost(out)
 }
 
 func writeOpcodeCostFuncHelpers() {

@@ -8,22 +8,13 @@ import (
 	"math/big"
 	"path/filepath"
 	"strings"
-	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-go/config"
-	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
-	"github.com/stretchr/testify/require"
 )
 
 var defaultHasher = blake2b.NewBlake2b()
@@ -116,110 +107,6 @@ func GetTestSCCode(scName string, prefixToTestSCs ...string) []byte {
 func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
 	return GetSCCode(pathToSC)
-}
-
-// TestHostBuilder allows tests to configure and initialize the VM host and blockhain mock on which they operate.
-type TestHostBuilder struct {
-	tb               testing.TB
-	blockchainHook   vmcommon.BlockchainHook
-	vmHostParameters *vmhost.VMHostParameters
-	host             vmhost.VMHost
-}
-
-// NewTestHostBuilder commences a test host builder pattern.
-func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
-	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	return &TestHostBuilder{
-		tb: tb,
-		vmHostParameters: &vmhost.VMHostParameters{
-			VMType:                   DefaultVMType,
-			BlockGasLimit:            uint64(1000),
-			GasSchedule:              nil,
-			BuiltInFuncContainer:     nil,
-			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubAllFlags(),
-			WasmerSIGSEGVPassthrough: false,
-			Hasher:                   defaultHasher,
-		},
-	}
-}
-
-// Ensures gas costs are initialized.
-func (thb *TestHostBuilder) initializeGasCosts() {
-	if thb.vmHostParameters.GasSchedule == nil {
-		thb.vmHostParameters.GasSchedule = config.MakeGasMapForTests()
-	}
-}
-
-// Ensures the built-in function container is initialized.
-func (thb *TestHostBuilder) initializeBuiltInFuncContainer() {
-	if thb.vmHostParameters.BuiltInFuncContainer == nil {
-		thb.vmHostParameters.BuiltInFuncContainer = builtInFunctions.NewBuiltInFunctionContainer()
-	}
-
-}
-
-// WithBlockchainHook sets a pre-built blockchain hook for the VM to work with.
-func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.BlockchainHook) *TestHostBuilder {
-	thb.blockchainHook = blockchainHook
-	return thb
-}
-
-// WithBuiltinFunctions sets up builtin functions in the blockchain hook.
-// Only works if the blockchain hook is of type worldmock.MockWorld.
-func (thb *TestHostBuilder) WithBuiltinFunctions() *TestHostBuilder {
-	thb.initializeGasCosts()
-	mockWorld, ok := thb.blockchainHook.(*worldmock.MockWorld)
-	require.True(thb.tb, ok, "builtin functions can only be injected into blockchain hooks of type MockWorld")
-	err := mockWorld.InitBuiltinFunctions(thb.vmHostParameters.GasSchedule)
-	require.Nil(thb.tb, err)
-	thb.vmHostParameters.BuiltInFuncContainer = mockWorld.BuiltinFuncs.Container
-	return thb
-}
-
-// WithExecutorFactory allows tests to choose what executor to use. The default is wasmer 1.
-func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *TestHostBuilder {
-	thb.vmHostParameters.OverrideVMExecutor = executorFactory
-	return thb
-}
-
-// WithWasmerSIGSEGVPassthrough allows tests to configure the WasmerSIGSEGVPassthrough flag.
-func (thb *TestHostBuilder) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *TestHostBuilder {
-	thb.vmHostParameters.WasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
-	return thb
-}
-
-// WithGasSchedule allows tests to use the gas costs. The default is config.MakeGasMapForTests().
-func (thb *TestHostBuilder) WithGasSchedule(gasSchedule config.GasScheduleMap) *TestHostBuilder {
-	thb.vmHostParameters.GasSchedule = gasSchedule
-	return thb
-}
-
-// Build initializes the VM host with all configured options.
-func (thb *TestHostBuilder) Build() vmhost.VMHost {
-	thb.initializeHost()
-	return thb.host
-}
-
-func (thb *TestHostBuilder) initializeHost() {
-	thb.initializeGasCosts()
-	if thb.host == nil {
-		thb.host = thb.newHost()
-	}
-}
-
-func (thb *TestHostBuilder) newHost() vmhost.VMHost {
-	thb.initializeBuiltInFuncContainer()
-	host, err := hostCore.NewVMHost(
-		thb.blockchainHook,
-		thb.vmHostParameters,
-	)
-	require.Nil(thb.tb, err)
-	require.NotNil(thb.tb, host)
-
-	return host
 }
 
 // BlockchainHookStubForCallSigSegv -
@@ -390,12 +277,14 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 // ContractCallInputBuilder extends a ContractCallInput for extra building functionality during testing
 type ContractCallInputBuilder struct {
 	vmcommon.ContractCallInput
+	CurrentESDTTransferIndex int
 }
 
 // CreateTestContractCallInputBuilder is a builder for ContractCallInputBuilder
 func CreateTestContractCallInputBuilder() *ContractCallInputBuilder {
 	return &ContractCallInputBuilder{
-		ContractCallInput: *DefaultTestContractCallInput(),
+		ContractCallInput:        *DefaultTestContractCallInput(),
+		CurrentESDTTransferIndex: 0,
 	}
 }
 
@@ -469,20 +358,30 @@ func (contractInput *ContractCallInputBuilder) initESDTTransferIfNeeded() {
 	if len(contractInput.ESDTTransfers) == 0 {
 		contractInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
 		contractInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+		contractInput.CurrentESDTTransferIndex = 0
 	}
 }
 
 // WithESDTValue provides the ESDTValue for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTValue(esdtValue *big.Int) *ContractCallInputBuilder {
 	contractInput.initESDTTransferIfNeeded()
-	contractInput.ContractCallInput.ESDTTransfers[0].ESDTValue = esdtValue
+	i := contractInput.CurrentESDTTransferIndex
+	contractInput.ContractCallInput.ESDTTransfers[i].ESDTValue = esdtValue
 	return contractInput
 }
 
 // WithESDTTokenName provides the ESDTTokenName for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTTokenName(esdtTokenName []byte) *ContractCallInputBuilder {
 	contractInput.initESDTTransferIfNeeded()
-	contractInput.ContractCallInput.ESDTTransfers[0].ESDTTokenName = esdtTokenName
+	i := contractInput.CurrentESDTTransferIndex
+	contractInput.ContractCallInput.ESDTTransfers[i].ESDTTokenName = esdtTokenName
+	return contractInput
+}
+
+func (contractInput *ContractCallInputBuilder) NextESDTTransfer() *ContractCallInputBuilder {
+	nextTransfer := &vmcommon.ESDTTransfer{}
+	contractInput.ESDTTransfers = append(contractInput.ESDTTransfers, nextTransfer)
+	contractInput.CurrentESDTTransferIndex++
 	return contractInput
 }
 

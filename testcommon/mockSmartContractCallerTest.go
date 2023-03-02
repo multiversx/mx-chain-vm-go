@@ -12,10 +12,14 @@ import (
 
 var logMock = logger.GetOrCreate("vm/mock")
 
+// TestType indicates whether the test is a SC call test or a SC creation test
 type TestType int
 
 const (
+	// RunTest indicates a test with SC calls
 	RunTest TestType = iota
+
+	// CreateTest indicates a test with SC creation
 	CreateTest
 )
 

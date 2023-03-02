@@ -143,6 +143,11 @@ func (instance *InstanceMock) ValidateVoidFunction(_ string) error {
 	return nil
 }
 
+// ValidateFunctionArities mocked method
+func (instance *InstanceMock) ValidateFunctionArities() error {
+	return nil
+}
+
 // HasMemory mocked method
 func (instance *InstanceMock) HasMemory() bool {
 	return true

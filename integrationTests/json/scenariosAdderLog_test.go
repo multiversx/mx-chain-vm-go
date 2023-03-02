@@ -6,10 +6,7 @@ import (
 
 const expectedAdderLog = `starting log:
 GetFunctionNames: [add callBack getSum init]
-ValidateVoidFunction(add): true
-ValidateVoidFunction(callBack): true
-ValidateVoidFunction(getSum): true
-ValidateVoidFunction(init): true
+ValidateFunctionArities: true
 GetFunctionNames: [add callBack getSum init]
 GetFunctionNames: [add callBack getSum init]
 HasFunction(init): true

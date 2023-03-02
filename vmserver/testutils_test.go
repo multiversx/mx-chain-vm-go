@@ -8,23 +8,23 @@ import (
 	"time"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
-	"github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/stretchr/testify/require"
 )
 
 const gasLimit = 50000000
 
 type testContext struct {
-	t       *testing.T
+	tb      testing.TB
 	worldID string
 	facade  *DebugFacade
 }
 
-func newTestContext(t *testing.T) *testContext {
+func newTestContext(tb testing.TB) *testContext {
 	worldID := fmt.Sprintf("%s_%d", time.Now().Format("20060102150405"), rand.Intn(100))
 
 	return &testContext{
-		t:       t,
+		tb:      tb,
 		worldID: worldID,
 		facade:  NewDebugFacade(),
 	}
@@ -40,9 +40,9 @@ func (context *testContext) createAccount(address string, balance string) {
 
 	response, err := context.facade.CreateAccount(request)
 
-	t := context.t
-	require.Nil(t, err)
-	require.NotNil(t, response)
+	tb := context.tb
+	require.Nil(tb, err)
+	require.NotNil(tb, response)
 }
 
 func (context *testContext) accountExists(address []byte) bool {
@@ -64,7 +64,7 @@ func (context *testContext) deployContract(codePath string, impersonated string,
 
 	response, err := context.facade.DeploySmartContract(request)
 
-	t := context.t
+	t := context.tb
 	require.Nil(t, err)
 	require.NotNil(t, response)
 	require.NotNil(t, response.Output)
@@ -90,7 +90,7 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 
 	response, err := context.facade.UpgradeSmartContract(request)
 
-	t := context.t
+	t := context.tb
 	require.Nil(t, err)
 	require.NotNil(t, response)
 	require.NotNil(t, response.Output)
@@ -114,7 +114,7 @@ func (context *testContext) runContract(contract string, impersonated string, fu
 
 	response, err := context.facade.RunSmartContract(request)
 
-	t := context.t
+	t := context.tb
 	require.Nil(t, err)
 	require.NotNil(t, response)
 	require.NotNil(t, response.Output)
@@ -140,7 +140,7 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 
 	response, err := context.facade.QuerySmartContract(request)
 
-	t := context.t
+	t := context.tb
 	require.Nil(t, err)
 	require.NotNil(t, response)
 	require.NotNil(t, response.Output)
@@ -171,9 +171,9 @@ func (context *testContext) createRequestBase() RequestBase {
 }
 
 func (context *testContext) loadWorld() *world {
-	database := newDatabase(databasePath)
+	database := newDatabase(context.tb, databasePath)
 	world, err := database.loadWorld(context.worldID)
-	require.Nil(context.t, err)
+	require.Nil(context.tb, err)
 
 	return world
 }

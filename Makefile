@@ -15,8 +15,17 @@ endif
 	go build -o ./cmd/vmserver/vmserver ./cmd/vmserver
 	cp ./cmd/vmserver/vmserver ${VMSERVER_PATH}
 
-test: clean
-	go test ./...
+test:
+	go clean -cache -testcache
+	VMEXECUTOR="wasmer1" go test ./...
+	go clean -cache -testcache
+	VMEXECUTOR="wasmer2" go test ./...
+
+test-w1: clean
+	VMEXECUTOR="wasmer1" go test ./...
+
+test-w2: clean
+	VMEXECUTOR="wasmer2" go test ./...
 
 test-v: clean
 	go test ./... -v

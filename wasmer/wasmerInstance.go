@@ -316,10 +316,16 @@ func (instance *WasmerInstance) GetFunctionNames() []string {
 	return functionNames
 }
 
-// ValidateVoidFunction checks that no function (endpoint) of the given contract has any parameters or returns any result.
+// ValidateFunctionArities checks that no function (endpoint) of the given contract has any parameters or returns any result.
 // All arguments and results should be transferred via the import functions.
-func (instance *WasmerInstance) ValidateVoidFunction(functionName string) error {
-	return instance.verifyVoidFunction(functionName)
+func (instance *WasmerInstance) ValidateFunctionArities() error {
+	for functionName := range instance.exports {
+		err := instance.verifyVoidFunction(functionName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.

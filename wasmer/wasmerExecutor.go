@@ -7,6 +7,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
+var _ executor.Executor = (*WasmerExecutor)(nil)
+
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
 	eiFunctionNames vmcommon.FunctionNames

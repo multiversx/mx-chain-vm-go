@@ -37,14 +37,9 @@ func (validator *wasmValidator) verifyFunctions(instance executor.Instance) erro
 		if err != nil {
 			return err
 		}
-
-		err = instance.ValidateVoidFunction(functionName)
-		if err != nil {
-			return err
-		}
 	}
 
-	return nil
+	return instance.ValidateFunctionArities()
 }
 
 var protectedFunctions = map[string]bool{

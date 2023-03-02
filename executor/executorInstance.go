@@ -12,7 +12,7 @@ type Instance interface {
 	CallFunction(functionName string) error
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
-	ValidateVoidFunction(functionName string) error
+	ValidateFunctionArities() error
 	HasMemory() bool
 	MemLoad(memPtr MemPtr, length MemLength) ([]byte, error)
 	MemStore(memPtr MemPtr, data []byte) error

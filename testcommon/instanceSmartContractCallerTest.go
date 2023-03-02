@@ -5,6 +5,8 @@ import (
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
@@ -56,102 +58,112 @@ func (mockSC *InstanceTestSmartContract) WithCodeMetadata(metadata []byte) *Inst
 	return mockSC
 }
 
-// InstancesTestTemplate holds the data to build a contract call test
-type InstancesTestTemplate struct {
+// InstanceCallTestTemplate holds the data to build a contract call test
+type InstanceCallTestTemplate struct {
 	testTemplateConfig
-	contracts          []*InstanceTestSmartContract
-	gasSchedule        config.GasScheduleMap
-	setup              func(vmhost.VMHost, *contextmock.BlockchainHookStub)
-	assertResults      func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host               vmhost.VMHost
-	blockchainHookStub *contextmock.BlockchainHookStub
+	contracts     []*InstanceTestSmartContract
+	setup         func(vmhost.VMHost, *contextmock.BlockchainHookStub)
+	assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host          vmhost.VMHost
+	hostBuilder   *TestHostBuilder
 }
 
 // BuildInstanceCallTest starts the building process for a contract call test
-func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
-	return &InstancesTestTemplate{
+func BuildInstanceCallTest(tb testing.TB) *InstanceCallTestTemplate {
+	return &InstanceCallTestTemplate{
 		testTemplateConfig: testTemplateConfig{
 			tb:                       tb,
 			useMocks:                 false,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
+		hostBuilder: NewTestHostBuilder(tb),
+		setup:       func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 	}
 }
 
 // WithContracts provides the contracts to be used by the contract call test
-func (callerTest *InstancesTestTemplate) WithContracts(usedContracts ...*InstanceTestSmartContract) *InstancesTestTemplate {
-	callerTest.contracts = usedContracts
-	return callerTest
+func (template *InstanceCallTestTemplate) WithContracts(usedContracts ...*InstanceTestSmartContract) *InstanceCallTestTemplate {
+	template.contracts = usedContracts
+	return template
 }
 
 // WithInput provides the ContractCallInput to be used by the contract call test
-func (callerTest *InstancesTestTemplate) WithInput(input *vmcommon.ContractCallInput) *InstancesTestTemplate {
-	callerTest.input = input
-	return callerTest
+func (template *InstanceCallTestTemplate) WithInput(input *vmcommon.ContractCallInput) *InstanceCallTestTemplate {
+	template.input = input
+	return template
 }
 
 // WithSetup provides the setup function to be used by the contract call test
-func (callerTest *InstancesTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstancesTestTemplate {
-	callerTest.setup = setup
-	return callerTest
+func (template *InstanceCallTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstanceCallTestTemplate {
+	template.setup = setup
+	return template
 }
 
 // WithGasSchedule provides gas schedule for the test
-func (callerTest *InstancesTestTemplate) WithGasSchedule(gasSchedule config.GasScheduleMap) *InstancesTestTemplate {
-	callerTest.gasSchedule = gasSchedule
-	return callerTest
+func (template *InstanceCallTestTemplate) WithGasSchedule(gasSchedule config.GasScheduleMap) *InstanceCallTestTemplate {
+	template.hostBuilder.WithGasSchedule(gasSchedule)
+	return template
+}
+
+// WithExecutorFactory provides the wasmer executor for the test
+func (template *InstanceCallTestTemplate) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *InstanceCallTestTemplate {
+	template.hostBuilder.WithExecutorFactory(executorFactory)
+	return template
+}
+
+// WithExecutorLogs sets an ExecutorLogger
+func (template *InstanceCallTestTemplate) WithExecutorLogs(executorLogger executorwrapper.ExecutorLogger) *InstanceCallTestTemplate {
+	template.hostBuilder.WithExecutorLogs(executorLogger)
+	return template
 }
 
 // WithWasmerSIGSEGVPassthrough sets the wasmerSIGSEGVPassthrough flag
-func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *InstancesTestTemplate {
-	callerTest.wasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
-	return callerTest
+func (template *InstanceCallTestTemplate) WithWasmerSIGSEGVPassthrough(passthrough bool) *InstanceCallTestTemplate {
+	template.hostBuilder.WithWasmerSIGSEGVPassthrough(passthrough)
+	return template
 }
 
 // GetVMHost returns the inner VMHost
-func (callerTest *InstancesTestTemplate) GetVMHost() vmhost.VMHost {
-	return callerTest.host
+func (template *InstanceCallTestTemplate) GetVMHost() vmhost.VMHost {
+	return template.host
 }
 
 // AndAssertResults starts the test and asserts the results
-func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	runTestWithInstances(callerTest, true)
+func (template *InstanceCallTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	template.assertResults = assertResults
+	runTestWithInstances(template, true)
 }
 
 // AndAssertResultsWithoutReset starts the test and asserts the results
-func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	runTestWithInstances(callerTest, false)
+func (template *InstanceCallTestTemplate) AndAssertResultsWithoutReset(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	template.assertResults = assertResults
+	runTestWithInstances(template, false)
 }
 
-func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
-	if callerTest.host == nil {
-		callerTest.blockchainHookStub = BlockchainHookStubForContracts(callerTest.contracts)
-		callerTest.host = NewTestHostBuilder(callerTest.tb).
-			WithBlockchainHook(callerTest.blockchainHookStub).
-			WithGasSchedule(callerTest.gasSchedule).
-			WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
-			Build()
-		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+func runTestWithInstances(template *InstanceCallTestTemplate, reset bool) {
+	var blhookStub *contextmock.BlockchainHookStub
+	if template.host == nil {
+		blhookStub = BlockchainHookStubForContracts(template.contracts)
+		template.hostBuilder.WithBlockchainHook(blhookStub)
+		template.host = template.hostBuilder.Build()
+		template.setup(template.host, blhookStub)
 	}
 
 	defer func() {
 		if reset {
-			callerTest.host.Reset()
+			template.host.Reset()
 		}
 
 		// Extra verification for instance leaks
-		err := callerTest.host.Runtime().ValidateInstances()
-		require.Nil(callerTest.tb, err)
+		err := template.host.Runtime().ValidateInstances()
+		require.Nil(template.tb, err)
 	}()
 
-	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)
+	vmOutput, err := template.host.RunSmartContractCall(template.input)
 
-	if callerTest.assertResults != nil {
-		allErrors := callerTest.host.Runtime().GetAllErrors()
-		verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
-		callerTest.assertResults(callerTest.host, callerTest.blockchainHookStub, verify)
+	if template.assertResults != nil {
+		allErrors := template.host.Runtime().GetAllErrors()
+		verify := NewVMOutputVerifierWithAllErrors(template.tb, vmOutput, err, allErrors)
+		template.assertResults(template.host, blhookStub, verify)
 	}
 }

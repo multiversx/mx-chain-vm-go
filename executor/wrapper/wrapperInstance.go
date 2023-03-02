@@ -85,10 +85,9 @@ func (inst *WrapperInstance) GetFunctionNames() []string {
 	return result
 }
 
-// ValidateVoidFunction wraps the call to the underlying instance.
-func (inst *WrapperInstance) ValidateVoidFunction(functionName string) error {
-	err := inst.wrappedInstance.ValidateVoidFunction(functionName)
-	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateVoidFunction(%s): %t", functionName, err == nil))
+func (inst *WrapperInstance) ValidateFunctionArities() error {
+	err := inst.wrappedInstance.ValidateFunctionArities()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateFunctionArities: %t", err == nil))
 	return err
 }
 
