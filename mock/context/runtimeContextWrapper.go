@@ -24,6 +24,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCAddressFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetOriginalCallerAddressFunc func() []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetCodeAddressFunc func(scAddress []byte)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCCodeFunc func() ([]byte, error)
@@ -351,6 +353,11 @@ func (contextWrapper *RuntimeContextWrapper) GetContextAddress() []byte {
 	return contextWrapper.GetSCAddressFunc()
 }
 
+// GetOriginalCallerAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetOriginalCallerAddress() []byte {
+	return contextWrapper.GetOriginalCallerAddressFunc()
+}
+
 // SetCodeAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) SetCodeAddress(scAddress []byte) {
 	contextWrapper.SetCodeAddressFunc(scAddress)
@@ -519,6 +526,11 @@ func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution
 // ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return contextWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
+}
+
+// ManagedMapAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ManagedMapAPIErrorShouldFailExecution() bool {
+	return contextWrapper.runtimeContext.ManagedMapAPIErrorShouldFailExecution()
 }
 
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

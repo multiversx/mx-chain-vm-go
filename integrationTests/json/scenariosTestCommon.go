@@ -10,10 +10,10 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
+	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
-	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/stretchr/testify/require"
 )
@@ -106,7 +106,7 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 			mtb.executorFactory)
 	}
 
-	runner := mc.NewScenarioRunner(
+	runner := mc.NewScenarioController(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)

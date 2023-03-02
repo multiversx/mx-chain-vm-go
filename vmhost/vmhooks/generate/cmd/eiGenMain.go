@@ -28,6 +28,7 @@ func initEIMetadata() *eapigen.EIMetadata {
 			{SourcePath: "bigFloatOps.go", Name: "BigFloat"},
 			{SourcePath: "bigIntOps.go", Name: "BigInt"},
 			{SourcePath: "manBufOps.go", Name: "ManagedBuffer"},
+			{SourcePath: "manMapOps.go", Name: "ManagedMap"},
 			{SourcePath: "smallIntOps.go", Name: "SmallInt"},
 			{SourcePath: "cryptoei.go", Name: "Crypto"},
 		},
@@ -52,6 +53,8 @@ func main() {
 		writeWasmer2ImportsCgo(eiMetadata)
 		writeWasmer2Names(eiMetadata)
 	}
+
+	writeNamesForMockExecutor(eiMetadata)
 
 	tryCreateRustOutputDirectory()
 
@@ -104,7 +107,13 @@ func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2Names.go")
 	defer out.Close()
-	eapigen.WriteNames(out, eiMetadata)
+	eapigen.WriteNames(out, "wasmer2", eiMetadata)
+}
+
+func writeNamesForMockExecutor(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../mock/context/executorMockFunc.go")
+	defer out.Close()
+	eapigen.WriteNames(out, "mock", eiMetadata)
 }
 
 func tryCreateRustOutputDirectory() {

@@ -59,7 +59,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err = host.performCodeDeployment(codeDeployInput)
+	vmOutput, err = host.performCodeDeploymentAtContractCreate(codeDeployInput)
 	if err != nil {
 		log.Trace("doRunSmartContractCreate", "error", err)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -74,7 +74,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	return vmOutput
 }
 
-func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunction func() error) (*vmcommon.VMOutput, error) {
 	log.Trace("performCodeDeployment", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
@@ -99,7 +99,7 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcomm
 		}
 	}()
 
-	err = host.callInitFunction()
+	err = initFunction()
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +111,14 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcomm
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
+}
+
+func (host *vmHost) performCodeDeploymentAtContractCreate(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	return host.performCodeDeployment(input, host.callInitFunction)
+}
+
+func (host *vmHost) performCodeDeploymentAtContractUpgrade(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	return host.performCodeDeployment(input, host.callUpgradeFunction)
 }
 
 // doRunSmartContractUpgrade upgrades a contract directly
@@ -157,7 +165,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err = host.performCodeDeployment(codeDeployInput)
+	vmOutput, err = host.performCodeDeploymentAtContractUpgrade(codeDeployInput)
 	if err != nil {
 		log.Trace("doRunSmartContractUpgrade", "error", err)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -570,7 +578,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
 	functionName := host.Runtime().FunctionName()
-	return functionName == vmhost.InitFunctionName || functionName == vmhost.InitFunctionNameEth
+	return functionName == vmhost.InitFunctionName
 }
 
 // IsOutOfVMFunctionExecution returns true if the call should be executed on ahother VM
@@ -838,8 +846,8 @@ func (host *vmHost) callSCMethodIndirect() error {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0, it will call multi transfer if multiple tokens are sent
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
-	if len(transfers) == 0 {
+func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+	if len(transfersArgs.Transfers) == 0 {
 		return nil, 0, vmhost.ErrFailedTransfer
 	}
 
@@ -851,32 +859,34 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   make([][]byte, 0),
-			CallValue:   big.NewInt(0),
-			CallType:    callType,
-			GasPrice:    runtime.GetVMInput().GasPrice,
-			GasProvided: metering.GasLeft(),
-			GasLocked:   0,
+			OriginalCallerAddr: transfersArgs.OriginalCaller,
+			CallerAddr:         transfersArgs.Sender,
+			Arguments:          make([][]byte, 0),
+			CallValue:          big.NewInt(0),
+			CallType:           callType,
+			GasPrice:           runtime.GetVMInput().GasPrice,
+			GasProvided:        metering.GasLeft(),
+			GasLocked:          0,
 		},
-		RecipientAddr:     destination,
+		RecipientAddr:     transfersArgs.Destination,
 		Function:          core.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
+	transfers := transfersArgs.Transfers
 	if len(transfers) == 1 {
 		if transfers[0].ESDTTokenNonce > 0 {
 			esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
 			nonceAsBytes := big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()
-			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, nonceAsBytes, transfers[0].ESDTValue.Bytes(), destination)
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, nonceAsBytes, transfers[0].ESDTValue.Bytes(), transfersArgs.Destination)
 		} else {
 			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, transfers[0].ESDTValue.Bytes())
 		}
 	} else {
 		esdtTransferInput.Function = core.BuiltInFunctionMultiESDTNFTTransfer
 		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
-		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, destination, big.NewInt(int64(len(transfers))).Bytes())
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfersArgs.Destination, big.NewInt(int64(len(transfers))).Bytes())
 		for _, transfer := range transfers {
 			nonceAsBytes := big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()
 			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfer.ESDTTokenName, nonceAsBytes, transfer.ESDTValue.Bytes())
@@ -884,7 +894,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
-	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
+	log.Trace("ESDT transfer", "sender", transfersArgs.Sender, "dest", transfersArgs.Destination)
 	for _, transfer := range transfers {
 		log.Trace("ESDT transfer", "token", transfer.ESDTTokenName, "nonce", transfer.ESDTTokenNonce, "value", transfer.ESDTValue)
 	}
@@ -1013,6 +1023,7 @@ func addOutputTransferToVMOutput(
 		}
 	}
 	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
+	contexts.AppendOutputTransfers(outAcc, outAcc.OutputTransfers, outTransfer)
 	vmOutput.OutputAccounts[string(recipient)] = outAcc
 }
 
@@ -1028,12 +1039,20 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 }
 
 func (host *vmHost) callInitFunction() error {
+	return host.callSCFunction(vmhost.InitFunctionName)
+}
+
+func (host *vmHost) callUpgradeFunction() error {
+	return host.callSCFunction(vmhost.ContractsUpgradeFunctionName)
+}
+
+func (host *vmHost) callSCFunction(functionName string) error {
 	runtime := host.Runtime()
-	if !runtime.HasFunction(vmhost.InitFunctionName) {
+	if !runtime.HasFunction(functionName) {
 		return nil
 	}
 
-	err := runtime.CallSCFunction(vmhost.InitFunctionName)
+	err := runtime.CallSCFunction(functionName)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -1198,8 +1217,12 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	runtime := host.Runtime()
 	functionName := runtime.FunctionName()
 
-	isInit := functionName == vmhost.InitFunctionName || functionName == vmhost.InitFunctionNameEth
+	isInit := functionName == vmhost.InitFunctionName
 	if isInit {
+		return vmhost.ErrInitFuncCalledInRun
+	}
+	isUpgrade := functionName == vmhost.ContractsUpgradeFunctionName
+	if isUpgrade {
 		return vmhost.ErrInitFuncCalledInRun
 	}
 
@@ -1256,16 +1279,17 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	// just for hashing, or hash the VMInput itself)
 	newVMInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     vmInput.CallerAddr,
-			Arguments:      arguments,
-			CallValue:      big.NewInt(0),
-			CallType:       callType,
-			GasPrice:       vmInput.GasPrice,
-			GasProvided:    scCallOutTransfer.GasLimit,
-			GasLocked:      scCallOutTransfer.GasLocked,
-			OriginalTxHash: vmInput.OriginalTxHash,
-			CurrentTxHash:  vmInput.CurrentTxHash,
-			PrevTxHash:     vmInput.PrevTxHash,
+			OriginalCallerAddr: vmInput.OriginalCallerAddr,
+			CallerAddr:         vmInput.CallerAddr,
+			Arguments:          arguments,
+			CallValue:          big.NewInt(0),
+			CallType:           callType,
+			GasPrice:           vmInput.GasPrice,
+			GasProvided:        scCallOutTransfer.GasLimit,
+			GasLocked:          scCallOutTransfer.GasLocked,
+			OriginalTxHash:     vmInput.OriginalTxHash,
+			CurrentTxHash:      vmInput.CurrentTxHash,
+			PrevTxHash:         vmInput.PrevTxHash,
 		},
 		RecipientAddr:     parsedTransfer.RcvAddr,
 		Function:          function,

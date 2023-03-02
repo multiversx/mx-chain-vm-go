@@ -27,7 +27,6 @@ type runtimeContext struct {
 	host                 vmhost.VMHost
 	vmInput              *vmcommon.ContractCallInput
 	codeAddress          []byte
-	codeSize             uint64
 	callFunction         string
 	vmType               []byte
 	readOnly             bool
@@ -145,6 +144,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		codeHash = blockchain.GetCodeHash(context.codeAddress)
 	}
 
+	context.iTracker.SetCodeSize(uint64(len(contract)))
 	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
@@ -285,13 +285,12 @@ func (context *runtimeContext) GetSCCode() ([]byte, error) {
 		return nil, err
 	}
 
-	context.codeSize = uint64(len(code))
 	return code, nil
 }
 
 // GetSCCodeSize returns the cached size of the current SC code.
 func (context *runtimeContext) GetSCCodeSize() uint64 {
-	return context.codeSize
+	return context.iTracker.GetCodeSize()
 }
 
 func (context *runtimeContext) saveCompiledCode() {
@@ -480,6 +479,8 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	if len(vmInput.CallerAddr) > 0 {
 		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
 		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
+		context.vmInput.OriginalCallerAddr = make([]byte, len(vmInput.OriginalCallerAddr))
+		copy(context.vmInput.OriginalCallerAddr, vmInput.OriginalCallerAddr)
 	}
 
 	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
@@ -512,6 +513,11 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 			copy(context.vmInput.Arguments[i], arg)
 		}
 	}
+}
+
+// GetOriginalCallerAddress returns the original caller's address
+func (context *runtimeContext) GetOriginalCallerAddress() []byte {
+	return context.vmInput.OriginalCallerAddr
 }
 
 // GetContextAddress returns the SC address from the current context.
@@ -690,6 +696,11 @@ func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
 
 // ManagedBufferAPIErrorShouldFailExecution returns true
 func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+// ManagedMapAPIErrorShouldFailExecution returns true
+func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
 	return true
 }
 

@@ -32,12 +32,14 @@ var logTracker = logger.GetOrCreate("vm/tracker")
 
 type instanceTracker struct {
 	codeHash            []byte
+	codeSize            uint64
 	numRunningInstances int
 	warmInstanceCache   Cacher
 	instance            executor.Instance
 	cacheLevel          instanceCacheLevel
 	instanceStack       []executor.Instance
 	codeHashStack       [][]byte
+	codeSizeStack       []uint64
 
 	instances map[string]executor.Instance
 }
@@ -47,6 +49,8 @@ func NewInstanceTracker() (*instanceTracker, error) {
 	tracker := &instanceTracker{
 		instances:           make(map[string]executor.Instance),
 		instanceStack:       make([]executor.Instance, 0),
+		codeHashStack:       make([][]byte, 0),
+		codeSizeStack:       make([]uint64, 0),
 		numRunningInstances: 0,
 	}
 
@@ -69,12 +73,14 @@ func (tracker *instanceTracker) InitState() {
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 	tracker.instances = make(map[string]executor.Instance)
+	tracker.codeSize = 0
 }
 
 // PushState pushes the active instance and codeHash on the state stacks
 func (tracker *instanceTracker) PushState() {
 	tracker.instanceStack = append(tracker.instanceStack, tracker.instance)
 	tracker.codeHashStack = append(tracker.codeHashStack, tracker.codeHash)
+	tracker.codeSizeStack = append(tracker.codeSizeStack, tracker.codeSize)
 	logTracker.Trace("pushing instance", "id", tracker.instance.ID(), "codeHash", tracker.codeHash)
 }
 
@@ -102,6 +108,9 @@ func (tracker *instanceTracker) PopSetActiveState() {
 	tracker.instanceStack = tracker.instanceStack[:instanceStackLen-1]
 	tracker.codeHash = tracker.codeHashStack[instanceStackLen-1]
 	tracker.codeHashStack = tracker.codeHashStack[:instanceStackLen-1]
+
+	tracker.codeSize = tracker.codeSizeStack[instanceStackLen-1]
+	tracker.codeSizeStack = tracker.codeSizeStack[:instanceStackLen-1]
 }
 
 func (tracker *instanceTracker) cleanPoppedInstance(instance executor.Instance, codeHash []byte) {
@@ -122,6 +131,7 @@ func (tracker *instanceTracker) PopDiscard() {
 func (tracker *instanceTracker) ClearStateStack() {
 	tracker.codeHashStack = make([][]byte, 0)
 	tracker.instanceStack = make([]executor.Instance, 0)
+	tracker.codeSizeStack = make([]uint64, 0)
 }
 
 // StackSize returns the size of the instance stack
@@ -268,6 +278,16 @@ func (tracker *instanceTracker) SetCodeHash(codeHash []byte) {
 	tracker.codeHash = codeHash
 }
 
+// SetCodeSize sets the size of the active code
+func (tracker *instanceTracker) SetCodeSize(codeSize uint64) {
+	tracker.codeSize = codeSize
+}
+
+// GetCodeSize returns the size of the active code
+func (tracker *instanceTracker) GetCodeSize() uint64 {
+	return tracker.codeSize
+}
+
 // SetNewInstance sets the given instance as active and tracks its creation
 func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) {
 	tracker.ReplaceInstance(instance)
@@ -306,7 +326,6 @@ func (tracker *instanceTracker) UnsetInstance() {
 		"codeHash", tracker.codeHash)
 	tracker.instance = nil
 	tracker.codeHash = nil
-
 }
 
 // LogCounts prints the instance counter to the log

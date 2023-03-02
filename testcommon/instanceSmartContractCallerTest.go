@@ -22,7 +22,8 @@ type InstanceTestSmartContract struct {
 func CreateInstanceContract(address []byte) *InstanceTestSmartContract {
 	return &InstanceTestSmartContract{
 		testSmartContract: testSmartContract{
-			address: address,
+			address:      address,
+			ownerAddress: UserAddress,
 		},
 	}
 }
@@ -42,6 +43,18 @@ func (mockSC *InstanceTestSmartContract) WithConfig(testConfig *TestConfig) *Ins
 // WithCode provides the code for the InstanceTestSmartContract
 func (mockSC *InstanceTestSmartContract) WithCode(code []byte) *InstanceTestSmartContract {
 	mockSC.code = code
+	return mockSC
+}
+
+// WithOwner provides the owner for the InstanceTestSmartContract
+func (mockSC *InstanceTestSmartContract) WithOwner(owner []byte) *InstanceTestSmartContract {
+	mockSC.ownerAddress = owner
+	return mockSC
+}
+
+// WithCodeMetadata provides the owner for the InstanceTestSmartContract
+func (mockSC *InstanceTestSmartContract) WithCodeMetadata(metadata []byte) *InstanceTestSmartContract {
+	mockSC.codeMetadata = metadata
 	return mockSC
 }
 

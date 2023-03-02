@@ -58,6 +58,8 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		arguments := host.Runtime().Arguments()
 		outputContext := host.Output()
 
+		_, _ = host.Storage().SetStorage(test.OriginalCallerChild, host.Runtime().GetOriginalCallerAddress())
+
 		if len(arguments) != 3 {
 			host.Runtime().SignalUserError("wrong num of arguments")
 			return instance

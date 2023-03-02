@@ -34,6 +34,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		_, _ = host.Storage().SetStorage(test.ParentKeyA, test.ParentDataA)
 		_, _ = host.Storage().SetStorage(test.ParentKeyB, test.ParentDataB)
+		_, _ = host.Storage().SetStorage(test.OriginalCallerParent, host.Runtime().GetOriginalCallerAddress())
 		host.Output().Finish(test.ParentFinishA)
 		host.Output().Finish(test.ParentFinishB)
 
@@ -142,6 +143,8 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
+
+		_, _ = host.Storage().SetStorage(test.OriginalCallerCallback, host.Runtime().GetOriginalCallerAddress())
 
 		if !testConfig.IsLegacyAsync {
 			managed := host.ManagedTypes()

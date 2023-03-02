@@ -29,7 +29,7 @@ type VMHostStub struct {
 	GetContextsCalled         func() (vmhost.ManagedTypesContext, vmhost.BlockchainContext, vmhost.MeteringContext, vmhost.OutputContext, vmhost.RuntimeContext, vmhost.AsyncContext, vmhost.StorageContext)
 	ManagedTypesCalled        func() vmhost.ManagedTypesContext
 
-	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransferCalled   func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
@@ -175,9 +175,9 @@ func (vhs *VMHostStub) Async() vmhost.AsyncContext {
 }
 
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
-		return vhs.ExecuteESDTTransferCalled(destination, sender, transfers, callType)
+		return vhs.ExecuteESDTTransferCalled(transfersArgs, callType)
 	}
 	return nil, 0, nil
 }

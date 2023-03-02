@@ -144,11 +144,11 @@ const (
 	// InitFunctionName specifies the name for the init function
 	InitFunctionName = "init"
 
-	// InitFunctionNameEth specifies the name for the init function on Ethereum
-	InitFunctionNameEth = "solidity.ctor"
-
 	// UpgradeFunctionName specifies if the call is an upgradeContract call
 	UpgradeFunctionName = "upgradeContract"
+
+	// ContractsUpgradeFunctionName specifies the contract's function called at upgrade
+	ContractsUpgradeFunctionName = "upgrade"
 
 	// DeleteFunctionName specifies if the call is an deleteContract call
 	DeleteFunctionName = "deleteContract"
@@ -259,4 +259,11 @@ func (ac *AsyncGeneratedCall) GetValueBytes() []byte {
 // IsInterfaceNil returns true if there is no value under the interface
 func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 	return ac == nil
+}
+
+type ESDTTransfersArgs struct {
+	Destination    []byte
+	OriginalCaller []byte
+	Sender         []byte
+	Transfers      []*vmcommon.ESDTTransfer
 }

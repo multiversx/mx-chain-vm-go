@@ -1039,7 +1039,14 @@ func TransferESDTNFTExecuteWithTypedArgs(
 
 	snapshotBeforeTransfer := host.Blockchain().GetSnapshot()
 
-	gasLimitForExec, executeErr := output.TransferESDT(dest, sender, transfers, contractCallInput)
+	originalCaller := host.Runtime().GetOriginalCallerAddress()
+	transfersArgs := &vmhost.ESDTTransfersArgs{
+		Destination:    dest,
+		OriginalCaller: originalCaller,
+		Sender:         sender,
+		Transfers:      transfers,
+	}
+	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2494,6 +2501,7 @@ func ExecuteOnSameContextWithTypedArgs(
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
+
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -2597,6 +2605,7 @@ func ExecuteOnDestContextWithTypedArgs(
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
+
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -2690,6 +2699,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
+
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -2801,7 +2811,7 @@ func (context *VMHooksImpl) createContractWithHost(
 	}
 
 	valueAsInt := big.NewInt(0).SetBytes(value)
-	newAddress, err := createContract(sender, data, valueAsInt, metering, gasLimit, code, codeMetadata, host, runtime)
+	newAddress, err := createContract(sender, data, valueAsInt, gasLimit, code, codeMetadata, host)
 
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
@@ -2895,7 +2905,6 @@ func DeployFromSourceContractWithTypedArgs(
 	gasLimit int64,
 ) ([]byte, error) {
 	runtime := host.Runtime()
-	metering := host.Metering()
 	sender := runtime.GetContextAddress()
 
 	blockchain := host.Blockchain()
@@ -2904,27 +2913,28 @@ func DeployFromSourceContractWithTypedArgs(
 		return nil, err
 	}
 
-	return createContract(sender, data, value, metering, gasLimit, code, codeMetadata, host, runtime)
+	return createContract(sender, data, value, gasLimit, code, codeMetadata, host)
 }
 
 func createContract(
 	sender []byte,
 	data [][]byte,
 	value *big.Int,
-	metering vmhost.MeteringContext,
 	gasLimit int64,
 	code []byte,
 	codeMetadata []byte,
 	host vmhost.VMHost,
-	_ vmhost.RuntimeContext,
 ) ([]byte, error) {
+	originalCaller := host.Runtime().GetOriginalCallerAddress()
+	metering := host.Metering()
 	contractCreate := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   value,
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			OriginalCallerAddr: originalCaller,
+			CallerAddr:         sender,
+			Arguments:          data,
+			CallValue:          value,
+			GasPrice:           0,
+			GasProvided:        metering.BoundGasLimit(gasLimit),
 		},
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
@@ -3098,12 +3108,13 @@ func prepareIndirectContractCallInput(
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   value,
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
-			CallType:    vm.DirectCall,
+			OriginalCallerAddr: host.Runtime().GetOriginalCallerAddress(),
+			CallerAddr:         sender,
+			Arguments:          data,
+			CallValue:          value,
+			GasPrice:           0,
+			GasProvided:        metering.BoundGasLimit(gasLimit),
+			CallType:           vm.DirectCall,
 		},
 		RecipientAddr: destination,
 		Function:      string(function),
