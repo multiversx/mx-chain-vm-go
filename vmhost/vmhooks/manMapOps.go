@@ -1,11 +1,11 @@
 package vmhooks
 
 const (
-	managedMapNewName      = "managedMapNewName"
-	managedMapPutName      = "managedMapPutName"
-	managedMapGetName      = "managedMapGetName"
-	managedMapRemoveName   = "managedMapRemoveName"
-	managedMapContainsName = "managedMapContainsName"
+	managedMapNewName      = "managedMapNew"
+	managedMapPutName      = "managedMapPut"
+	managedMapGetName      = "managedMapGet"
+	managedMapRemoveName   = "managedMapRemove"
+	managedMapContainsName = "managedMapContains"
 )
 
 // ManagedMapNew VMHooks implementation.
@@ -76,7 +76,7 @@ func (context *VMHooksImpl) ManagedMapRemove(mMapHandle int32, keyHandle int32, 
 
 // ManagedMapContains VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) ManagedMapContains(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+func (context *VMHooksImpl) ManagedMapContains(mMapHandle int32, keyHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()

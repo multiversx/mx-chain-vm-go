@@ -235,6 +235,11 @@ typedef struct {
   int32_t (*mbuffer_get_argument_func_ptr)(void *context, int32_t id, int32_t destination_handle);
   int32_t (*mbuffer_finish_func_ptr)(void *context, int32_t source_handle);
   int32_t (*mbuffer_set_random_func_ptr)(void *context, int32_t destination_handle, int32_t length);
+  int32_t (*managed_map_new_func_ptr)(void *context);
+  int32_t (*managed_map_put_func_ptr)(void *context, int32_t m_map_handle, int32_t key_handle, int32_t value_handle);
+  int32_t (*managed_map_get_func_ptr)(void *context, int32_t m_map_handle, int32_t key_handle, int32_t out_value_handle);
+  int32_t (*managed_map_remove_func_ptr)(void *context, int32_t m_map_handle, int32_t key_handle, int32_t out_value_handle);
+  int32_t (*managed_map_contains_func_ptr)(void *context, int32_t m_map_handle, int32_t key_handle);
   int64_t (*small_int_get_unsigned_argument_func_ptr)(void *context, int32_t id);
   int64_t (*small_int_get_signed_argument_func_ptr)(void *context, int32_t id);
   void (*small_int_finish_unsigned_func_ptr)(void *context, int64_t value);

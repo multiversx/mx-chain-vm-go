@@ -208,6 +208,11 @@ package wasmer2
 // extern int32_t   w2_mBufferGetArgument(void* context, int32_t id, int32_t destinationHandle);
 // extern int32_t   w2_mBufferFinish(void* context, int32_t sourceHandle);
 // extern int32_t   w2_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
+// extern int32_t   w2_managedMapNew(void* context);
+// extern int32_t   w2_managedMapPut(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t valueHandle);
+// extern int32_t   w2_managedMapGet(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern int32_t   w2_managedMapRemove(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern int32_t   w2_managedMapContains(void* context, int32_t mMapHandle, int32_t keyHandle);
 // extern long long w2_smallIntGetUnsignedArgument(void* context, int32_t id);
 // extern long long w2_smallIntGetSignedArgument(void* context, int32_t id);
 // extern void      w2_smallIntFinishUnsigned(void* context, long long value);
@@ -466,6 +471,11 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		mbuffer_get_argument_func_ptr: funcPointer(C.w2_mBufferGetArgument),
 		mbuffer_finish_func_ptr: funcPointer(C.w2_mBufferFinish),
 		mbuffer_set_random_func_ptr: funcPointer(C.w2_mBufferSetRandom),
+		managed_map_new_func_ptr: funcPointer(C.w2_managedMapNew),
+		managed_map_put_func_ptr: funcPointer(C.w2_managedMapPut),
+		managed_map_get_func_ptr: funcPointer(C.w2_managedMapGet),
+		managed_map_remove_func_ptr: funcPointer(C.w2_managedMapRemove),
+		managed_map_contains_func_ptr: funcPointer(C.w2_managedMapContains),
 		small_int_get_unsigned_argument_func_ptr: funcPointer(C.w2_smallIntGetUnsignedArgument),
 		small_int_get_signed_argument_func_ptr: funcPointer(C.w2_smallIntGetSignedArgument),
 		small_int_finish_unsigned_func_ptr: funcPointer(C.w2_smallIntFinishUnsigned),
@@ -1699,6 +1709,36 @@ func w2_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 func w2_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.MBufferSetRandom(destinationHandle, length)
+}
+
+//export w2_managedMapNew
+func w2_managedMapNew(context unsafe.Pointer) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapNew()
+}
+
+//export w2_managedMapPut
+func w2_managedMapPut(context unsafe.Pointer, mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+}
+
+//export w2_managedMapGet
+func w2_managedMapGet(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+}
+
+//export w2_managedMapRemove
+func w2_managedMapRemove(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+}
+
+//export w2_managedMapContains
+func w2_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapContains(mMapHandle, keyHandle)
 }
 
 //export w2_smallIntGetUnsignedArgument

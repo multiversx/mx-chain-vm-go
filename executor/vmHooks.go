@@ -235,7 +235,7 @@ type ManagedMapVMHooks interface {
 	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32
 	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) int32
 	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) int32
-	ManagedMapContains(mMapHandle int32, keyHandle int32, outValueHandle int32) int32
+	ManagedMapContains(mMapHandle int32, keyHandle int32) int32
 }
 
 type SmallIntVMHooks interface {

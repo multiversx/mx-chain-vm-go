@@ -212,7 +212,7 @@ package wasmer
 // extern int32_t   v1_5_managedMapPut(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t valueHandle);
 // extern int32_t   v1_5_managedMapGet(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
 // extern int32_t   v1_5_managedMapRemove(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
-// extern int32_t   v1_5_managedMapContains(void* context, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern int32_t   v1_5_managedMapContains(void* context, int32_t mMapHandle, int32_t keyHandle);
 // extern long long v1_5_smallIntGetUnsignedArgument(void* context, int32_t id);
 // extern long long v1_5_smallIntGetSignedArgument(void* context, int32_t id);
 // extern void      v1_5_smallIntFinishUnsigned(void* context, long long value);
@@ -2744,9 +2744,9 @@ func v1_5_managedMapRemove(context unsafe.Pointer, mMapHandle int32, keyHandle i
 }
 
 //export v1_5_managedMapContains
-func v1_5_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+func v1_5_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapContains(mMapHandle, keyHandle, outValueHandle)
+	return vmHooks.ManagedMapContains(mMapHandle, keyHandle)
 }
 
 //export v1_5_smallIntGetUnsignedArgument
