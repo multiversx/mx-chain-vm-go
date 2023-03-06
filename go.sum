@@ -1,4 +1,7 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/TwiN/go-color v1.1.0/go.mod h1:aKVf4e1mD4ai2FtPifkDPP5iyoCwiK08YGzGwerjKo0=
+github.com/TwiN/go-color v1.4.0 h1:fNbOwOrvup5oj934UragnW0B1WKaAkkB85q19Y7h4ng=
+github.com/TwiN/go-color v1.4.0/go.mod h1:0QTVEPlu+AoCyTrho7bXbVkrCkVpdQr7YF7PYWEtSxM=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/awalterschulze/gographviz v2.0.3+incompatible h1:9sVEXJBJLwGX7EQVhLm2elIKCm7P2YHFC8v6096G09E=
 github.com/awalterschulze/gographviz v2.0.3+incompatible/go.mod h1:GEV5wmg4YquNw7v1kkyoX9etIk8yVmXj+AkDHuuETHs=
@@ -117,8 +120,8 @@ github.com/multiversx/mx-chain-crypto-go v1.2.5 h1:tuq3BUNMhKud5DQbZi9DiVAAHUXyp
 github.com/multiversx/mx-chain-crypto-go v1.2.5/go.mod h1:teqhNyWEqfMPgNn8sgWXlgtJ1a36jGCnhs/tRpXW6r4=
 github.com/multiversx/mx-chain-logger-go v1.0.11 h1:DFsHa+sc5fKwhDR50I8uBM99RTDTEW68ESyr5ALRDwE=
 github.com/multiversx/mx-chain-logger-go v1.0.11/go.mod h1:1srDkP0DQucWQ+rYfaq0BX2qLnULsUdRPADpYUTM6dA=
-github.com/multiversx/mx-chain-scenario-go v1.1.1 h1:yzE5XZdtJ8YKveS4nCini0YLh0AHHmBUB7gdWNKN5eg=
-github.com/multiversx/mx-chain-scenario-go v1.1.1/go.mod h1:sVS6cEaF5k4IFEbHabhbgsve/Fk9qz3wIUIB0MpRMdI=
+github.com/multiversx/mx-chain-scenario-go v1.1.2 h1:6Mok/W48r5lBlqJfriFFhDO5UiYUU1Em+0n0oB0NNGs=
+github.com/multiversx/mx-chain-scenario-go v1.1.2/go.mod h1:xl+aL6n3aibMtfJH3hFGxzddWmn1hEx2Fg0c6ahoQvU=
 github.com/multiversx/mx-chain-vm-common-go v1.3.33-0.20230123162357-c6f6931a3dec/go.mod h1:sZ2COLCxvf2GxAAJHGmGqWybObLtFuk2tZUyGqnMXE8=
 github.com/multiversx/mx-chain-vm-common-go v1.3.37-0.20230222085047-fe49b9a8df75 h1:ugTEWLOAYLztKcZarSgK50hu5T5Ais+7E2P5i2AL9NE=
 github.com/multiversx/mx-chain-vm-common-go v1.3.37-0.20230222085047-fe49b9a8df75/go.mod h1:sZ2COLCxvf2GxAAJHGmGqWybObLtFuk2tZUyGqnMXE8=
