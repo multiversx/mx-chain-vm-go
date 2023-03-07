@@ -493,7 +493,11 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+
+	err = storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
 
 	return getESDTRoles(data)
 }
@@ -1701,7 +1705,11 @@ func (context *VMHooksImpl) StorageLoadLength(keyOffset executor.MemPtr, keyLeng
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(storageLoadLengthName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+
+	err = storage.UseGasForStorageLoad(storageLoadLengthName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
 
 	return int32(len(data))
 }
@@ -1765,7 +1773,11 @@ func StorageLoadFromAddressWithTypedArgs(host vmhost.VMHost, address []byte, key
 	if err != nil {
 		return nil, err
 	}
-	storage.UseGasForStorageLoad(storageLoadFromAddressName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(storageLoadFromAddressName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	if err != nil {
+		return nil, err
+	}
+
 	return data, nil
 }
 
@@ -1811,7 +1823,12 @@ func StorageLoadWithWithTypedArgs(host vmhost.VMHost, key []byte) ([]byte, error
 	if err != nil {
 		return nil, err
 	}
-	storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+
+	err = storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	if err != nil {
+		return nil, err
+	}
+
 	return data, nil
 }
 
@@ -1879,7 +1896,11 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(getStorageLockName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+
+	err = storage.UseGasForStorageLoad(getStorageLockName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
