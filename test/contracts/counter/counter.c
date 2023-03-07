@@ -7,6 +7,10 @@ void init() {
     int64storageStore(COUNTER_KEY, COUNTER_KEY_LEN, 1);
 }
 
+void upgrade() {
+  init();
+}
+
 void increment() {
     i64 counter = int64storageLoad(COUNTER_KEY, COUNTER_KEY_LEN);
     counter++;
