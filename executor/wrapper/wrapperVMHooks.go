@@ -1741,10 +1741,10 @@ func (w *WrapperVMHooks) ManagedMapRemove(mMapHandle int32, keyHandle int32, out
 }
 
 // ManagedMapContains VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapContains(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
-	callInfo := fmt.Sprintf("ManagedMapContains(%d, %d, %d)", mMapHandle, keyHandle, outValueHandle)
+func (w *WrapperVMHooks) ManagedMapContains(mMapHandle int32, keyHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapContains(%d, %d)", mMapHandle, keyHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapContains(mMapHandle, keyHandle, outValueHandle)
+	result := w.wrappedVMHooks.ManagedMapContains(mMapHandle, keyHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
