@@ -241,6 +241,7 @@ func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
 	return stub.IsRuntimeMemStoreLimitEnabledField
 }
 
+// IsRuntimeCodeSizeFixEnabled -
 func (stub *EnableEpochsHandlerStub) IsRuntimeCodeSizeFixEnabled() bool {
 	return stub.IsRuntimeMemStoreLimitEnabledField
 }
