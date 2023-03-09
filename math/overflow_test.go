@@ -132,8 +132,22 @@ func TestSubUint64(t *testing.T) {
 }
 
 func TestSubInt(t *testing.T) {
-	// TODO
-	t.Fail()
+	require.Equal(t, math.MinInt, math.MinInt64)
+
+	a := math.MinInt
+	b := 1
+	diff := SubInt(a, b)
+	require.Equal(t, math.MinInt, diff)
+
+	a = math.MinInt + 10
+	b = 1
+	diff = SubInt(a, b)
+	require.Equal(t, math.MinInt+9, diff)
+
+	a = math.MinInt + 10
+	b = 10
+	diff = SubInt(a, b)
+	require.Equal(t, math.MinInt, diff)
 }
 
 func TestMulInt64WithErr(t *testing.T) {
