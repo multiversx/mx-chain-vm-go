@@ -133,6 +133,9 @@ var ErrNilDestinationCallVMOutput = errors.New("nil destination call VMOutput")
 // ErrAsyncCallNotFound signals that the requested AsyncCall was not found
 var ErrAsyncCallNotFound = errors.New("async call not found")
 
+// ErrAsyncNotAllowed signals that the requested AsyncCall is not allowed
+var ErrAsyncNotAllowed = errors.New("async call is not allowed at this location")
+
 // ErrUnknownCallType signals that the call type is not recognized
 var ErrUnknownCallType = errors.New("unknown call type")
 

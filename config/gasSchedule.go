@@ -144,6 +144,7 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
 	gasMap["ManagedBufferAPICost"] = FillGasMapManagedBufferAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMapWASMOpcodeValues(value)
+	gasMap["DynamicStorageLoad"] = FillGasMapDynamicStorageLoad()
 
 	customFillGasMapWASMOpcodeCosts(gasMap["WASMOpcodeCost"])
 
@@ -966,6 +967,20 @@ func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["V8x16LoadSplat"] = value
 	gasMap["V8x16Shuffle"] = value
 	gasMap["V8x16Swizzle"] = value
+
+	return gasMap
+}
+
+// FillGasMapDynamicStorageLoad populates the gas map with the coefficients needed for dynamic storage load
+func FillGasMapDynamicStorageLoad() map[string]uint64 {
+	gasMap := make(map[string]uint64)
+
+	gasMap["QuadraticCoefficient"] = 688
+	gasMap["SignOfQuadratic"] = 0
+	gasMap["LinearCoefficient"] = 31858
+	gasMap["SignOfLinear"] = 0
+	gasMap["ConstantCoefficient"] = 15287
+	gasMap["SignOfConstant"] = 0
 
 	return gasMap
 }

@@ -44,6 +44,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput:       input.VMInput,
 		RecipientAddr: address,
+		Function:      vmhost.InitFunctionName,
 	}
 	runtime.SetVMInput(contractCallInput)
 	runtime.SetCodeAddress(address)
