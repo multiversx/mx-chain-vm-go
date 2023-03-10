@@ -48,7 +48,6 @@ type EnableEpochsHandlerStub struct {
 	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	IsAlwaysSaveTokenMetaDataEnabledField                bool
 	IsRuntimeCodeSizeFixEnabledField                     bool
-	IsDynamicGasCostForDataTrieStorageLoadEnabledField   bool
 }
 
 // IsGlobalMintBurnFlagEnabled -
@@ -261,10 +260,6 @@ func (stub *EnableEpochsHandlerStub) IsRuntimeCodeSizeFixEnabled() bool {
 	return stub.IsRuntimeCodeSizeFixEnabledField
 }
 
-func (stub *EnableEpochsHandlerStub) IsDynamicGasCostForDataTrieStorageLoadEnabled() bool {
-	return stub.IsDynamicGasCostForDataTrieStorageLoadEnabledField
-}
-
 // IsInterfaceNil -
 func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
@@ -299,7 +294,6 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsFixOldTokenLiquidityEnabledField:                   true,
 		IsAlwaysSaveTokenMetaDataEnabledField:                true,
 		IsRuntimeCodeSizeFixEnabledField:                     true,
-		IsDynamicGasCostForDataTrieStorageLoadEnabledField:   true,
 	}
 }
 
