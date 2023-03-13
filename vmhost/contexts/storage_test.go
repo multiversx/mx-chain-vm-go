@@ -598,3 +598,145 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	require.Equal(t, 0, len(storageCtx.stateStack))
 }
+
+func TestStorageContext_GetStorageLoadCost(t *testing.T) {
+	t.Parallel()
+
+	t.Run("disabled DynamicGasCostForDataTrieStorageLoad returns static cost", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(7)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, staticCost, cost)
+	})
+
+	t.Run("trie depth 0", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    3,
+					Constant:  5,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(0)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, uint64(5), cost)
+	})
+
+	t.Run("fx < 0", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    3,
+					Constant:  -500,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.NotNil(t, err)
+		require.Equal(t, uint64(0), cost)
+	})
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 688,
+					Linear:    31858,
+					Constant:  15287,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, uint64(191777), cost)
+	})
+
+	t.Run("less than minimum gas cost returns static gas cost", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic:  2,
+					Linear:     5,
+					Constant:   6,
+					MinGasCost: 100,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, staticCost, cost)
+	})
+}

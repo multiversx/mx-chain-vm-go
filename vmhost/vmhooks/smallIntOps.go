@@ -162,7 +162,11 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 		return 0
 	}
 
-	err = storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, trieDepth, metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		smallIntStorageLoadUnsignedName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
@@ -193,7 +197,11 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 		return 0
 	}
 
-	err = storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, trieDepth, metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		smallIntStorageLoadSignedName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}

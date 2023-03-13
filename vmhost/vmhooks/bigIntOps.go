@@ -139,7 +139,10 @@ func (context *VMHooksImpl) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr,
 		return -1
 	}
 
-	err = storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, trieDepth, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
+	err = storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName,
+		int64(trieDepth),
+		metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}

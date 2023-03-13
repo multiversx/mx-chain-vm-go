@@ -547,7 +547,11 @@ func (context *VMHooksImpl) MBufferStorageLoad(keyHandle int32, destinationHandl
 		return 0
 	}
 
-	err = storage.UseGasForStorageLoad(mBufferStorageLoadName, trieDepth, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		mBufferStorageLoadName,
+		int64(trieDepth),
+		metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}

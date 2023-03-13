@@ -318,7 +318,7 @@ type StorageContext interface {
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (StorageStatus, error)
-	UseGasForStorageLoad(tracedFunctionName string, trieDepth uint32, blockchainLoadCost uint64, usedCache bool) error
+	UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, blockchainLoadCost uint64, usedCache bool) error
 	IsUseDifferentGasCostFlagSet() bool
 	GetVmProtectedPrefix(prefix string) []byte
 }

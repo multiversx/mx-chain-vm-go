@@ -476,7 +476,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 }
 
 // UseGasForStorageLoad - single spot of gas consumption for storage load
-func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, trieDepth uint32, staticGasCost uint64, usedCache bool) error {
+func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, staticGasCost uint64, usedCache bool) error {
 	blockchainLoadCost, err := context.getBlockchainLoadCost(trieDepth, staticGasCost, usedCache)
 	if err != nil {
 		return err
@@ -485,7 +485,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, t
 	return context.host.Metering().UseGasBoundedAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
 }
 
-func (context *storageContext) getBlockchainLoadCost(trieDepth uint32, staticGasCost uint64, usedCache bool) (uint64, error) {
+func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
 		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
@@ -511,10 +511,10 @@ func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 }
 
 // GetStorageLoadCost returns the gas cost for the storage load operation
-func (context *storageContext) GetStorageLoadCost(trieDepth uint32, staticGasCost uint64) (uint64, error) {
+func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
 	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
 		return computeGasForStorageLoadBasedOnTrieDepth(
-			int64(trieDepth),
+			trieDepth,
 			context.host.Metering().GasSchedule().DynamicStorageLoad,
 			staticGasCost,
 		)

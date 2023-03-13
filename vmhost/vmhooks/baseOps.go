@@ -494,7 +494,11 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 		return -1
 	}
 
-	err = storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		storageLoadName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1706,7 +1710,11 @@ func (context *VMHooksImpl) StorageLoadLength(keyOffset executor.MemPtr, keyLeng
 		return -1
 	}
 
-	err = storage.UseGasForStorageLoad(storageLoadLengthName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		storageLoadLengthName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1773,7 +1781,11 @@ func StorageLoadFromAddressWithTypedArgs(host vmhost.VMHost, address []byte, key
 	if err != nil {
 		return nil, err
 	}
-	err = storage.UseGasForStorageLoad(storageLoadFromAddressName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		storageLoadFromAddressName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
 	if err != nil {
 		return nil, err
 	}
@@ -1824,7 +1836,11 @@ func StorageLoadWithWithTypedArgs(host vmhost.VMHost, key []byte) ([]byte, error
 		return nil, err
 	}
 
-	err = storage.UseGasForStorageLoad(storageLoadName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		storageLoadName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
 	if err != nil {
 		return nil, err
 	}
@@ -1897,7 +1913,11 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 		return -1
 	}
 
-	err = storage.UseGasForStorageLoad(getStorageLockName, trieDepth, metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
+	err = storage.UseGasForStorageLoad(
+		getStorageLockName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
