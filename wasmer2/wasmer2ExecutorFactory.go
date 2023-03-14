@@ -1,6 +1,8 @@
 package wasmer2
 
 import (
+	"os/signal"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
@@ -16,6 +18,8 @@ func ExecutorFactory() *Wasmer2ExecutorFactory {
 
 // CreateExecutor creates a new Executor instance.
 func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	signal.Reset()
+
 	executor, err := CreateExecutor()
 	if err != nil {
 		return nil, err

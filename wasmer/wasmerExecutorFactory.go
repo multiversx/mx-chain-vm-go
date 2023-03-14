@@ -14,6 +14,10 @@ func ExecutorFactory() *WasmerExecutorFactory {
 
 // CreateExecutor creates a new Executor instance.
 func (wef *WasmerExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	if args.WasmerSIGSEGVPassthrough {
+		SetSIGSEGVPassthrough()
+	}
+
 	exec, err := CreateExecutor()
 	if err != nil {
 		return nil, err
@@ -23,11 +27,8 @@ func (wef *WasmerExecutorFactory) CreateExecutor(args executor.ExecutorFactoryAr
 		// opcode costs are sometimes not initialized at this point in certain tests
 		exec.SetOpcodeCosts(args.OpcodeCosts)
 	}
-	SetRkyvSerializationEnabled(args.RkyvSerializationEnabled)
-	if args.WasmerSIGSEGVPassthrough {
-		SetSIGSEGVPassthrough()
-	}
 
+	SetRkyvSerializationEnabled(args.RkyvSerializationEnabled)
 	return exec, nil
 }
 

@@ -24,6 +24,7 @@ func CreateExecutor() (*WasmerExecutor, error) {
 	}
 
 	ForceInstallSighandlers()
+
 	return &WasmerExecutor{
 		eiFunctionNames: functionNames,
 	}, nil

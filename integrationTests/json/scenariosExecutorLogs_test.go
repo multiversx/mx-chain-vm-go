@@ -56,8 +56,6 @@ func TestRustErc20Log(t *testing.T) {
 		t.Skip("run exclusively with wasmer1")
 	}
 
-	t.Skip("not a working test")
-
 	expected := ScenariosTest(t).
 		Folder("erc20-rust/scenarios").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -148,8 +146,6 @@ func TestCreateAsyncCallLog(t *testing.T) {
 		t.Skip("run exclusively with wasmer1")
 	}
 
-	t.Skip("not a working test")
-
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
@@ -197,8 +193,6 @@ func TestMultisigLog(t *testing.T) {
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
-
-	t.Skip("not a working test")
 
 	expected := ScenariosTest(t).
 		Folder("multisig/scenarios").
