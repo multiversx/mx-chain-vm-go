@@ -35,6 +35,10 @@ func cWasmerSetLogLevel(
 	))
 }
 
+func cWasmerForceInstallSighandlers() {
+	C.vm_force_sighandler_reinstall()
+}
+
 func cWasmerExecutorSetOpcodeCost(
 	executor *cWasmerExecutorT,
 	opcodeCost *cWasmerOpcodeCostT,
