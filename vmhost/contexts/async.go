@@ -473,6 +473,8 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *vmhost.Asyn
 	runtime := context.host.Runtime()
 	metering := context.host.Metering()
 
+	logAsync.Warn("registerAsyncCall", "gas", call.GasLimit)
+
 	// Lock gas only if a callback is defined (either for success or for error).
 	shouldLockGas := false
 	if call.SuccessCallback != "" {

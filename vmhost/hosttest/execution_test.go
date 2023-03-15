@@ -2661,6 +2661,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_Promises(t *testing.T) {
+	_ = logger.SetLogLevel("*:TRACE,gasTrace:TRACE")
 	// same scenario as in TestExecution_AsyncCall
 	test.BuildInstanceCallTest(t).
 		WithContracts(
