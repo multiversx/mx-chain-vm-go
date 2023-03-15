@@ -2,12 +2,10 @@
 package testexecutor
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
@@ -23,22 +21,8 @@ var ExecWasmer2 = "wasmer2"
 var defaultExecutorString = ExecWasmer2
 
 // NewDefaultTestExecutorFactory instantiates an executor factory based on the $VMEXECUTOR environment variable
-func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorAbstractFactory {
-	execStr := getVMExecutorString()
-
-	if execStr == ExecWasmer1 {
-		return wasmer.ExecutorFactory()
-	}
-	if execStr == ExecWasmer2 {
-		return wasmer2.ExecutorFactory()
-	}
-
-	if tb == (testing.TB)(nil) {
-		panic(fmt.Sprintf("executor %s not recognized", execStr))
-	}
-	tb.Fatalf("executor %s not recognized", execStr)
-
-	return nil
+func NewDefaultTestExecutorFactory(_ testing.TB) executor.ExecutorAbstractFactory {
+	return wasmer2.ExecutorFactory()
 }
 
 // IsWasmer1Allowed returns true if the default test executor is Wasmer 1.

@@ -9,7 +9,6 @@ import (
 
 	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
@@ -66,12 +65,8 @@ func ScenariosTestCLI() {
 	if err != nil {
 		panic("Could not instantiate VM VM")
 	}
-	if options.UseWasmer1 {
-		executor.OverrideVMExecutor = wasmer.ExecutorFactory()
-	}
-	if options.UseWasmer2 {
-		executor.OverrideVMExecutor = wasmer2.ExecutorFactory()
-	}
+
+	executor.OverrideVMExecutor = wasmer2.ExecutorFactory()
 
 	// execute
 	switch {

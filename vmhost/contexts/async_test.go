@@ -18,7 +18,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,7 +53,6 @@ func initializeVMAndWasmerAsyncContext(tb testing.TB) (*contextmock.VMHostMock, 
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
-	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 

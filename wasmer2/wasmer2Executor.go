@@ -9,7 +9,7 @@ import (
 
 var _ executor.Executor = (*Wasmer2Executor)(nil)
 
-// WasmerExecutor oversees the creation of Wasmer instances and execution.
+// Wasmer2Executor oversees the creation of Wasmer instances and execution.
 type Wasmer2Executor struct {
 	cgoExecutor *cWasmerExecutorT
 
@@ -38,12 +38,12 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
-	executor := &Wasmer2Executor{
+	exec := &Wasmer2Executor{
 		cgoExecutor:    c_executor,
 		vmHookPointers: vmHookPointers,
 	}
 
-	return executor, nil
+	return exec, nil
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
@@ -57,7 +57,7 @@ func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *executor.WASMOpco
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.
-func (wasmerExecutor *Wasmer2Executor) SetRkyvSerializationEnabled(enabled bool) {
+func (wasmerExecutor *Wasmer2Executor) SetRkyvSerializationEnabled(_ bool) {
 }
 
 // SetSIGSEGVPassthrough controls a Wasmer flag.
