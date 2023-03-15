@@ -44,6 +44,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput:       input.VMInput,
 		RecipientAddr: address,
+		Function:      vmhost.InitFunctionName,
 	}
 	runtime.SetVMInput(contractCallInput)
 	runtime.SetCodeAddress(address)
@@ -1022,7 +1023,6 @@ func addOutputTransferToVMOutput(
 			OutputTransfers: make([]vmcommon.OutputTransfer, 0),
 		}
 	}
-	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
 	contexts.AppendOutputTransfers(outAcc, outAcc.OutputTransfers, outTransfer)
 	vmOutput.OutputAccounts[string(recipient)] = outAcc
 }

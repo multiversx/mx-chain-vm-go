@@ -570,6 +570,13 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall) error {
+
+	runtime := context.host.Runtime()
+	functionName := runtime.GetVMInput().Function
+	if functionName == vmhost.InitFunctionName || functionName == vmhost.UpgradeFunctionName {
+		return vmhost.ErrAsyncNotAllowed
+	}
+
 	metering := context.host.Metering()
 
 	err := metering.UseGasBounded(call.GasLocked)
