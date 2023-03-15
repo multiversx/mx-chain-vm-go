@@ -1,6 +1,7 @@
 package vmjsonintegrationtest
 
 import (
+	logger "github.com/multiversx/mx-chain-logger-go"
 	"testing"
 )
 
@@ -8,7 +9,7 @@ func TestDelegation_v0_2(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-
+	_ = logger.SetLogLevel("*:TRACE")
 	ScenariosTest(t).
 		Folder("delegation/v0_2").
 		Run().
