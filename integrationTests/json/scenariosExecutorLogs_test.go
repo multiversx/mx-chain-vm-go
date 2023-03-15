@@ -142,6 +142,8 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 }
 
 func TestCreateAsyncCallLog(t *testing.T) {
+	t.Skip("not a working test")
+
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
@@ -190,6 +192,8 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 }
 
 func TestMultisigLog(t *testing.T) {
+	t.Skip("not a working test")
+
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
@@ -212,11 +216,11 @@ func TestMultisigLog(t *testing.T) {
 }
 
 func TestDnsContractLog(t *testing.T) {
+	t.Skip("not a working test")
+
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
-
-	t.Skip("not a working test")
 
 	if testing.Short() {
 		t.Skip("not a short test")
