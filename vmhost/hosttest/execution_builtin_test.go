@@ -62,13 +62,13 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	input.ESDTTransfers[0].ESDTValue = big.NewInt(esdtTokensToTransfer)
 	input.ESDTTransfers[0].ESDTTokenName = test.ESDTTestTokenName
 
-	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
-	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), esdtTokensToTransfer)
+	expectedTransfer := txDataBuilder.NewBuilder()
+	expectedTransfer.TransferESDT(string(test.ESDTTestTokenName), esdtTokensToTransfer)
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ParentAddress).
-			WithData(expectedTransferFromParentToChild.ToBytes()).
+			WithData(expectedTransfer.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
 			WithCallType(vm.DirectCall).
@@ -269,10 +269,23 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 		[]byte("validateGetters"),
 	}
 
+	expectedTransfer := txDataBuilder.NewBuilder()
+	expectedTransfer.TransferESDT(string(test.ESDTTestTokenName), esdtValue)
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, exchangeAddress).
+			WithData(expectedTransfer.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.DirectCall).
+			WithValue(big.NewInt(0)))
+
 	vmOutput, _, err := host.ExecuteOnDestContext(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.Ok()
+	verify.Ok().
+		Transfers(expectedTransfers...)
 
 	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(testToken, 0)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)
