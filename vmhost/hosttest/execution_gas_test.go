@@ -1235,6 +1235,18 @@ func testGasUsedESDTTransferThenExecuteAsyncCallSuccess(t *testing.T, isLegacy b
 		asyncCallType = LegacyAsyncCallType
 	}
 
+	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+			WithData(expectedTransferFromParentToChild.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.AsynchronousCall).
+			WithValue(big.NewInt(0)))
+
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -1260,7 +1272,8 @@ func testGasUsedESDTTransferThenExecuteAsyncCallSuccess(t *testing.T, isLegacy b
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
+			verify.Ok().
+				Transfers(expectedTransfers...)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1307,6 +1320,18 @@ func testGasUsedESDTTransferThenExecuteAsyncCallChildFails(t *testing.T, isLegac
 		expectedGasUsedByParent = testConfig.GasProvided - expectedGasRemaining
 	}
 
+	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+			WithData(expectedTransferFromParentToChild.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.AsynchronousCall).
+			WithValue(big.NewInt(0)))
+
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -1335,7 +1360,8 @@ func testGasUsedESDTTransferThenExecuteAsyncCallChildFails(t *testing.T, isLegac
 			verify.Ok().
 				GasRemaining(expectedGasRemaining).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.ChildAddress, 0)
+				GasUsed(test.ChildAddress, 0).
+				Transfers(expectedTransfers...)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -1383,6 +1409,18 @@ func testGasUsedESDTTransferThenExecuteAsyncCallCallbackFails(t *testing.T, isLe
 		expectedRemainingGas = 0
 	}
 
+	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+			WithData(expectedTransferFromParentToChild.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.AsynchronousCall).
+			WithValue(big.NewInt(0)))
+
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -1411,7 +1449,8 @@ func testGasUsedESDTTransferThenExecuteAsyncCallCallbackFails(t *testing.T, isLe
 			verify.Ok().
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-				GasRemaining(expectedRemainingGas)
+				GasRemaining(expectedRemainingGas).
+				Transfers(expectedTransfers...)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1446,6 +1485,27 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool) {
 		asyncCallType = NewAsyncCallType
 	}
 
+	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
+
+	expectedTransferFromChildToParent := txDataBuilder.NewBuilder()
+	expectedTransferFromChildToParent.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.CallbackESDTTokensToTransfer))
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+			WithData(expectedTransferFromParentToChild.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.AsynchronousCall).
+			WithValue(big.NewInt(0)),
+		test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+			WithData(expectedTransferFromChildToParent.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.AsynchronousCallBack).
+			WithValue(big.NewInt(0)))
+
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -1471,7 +1531,9 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
+			verify.
+				Ok().
+				Transfers(expectedTransfers...)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
