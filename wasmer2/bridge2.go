@@ -2,8 +2,8 @@ package wasmer2
 
 // #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR}
 // #cgo linux,amd64 LDFLAGS:-lvmexeccapi
-// #cgo darwin,amd64 LDFLAGS:-lvmexeccapi
 // #cgo darwin,arm64 LDFLAGS:-lvmexeccapi_arm
+// #cgo darwin,amd64 LDFLAGS:-lvmexeccapi
 // #include "./libvmexeccapi.h"
 //
 import "C"
