@@ -9,7 +9,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiversx/mx-chain-core-go v1.1.30
-	github.com/multiversx/mx-chain-crypto-go v1.2.5
+	github.com/multiversx/mx-chain-crypto-go v1.2.7-0.20230315142323-00a2740dfff2
 	github.com/multiversx/mx-chain-logger-go v1.0.11
 	github.com/multiversx/mx-chain-scenario-go v1.1.2
 	github.com/multiversx/mx-chain-vm-common-go v1.3.38-0.20230310093902-f0b443728d03
@@ -26,7 +26,7 @@ require (
 	github.com/denisbrodbeck/machineid v1.0.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/golang-lru v0.6.0 // indirect
-	github.com/herumi/bls-go-binary v1.0.0 // indirect
+	github.com/herumi/bls-go-binary v1.28.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
