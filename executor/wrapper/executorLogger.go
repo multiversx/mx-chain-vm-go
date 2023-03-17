@@ -12,7 +12,6 @@ var log = logger.GetOrCreate("vm/executor")
 
 // ExecutorLogger defines a logging interface for the WrapperExecutor.
 type ExecutorLogger interface {
-	SetCurrentInstance(instance executor.Instance)
 	LogExecutorEvent(description string)
 	LogVMHookCallBefore(callInfo string)
 	LogVMHookCallAfter(callInfo string)
@@ -20,7 +19,6 @@ type ExecutorLogger interface {
 
 // ConsoleLogger is a simple ExecutorLogger that records data into the console.
 type ConsoleLogger struct {
-	currentInstance executor.Instance
 }
 
 // NewConsoleLogger creates a new ConsoleLogger, which records events into the console.
@@ -28,11 +26,6 @@ func NewConsoleLogger() *ConsoleLogger {
 	cl := &ConsoleLogger{}
 	log.Trace("Starting Console Logger:")
 	return cl
-}
-
-// SetCurrentInstance adds context pertaining to the current instance, when running tests.
-func (cl *ConsoleLogger) SetCurrentInstance(instance executor.Instance) {
-	cl.currentInstance = instance
 }
 
 // LogExecutorEvent logs a custom event from the executor.
@@ -43,23 +36,16 @@ func (cl *ConsoleLogger) LogExecutorEvent(description string) {
 // LogVMHookCallBefore is called before processing a wrapped VM hook.
 func (cl *ConsoleLogger) LogVMHookCallBefore(callInfo string) {
 	log.Trace(fmt.Sprintf("VM hook begin: %s", callInfo))
-	if !cl.currentInstance.IsInterfaceNil() {
-		log.Trace((fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed())))
-	}
 }
 
 // LogVMHookCallAfter is called after processing a wrapped VM hook.
 func (cl *ConsoleLogger) LogVMHookCallAfter(callInfo string) {
 	log.Trace(fmt.Sprintf("VM hook end: %s", callInfo))
-	if !cl.currentInstance.IsInterfaceNil() {
-		log.Trace(fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed()))
-	}
 }
 
 // StringLogger is a simple ExecutorLogger that records data into a string builder.
 type StringLogger struct {
-	sb              strings.Builder
-	currentInstance executor.Instance
+	sb strings.Builder
 }
 
 // NewStringLogger creates a new StringLogger, which records events into a string builder.
@@ -67,11 +53,6 @@ func NewStringLogger() *StringLogger {
 	sl := &StringLogger{}
 	sl.sb.WriteString("starting log:\n")
 	return sl
-}
-
-// SetCurrentInstance adds context pertaining to the current instance, when running tests.
-func (sl *StringLogger) SetCurrentInstance(instance executor.Instance) {
-	sl.currentInstance = instance
 }
 
 // LogExecutorEvent logs a custom event from the executor.
@@ -84,9 +65,6 @@ func (sl *StringLogger) LogExecutorEvent(description string) {
 func (sl *StringLogger) LogVMHookCallBefore(callInfo string) {
 	sl.sb.WriteString("VM hook begin: ")
 	sl.sb.WriteString(callInfo)
-	if !sl.currentInstance.IsInterfaceNil() {
-		sl.sb.WriteString(fmt.Sprintf(" points used: %d", sl.currentInstance.GetPointsUsed()))
-	}
 	sl.sb.WriteRune('\n')
 }
 
@@ -94,9 +72,6 @@ func (sl *StringLogger) LogVMHookCallBefore(callInfo string) {
 func (sl *StringLogger) LogVMHookCallAfter(callInfo string) {
 	sl.sb.WriteString("VM hook end:   ")
 	sl.sb.WriteString(callInfo)
-	if !sl.currentInstance.IsInterfaceNil() {
-		sl.sb.WriteString(fmt.Sprintf(" points used: %d", sl.currentInstance.GetPointsUsed()))
-	}
 	sl.sb.WriteRune('\n')
 }
 
