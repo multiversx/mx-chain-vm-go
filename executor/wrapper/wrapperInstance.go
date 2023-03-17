@@ -85,6 +85,7 @@ func (inst *WrapperInstance) GetFunctionNames() []string {
 	return result
 }
 
+// ValidateFunctionArities wraps the call to the underlying instance.
 func (inst *WrapperInstance) ValidateFunctionArities() error {
 	err := inst.wrappedInstance.ValidateFunctionArities()
 	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateFunctionArities: %t", err == nil))
