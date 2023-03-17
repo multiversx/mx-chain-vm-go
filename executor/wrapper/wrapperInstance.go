@@ -17,12 +17,15 @@ type WrapperInstance struct {
 
 // GetPointsUsed wraps the call to the underlying instance.
 func (inst *WrapperInstance) GetPointsUsed() uint64 {
-	return inst.wrappedInstance.GetPointsUsed()
+	points := inst.wrappedInstance.GetPointsUsed()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("GetPointsUsed: %d", points))
+	return points
 }
 
 // SetPointsUsed wraps the call to the underlying instance.
 func (inst *WrapperInstance) SetPointsUsed(points uint64) {
 	inst.wrappedInstance.SetPointsUsed(points)
+	inst.logger.LogExecutorEvent(fmt.Sprintf("SetPointsUsed: %d", points))
 
 }
 

@@ -12,6 +12,7 @@ func TestRustCompareAdderLog(t *testing.T) {
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
+
 	expected := ScenariosTest(t).
 		Folder("adder/scenarios").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -142,8 +143,6 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 }
 
 func TestCreateAsyncCallLog(t *testing.T) {
-	t.Skip("not a working test")
-
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
@@ -192,8 +191,6 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 }
 
 func TestMultisigLog(t *testing.T) {
-	t.Skip("not a working test")
-
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
@@ -216,8 +213,6 @@ func TestMultisigLog(t *testing.T) {
 }
 
 func TestDnsContractLog(t *testing.T) {
-	t.Skip("not a working test")
-
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}

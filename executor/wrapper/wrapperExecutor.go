@@ -36,7 +36,6 @@ func (wexec *WrapperExecutor) NewInstanceWithOptions(
 		return nil, err
 	}
 	wexec.addContractInstanceToInstanceMap(contractCode, wrappedInstance)
-	wexec.logger.SetCurrentInstance(wrappedInstance)
 	return &WrapperInstance{
 		logger:          wexec.logger,
 		wrappedInstance: wrappedInstance,
@@ -53,7 +52,6 @@ func (wexec *WrapperExecutor) NewInstanceFromCompiledCodeWithOptions(
 		return nil, err
 	}
 	wexec.addContractInstanceToInstanceMap(compiledCode, wrappedInstance)
-	wexec.logger.SetCurrentInstance(wrappedInstance)
 	return &WrapperInstance{
 		logger:          wexec.logger,
 		wrappedInstance: wrappedInstance,
