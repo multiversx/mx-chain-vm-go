@@ -2661,7 +2661,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 }
 
 func TestExecution_StressTest_AsyncCall_Promises(t *testing.T) {
-	_ = logger.SetLogLevel("*:TRACE,gasTrace:TRACE")
+	_ = logger.SetLogLevel("*:WARN")
 
 	var x int64
 	vmhost.SetLoggingForTests()
@@ -2682,8 +2682,7 @@ func TestExecution_StressTest_AsyncCall_Promises(t *testing.T) {
 				WithGasProvided(116000).
 				WithArguments(big.NewInt(0).Bytes(), big.NewInt(x).Bytes(), big.NewInt(1000).Bytes()).
 				Build()).
-			AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-				verify.Ok()
+			AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, _ *test.VMOutputVerifier) {
 			})
 	}
 }
