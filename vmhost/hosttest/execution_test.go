@@ -2663,8 +2663,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 func TestExecution_StressTest_AsyncCall_Promises(t *testing.T) {
 	_ = logger.SetLogLevel("*:TRACE,gasTrace:TRACE")
 
+	var x int64
 	vmhost.SetLoggingForTests()
-	for i := 0xFFFFFFFF; i > 0; i = i - 7 {
+	for x = 0xFFFFFFFF; x > 0; x = x - 7 {
 		test.BuildInstanceCallTest(t).
 			WithExecutorFactory(wasmer2.ExecutorFactory()).WithExecutorLogs(executorwrapper.NewConsoleLogger()).
 			WithContracts(
@@ -2679,7 +2680,7 @@ func TestExecution_StressTest_AsyncCall_Promises(t *testing.T) {
 				WithRecipientAddr(test.ParentAddress).
 				WithFunction(parentPerformAsyncCall).
 				WithGasProvided(116000).
-				WithArguments(big.NewInt(0).Bytes(), i, big.NewInt(1000).Bytes()).
+				WithArguments(big.NewInt(0).Bytes(), big.NewInt(x).Bytes(), big.NewInt(1000).Bytes()).
 				Build()).
 			AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 				verify.Ok()
