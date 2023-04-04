@@ -2664,7 +2664,6 @@ func TestExecution_StressTest_AsyncCall_Promises(t *testing.T) {
 	_ = logger.SetLogLevel("*:WARN")
 
 	var x int64
-	vmhost.SetLoggingForTests()
 	for x = 0xFFFFFFFF; x > 0; x = x - 7 {
 		test.BuildInstanceCallTest(t).
 			WithExecutorFactory(wasmer2.ExecutorFactory()).WithExecutorLogs(executorwrapper.NewConsoleLogger()).
