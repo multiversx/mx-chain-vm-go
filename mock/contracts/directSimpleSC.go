@@ -277,26 +277,29 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 
 		arguments := host.Runtime().Arguments()
 		asyncCallType := arguments[0]
+		numberOfBackTransfers := uint64(big.NewInt(0).SetBytes(arguments[1]).Int64())
 
 		async := host.Async()
 		var err error
 		if asyncCallType[0] == 0 {
 			err = async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
 		} else {
-			callbackName := "callBack"
-			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
-				callbackName = ""
+			for numCallbacks := uint64(0); numCallbacks < numberOfBackTransfers; numCallbacks++ {
+				callbackName := "callBack"
+				if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
+					callbackName = ""
+				}
+				err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+					Status:          vmhost.AsyncCallPending,
+					Destination:     test.ParentAddress,
+					Data:            callData.ToBytes(),
+					ValueBytes:      value,
+					SuccessCallback: callbackName,
+					ErrorCallback:   callbackName,
+					GasLimit:        testConfig.GasProvidedToChild / (numberOfBackTransfers + 1),
+					GasLocked:       testConfig.GasToLock,
+				})
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
-				Status:          vmhost.AsyncCallPending,
-				Destination:     test.ParentAddress,
-				Data:            callData.ToBytes(),
-				ValueBytes:      value,
-				SuccessCallback: callbackName,
-				ErrorCallback:   callbackName,
-				GasLimit:        testConfig.GasProvidedToChild / 2,
-				GasLocked:       testConfig.GasToLock,
-			})
 		}
 
 		if err != nil {

@@ -1463,20 +1463,24 @@ func testGasUsedESDTTransferThenExecuteAsyncCallCallbackFails(t *testing.T, isLe
 }
 
 func TestGasUsed_ESDTTransferInCallback(t *testing.T) {
-	testGasUsedESDTTransferInCallback(t, false)
+	testGasUsedESDTTransferInCallback(t, false, 1)
 }
 
 func TestGasUsed_Legacy_ESDTTransferInCallback(t *testing.T) {
-	testGasUsedESDTTransferInCallback(t, true)
+	testGasUsedESDTTransferInCallback(t, true, 1)
 }
 
-func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool) {
+func TestGasUsed_ForbitMultiESDTTransferInCallback(t *testing.T) {
+	testGasUsedESDTTransferInCallback(t, false, 2)
+}
+
+func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfCallbackTransfers int) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
 	testConfig := makeTestConfig()
-	testConfig.GasProvidedToChild += 2000
-	testConfig.GasProvided += 4000
+	testConfig.GasProvidedToChild += 20000
+	testConfig.GasProvided += 40000
 	testConfig.ESDTTokensToTransfer = 5
 	testConfig.CallbackESDTTokensToTransfer = 2
 
@@ -1498,13 +1502,17 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool) {
 			WithGasLimit(0).
 			WithGasLocked(0).
 			WithCallType(vm.AsynchronousCall).
-			WithValue(big.NewInt(0)),
-		test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-			WithData(expectedTransferFromChildToParent.ToBytes()).
-			WithGasLimit(0).
-			WithGasLocked(0).
-			WithCallType(vm.AsynchronousCallBack).
 			WithValue(big.NewInt(0)))
+
+	if numOfCallbackTransfers == 1 {
+		expectedTransfers = append(expectedTransfers,
+			test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+				WithData(expectedTransferFromChildToParent.ToBytes()).
+				WithGasLimit(0).
+				WithGasLocked(0).
+				WithCallType(vm.AsynchronousCallBack).
+				WithValue(big.NewInt(0)))
+	}
 
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1521,7 +1529,7 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("execESDTTransferAndAsyncCall").
-			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("transferESDTToParent"), asyncCallType).
+			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("transferESDTToParent"), asyncCallType, []byte{byte(numOfCallbackTransfers)}).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
@@ -1535,12 +1543,14 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool) {
 				Ok().
 				Transfers(expectedTransfers...)
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
+			if numOfCallbackTransfers == 1 {
+				parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+				require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
 
-			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, testConfig.ESDTTokensToTransfer-testConfig.CallbackESDTTokensToTransfer, childESDTBalance)
+				childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+				childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+				require.Equal(t, testConfig.ESDTTokensToTransfer-testConfig.CallbackESDTTokensToTransfer, childESDTBalance)
+			}
 		})
 	assert.Nil(t, err)
 }

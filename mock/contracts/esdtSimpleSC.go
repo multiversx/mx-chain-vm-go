@@ -114,7 +114,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		}
 
 		arguments := host.Runtime().Arguments()
-		if len(arguments) != 4 {
+		if len(arguments) < 4 {
 			host.Runtime().SignalUserError("need 4 arguments")
 			return instance
 		}
@@ -123,6 +123,10 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		builtInFunction := arguments[1]
 		functionToCallOnChild := arguments[2]
 		asyncCallType := arguments[3]
+		numberOfBackTransfers := big.NewInt(int64(1)).Bytes()
+		if len(arguments) > 4 {
+			numberOfBackTransfers = arguments[4]
+		}
 
 		callData := txDataBuilder.NewBuilder()
 		// function to be called on child
@@ -131,6 +135,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
 		callData.Bytes(functionToCallOnChild)
 		callData.Bytes(asyncCallType)
+		callData.Bytes(numberOfBackTransfers)
 
 		value := big.NewInt(0).Bytes()
 

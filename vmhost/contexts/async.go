@@ -587,7 +587,13 @@ func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall
 	if err != nil {
 		return err
 	}
-	execMode, err := context.determineExecutionMode(call.Destination, call.Data)
+
+	err = context.setBuiltinFlagsOnCall(call)
+	if err != nil {
+		return err
+	}
+
+	execMode, err := context.determineExecutionMode(call)
 	if err != nil {
 		return err
 	}
@@ -621,6 +627,39 @@ func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall
 		"gas limit", call.GasLimit,
 		"gas locked", call.GasLocked,
 	)
+
+	return nil
+}
+
+func (context *asyncContext) setBuiltinFlagsOnCall(call *vmhost.AsyncCall) error {
+	destination := call.Destination
+	data := call.Data
+
+	runtime := context.host.Runtime()
+
+	// If ArgParser cannot read the Data field, then this is neither a SC call,
+	// nor a built-in function call.
+	functionName, args, err := context.callArgsParser.ParseData(string(data))
+	if err != nil {
+		return err
+	}
+
+	if context.host.IsBuiltinFunctionName(functionName) {
+		call.IsBuiltinFunctionCall = true
+		vmInput := runtime.GetVMInput()
+		actualDestination := context.determineDestinationForAsyncCall(destination, data)
+		isNoCallAfterESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
+			runtime.GetContextAddress(),
+			actualDestination,
+			functionName,
+			args)
+		isAsyncCall := vmInput.CallType == vm.AsynchronousCall
+		isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
+
+		if isNoCallAfterESDTTransfer && isAsyncCall && isReturningCall {
+			call.IsESDTOnCallBack = true
+		}
+	}
 
 	return nil
 }
@@ -749,7 +788,17 @@ func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *vmhost.AsyncC
 func (context *asyncContext) isMultiLevelAsync(call *vmhost.AsyncCall) bool {
 	// ESDTTransferOnCallback must be allowed as an exception, even if it appears
 	// to be a 2-level async call.
-	return context.isCallAsyncOnStack() && call.ExecutionMode != vmhost.ESDTTransferOnCallBack
+	if call.IsESDTOnCallBack {
+		for _, group := range context.asyncCallGroups {
+			for _, callInGroup := range group.AsyncCalls {
+				if callInGroup.IsESDTOnCallBack {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	return context.isCallAsyncOnStack()
 }
 
 func (context *asyncContext) isCallAsyncOnStack() bool {
@@ -905,31 +954,18 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 	return loadedContext
 }
 
-func (context *asyncContext) determineExecutionMode(destination []byte, data []byte) (vmhost.AsyncCallExecutionMode, error) {
+func (context *asyncContext) determineExecutionMode(call *vmhost.AsyncCall) (vmhost.AsyncCallExecutionMode, error) {
 	runtime := context.host.Runtime()
 	blockchain := context.host.Blockchain()
 
-	// If ArgParser cannot read the Data field, then this is neither a SC call,
-	// nor a built-in function call.
-	functionName, args, err := context.callArgsParser.ParseData(string(data))
-	if err != nil {
-		return vmhost.AsyncUnknown, err
-	}
+	destination := call.Destination
+	data := call.Data
 
 	actualDestination := context.determineDestinationForAsyncCall(destination, data)
 	sameShard := context.host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
-	if context.host.IsBuiltinFunctionName(functionName) {
+	if call.IsBuiltinFunctionCall {
 		if sameShard {
-			vmInput := runtime.GetVMInput()
-			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
-				runtime.GetContextAddress(),
-				actualDestination,
-				functionName,
-				args)
-			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
-			isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
-
-			if isESDTTransfer && isAsyncCall && isReturningCall {
+			if call.IsESDTOnCallBack {
 				return vmhost.ESDTTransferOnCallBack, nil
 			}
 

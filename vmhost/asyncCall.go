@@ -21,6 +21,9 @@ type AsyncCall struct {
 	ErrorCallback   string
 
 	CallbackClosure []byte
+
+	IsBuiltinFunctionCall bool
+	IsESDTOnCallBack      bool
 }
 
 // Clone creates a deep clone of the AsyncCall

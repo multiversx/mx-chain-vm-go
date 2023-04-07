@@ -287,24 +287,19 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	initRuntime(runtime, leftAddress)
-	execMode, err := async.determineExecutionMode(rightAddress, []byte("func"))
+	asyncCall := &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func")}
+	execMode, err := async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.SyncExecution, execMode)
 
-	execMode, err = async.determineExecutionMode(rightAddress, []byte(""))
-	require.NotNil(t, err)
-	require.Equal(t, vmhost.AsyncUnknown, execMode)
-
-	execMode, err = async.determineExecutionMode(rightAddress, []byte(""))
-	require.NotNil(t, err)
-	require.Equal(t, vmhost.AsyncUnknown, execMode)
-
 	host.IsBuiltinFunc = true
 	initRuntime(runtime, leftAddress)
-	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	asyncCall = &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func"), IsBuiltinFunctionCall: true}
+	execMode, err = async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.AsyncBuiltinFuncIntraShard, execMode)
 
+	asyncCall = &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func")}
 	host.IsBuiltinFunc = false
 	rightAccount.Code = []byte{}
 	rightAccount.ShardID = 1
@@ -314,10 +309,11 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	outputAccount.Code = []byte{}
 
 	initRuntime(runtime, leftAddress)
-	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	execMode, err = async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.AsyncUnknown, execMode)
 
+	asyncCall = &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func"), IsBuiltinFunctionCall: true}
 	host.IsBuiltinFunc = true
 	rightAccount.Code = []byte{}
 	rightAccount.ShardID = 1
@@ -327,7 +323,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	outputAccount.Code = []byte{}
 
 	initRuntime(runtime, leftAddress)
-	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	execMode, err = async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.AsyncBuiltinFuncCrossShard, execMode)
 }
