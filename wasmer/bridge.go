@@ -107,6 +107,10 @@ func cWasmerSetSIGSEGVPassthrough() {
 	C.wasmer_set_sigsegv_passthrough()
 }
 
+func cWasmerForceInstallSighandlers() {
+	C.wasmer_force_install_sighandlers()
+}
+
 func cWasmerInstanceCache(
 	instance *cWasmerInstanceT,
 	cacheBytes **cUchar,

@@ -85,6 +85,11 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	require.Equal(t, err, vmhost.ErrExecutionPanicked)
 }
 
+func TestTwoPanicsInSuccession(t *testing.T) {
+	TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
+	TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
+}
+
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
 	blockchain := test.BlockchainHookStubForCallSigSegv(code, big.NewInt(1))
