@@ -645,18 +645,22 @@ func (context *asyncContext) setBuiltinFlagsOnCall(call *vmhost.AsyncCall) error
 	}
 
 	if context.host.IsBuiltinFunctionName(functionName) {
-		call.IsBuiltinFunctionCall = true
 		vmInput := runtime.GetVMInput()
 		actualDestination := context.determineDestinationForAsyncCall(destination, data)
-		isNoCallAfterESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
+		call.IsBuiltinFunctionCall = true
+		isAsyncCall := vmInput.CallType == vm.AsynchronousCall
+		isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
+		if !isAsyncCall && !isReturningCall {
+			call.IsESDTOnCallBack = false
+			return nil
+		}
+		isESDTTransferOnCallbackWithNoPostCall, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
 			runtime.GetContextAddress(),
 			actualDestination,
 			functionName,
 			args)
-		isAsyncCall := vmInput.CallType == vm.AsynchronousCall
-		isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
 
-		if isNoCallAfterESDTTransfer && isAsyncCall && isReturningCall {
+		if isESDTTransferOnCallbackWithNoPostCall && isAsyncCall && isReturningCall {
 			call.IsESDTOnCallBack = true
 		}
 	}
@@ -789,16 +793,20 @@ func (context *asyncContext) isMultiLevelAsync(call *vmhost.AsyncCall) bool {
 	// ESDTTransferOnCallback must be allowed as an exception, even if it appears
 	// to be a 2-level async call.
 	if call.IsESDTOnCallBack {
-		for _, group := range context.asyncCallGroups {
-			for _, callInGroup := range group.AsyncCalls {
-				if callInGroup.IsESDTOnCallBack {
-					return true
-				}
-			}
-		}
-		return false
+		return context.callbackWithESDTTransferAlreadyRegistered()
 	}
 	return context.isCallAsyncOnStack()
+}
+
+func (context *asyncContext) callbackWithESDTTransferAlreadyRegistered() bool {
+	for _, group := range context.asyncCallGroups {
+		for _, callInGroup := range group.AsyncCalls {
+			if callInGroup.IsESDTOnCallBack {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (context *asyncContext) isCallAsyncOnStack() bool {

@@ -115,7 +115,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) < 4 {
-			host.Runtime().SignalUserError("need 4 arguments")
+			host.Runtime().SignalUserError("need at least 4 arguments")
 			return instance
 		}
 
