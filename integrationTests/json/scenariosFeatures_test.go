@@ -118,15 +118,11 @@ func TestRustFormattedMessageFeatures(t *testing.T) {
 		CheckNoError()
 }
 
+// New contracts no longer the older, unmanaged hooks.
+// We have older contracts that just do regression checking.
 func TestRustLegacyComposability(t *testing.T) {
-	// TODO The two excluded tests perform async calls from within async calls,
-	// which are unsupported by the legacy async calls on which the forwarder is
-	// currently based. The new AsyncContext will block multi-level async calls
-	// anyway in its first release.
 	ScenariosTest(t).
-		Folder("features/composability/scenarios-legacy").
-		Exclude("features/composability/scenarios-legacy/l_forwarder_send_twice_egld.scen.json").
-		Exclude("features/composability/scenarios-legacy/l_forwarder_send_twice_esdt.scen.json").
+		Folder("features/composability-legacy/scenarios-legacy").
 		Run().
 		CheckNoError()
 
