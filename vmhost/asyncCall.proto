@@ -17,8 +17,7 @@ enum SerializableAsyncCallExecutionMode {
     SerializableSyncExecution = 0;
     SerializableAsyncBuiltinFuncIntraShard = 1;
     SerializableAsyncBuiltinFuncCrossShard = 2;
-    SerializableESDTTransferOnCallBack = 3;
-    SerializableAsyncUnknown = 4;
+    SerializableAsyncUnknown = 3;
 }
 
 message SerializableAsyncCall {

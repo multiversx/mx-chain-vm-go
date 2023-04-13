@@ -3,7 +3,6 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -33,12 +32,6 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 
 // TODO split this method into smaller ones
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) error {
-	if asyncCall.ExecutionMode == vmhost.ESDTTransferOnCallBack {
-		context.executeESDTTransferOnCallback(asyncCall)
-		_ = context.completeChild(asyncCall.CallID, 0)
-		return nil
-	}
-
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
 		logAsync.Trace("executeAsyncLocalCall failed", "error", err)
@@ -142,21 +135,6 @@ func (context *asyncContext) executeSyncCallback(
 	}
 
 	return callbackVMOutput, isComplete, callbackErr
-}
-
-func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *vmhost.AsyncCall) {
-	context.host.Output().PrependFinish(asyncCall.Data)
-
-	// The contract has already paid the gas for GasLimit and
-	// GasLocked, as if the call were destined to another contract. Both
-	// GasLimit and GasLocked are restored in the case of
-	// ESDTTransferOnCallBack because:
-	// * GasLocked isn't needed, since no callback will be called
-	// * GasLimit cannot be paid here, because it's the *destination*
-	// contract that ends up paying the gas for the ESDTTransfer
-	context.host.Metering().RestoreGas(asyncCall.GasLimit)
-	context.host.Metering().RestoreGas(asyncCall.GasLocked)
-	asyncCall.UpdateStatus(vmcommon.Ok)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -365,45 +343,6 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 	}
 
 	return arguments
-}
-
-func (context *asyncContext) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractCallInput) bool {
-	if !context.host.AreInSameShard(contractCallInput.CallerAddr, contractCallInput.RecipientAddr) {
-		return false
-	}
-
-	return contractCallInput.Function == core.BuiltInFunctionMultiESDTNFTTransfer ||
-		contractCallInput.Function == core.BuiltInFunctionESDTNFTTransfer
-}
-
-func (context *asyncContext) isESDTTransferOnReturnDataWithNoAdditionalData(
-	sndAddr, dstAddr []byte,
-	destinationVMOutput *vmcommon.VMOutput,
-) (bool, string, [][]byte) {
-	if len(destinationVMOutput.ReturnData) == 0 {
-		return false, "", nil
-	}
-
-	functionName, args, err := context.callArgsParser.ParseData(string(destinationVMOutput.ReturnData[0]))
-	if err != nil {
-		return false, "", nil
-	}
-
-	return context.isESDTTransferOnReturnDataFromFunctionAndArgs(sndAddr, dstAddr, functionName, args)
-}
-
-func (context *asyncContext) isESDTTransferOnReturnDataFromFunctionAndArgs(
-	sndAddr, dstAddr []byte,
-	functionName string,
-	args [][]byte,
-) (bool, string, [][]byte) {
-	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
-	if err != nil {
-		return false, functionName, args
-	}
-
-	isNoCallAfter := len(parsedTransfer.CallFunction) == 0
-	return isNoCallAfter, functionName, args
 }
 
 func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
