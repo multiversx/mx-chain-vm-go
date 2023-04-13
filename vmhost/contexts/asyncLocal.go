@@ -286,18 +286,8 @@ func (context *asyncContext) createCallbackInput(
 
 	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
 
-	esdtFunction := ""
-	isESDTOnCallBack := false
-	esdtArgs := make([][]byte, 0)
 	returnWithError := false
-	if destinationErr == nil && vmOutput.ReturnCode == vmcommon.Ok {
-		// when execution went Ok, callBack arguments are:
-		// [0, result1, result2, ....]
-		isESDTOnCallBack, esdtFunction, esdtArgs = context.isESDTTransferOnReturnDataWithNoAdditionalData(
-			actualCallbackInitiator,
-			runtime.GetContextAddress(),
-			vmOutput)
-	} else {
+	if !(destinationErr == nil && vmOutput.ReturnCode == vmcommon.Ok) {
 		returnWithError = true
 	}
 
@@ -332,39 +322,7 @@ func (context *asyncContext) createCallbackInput(
 	}
 	context.SetAsyncArgumentsForCallback(contractCallInput, asyncCall, gasAccumulated)
 
-	if isESDTOnCallBack {
-		context.updateContractInputForESDTOnCallback(contractCallInput, esdtFunction, esdtArgs, vmOutput, asyncCall, gasAccumulated)
-	}
-
 	return contractCallInput, nil
-}
-
-func (context *asyncContext) updateContractInputForESDTOnCallback(
-	contractCallInput *vmcommon.ContractCallInput,
-	esdtFunction string,
-	esdtArgs [][]byte,
-	vmOutput *vmcommon.VMOutput,
-	asyncCall *vmhost.AsyncCall,
-	gasAccumulated uint64) {
-
-	oldArgLen := len(contractCallInput.Arguments)
-	oldFunction := contractCallInput.Function
-
-	contractCallInput.Function = esdtFunction
-	contractCallInput.Arguments = make([][]byte, 0, oldArgLen)
-	contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
-	contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(oldFunction))
-	contractCallInput.Arguments = append(contractCallInput.Arguments, ReturnCodeToBytes(vmOutput.ReturnCode))
-
-	if len(vmOutput.ReturnData) > 1 {
-		contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
-	}
-	if context.isSameShardNFTTransfer(contractCallInput) {
-		contractCallInput.RecipientAddr = contractCallInput.CallerAddr
-	}
-	context.SetAsyncArgumentsForCallback(contractCallInput, asyncCall, gasAccumulated)
-
-	context.host.Output().DeleteFirstReturnData()
 }
 
 // ReturnCodeToBytes returns the provided returnCode as byte slice

@@ -134,7 +134,6 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		callData.Bytes(test.ESDTTestTokenName)
 		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
 		callData.Bytes(functionToCallOnChild)
-		callData.Bytes(asyncCallType)
 		callData.Bytes(numberOfBackTransfers)
 
 		value := big.NewInt(0).Bytes()
