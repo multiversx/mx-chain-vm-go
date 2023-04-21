@@ -1101,8 +1101,7 @@ func (host *vmHost) callSCMethodAsynchronousCall() error {
 	}
 
 	async := host.Async()
-	output := host.Output()
-	return async.SendCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
+	return async.SendCrossShardCallback()
 }
 
 func (host *vmHost) callSCMethodAsynchronousCallBack() error {

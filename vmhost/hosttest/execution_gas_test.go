@@ -1538,7 +1538,11 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				Transfers(expectedTransfers...)
+				Transfers(expectedTransfers...).
+				ReturnData(
+					[]byte("success"),
+					[]byte(test.ESDTTestTokenName),
+					big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes())
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+uint64(numOfTransfersInChild)*testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)

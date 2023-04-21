@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
@@ -279,6 +280,9 @@ func (context *asyncContext) createCallbackInput(
 
 	originalCaller := runtime.GetOriginalCallerAddress()
 
+	caller := context.address
+	lastTransfers, _ := context.extractLastTransferToCaller(caller, vmOutput.OutputAccounts)
+
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -294,13 +298,41 @@ func (context *asyncContext) createCallbackInput(
 			OriginalTxHash:       runtime.GetOriginalTxHash(),
 			PrevTxHash:           runtime.GetPrevTxHash(),
 			ReturnCallAfterError: returnWithError,
+			ESDTTransfers:        lastTransfers,
 		},
-		RecipientAddr: context.address,
+		RecipientAddr: caller,
 		Function:      callbackFunction,
 	}
 	context.SetAsyncArgumentsForCallback(contractCallInput, asyncCall, gasAccumulated)
 
 	return contractCallInput, nil
+}
+
+func (context *asyncContext) extractLastTransferToCaller(caller []byte, outputAccounts map[string]*vmcommon.OutputAccount) ([]*vmcommon.ESDTTransfer, []byte) {
+	var lastESDTTransfers *vmcommon.ParsedESDTTransfers
+	var encodedLastTransfers []byte
+	for _, outputAcc := range outputAccounts {
+		if bytes.Equal(outputAcc.Address, caller) {
+			for _, outTransfer := range outputAcc.OutputTransfers {
+				functionName, args, err := context.callArgsParser.ParseData(string(outTransfer.Data))
+				if err != nil {
+					continue
+				}
+				if !context.host.IsBuiltinFunctionName(functionName) {
+					continue
+				}
+				encodedLastTransfers = outTransfer.Data
+				lastESDTTransfers, err = context.esdtTransferParser.ParseESDTTransfers(outTransfer.SenderAddress, caller, functionName, args)
+				if err != nil {
+					continue
+				}
+			}
+		}
+	}
+	if lastESDTTransfers != nil {
+		return lastESDTTransfers.ESDTTransfers, encodedLastTransfers
+	}
+	return nil, nil
 }
 
 // ReturnCodeToBytes returns the provided returnCode as byte slice
