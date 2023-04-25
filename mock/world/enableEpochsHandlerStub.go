@@ -48,6 +48,18 @@ type EnableEpochsHandlerStub struct {
 	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	IsAlwaysSaveTokenMetaDataEnabledField                bool
 	IsRuntimeCodeSizeFixEnabledField                     bool
+	IsSetGuardianEnabledField                            bool
+	IsGuardAccountEnabledField                           bool
+}
+
+// IsGuardAccountEnabled -
+func (stub *EnableEpochsHandlerStub) IsGuardAccountEnabled() bool {
+	return stub.IsGuardAccountEnabledField
+}
+
+// IsSetGuardianEnabled -
+func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
+	return stub.IsSetGuardianEnabledField
 }
 
 // IsGlobalMintBurnFlagEnabled -
