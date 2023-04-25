@@ -621,7 +621,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-				GasRemaining(0).
+				GasRemaining(gasForAsyncCall-testConfig.GasUsedByChild).
 				ReturnData(childAsyncReturnData...).
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
@@ -630,11 +630,6 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
-					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-						WithGasLimit(gasForAsyncCall-testConfig.GasUsedByChild).
-						WithCallType(vm.AsynchronousCallBack).
-						WithValue(big.NewInt(0)),
 				)
 		})
 	assert.Nil(t, err)
@@ -642,7 +637,6 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 
 func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 	testConfig := makeTestConfig()
-	gasUsedByChild := testConfig.GasUsedByChild
 	gasUsedByParent := testConfig.GasUsedByParent
 	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
 
@@ -679,19 +673,19 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				GasUsed(test.ChildAddress, gasUsedByChild).
-				GasRemaining(0).
+				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
+				GasRemaining(gasForAsyncCall - testConfig.GasUsedByChild).
 				ReturnData().
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
 						WithGasLimit(0).
 						WithCallType(vm.DirectCall).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
-					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, nil)).
-						WithGasLimit(gasForAsyncCall-gasUsedByChild).
-						WithCallType(vm.AsynchronousCallBack).
-						WithValue(big.NewInt(0)),
+					// test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+					// 	WithData(computeReturnDataForCallback(vmcommon.Ok, nil)).
+					// 	WithGasLimit(gasForAsyncCall-gasUsedByChild).
+					// 	WithCallType(vm.AsynchronousCallBack).
+					// 	WithValue(big.NewInt(0)),
 				)
 		})
 	assert.Nil(t, err)

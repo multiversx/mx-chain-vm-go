@@ -835,7 +835,6 @@ func (context *asyncContext) callCallback(callID []byte, vmOutput *vmcommon.VMOu
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		err = context.SendCrossShardCallback()
 		return false, nil, err
 	}
 

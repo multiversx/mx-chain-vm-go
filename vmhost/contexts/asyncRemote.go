@@ -14,10 +14,9 @@ const callbackNamePlaceholder = "<callback>"
 // SendCrossShardCallback creates a transfer for a cross shard callback
 func (context *asyncContext) SendCrossShardCallback() error {
 	output := context.host.Output()
-	_, lastTransfers := context.extractLastTransferToCaller(context.callerAddr, output.GetOutputAccounts())
 	sender := context.address
 	destination := context.callerAddr
-	asyncData, data := context.createDataForCrossShardCallback(lastTransfers, output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
+	asyncData, data := context.createDataForCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
 	return sendCrossShardCallback(context.host, sender, destination, asyncData, data)
 }
 
@@ -96,7 +95,6 @@ func sendCrossShardCallback(host vmhost.VMHost, sender []byte, destination []byt
 }
 
 func (context *asyncContext) createDataForCrossShardCallback(
-	lastTransfers []byte,
 	returnCode vmcommon.ReturnCode,
 	returnData [][]byte,
 	returnMessage string,
@@ -110,9 +108,6 @@ func (context *asyncContext) createDataForCrossShardCallback(
 	transferData := txDataBuilder.NewBuilder()
 	// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
 	transferData.Func(callbackNamePlaceholder)
-	if lastTransfers != nil {
-		transferData.Bytes(lastTransfers)
-	}
 	transferData.Bytes(ReturnCodeToBytes(returnCode))
 	if returnCode == vmcommon.Ok {
 		for _, data := range returnData {

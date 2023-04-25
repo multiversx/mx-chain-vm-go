@@ -879,7 +879,13 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 		extractAndPersistStores(t, world, currentVMOutput)
 
 		crossShardEdges := getCrossShardEdgesFromSubtree(gasGraph, startNode, crossShardCallsQueue)
-		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
+		var callbackCallerID []byte
+		if crossShardCall.CallType == vm.AsynchronousCall {
+			argParser := parsers.NewCallArgsParser()
+			parsedAsync, _ := argParser.ParseArguments(string(crossShardCall.AsyncData))
+			callbackCallerID = parsedAsync[2]
+		}
+		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue, callbackCallerID)
 	}
 
 	if assertsConfig.finalAsserts != nil {
@@ -1072,9 +1078,36 @@ func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
 	return totalGasUsed, totalGasRemaining
 }
 
-func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*test.TestCallEdge, crossShardCallsQueue *test.CrossShardCallsQueue) {
+func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*test.TestCallEdge, crossShardCallsQueue *test.CrossShardCallsQueue, callbackCallerID []byte) {
 	for _, crossShardEdge := range crossShardEdges {
 		edgeToAddress := string(crossShardEdge.To.Call.ContractAddress)
+		if crossShardEdge.Type == testcommon.CallbackCrossShard {
+			asyncData := txDataBuilder.NewBuilder()
+			asyncData.Func("")
+			asyncData.Bytes(crossShardEdge.To.Call.CallID)
+			asyncData.Bytes(crossShardEdge.To.Parent.Call.CallID)
+			asyncData.Bytes(callbackCallerID)
+			asyncData.Bytes(big.NewInt(0).Bytes())
+
+			callData := txDataBuilder.NewBuilder()
+			// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
+			callData.Func("<callback>")
+			returnCode := vmOutput.ReturnCode
+			callData.Bytes(contexts.ReturnCodeToBytes(returnCode))
+			if returnCode == vmcommon.Ok {
+				for _, data := range vmOutput.ReturnData {
+					callData.Bytes(data)
+				}
+			} else {
+				callData.Str(vmOutput.ReturnMessage)
+			}
+
+			encodedArgs := callData.ToBytes()
+			crossShardCallsQueue.Enqueue(crossShardEdge.To.Parent.Call.ContractAddress, crossShardEdge.To,
+				vm.AsynchronousCallBack, asyncData.ToBytes(), encodedArgs)
+
+			return
+		}
 		for _, outputAccount := range vmOutput.OutputAccounts {
 			transferDestinationAddress := string(outputAccount.Address)
 			if edgeToAddress != transferDestinationAddress {

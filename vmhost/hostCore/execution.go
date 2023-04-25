@@ -1095,13 +1095,8 @@ func (host *vmHost) callSCMethodDirectCall() error {
 }
 
 func (host *vmHost) callSCMethodAsynchronousCall() error {
-	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete {
-		return err
-	}
-
-	async := host.Async()
-	return async.SendCrossShardCallback()
+	_, err := host.callFunctionAndExecuteAsync()
+	return err
 }
 
 func (host *vmHost) callSCMethodAsynchronousCallBack() error {
