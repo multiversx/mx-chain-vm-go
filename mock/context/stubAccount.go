@@ -52,11 +52,6 @@ func (a *StubAccount) SetUserName(_ []byte) {
 	panic("implement me")
 }
 
-// SetCodeMetadata -
-func (a *StubAccount) SetCodeMetadata(_ []byte) {
-	panic("implement me")
-}
-
 // IncreaseNonce -
 func (a *StubAccount) IncreaseNonce(_ uint64) {
 	panic("implement me")

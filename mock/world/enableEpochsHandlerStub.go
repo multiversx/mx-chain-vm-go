@@ -57,11 +57,6 @@ func (stub *EnableEpochsHandlerStub) IsGuardAccountEnabled() bool {
 	return stub.IsGuardAccountEnabledField
 }
 
-// IsSetGuardianEnabled -
-func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
-	return stub.IsSetGuardianEnabledField
-}
-
 // IsGlobalMintBurnFlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsGlobalMintBurnFlagEnabled() bool {
 	return stub.IsGlobalMintBurnFlagEnabledField

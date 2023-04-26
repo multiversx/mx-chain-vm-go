@@ -41,7 +41,6 @@ func NewBuiltinFunctionsWrapper(
 		EnableEpochsHandler:              EnableEpochsHandlerStubAllFlags(),
 		GuardedAccountHandler:            world.GuardedAccountHandler,
 		MaxNumOfAddressesForTransferRole: 100,
-		GuardedAccountHandler:            &GuardedAccountHandlerStub{},
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)
