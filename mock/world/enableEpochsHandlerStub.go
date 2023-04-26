@@ -48,6 +48,7 @@ type EnableEpochsHandlerStub struct {
 	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	IsAlwaysSaveTokenMetaDataEnabledField                bool
 	IsRuntimeCodeSizeFixEnabledField                     bool
+	IsSetGuardianEnabledField                            bool
 }
 
 // IsGlobalMintBurnFlagEnabled -
@@ -260,6 +261,10 @@ func (stub *EnableEpochsHandlerStub) IsRuntimeCodeSizeFixEnabled() bool {
 	return stub.IsRuntimeCodeSizeFixEnabledField
 }
 
+func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
+	return stub.IsSetGuardianEnabledField
+}
+
 // IsInterfaceNil -
 func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
@@ -294,6 +299,7 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsFixOldTokenLiquidityEnabledField:                   true,
 		IsAlwaysSaveTokenMetaDataEnabledField:                true,
 		IsRuntimeCodeSizeFixEnabledField:                     true,
+		IsSetGuardianEnabledField:                            true,
 	}
 }
 
