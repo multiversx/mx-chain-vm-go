@@ -48,6 +48,7 @@ type MockWorld struct {
 	BuiltinFuncs               *BuiltinFunctionsWrapper
 	IsPausedValue              bool
 	IsLimitedTransferValue     bool
+	GuardedAccountHandler      vmcommon.GuardedAccountHandler
 	ProvidedBlockchainHook     vmcommon.BlockchainHook
 	OtherVMOutputMap           map[string]*vmcommon.VMOutput
 }
@@ -68,6 +69,7 @@ func NewMockWorld() *MockWorld {
 		OtherVMOutputMap:  make(map[string]*vmcommon.VMOutput),
 	}
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
+	world.GuardedAccountHandler = NewMockGuardedAccountHandler()
 
 	return world
 }

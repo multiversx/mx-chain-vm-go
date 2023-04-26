@@ -110,6 +110,10 @@ func (a *StubAccount) GetUserName() []byte {
 	return a.UserName
 }
 
+// SetCodeMetadata -
+func (a *StubAccount) SetCodeMetadata(_ []byte) {
+}
+
 // IsInterfaceNil -
 func (a *StubAccount) IsInterfaceNil() bool {
 	return a == nil
