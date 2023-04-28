@@ -167,8 +167,6 @@ func TestCreateAsyncCallLog(t *testing.T) {
 }
 
 func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
-	t.Skip("Skipping test until retrieve token mechanism is stabilized")
-
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}

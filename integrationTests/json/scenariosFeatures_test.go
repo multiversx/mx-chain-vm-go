@@ -90,7 +90,6 @@ func TestRustComposability(t *testing.T) {
 	// anyway in its first release.
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
-		Exclude("features/composability/scenarios/forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
 		Exclude("features/composability/scenarios/forwarder_send_twice_egld.scen.json").
 		Exclude("features/composability/scenarios/forwarder_send_twice_esdt.scen.json").
 		Run().
@@ -130,7 +129,6 @@ func TestRustLegacyComposability(t *testing.T) {
 		Exclude("features/composability-legacy/scenarios-legacy/l_forwarder_call_async_retrieve_nft.scen.json").
 		Run().
 		CheckNoError()
-
 }
 
 func TestTimelocks(t *testing.T) {
