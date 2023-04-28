@@ -364,7 +364,6 @@ type AsyncContext interface {
 		address []byte,
 		callID []byte,
 		vmInput *vmcommon.VMInput) (*AsyncCall, bool, error)
-	SendCrossShardCallback() error
 
 	CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error
 	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error

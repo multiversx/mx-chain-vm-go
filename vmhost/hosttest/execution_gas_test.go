@@ -681,11 +681,6 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 						WithGasLimit(0).
 						WithCallType(vm.DirectCall).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
-					// test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-					// 	WithData(computeReturnDataForCallback(vmcommon.Ok, nil)).
-					// 	WithGasLimit(gasForAsyncCall-gasUsedByChild).
-					// 	WithCallType(vm.AsynchronousCallBack).
-					// 	WithValue(big.NewInt(0)),
 				)
 		})
 	assert.Nil(t, err)

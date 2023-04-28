@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"bytes"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
@@ -9,6 +8,11 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
+
+type lastTransferInfo struct {
+	callValue         *big.Int
+	lastESDTTransfers []*vmcommon.ESDTTransfer
+}
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
 	localCalls := make([]*vmhost.AsyncCall, 0)
@@ -266,7 +270,7 @@ func (context *asyncContext) createCallbackInput(
 	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
 
 	returnWithError := false
-	if !(destinationErr == nil && vmOutput.ReturnCode == vmcommon.Ok) {
+	if destinationErr != nil || vmOutput.ReturnCode != vmcommon.Ok {
 		returnWithError = true
 	}
 
@@ -281,7 +285,7 @@ func (context *asyncContext) createCallbackInput(
 	originalCaller := runtime.GetOriginalCallerAddress()
 
 	caller := context.address
-	lastTransfers, _ := context.extractLastTransferToCaller(caller, vmOutput.OutputAccounts)
+	lastTransferInfo := context.extractLastTransferWithoutData(caller, vmOutput)
 
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -289,7 +293,7 @@ func (context *asyncContext) createCallbackInput(
 			OriginalCallerAddr:   originalCaller,
 			CallerAddr:           actualCallbackInitiator,
 			Arguments:            arguments,
-			CallValue:            context.computeCallValueFromVMOutput(vmOutput),
+			CallValue:            lastTransferInfo.callValue,
 			CallType:             vm.AsynchronousCallBack,
 			GasPrice:             runtime.GetVMInput().GasPrice,
 			GasProvided:          gasLimit,
@@ -298,7 +302,7 @@ func (context *asyncContext) createCallbackInput(
 			OriginalTxHash:       runtime.GetOriginalTxHash(),
 			PrevTxHash:           runtime.GetPrevTxHash(),
 			ReturnCallAfterError: returnWithError,
-			ESDTTransfers:        lastTransfers,
+			ESDTTransfers:        lastTransferInfo.lastESDTTransfers,
 		},
 		RecipientAddr: caller,
 		Function:      callbackFunction,
@@ -308,31 +312,36 @@ func (context *asyncContext) createCallbackInput(
 	return contractCallInput, nil
 }
 
-func (context *asyncContext) extractLastTransferToCaller(caller []byte, outputAccounts map[string]*vmcommon.OutputAccount) ([]*vmcommon.ESDTTransfer, []byte) {
-	var lastESDTTransfers *vmcommon.ParsedESDTTransfers
-	var encodedLastTransfers []byte
-	for _, outputAcc := range outputAccounts {
-		if bytes.Equal(outputAcc.Address, caller) {
-			for _, outTransfer := range outputAcc.OutputTransfers {
-				functionName, args, err := context.callArgsParser.ParseData(string(outTransfer.Data))
-				if err != nil {
-					continue
-				}
-				if !context.host.IsBuiltinFunctionName(functionName) {
-					continue
-				}
-				encodedLastTransfers = outTransfer.Data
-				lastESDTTransfers, err = context.esdtTransferParser.ParseESDTTransfers(outTransfer.SenderAddress, caller, functionName, args)
-				if err != nil {
-					continue
-				}
-			}
+func (context *asyncContext) extractLastTransferWithoutData(caller []byte, vmOutput *vmcommon.VMOutput) lastTransferInfo {
+	callValue := big.NewInt(0)
+
+	callBackReceiver := context.host.Runtime().GetContextAddress()
+	outAcc, ok := vmOutput.OutputAccounts[string(callBackReceiver)]
+	if !ok || len(outAcc.OutputTransfers) == 0 {
+		return lastTransferInfo{
+			callValue:         big.NewInt(0),
+			lastESDTTransfers: nil,
 		}
 	}
-	if lastESDTTransfers != nil {
-		return lastESDTTransfers.ESDTTransfers, encodedLastTransfers
+
+	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
+	if len(lastOutTransfer.Data) == 0 || len(vmOutput.ReturnData) == 0 {
+		callValue.Set(lastOutTransfer.Value)
 	}
-	return nil, nil
+
+	var lastESDTTransfers []*vmcommon.ESDTTransfer
+	functionName, args, err := context.callArgsParser.ParseData(string(lastOutTransfer.Data))
+	if err == nil && context.host.IsBuiltinFunctionName(functionName) {
+		parsedESDTTransfers, err := context.esdtTransferParser.ParseESDTTransfers(lastOutTransfer.SenderAddress, caller, functionName, args)
+		if err == nil && parsedESDTTransfers.CallFunction == "" {
+			lastESDTTransfers = parsedESDTTransfers.ESDTTransfers
+		}
+	}
+
+	return lastTransferInfo{
+		callValue:         callValue,
+		lastESDTTransfers: lastESDTTransfers,
+	}
 }
 
 // ReturnCodeToBytes returns the provided returnCode as byte slice
@@ -375,28 +384,4 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 	}
 
 	return arguments
-}
-
-func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
-	if len(destinationVMOutput.ReturnData) > 0 {
-		return big.NewInt(0)
-	}
-
-	returnTransfer := big.NewInt(0)
-	callBackReceiver := context.host.Runtime().GetContextAddress()
-	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
-	if !ok {
-		return returnTransfer
-	}
-
-	if len(outAcc.OutputTransfers) == 0 {
-		return returnTransfer
-	}
-
-	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
-	if len(lastOutTransfer.Data) == 0 {
-		returnTransfer.Set(lastOutTransfer.Value)
-	}
-
-	return returnTransfer
 }
