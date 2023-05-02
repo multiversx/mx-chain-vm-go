@@ -1509,7 +1509,7 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(contracts.ESDTTransferToParentMock),
+				WithMethods(contracts.ESDTTransferToParentMockNoReturnData),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
@@ -1529,7 +1529,6 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 				Ok().
 				Transfers(expectedTransfers...).
 				ReturnData(
-					[]byte("success"),
 					[]byte(test.ESDTTestTokenName),
 					big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes())
 

@@ -223,12 +223,18 @@ const (
 	esdtOnCallbackWrongNumOfArgs
 	esdtOnCallbackFail
 	esdtOnCallbackNewAsync
+	esdtOnCallbackNoReturnData
 )
 
 // ESDTTransferToParentMock is an exposed mock contract method
 func ESDTTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*test.TestConfig)
 	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackSuccess)
+}
+
+func ESDTTransferToParentMockNoReturnData(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*test.TestConfig)
+	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackNoReturnData)
 }
 
 // ESDTTransferToParentWrongESDTArgsNumberMock is an exposed mock contract method

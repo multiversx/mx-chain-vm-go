@@ -314,14 +314,15 @@ func (context *asyncContext) createCallbackInput(
 
 func (context *asyncContext) extractLastTransferWithoutData(caller []byte, vmOutput *vmcommon.VMOutput) lastTransferInfo {
 	callValue := big.NewInt(0)
+	emptyLastTransferInfo := lastTransferInfo{
+		callValue:         big.NewInt(0),
+		lastESDTTransfers: nil,
+	}
 
 	callBackReceiver := context.host.Runtime().GetContextAddress()
 	outAcc, ok := vmOutput.OutputAccounts[string(callBackReceiver)]
-	if !ok || len(outAcc.OutputTransfers) == 0 {
-		return lastTransferInfo{
-			callValue:         big.NewInt(0),
-			lastESDTTransfers: nil,
-		}
+	if !ok || len(outAcc.OutputTransfers) == 0 || len(vmOutput.ReturnData) > 0 {
+		return emptyLastTransferInfo
 	}
 
 	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
@@ -331,11 +332,24 @@ func (context *asyncContext) extractLastTransferWithoutData(caller []byte, vmOut
 
 	var lastESDTTransfers []*vmcommon.ESDTTransfer
 	functionName, args, err := context.callArgsParser.ParseData(string(lastOutTransfer.Data))
-	if err == nil && context.host.IsBuiltinFunctionName(functionName) {
-		parsedESDTTransfers, err := context.esdtTransferParser.ParseESDTTransfers(lastOutTransfer.SenderAddress, caller, functionName, args)
-		if err == nil && parsedESDTTransfers.CallFunction == "" {
-			lastESDTTransfers = parsedESDTTransfers.ESDTTransfers
+	if err != nil {
+		return lastTransferInfo{
+			callValue:         callValue,
+			lastESDTTransfers: lastESDTTransfers,
 		}
+	}
+
+	builtInFunction := context.host.IsBuiltinFunctionName(functionName)
+	if !builtInFunction {
+		return lastTransferInfo{
+			callValue:         callValue,
+			lastESDTTransfers: lastESDTTransfers,
+		}
+	}
+
+	parsedESDTTransfers, err := context.esdtTransferParser.ParseESDTTransfers(lastOutTransfer.SenderAddress, caller, functionName, args)
+	if err == nil && parsedESDTTransfers.CallFunction == "" {
+		lastESDTTransfers = parsedESDTTransfers.ESDTTransfers
 	}
 
 	return lastTransferInfo{

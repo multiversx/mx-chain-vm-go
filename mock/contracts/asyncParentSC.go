@@ -114,6 +114,10 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
+		if len(arguments) == 1 {
+			return instance
+		}
+
 		if string(arguments[1]) == "fail" {
 			host.Runtime().SignalUserError("callback failed intentionally")
 			return instance
