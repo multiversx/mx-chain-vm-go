@@ -55,14 +55,6 @@ func TestCreateAsyncCall(t *testing.T) {
 		CheckNoError()
 }
 
-func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios").
-		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
-		Run().
-		CheckNoError()
-}
-
 func TestMultisig(t *testing.T) {
 	ScenariosTest(t).
 		Folder("multisig/scenarios").

@@ -57,11 +57,6 @@ func (stub *EnableEpochsHandlerStub) IsGuardAccountEnabled() bool {
 	return stub.IsGuardAccountEnabledField
 }
 
-// IsSetGuardianEnabled -
-func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
-	return stub.IsSetGuardianEnabledField
-}
-
 // IsGlobalMintBurnFlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsGlobalMintBurnFlagEnabled() bool {
 	return stub.IsGlobalMintBurnFlagEnabledField
@@ -272,6 +267,10 @@ func (stub *EnableEpochsHandlerStub) IsRuntimeCodeSizeFixEnabled() bool {
 	return stub.IsRuntimeCodeSizeFixEnabledField
 }
 
+func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
+	return stub.IsSetGuardianEnabledField
+}
+
 // IsInterfaceNil -
 func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
@@ -306,6 +305,7 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsFixOldTokenLiquidityEnabledField:                   true,
 		IsAlwaysSaveTokenMetaDataEnabledField:                true,
 		IsRuntimeCodeSizeFixEnabledField:                     true,
+		IsSetGuardianEnabledField:                            true,
 	}
 }
 

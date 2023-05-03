@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
-	"github.com/multiversx/mx-chain-vm-go/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 // WasteGasChildMock is an exposed mock contract method
@@ -223,12 +223,18 @@ const (
 	esdtOnCallbackWrongNumOfArgs
 	esdtOnCallbackFail
 	esdtOnCallbackNewAsync
+	esdtOnCallbackNoReturnData
 )
 
 // ESDTTransferToParentMock is an exposed mock contract method
 func ESDTTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*test.TestConfig)
 	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackSuccess)
+}
+
+func ESDTTransferToParentMockNoReturnData(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*test.TestConfig)
+	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackNoReturnData)
 }
 
 // ESDTTransferToParentWrongESDTArgsNumberMock is an exposed mock contract method
@@ -255,16 +261,9 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 		instance := mock.GetMockInstance(host)
 		host.Metering().UseGas(testConfig.GasUsedByChild)
 
-		callData := txDataBuilder.NewBuilder()
-		callData.Func("ESDTTransfer")
-		callData.Bytes(test.ESDTTestTokenName)
-		callData.Bytes(big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes())
-
 		switch behavior {
 		case esdtOnCallbackSuccess:
 			host.Output().Finish([]byte("success"))
-		case esdtOnCallbackWrongNumOfArgs:
-			callData.Bytes([]byte{})
 		case esdtOnCallbackFail:
 			host.Output().Finish([]byte("fail"))
 		case esdtOnCallbackNewAsync:
@@ -273,30 +272,29 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			host.Output().Finish([]byte("wasteGas"))
 		}
 
-		value := big.NewInt(0).Bytes()
-
 		arguments := host.Runtime().Arguments()
-		asyncCallType := arguments[0]
+		numberOfBackTransfers := uint64(big.NewInt(0).SetBytes(arguments[0]).Int64())
 
-		async := host.Async()
 		var err error
-		if asyncCallType[0] == 0 {
-			err = async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
-		} else {
-			callbackName := "callBack"
-			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
-				callbackName = ""
+		for numCallbacks := uint64(0); numCallbacks < numberOfBackTransfers; numCallbacks++ {
+			transfer := &vmcommon.ESDTTransfer{
+				ESDTValue:      big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)),
+				ESDTTokenName:  test.ESDTTestTokenName,
+				ESDTTokenType:  0,
+				ESDTTokenNonce: 0,
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
-				Status:          vmhost.AsyncCallPending,
-				Destination:     test.ParentAddress,
-				Data:            callData.ToBytes(),
-				ValueBytes:      value,
-				SuccessCallback: callbackName,
-				ErrorCallback:   callbackName,
-				GasLimit:        testConfig.GasProvidedToChild / 2,
-				GasLocked:       testConfig.GasToLock,
-			})
+
+			ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+				host,
+				test.ParentAddress,
+				[]*vmcommon.ESDTTransfer{transfer},
+				int64(testConfig.GasProvidedToChild),
+				nil,
+				nil)
+			if ret != 0 {
+				host.Runtime().FailExecution(fmt.Errorf("Transfer ESDT failed"))
+			}
+
 		}
 
 		if err != nil {
