@@ -59,6 +59,18 @@ func TestAddInt64WithErr(t *testing.T) {
 	sum, err = AddInt64WithErr(b, d)
 	require.Nil(t, err)
 	require.Equal(t, int64(math.MaxInt64-2), sum)
+
+	a = int64(-5)
+	b = int64(4)
+	sum, err = AddInt64WithErr(a, b)
+	require.Nil(t, err)
+	require.Equal(t, int64(-1), sum)
+
+	a = int64(-math.MaxInt64 + 2)
+	b = int64(-4)
+	sum, err = AddInt64WithErr(a, b)
+	require.Equal(t, ErrAdditionOverflow, err)
+	require.Equal(t, a+b, sum)
 }
 
 func TestAddInt64(t *testing.T) {

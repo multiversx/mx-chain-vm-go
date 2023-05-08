@@ -2113,9 +2113,6 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 	metering := context.GetMeteringContext()
 	storage := context.GetStorageContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(getCurrentESDTNFTNonceName, gasToUse)
-
 	destination, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
@@ -2127,7 +2124,16 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 	}
 
 	key := []byte(core.ProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
-	data, _, _, err := storage.GetStorageFromAddress(destination, key)
+	data, trieDepth, _, err := storage.GetStorageFromAddress(destination, key)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return 0
+	}
+
+	err = storage.UseGasForStorageLoad(
+		getCurrentESDTNFTNonceName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		false)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}

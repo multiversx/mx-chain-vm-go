@@ -43,7 +43,7 @@ func AddInt64(a, b int64) int64 {
 // AddInt64WithErr performs addition on int64 and returns an error if the addition overflows
 func AddInt64WithErr(a, b int64) (int64, error) {
 	s := a + b
-	if s >= a && s >= b {
+	if (s > a) == (b > 0) {
 		return s, nil
 	}
 
