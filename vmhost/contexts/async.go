@@ -570,6 +570,13 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall) error {
+
+	runtime := context.host.Runtime()
+	functionName := runtime.GetVMInput().Function
+	if functionName == vmhost.InitFunctionName || functionName == vmhost.UpgradeFunctionName {
+		return vmhost.ErrAsyncNotAllowed
+	}
+
 	metering := context.host.Metering()
 
 	err := metering.UseGasBounded(call.GasLocked)
@@ -580,7 +587,8 @@ func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall
 	if err != nil {
 		return err
 	}
-	execMode, err := context.determineExecutionMode(call.Destination, call.Data)
+
+	execMode, err := context.determineExecutionMode(call)
 	if err != nil {
 		return err
 	}
@@ -740,9 +748,7 @@ func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *vmhost.AsyncC
 }
 
 func (context *asyncContext) isMultiLevelAsync(call *vmhost.AsyncCall) bool {
-	// ESDTTransferOnCallback must be allowed as an exception, even if it appears
-	// to be a 2-level async call.
-	return context.isCallAsyncOnStack() && call.ExecutionMode != vmhost.ESDTTransferOnCallBack
+	return context.isCallAsyncOnStack()
 }
 
 func (context *asyncContext) isCallAsyncOnStack() bool {
@@ -829,7 +835,6 @@ func (context *asyncContext) callCallback(callID []byte, vmOutput *vmcommon.VMOu
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		err = context.SendCrossShardCallback(vmOutput.ReturnCode, vmOutput.ReturnData, vmOutput.ReturnMessage)
 		return false, nil, err
 	}
 
@@ -898,37 +903,26 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 	return loadedContext
 }
 
-func (context *asyncContext) determineExecutionMode(destination []byte, data []byte) (vmhost.AsyncCallExecutionMode, error) {
+func (context *asyncContext) determineExecutionMode(call *vmhost.AsyncCall) (vmhost.AsyncCallExecutionMode, error) {
 	runtime := context.host.Runtime()
 	blockchain := context.host.Blockchain()
 
+	destination := call.Destination
+	data := call.Data
+
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
-	functionName, args, err := context.callArgsParser.ParseData(string(data))
+	functionName, _, err := context.callArgsParser.ParseData(string(data))
 	if err != nil {
-		return vmhost.AsyncUnknown, err
+		return vmhost.AsyncUnknown, nil
 	}
 
 	actualDestination := context.determineDestinationForAsyncCall(destination, data)
 	sameShard := context.host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			vmInput := runtime.GetVMInput()
-			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
-				runtime.GetContextAddress(),
-				actualDestination,
-				functionName,
-				args)
-			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
-			isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
-
-			if isESDTTransfer && isAsyncCall && isReturningCall {
-				return vmhost.ESDTTransferOnCallBack, nil
-			}
-
 			return vmhost.AsyncBuiltinFuncIntraShard, nil
 		}
-
 		return vmhost.AsyncBuiltinFuncCrossShard, nil
 	}
 

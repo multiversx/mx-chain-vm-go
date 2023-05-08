@@ -19,6 +19,11 @@ func SetSIGSEGVPassthrough() {
 	cWasmerSetSIGSEGVPassthrough()
 }
 
+// ForceInstallSighandlers triggers a forced installation of signal handlers in Wasmer 1
+func ForceInstallSighandlers() {
+	cWasmerForceInstallSighandlers()
+}
+
 // SetOpcodeCosts sets gas costs globally for Wasmer.
 func SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
 	opcodeCostsArray := toOpcodeCostsArray(opcodeCosts)

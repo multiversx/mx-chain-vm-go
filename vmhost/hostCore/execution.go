@@ -44,6 +44,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput:       input.VMInput,
 		RecipientAddr: address,
+		Function:      vmhost.InitFunctionName,
 	}
 	runtime.SetVMInput(contractCallInput)
 	runtime.SetCodeAddress(address)
@@ -1022,7 +1023,6 @@ func addOutputTransferToVMOutput(
 			OutputTransfers: make([]vmcommon.OutputTransfer, 0),
 		}
 	}
-	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
 	contexts.AppendOutputTransfers(outAcc, outAcc.OutputTransfers, outTransfer)
 	vmOutput.OutputAccounts[string(recipient)] = outAcc
 }
@@ -1095,14 +1095,8 @@ func (host *vmHost) callSCMethodDirectCall() error {
 }
 
 func (host *vmHost) callSCMethodAsynchronousCall() error {
-	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete {
-		return err
-	}
-
-	async := host.Async()
-	output := host.Output()
-	return async.SendCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
+	_, err := host.callFunctionAndExecuteAsync()
+	return err
 }
 
 func (host *vmHost) callSCMethodAsynchronousCallBack() error {

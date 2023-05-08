@@ -49,6 +49,10 @@ func makeAsyncContext(t testing.TB, host vmhost.VMHost, address []byte) *asyncCo
 }
 
 func initializeVMAndWasmerAsyncContext(tb testing.TB) (*contextmock.VMHostMock, *worldmock.MockWorld) {
+	return initializeVMAndWasmerAsyncContextWithBuiltIn(tb, false)
+}
+
+func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc bool) (*contextmock.VMHostMock, *worldmock.MockWorld) {
 	testVMType := []byte("type")
 
 	gasSchedule := config.MakeGasMapForTests()
@@ -93,6 +97,7 @@ func initializeVMAndWasmerAsyncContext(tb testing.TB) (*contextmock.VMHostMock, 
 	host.CryptoHook = factory.NewVMCrypto()
 	host.StorageContext, _ = NewStorageContext(host, world, reservedTestPrefix)
 	host.EnableEpochsHandlerField = worldmock.EnableEpochsHandlerStubNoFlags()
+	host.IsBuiltinFunc = isBuiltinFunc
 
 	return host, world
 }
@@ -102,7 +107,15 @@ func initializeVMAndWasmerAsyncContextWithAliceAndBob(tb testing.TB) (
 	*worldmock.MockWorld,
 	*vmcommon.ContractCallInput,
 ) {
-	host, world := initializeVMAndWasmerAsyncContext(tb)
+	return initializeVMAndWasmerAsyncContextWithAliceAndBobWithBuiltIn(tb, false)
+}
+
+func initializeVMAndWasmerAsyncContextWithAliceAndBobWithBuiltIn(tb testing.TB, isBuiltIn bool) (
+	*contextmock.VMHostMock,
+	*worldmock.MockWorld,
+	*vmcommon.ContractCallInput,
+) {
+	host, world := initializeVMAndWasmerAsyncContextWithBuiltIn(tb, isBuiltIn)
 	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: Alice,
 		Balance: big.NewInt(88),
@@ -287,24 +300,19 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	initRuntime(runtime, leftAddress)
-	execMode, err := async.determineExecutionMode(rightAddress, []byte("func"))
+	asyncCall := &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func")}
+	execMode, err := async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.SyncExecution, execMode)
 
-	execMode, err = async.determineExecutionMode(rightAddress, []byte(""))
-	require.NotNil(t, err)
-	require.Equal(t, vmhost.AsyncUnknown, execMode)
-
-	execMode, err = async.determineExecutionMode(rightAddress, []byte(""))
-	require.NotNil(t, err)
-	require.Equal(t, vmhost.AsyncUnknown, execMode)
-
 	host.IsBuiltinFunc = true
 	initRuntime(runtime, leftAddress)
-	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	asyncCall = &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func"), IsBuiltinFunctionCall: true}
+	execMode, err = async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.AsyncBuiltinFuncIntraShard, execMode)
 
+	asyncCall = &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func")}
 	host.IsBuiltinFunc = false
 	rightAccount.Code = []byte{}
 	rightAccount.ShardID = 1
@@ -314,10 +322,11 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	outputAccount.Code = []byte{}
 
 	initRuntime(runtime, leftAddress)
-	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	execMode, err = async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.AsyncUnknown, execMode)
 
+	asyncCall = &vmhost.AsyncCall{Destination: rightAddress, Data: []byte("func"), IsBuiltinFunctionCall: true}
 	host.IsBuiltinFunc = true
 	rightAccount.Code = []byte{}
 	rightAccount.ShardID = 1
@@ -327,7 +336,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	outputAccount.Code = []byte{}
 
 	initRuntime(runtime, leftAddress)
-	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	execMode, err = async.determineExecutionMode(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.AsyncBuiltinFuncCrossShard, execMode)
 }
@@ -707,6 +716,142 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 	expectedInput.GasProvided = expectedGasProvided
 	callbackInput.AsyncArguments = nil
 	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_LastTransfer_ValueAndNoESDTTransfer_WithReturnData(t *testing.T) {
+
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value: big.NewInt(2),
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(0)
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_LastTransfer_ValueAndNoESDTTransfer_NoReturnData(t *testing.T) {
+
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value: big.NewInt(2),
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	vmOutput.ReturnData = nil
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.Arguments = [][]byte{{0}}
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(2)
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_LastTransferValueAndESDTTransfer_WithReturnData(t *testing.T) {
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInput(t,
+		&vmcommon.OutputTransfer{
+			Value: big.NewInt(2),
+			Data:  []byte("ESDTTransfer@6d696975746f6b656e@05"),
+		})
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(0)
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_LastTransferValueAndESDTTransfer_NoReturnData(t *testing.T) {
+
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value: big.NewInt(2),
+		Data:  []byte("ESDTTransfer@6d696975746f6b656e@05"),
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	vmOutput.ReturnData = nil
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.Arguments = [][]byte{{0}}
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(2)
+	expectedInput.ESDTTransfers = []*vmcommon.ESDTTransfer{
+		{
+			ESDTTokenName: []byte("miiutoken"),
+			ESDTValue:     big.NewInt(5),
+		},
+	}
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_LastTransferValueAndESDTTransferWithCall(t *testing.T) {
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInput(t,
+		&vmcommon.OutputTransfer{
+			Value: big.NewInt(2),
+			Data:  []byte("ESDTTransfer@6d696975746f6b656e@05@6d696975"),
+		})
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(0)
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func createDefaultVMOutput(lastTransfer *vmcommon.OutputTransfer) *vmcommon.VMOutput {
+	vmOutput := defaultDestOutputOk()
+	vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	vmOutput.OutputAccounts[string(Alice)] = &vmcommon.OutputAccount{
+		OutputTransfers: []vmcommon.OutputTransfer{
+			{
+				Value: big.NewInt(1),
+			},
+			*lastTransfer,
+		},
+	}
+	vmOutput.GasRemaining = 12
+	return vmOutput
+}
+
+func createCallbackInput(t *testing.T, lastTransfer *vmcommon.OutputTransfer) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput, uint64) {
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	return createCallbackInputWithVMOutput(t, vmOutput, lastTransfer)
+}
+
+func createCallbackInputWithVMOutput(t *testing.T, vmOutput *vmcommon.VMOutput, lastTransfer *vmcommon.OutputTransfer) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput, uint64) {
+	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBobWithBuiltIn(t, true)
+	host.Runtime().InitStateFromContractCallInput(originalVMInput)
+	async := makeAsyncContext(t, host, Alice)
+
+	asyncCall := defaultAsyncCallAliceToBob()
+	asyncCall.Status = vmhost.AsyncCallResolved
+	asyncCall.GasLocked = 300
+
+	destinationErr := error(nil)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
+	require.Nil(t, err)
+
+	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
+	expectedGasProvided -= host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep
+	return originalVMInput, callbackInput, expectedGasProvided
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {

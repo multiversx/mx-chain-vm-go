@@ -612,3 +612,12 @@ int vm_exported_function_names(vm_exec_instance_t *instance_ptr,
  * C API function, works with raw object pointers.
  */
 int vm_exported_function_names_length(vm_exec_instance_t *instance_ptr);
+
+/**
+ * Forces reinstalling the sighandlers.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+void vm_force_sighandler_reinstall(void);

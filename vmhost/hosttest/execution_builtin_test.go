@@ -11,10 +11,12 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
@@ -50,18 +52,33 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 		})
 	require.Nil(t, err)
 
+	esdtTokensToTransfer := int64(16)
+
 	input := test.DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
 	input.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
 	input.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
-	input.ESDTTransfers[0].ESDTValue = big.NewInt(16)
+	input.ESDTTransfers[0].ESDTValue = big.NewInt(esdtTokensToTransfer)
 	input.ESDTTransfers[0].ESDTTokenName = test.ESDTTestTokenName
+
+	expectedTransfer := txDataBuilder.NewBuilder()
+	expectedTransfer.TransferESDT(string(test.ESDTTestTokenName), esdtTokensToTransfer)
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, test.ParentAddress).
+			WithData(expectedTransfer.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.DirectCall).
+			WithValue(big.NewInt(0)))
 
 	vmOutput, err := host.RunSmartContractCall(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.Ok()
+	verify.Ok().
+		Transfers(expectedTransfers...)
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
@@ -252,10 +269,23 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 		[]byte("validateGetters"),
 	}
 
+	expectedTransfer := txDataBuilder.NewBuilder()
+	expectedTransfer.TransferESDT(string(test.ESDTTestTokenName), esdtValue)
+
+	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers = append(expectedTransfers,
+		test.CreateTransferEntry(test.ParentAddress, exchangeAddress).
+			WithData(expectedTransfer.ToBytes()).
+			WithGasLimit(0).
+			WithGasLocked(0).
+			WithCallType(vm.DirectCall).
+			WithValue(big.NewInt(0)))
+
 	vmOutput, _, err := host.ExecuteOnDestContext(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.Ok()
+	verify.Ok().
+		Transfers(expectedTransfers...)
 
 	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(testToken, 0)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)

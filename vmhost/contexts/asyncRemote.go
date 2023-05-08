@@ -4,24 +4,11 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 const callbackNamePlaceholder = "<callback>"
-
-// SendCrossShardCallback creates a transfer for a cross shard callback
-func (context *asyncContext) SendCrossShardCallback(
-	returnCode vmcommon.ReturnCode,
-	returnData [][]byte,
-	returnMessage string,
-) error {
-	sender := context.address
-	destination := context.callerAddr
-	asyncData, data := context.createDataForCrossShardCallback(returnCode, returnData, returnMessage)
-	return sendCrossShardCallback(context.host, sender, destination, asyncData, data)
-}
 
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *vmhost.AsyncCall) error {
 	host := context.host
@@ -63,61 +50,4 @@ func createAsyncDataForAsyncCall(newCallID []byte, currentCallID []byte) []byte 
 	asyncData.Bytes(newCallID)
 	asyncData.Bytes(currentCallID)
 	return asyncData.ToBytes()
-}
-
-func sendCrossShardCallback(host vmhost.VMHost, sender []byte, destination []byte, asyncData []byte, data []byte) error {
-	runtime := host.Runtime()
-	output := host.Output()
-	metering := host.Metering()
-	currentCall := runtime.GetVMInput()
-
-	gasLeft := metering.GasLeft()
-	metering.UseGas(gasLeft)
-	err := output.Transfer(
-		destination,
-		sender,
-		gasLeft,
-		0,
-		big.NewInt(0),
-		asyncData,
-		data,
-		vm.AsynchronousCallBack,
-	)
-	if err != nil {
-		runtime.FailExecution(err)
-		return err
-	}
-
-	logAsync.Trace(
-		"sendCrossShardCallback",
-		"caller", currentCall.CallerAddr,
-		"data", data,
-		"gas", gasLeft)
-
-	return nil
-}
-
-func (context *asyncContext) createDataForCrossShardCallback(
-	returnCode vmcommon.ReturnCode,
-	returnData [][]byte,
-	returnMessage string,
-) ([]byte, []byte) {
-	asyncData := txDataBuilder.NewBuilder()
-	asyncData.Bytes(context.generateNewCallID())
-	asyncData.Bytes(context.callID)
-	asyncData.Bytes(context.callerCallID)
-	asyncData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())
-
-	transferData := txDataBuilder.NewBuilder()
-	// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
-	transferData.Func(callbackNamePlaceholder)
-	transferData.Bytes(ReturnCodeToBytes(returnCode))
-	if returnCode == vmcommon.Ok {
-		for _, data := range returnData {
-			transferData.Bytes(data)
-		}
-	} else {
-		transferData.Str(returnMessage)
-	}
-	return asyncData.ToBytes(), transferData.ToBytes()
 }

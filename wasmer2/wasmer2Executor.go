@@ -38,6 +38,8 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
+	cWasmerForceInstallSighandlers()
+
 	executor := &Wasmer2Executor{
 		cgoExecutor:    c_executor,
 		vmHookPointers: vmHookPointers,

@@ -44,11 +44,18 @@ type EnableEpochsHandlerStub struct {
 	RemoveNonUpdatedStorageEnableEpochField              uint32
 	StorageAPICostOptimizationEnableEpochField           uint32
 	IsRuntimeMemStoreLimitEnabledField                   bool
-	IsRuntimeCodeSizeFixEnabledField                     bool
 	IsMaxBlockchainHookCountersFlagEnabledField          bool
 	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	IsAlwaysSaveTokenMetaDataEnabledField                bool
 	IsDynamicGasCostForDataTrieStorageLoadEnabledField   bool
+	IsRuntimeCodeSizeFixEnabledField                     bool
+	IsSetGuardianEnabledField                            bool
+	IsGuardAccountEnabledField                           bool
+}
+
+// IsGuardAccountEnabled -
+func (stub *EnableEpochsHandlerStub) IsGuardAccountEnabled() bool {
+	return stub.IsGuardAccountEnabledField
 }
 
 // IsGlobalMintBurnFlagEnabled -
@@ -266,6 +273,10 @@ func (stub *EnableEpochsHandlerStub) IsDynamicGasCostForDataTrieStorageLoadEnabl
 	return stub.IsDynamicGasCostForDataTrieStorageLoadEnabledField
 }
 
+func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
+	return stub.IsSetGuardianEnabledField
+}
+
 // IsInterfaceNil -
 func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
@@ -299,6 +310,8 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		IsFixOldTokenLiquidityEnabledField:                   true,
 		IsAlwaysSaveTokenMetaDataEnabledField:                true,
+		IsRuntimeCodeSizeFixEnabledField:                     true,
+		IsSetGuardianEnabledField:                            true,
 	}
 }
 

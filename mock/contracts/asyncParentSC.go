@@ -103,9 +103,18 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
 
+		for _, esdtTransfer := range host.Runtime().GetVMInput().ESDTTransfers {
+			host.Output().Finish(esdtTransfer.ESDTTokenName)
+			host.Output().Finish(esdtTransfer.ESDTValue.Bytes())
+		}
+
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
 			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			return instance
+		}
+
+		if len(arguments) == 1 {
 			return instance
 		}
 

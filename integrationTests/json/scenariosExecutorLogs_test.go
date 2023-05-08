@@ -12,6 +12,7 @@ func TestRustCompareAdderLog(t *testing.T) {
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
+
 	expected := ScenariosTest(t).
 		Folder("adder/scenarios").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -55,8 +56,6 @@ func TestRustErc20Log(t *testing.T) {
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
-
-	t.Skip("not a working test")
 
 	expected := ScenariosTest(t).
 		Folder("erc20-rust/scenarios").
@@ -148,8 +147,6 @@ func TestCreateAsyncCallLog(t *testing.T) {
 		t.Skip("run exclusively with wasmer1")
 	}
 
-	t.Skip("not a working test")
-
 	expected := ScenariosTest(t).
 		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
@@ -198,8 +195,6 @@ func TestMultisigLog(t *testing.T) {
 		t.Skip("run exclusively with wasmer1")
 	}
 
-	t.Skip("not a working test")
-
 	expected := ScenariosTest(t).
 		Folder("multisig/scenarios").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
@@ -221,8 +216,6 @@ func TestDnsContractLog(t *testing.T) {
 	if !testexecutor.IsWasmer1Allowed() {
 		t.Skip("run exclusively with wasmer1")
 	}
-
-	t.Skip("not a working test")
 
 	if testing.Short() {
 		t.Skip("not a short test")
