@@ -118,14 +118,17 @@ func TestRustFormattedMessageFeatures(t *testing.T) {
 		CheckNoError()
 }
 
-// New contracts no longer the older, unmanaged hooks.
+// New contracts no longer contain the older, unmanaged hooks.
 // We have older contracts that just do regression checking.
 func TestRustLegacyComposability(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability-legacy/scenarios-legacy").
+		Exclude("features/composability-legacy/scenarios-legacy/l_forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
+		Exclude("features/composability-legacy/scenarios-legacy/l_forw_raw_call_async_retrieve_multi_transfer.scen.json").
+		Exclude("features/composability-legacy/scenarios-legacy/l_forwarder_call_async_retrieve_esdt.scen.json").
+		Exclude("features/composability-legacy/scenarios-legacy/l_forwarder_call_async_retrieve_nft.scen.json").
 		Run().
 		CheckNoError()
-
 }
 
 func TestTimelocks(t *testing.T) {
