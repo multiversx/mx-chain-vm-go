@@ -83,6 +83,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 				return vmhost.ErrAsyncNoOutputFromCallback
 			}
 
+			context.host.Output().CompleteLogEntriesWithCallType("AsyncCall")
+
 			if isCallbackComplete {
 				callbackGasRemaining := callbackVMOutput.GasRemaining
 				callbackVMOutput.GasRemaining = 0

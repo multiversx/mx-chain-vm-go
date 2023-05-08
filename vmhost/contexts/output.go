@@ -20,10 +20,11 @@ var _ vmhost.OutputContext = (*outputContext)(nil)
 var logOutput = logger.GetOrCreate("vm/output")
 
 type outputContext struct {
-	host        vmhost.VMHost
-	outputState *vmcommon.VMOutput
-	stateStack  []*vmcommon.VMOutput
-	codeUpdates map[string]struct{}
+	host                   vmhost.VMHost
+	outputState            *vmcommon.VMOutput
+	stateStack             []*vmcommon.VMOutput
+	codeUpdates            map[string]struct{}
+	transferLogIdentifiers map[string]bool
 }
 
 // NewOutputContext creates a new outputContext
@@ -46,6 +47,11 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
+	context.transferLogIdentifiers = make(map[string]bool)
+	context.transferLogIdentifiers["transferValueOnly"] = true
+	context.transferLogIdentifiers["ESDTTransfer"] = true
+	context.transferLogIdentifiers["ESDTNFTTransfer"] = true
+	context.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -314,15 +320,15 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		if context.host.Runtime().ReadOnly() {
 			return vmhost.ErrInvalidCallOnReadOnlyMode
 		}
-
-		vmInput := context.host.Runtime().GetVMInput()
-		context.WriteLogWithIdentifier(
-			destination,
-			[][]byte{sender, value.Bytes()},
-			vmcommon.FormatLogDataForCall("DirectCall", vmInput.Function, vmInput.Arguments),
-			[]byte("transferValueOnly"),
-		)
 	}
+
+	vmInput := context.host.Runtime().GetVMInput()
+	context.WriteLogWithIdentifier(
+		destination,
+		[][]byte{sender, value.Bytes()},
+		vmcommon.FormatLogDataForCall("DirectCall", vmInput.Function, vmInput.Arguments),
+		[]byte("transferValueOnly"),
+	)
 
 	return nil
 }
@@ -753,16 +759,11 @@ func mergeStorageUpdates(
 
 func (context *outputContext) CompleteLogEntriesWithCallType(callType string) {
 	for _, logEntry := range context.outputState.Logs {
-		if string(logEntry.Identifier) == "transferValueOnly" ||
-			string(logEntry.Identifier) == "ESDTTransfer" ||
-			string(logEntry.Identifier) == "ESDTNFTTransfer" ||
-			string(logEntry.Identifier) == "MultiESDTNFTTransfer" {
+		_, containsId := context.transferLogIdentifiers[string(logEntry.Identifier)]
+		if containsId {
 			if string(logEntry.Data[0]) == "AsyncCall" {
 				continue
 			}
-			// if callType == "ExecuteOnSameContext" {
-			// 	panic("!!!")
-			// }
 			logEntry.Data[0] = []byte(callType)
 		}
 	}
