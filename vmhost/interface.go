@@ -225,7 +225,7 @@ type OutputContext interface {
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	DeleteOutputAccount(address []byte)
-	WriteLog(address []byte, topics [][]byte, data []byte)
+	WriteLog(address []byte, topics [][]byte, data [][]byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
 	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error)
@@ -246,6 +246,7 @@ type OutputContext interface {
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
+	CompleteLogEntriesWithCallType(callType string)
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context

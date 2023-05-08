@@ -339,6 +339,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 	}
 
+	host.Output().CompleteLogEntriesWithCallType("ExecuteOnDestContext")
+
 	if err != nil {
 		blockchain.PopSetActiveState()
 	} else {
@@ -568,6 +570,8 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// GasUsed for all accounts.
 	vmOutput := output.GetVMOutput()
 
+	host.Output().CompleteLogEntriesWithCallType("ExecuteOnSameContext")
+
 	metering.PopMergeActiveState()
 	output.PopDiscard()
 	blockchain.PopDiscard()
@@ -676,6 +680,9 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	if err != nil {
 		return
 	}
+
+	host.Output().CompleteLogEntriesWithCallType("DeployFromSource")
+
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
 		return

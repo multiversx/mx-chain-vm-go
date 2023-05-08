@@ -248,7 +248,7 @@ func (context *outputContext) DeleteFirstReturnData() {
 }
 
 // WriteLogWithIdentifier creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data []byte, identifier []byte) {
+func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte) {
 	if context.host.Runtime().ReadOnly() {
 		logOutput.Trace("log entry", "error", "cannot write logs in readonly mode")
 		return
@@ -273,7 +273,7 @@ func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]
 }
 
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+func (context *outputContext) WriteLog(address []byte, topics [][]byte, data [][]byte) {
 	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().FunctionName()))
 }
 
@@ -315,10 +315,11 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 			return vmhost.ErrInvalidCallOnReadOnlyMode
 		}
 
+		vmInput := context.host.Runtime().GetVMInput()
 		context.WriteLogWithIdentifier(
-			context.host.Runtime().GetContextAddress(),
-			[][]byte{sender, destination, value.Bytes()},
-			[]byte{},
+			destination,
+			[][]byte{sender, value.Bytes()},
+			vmcommon.FormatLogDataForCall("DirectCall", vmInput.Function, vmInput.Arguments),
 			[]byte("transferValueOnly"),
 		)
 	}
@@ -747,5 +748,22 @@ func mergeStorageUpdates(
 	}
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
+	}
+}
+
+func (context *outputContext) CompleteLogEntriesWithCallType(callType string) {
+	for _, logEntry := range context.outputState.Logs {
+		if string(logEntry.Identifier) == "transferValueOnly" ||
+			string(logEntry.Identifier) == "ESDTTransfer" ||
+			string(logEntry.Identifier) == "ESDTNFTTransfer" ||
+			string(logEntry.Identifier) == "MultiESDTNFTTransfer" {
+			if string(logEntry.Data[0]) == "AsyncCall" {
+				continue
+			}
+			// if callType == "ExecuteOnSameContext" {
+			// 	panic("!!!")
+			// }
+			logEntry.Data[0] = []byte(callType)
+		}
 	}
 }

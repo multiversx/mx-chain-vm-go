@@ -149,7 +149,7 @@ func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),
-		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
+		Data:   mj.JSONCheckBytesReconstructed(outputLog.GetFirstDataItem(), ""),
 		Topics: topics,
 	}
 

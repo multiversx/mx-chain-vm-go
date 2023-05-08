@@ -150,7 +150,7 @@ func (context *VMHooksImpl) ManagedWriteLog(
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseAndTraceGas(gasToUse)
 
-	output.WriteLog(runtime.GetContextAddress(), topics, dataBytes)
+	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{dataBytes})
 }
 
 // ManagedGetOriginalTxHash VMHooks implementation.

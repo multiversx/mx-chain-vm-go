@@ -30,7 +30,7 @@ var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ vmhost.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = time.Second
+const minExecutionTimeout = 3600 * time.Second
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
@@ -370,6 +370,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
+		host.Output().CompleteLogEntriesWithCallType("DeploySmartContract")
+
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
@@ -477,7 +479,7 @@ func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, func
 		Identifier: []byte(internalVMErrors),
 		Address:    sndAddress,
 		Topics:     [][]byte{rcvAddress, []byte(function)},
-		Data:       []byte(formattedErrors.Error()),
+		Data:       [][]byte{[]byte(formattedErrors.Error())},
 	}
 
 	return logFromError

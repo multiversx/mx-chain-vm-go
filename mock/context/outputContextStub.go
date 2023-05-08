@@ -12,39 +12,40 @@ var _ vmhost.OutputContext = (*OutputContextStub)(nil)
 
 // OutputContextStub is used in tests to check the OutputContext interface method calls
 type OutputContextStub struct {
-	InitStateCalled                   func()
-	PushStateCalled                   func()
-	PopSetActiveStateCalled           func()
-	PopMergeActiveStateCalled         func()
-	PopDiscardCalled                  func()
-	ClearStateStackCalled             func()
-	CopyTopOfStackToActiveStateCalled func()
-	CensorVMOutputCalled              func()
-	GetOutputAccountsCalled           func() map[string]*vmcommon.OutputAccount
-	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
-	DeleteOutputAccountCalled         func(address []byte)
-	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
-	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
-	TransferESDTCalled                func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
-	GetRefundCalled                   func() uint64
-	SetRefundCalled                   func(refund uint64)
-	ReturnCodeCalled                  func() vmcommon.ReturnCode
-	SetReturnCodeCalled               func(returnCode vmcommon.ReturnCode)
-	ReturnMessageCalled               func() string
-	SetReturnMessageCalled            func(message string)
-	ReturnDataCalled                  func() [][]byte
-	ClearReturnDataCalled             func()
-	RemoveReturnDataCalled            func(index uint32)
-	FinishCalled                      func(data []byte)
-	PrependFinishCalled               func(data []byte)
-	DeleteFirstReturnDataCalled       func()
-	GetVMOutputCalled                 func() *vmcommon.VMOutput
-	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
-	DeployCodeCalled                  func(input vmhost.CodeDeployInput)
-	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
-	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
-	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
-	RemoveNonUpdatedStorageCalled     func()
+	InitStateCalled                      func()
+	PushStateCalled                      func()
+	PopSetActiveStateCalled              func()
+	PopMergeActiveStateCalled            func()
+	PopDiscardCalled                     func()
+	ClearStateStackCalled                func()
+	CopyTopOfStackToActiveStateCalled    func()
+	CensorVMOutputCalled                 func()
+	GetOutputAccountsCalled              func() map[string]*vmcommon.OutputAccount
+	GetOutputAccountCalled               func(address []byte) (*vmcommon.OutputAccount, bool)
+	DeleteOutputAccountCalled            func(address []byte)
+	WriteLogCalled                       func(address []byte, topics [][]byte, data [][]byte)
+	TransferCalled                       func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
+	TransferESDTCalled                   func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
+	GetRefundCalled                      func() uint64
+	SetRefundCalled                      func(refund uint64)
+	ReturnCodeCalled                     func() vmcommon.ReturnCode
+	SetReturnCodeCalled                  func(returnCode vmcommon.ReturnCode)
+	ReturnMessageCalled                  func() string
+	SetReturnMessageCalled               func(message string)
+	ReturnDataCalled                     func() [][]byte
+	ClearReturnDataCalled                func()
+	RemoveReturnDataCalled               func(index uint32)
+	FinishCalled                         func(data []byte)
+	PrependFinishCalled                  func(data []byte)
+	DeleteFirstReturnDataCalled          func()
+	GetVMOutputCalled                    func() *vmcommon.VMOutput
+	AddTxValueToAccountCalled            func(address []byte, value *big.Int)
+	DeployCodeCalled                     func(input vmhost.CodeDeployInput)
+	CreateVMOutputInCaseOfErrorCalled    func(err error) *vmcommon.VMOutput
+	AddToActiveStateCalled               func(vmOutput *vmcommon.VMOutput)
+	TransferValueOnlyCalled              func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
+	RemoveNonUpdatedStorageCalled        func()
+	CompleteLogEntriesWithCallTypeCalled func(callType string)
 }
 
 // AddToActiveState mocked method
@@ -134,7 +135,7 @@ func (o *OutputContextStub) DeleteOutputAccount(address []byte) {
 }
 
 // WriteLog mocked method
-func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byte) {
+func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data [][]byte) {
 	if o.WriteLogCalled != nil {
 		o.WriteLogCalled(address, topics, data)
 	}
@@ -289,4 +290,11 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
+}
+
+// CompleteLogEntriesWithCallType mocked method
+func (o *OutputContextStub) CompleteLogEntriesWithCallType(callType string) {
+	if o.CompleteLogEntriesWithCallTypeCalled != nil {
+		o.CompleteLogEntriesWithCallTypeCalled(callType)
+	}
 }

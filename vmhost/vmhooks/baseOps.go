@@ -2216,7 +2216,7 @@ func (context *VMHooksImpl) WriteLog(
 		}
 	}
 
-	output.WriteLog(runtime.GetContextAddress(), topics, log)
+	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{log})
 }
 
 // WriteEventLog VMHooks implementation.
@@ -2256,7 +2256,7 @@ func (context *VMHooksImpl) WriteEventLog(
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseGasAndAddTracedGas(writeEventLogName, gasToUse)
 
-	output.WriteLog(runtime.GetContextAddress(), topics, data)
+	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{data})
 }
 
 // GetBlockTimestamp VMHooks implementation.

@@ -163,7 +163,7 @@ func (o *OutputContextMock) DeleteFirstReturnData() {
 }
 
 // WriteLog mocked method
-func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {}
+func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ [][]byte) {}
 
 // TransferValueOnly mocked method
 func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ bool) error {
@@ -205,4 +205,8 @@ func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOut
 // GetCurrentTotalUsedGas mocked method
 func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
 	return 0, false
+}
+
+// CompleteLogEntriesWithCallType mocked method
+func (o *OutputContextMock) CompleteLogEntriesWithCallType(callType string) {
 }

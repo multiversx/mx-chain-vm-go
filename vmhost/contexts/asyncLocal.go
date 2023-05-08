@@ -63,6 +63,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 		return vmhost.ErrNilDestinationCallVMOutput
 	}
 
+	context.host.Output().CompleteLogEntriesWithCallType("AsyncCall")
+
 	logAsync.Trace("executeAsyncLocalCall",
 		"retCode", vmOutput.ReturnCode,
 		"message", vmOutput.ReturnMessage,
