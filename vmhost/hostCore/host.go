@@ -592,9 +592,6 @@ func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, 
 	for _, logEntry := range vmOutput.Logs {
 		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]
 		if containsId {
-			// if string(logEntry.Data[0]) == "AsyncCall" {
-			// 	continue
-			// }
 			logEntry.Data[0] = []byte(callType)
 		}
 	}
