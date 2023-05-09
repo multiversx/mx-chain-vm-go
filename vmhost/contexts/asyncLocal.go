@@ -63,7 +63,11 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 		return vmhost.ErrNilDestinationCallVMOutput
 	}
 
-	context.host.Output().CompleteLogEntriesWithCallType("AsyncCall")
+	if destinationCallInput.Function == vmhost.UpgradeFunctionName {
+		context.host.CompleteLogEntriesWithCallType(vmOutput, "UpgradeFromSource")
+	} else {
+		context.host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+	}
 
 	logAsync.Trace("executeAsyncLocalCall",
 		"retCode", vmOutput.ReturnCode,
@@ -83,7 +87,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 				return vmhost.ErrAsyncNoOutputFromCallback
 			}
 
-			context.host.Output().CompleteLogEntriesWithCallType("AsyncCall")
+			context.host.CompleteLogEntriesWithCallType(callbackVMOutput, "AsyncCallback")
 
 			if isCallbackComplete {
 				callbackGasRemaining := callbackVMOutput.GasRemaining

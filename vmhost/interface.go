@@ -42,7 +42,7 @@ type VMHost interface {
 	EnableEpochsHandler() vmcommon.EnableEpochsHandler
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
+	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	IsBuiltinFunctionName(functionName string) bool
@@ -55,6 +55,8 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string)
 
 	Reset()
 }
@@ -246,7 +248,6 @@ type OutputContext interface {
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
-	CompleteLogEntriesWithCallType(callType string)
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context

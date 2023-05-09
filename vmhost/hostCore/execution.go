@@ -15,6 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -332,14 +333,20 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			isChildComplete = true
 			return
 		}
+		switch input.CallType {
+		case vm.AsynchronousCall:
+			host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+		case vm.AsynchronousCallBack:
+			host.CompleteLogEntriesWithCallType(vmOutput, "AyncCallback")
+		default:
+			host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+		}
 	}
 
 	isChildComplete = true
 	if scExecutionInput != nil {
 		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 	}
-
-	host.Output().CompleteLogEntriesWithCallType("ExecuteOnDestContext")
 
 	if err != nil {
 		blockchain.PopSetActiveState()
@@ -570,7 +577,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// GasUsed for all accounts.
 	vmOutput := output.GetVMOutput()
 
-	host.Output().CompleteLogEntriesWithCallType("ExecuteOnSameContext")
+	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnSameContext")
 
 	metering.PopMergeActiveState()
 	output.PopDiscard()
@@ -618,7 +625,7 @@ func (host *vmHost) IsBuiltinFunctionCall(data []byte) bool {
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
-func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
+func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) (newContractAddress []byte, err error) {
 	newContractAddress = nil
 	err = nil
 
@@ -676,12 +683,16 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 
 	var isChildComplete bool
 	host.Async().SetAsyncArgumentsForCall(initCallInput)
-	_, isChildComplete, err = host.ExecuteOnDestContext(initCallInput)
+	initVmOutput, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
 
-	host.Output().CompleteLogEntriesWithCallType("DeployFromSource")
+	if createContractCallType == vmhooks.DeployContract {
+		host.CompleteLogEntriesWithCallType(initVmOutput, "DeployFromSource")
+	} else {
+		host.CompleteLogEntriesWithCallType(initVmOutput, "CreateSmartContract")
+	}
 
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {

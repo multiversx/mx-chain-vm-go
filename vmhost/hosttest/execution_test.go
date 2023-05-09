@@ -2906,7 +2906,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 					Identifier: []byte("transferValueOnly"),
 					Address:    childAddress,
 					Topics:     [][]byte{test.ParentAddress, {42}},
-					Data:       vmcommon.FormatLogDataForCall("DeployFromSource", "init", [][]byte{{0}}),
+					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{{0}}),
 				})
 		})
 }

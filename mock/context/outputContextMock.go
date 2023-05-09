@@ -206,7 +206,3 @@ func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOut
 func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
 	return 0, false
 }
-
-// CompleteLogEntriesWithCallType mocked method
-func (o *OutputContextMock) CompleteLogEntriesWithCallType(callType string) {
-}

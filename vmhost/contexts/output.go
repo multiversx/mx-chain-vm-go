@@ -20,11 +20,10 @@ var _ vmhost.OutputContext = (*outputContext)(nil)
 var logOutput = logger.GetOrCreate("vm/output")
 
 type outputContext struct {
-	host                   vmhost.VMHost
-	outputState            *vmcommon.VMOutput
-	stateStack             []*vmcommon.VMOutput
-	codeUpdates            map[string]struct{}
-	transferLogIdentifiers map[string]bool
+	host        vmhost.VMHost
+	outputState *vmcommon.VMOutput
+	stateStack  []*vmcommon.VMOutput
+	codeUpdates map[string]struct{}
 }
 
 // NewOutputContext creates a new outputContext
@@ -47,11 +46,6 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
-	context.transferLogIdentifiers = make(map[string]bool)
-	context.transferLogIdentifiers["transferValueOnly"] = true
-	context.transferLogIdentifiers["ESDTTransfer"] = true
-	context.transferLogIdentifiers["ESDTNFTTransfer"] = true
-	context.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -754,17 +748,5 @@ func mergeStorageUpdates(
 	}
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
-	}
-}
-
-func (context *outputContext) CompleteLogEntriesWithCallType(callType string) {
-	for _, logEntry := range context.outputState.Logs {
-		_, containsId := context.transferLogIdentifiers[string(logEntry.Identifier)]
-		if containsId {
-			if string(logEntry.Data[0]) == "AsyncCall" {
-				continue
-			}
-			logEntry.Data[0] = []byte(callType)
-		}
 	}
 }

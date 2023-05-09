@@ -160,10 +160,16 @@ func TestGasUsed_SingleContract_TransferFromChild(t *testing.T) {
 			verify.Ok().
 				Logs(vmcommon.LogEntry{
 					Identifier: []byte("transferValueOnly"),
-					Address:    test.ParentAddress,
-					Topics:     [][]byte{test.ChildAddress, big.NewInt(testConfig.ChildBalance / 2).Bytes()},
+					Address:    test.ChildAddress,
+					Topics:     [][]byte{test.ParentAddress, big.NewInt(0).Bytes()},
 					Data:       vmcommon.FormatLogDataForCall("ExecuteOnDestContext", "transferEGLDToParent", [][]byte{}),
-				})
+				},
+					vmcommon.LogEntry{
+						Identifier: []byte("transferValueOnly"),
+						Address:    test.ParentAddress,
+						Topics:     [][]byte{test.ChildAddress, big.NewInt(testConfig.ChildBalance / 2).Bytes()},
+						Data:       vmcommon.FormatLogDataForCall("ExecuteOnDestContext", "transferEGLDToParent", [][]byte{}),
+					})
 		})
 	assert.Nil(t, err)
 }
@@ -250,6 +256,11 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				if numCalls == 1 {
 					verify.
 						Logs(vmcommon.LogEntry{
+							Identifier: []byte("transferValueOnly"),
+							Address:    test.ParentAddress,
+							Topics:     [][]byte{test.ParentAddress, big.NewInt(0).Bytes()},
+							Data:       vmcommon.FormatLogDataForCall("ExecuteOnSameContext", "transferEGLDToParent", [][]byte{}),
+						}, vmcommon.LogEntry{
 							Identifier: []byte("transferValueOnly"),
 							Address:    test.ParentAddress,
 							Topics:     [][]byte{test.ParentAddress, big.NewInt(testConfig.ChildBalance / 2).Bytes()},
@@ -382,7 +393,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 			verify.Ok().
 				GasUsed(test.ParentAddress, testConfig.GasUsedByParent+esdtTransferGasCost).
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-				GasRemaining(testConfig.GasProvided - esdtTransferGasCost - testConfig.GasUsedByParent - testConfig.GasUsedByChild).
+				GasRemaining(testConfig.GasProvided-esdtTransferGasCost-testConfig.GasUsedByParent-testConfig.GasUsedByChild).
 				Logs(vmcommon.LogEntry{
 					Identifier: []byte("ESDTTransfer"),
 					Address:    test.ChildAddress,
@@ -394,6 +405,11 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 							test.ESDTTestTokenName,
 							big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes(),
 							[]byte("wasteGas")}),
+				}, vmcommon.LogEntry{
+					Identifier: []byte("transferValueOnly"),
+					Address:    test.ChildAddress,
+					Topics:     [][]byte{test.ParentAddress, big.NewInt(0).Bytes()},
+					Data:       vmcommon.FormatLogDataForCall("ExecuteOnDestContext", "wasteGas", [][]byte{}),
 				})
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
@@ -1264,9 +1280,19 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 					Data:       vmcommon.FormatLogDataForCall("AsyncCall", "recursiveAsyncCall", [][]byte{{1}, {}}),
 				}, vmcommon.LogEntry{
 					Identifier: []byte("transferValueOnly"),
+					Address:    test.ParentAddress,
+					Topics:     [][]byte{test.ChildAddress, big.NewInt(0).Bytes()},
+					Data:       vmcommon.FormatLogDataForCall("AsyncCallback", "callBack", [][]byte{{0}, {}}),
+				}, vmcommon.LogEntry{
+					Identifier: []byte("transferValueOnly"),
 					Address:    test.ChildAddress,
 					Topics:     [][]byte{test.ParentAddress, big.NewInt(testConfig.TransferFromParentToChild).Bytes()},
 					Data:       vmcommon.FormatLogDataForCall("AsyncCall", "recursiveAsyncCall", [][]byte{{1}, {1}}),
+				}, vmcommon.LogEntry{
+					Identifier: []byte("transferValueOnly"),
+					Address:    test.ParentAddress,
+					Topics:     [][]byte{test.ChildAddress, big.NewInt(0).Bytes()},
+					Data:       vmcommon.FormatLogDataForCall("AsyncCallback", "callBack", [][]byte{{0}, {1}}),
 				})
 		})
 	assert.Nil(t, err)
@@ -1571,6 +1597,12 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 					big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes(),
 					[]byte("transferESDTToParent"),
 					big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes()}),
+		},
+		vmcommon.LogEntry{
+			Identifier: []byte("transferValueOnly"),
+			Address:    test.ChildAddress,
+			Topics:     [][]byte{test.ParentAddress, big.NewInt(0).Bytes()},
+			Data:       vmcommon.FormatLogDataForCall("AsyncCall", "transferESDTToParent", [][]byte{{2}}),
 		})
 
 	for transfer := 0; transfer < numOfTransfersInChild; transfer++ {
@@ -1594,6 +1626,14 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 						big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes()}),
 			})
 	}
+
+	expectedLogs = append(expectedLogs,
+		vmcommon.LogEntry{
+			Identifier: []byte("transferValueOnly"),
+			Address:    test.ParentAddress,
+			Topics:     [][]byte{test.ChildAddress, big.NewInt(0).Bytes()},
+			Data:       vmcommon.FormatLogDataForCall("AsyncCallback", "callBack", [][]byte{{0}}),
+		})
 
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(

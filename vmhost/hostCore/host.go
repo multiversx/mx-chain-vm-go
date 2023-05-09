@@ -30,7 +30,7 @@ var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ vmhost.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = 3600 * time.Second
+const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
@@ -56,6 +56,8 @@ type vmHost struct {
 	callArgsParser       vmhost.CallArgsParser
 	enableEpochsHandler  vmcommon.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
+
+	transferLogIdentifiers map[string]bool
 }
 
 // NewVMHost creates a new VM vmHost
@@ -165,6 +167,12 @@ func NewVMHost(
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
+
+	host.transferLogIdentifiers = make(map[string]bool)
+	host.transferLogIdentifiers["transferValueOnly"] = true
+	host.transferLogIdentifiers["ESDTTransfer"] = true
+	host.transferLogIdentifiers["ESDTNFTTransfer"] = true
+	host.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 
 	return host, nil
 }
@@ -370,7 +378,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
-		host.Output().CompleteLogEntriesWithCallType("DeploySmartContract")
+		host.CompleteLogEntriesWithCallType(vmOutput, "DeploySmartContract")
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
@@ -576,6 +584,18 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 				totalGasUsedByAPIs += int(totalGasUsed)
 			}
 			logGasTrace.Trace("Gas Trace for", "TotalGasUsedByAPIs", totalGasUsedByAPIs)
+		}
+	}
+}
+
+func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
+	for _, logEntry := range vmOutput.Logs {
+		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]
+		if containsId {
+			// if string(logEntry.Data[0]) == "AsyncCall" {
+			// 	continue
+			// }
+			logEntry.Data[0] = []byte(callType)
 		}
 	}
 }
