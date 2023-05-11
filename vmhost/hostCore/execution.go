@@ -274,6 +274,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		output.RemoveNonUpdatedStorage()
 	}
 	vmOutput = output.GetVMOutput()
+	host.CompleteLogEntriesWithCallType(vmOutput, "DirectCall")
 
 	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
@@ -333,14 +334,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			isChildComplete = true
 			return
 		}
-		switch input.CallType {
-		case vm.AsynchronousCall:
-			host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
-		case vm.AsynchronousCallBack:
-			host.CompleteLogEntriesWithCallType(vmOutput, "AyncCallback")
-		default:
-			host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
-		}
+		host.CompleteLogEntriesAfterBuiltinCall(input, vmOutput)
 	}
 
 	isChildComplete = true
@@ -355,6 +349,17 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	return
+}
+
+func (host *vmHost) CompleteLogEntriesAfterBuiltinCall(input *vmcommon.ContractCallInput, vmOutput *vmcommon.VMOutput) {
+	switch input.CallType {
+	case vm.AsynchronousCall:
+		host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+	case vm.AsynchronousCallBack:
+		host.CompleteLogEntriesWithCallType(vmOutput, "AyncCallback")
+	default:
+		host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+	}
 }
 
 func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -434,7 +439,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	if input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0 {
+	if len(input.ESDTTransfers) == 0 && (input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0) {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)

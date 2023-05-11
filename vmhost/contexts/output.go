@@ -320,7 +320,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	context.WriteLogWithIdentifier(
 		destination,
 		[][]byte{sender, value.Bytes()},
-		vmcommon.FormatLogDataForCall("DirectCall", vmInput.Function, vmInput.Arguments),
+		vmcommon.FormatLogDataForCall("", vmInput.Function, vmInput.Arguments),
 		[]byte("transferValueOnly"),
 	)
 

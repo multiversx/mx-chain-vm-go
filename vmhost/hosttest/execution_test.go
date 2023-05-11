@@ -3066,7 +3066,7 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 					Identifier: []byte("transferValueOnly"),
 					Address:    createdNewAddr[1],
 					Topics:     [][]byte{createdNewAddr[0], {42}},
-					Data:       vmcommon.FormatLogDataForCall("DeploySmartContract", "init", [][]byte{createdNewAddr[0]}),
+					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{createdNewAddr[0]}),
 				})
 		})
 }
