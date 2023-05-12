@@ -334,7 +334,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			isChildComplete = true
 			return
 		}
-		host.CompleteLogEntriesAfterBuiltinCall(input, vmOutput)
+		host.completeLogEntriesAfterBuiltinCall(input, vmOutput)
 	}
 
 	isChildComplete = true
@@ -351,7 +351,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
-func (host *vmHost) CompleteLogEntriesAfterBuiltinCall(input *vmcommon.ContractCallInput, vmOutput *vmcommon.VMOutput) {
+func (host *vmHost) completeLogEntriesAfterBuiltinCall(input *vmcommon.ContractCallInput, vmOutput *vmcommon.VMOutput) {
 	switch input.CallType {
 	case vm.AsynchronousCall:
 		host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
