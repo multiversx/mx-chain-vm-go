@@ -1,0 +1,1316 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.71.0-nightly",
+            "commitHash": "2a8221dbdfd180a2d56d4b0089f4f3952d8c2bcd",
+            "commitDate": "2023-05-11",
+            "channel": "Nightly",
+            "short": "rustc 1.71.0-nightly (2a8221dbd 2023-05-11)"
+        },
+        "contractCrate": {
+            "name": "alloc-features",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.41.0"
+        }
+    },
+    "abi": {
+        "docs": [
+            "Features of the framework/VM that use the heap allocator.",
+            "",
+            "They mostly revolve around types that explicitly allocate on the heap: `Vec`, `BoxedBytes`, `String`, etc.",
+            "",
+            "Also some legacy/deprecated features still preserved here:",
+            "- some will be removed,",
+            "- some will be kept to provide test coverage for otherwise unused VM endpoints."
+        ],
+        "name": "AllocFeatures",
+        "constructor": {
+            "inputs": [],
+            "outputs": []
+        },
+        "endpoints": [
+            {
+                "name": "compute_sha256_legacy_alloc",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "input",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "H256"
+                    }
+                ]
+            },
+            {
+                "name": "compute_keccak256_legacy_alloc",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "input",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "H256"
+                    }
+                ]
+            },
+            {
+                "name": "compute_ripemd160_legacy",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "input",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "array20<u8>"
+                    }
+                ]
+            },
+            {
+                "name": "verify_bls_signature_legacy",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "key",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "message",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "signature",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "verify_ed25519_signature_legacy",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "key",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "message",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "signature",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "verify_secp256k1_signature_legacy",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "key",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "message",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "signature",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "verify_custom_secp256k1_signature_legacy",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "key",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "message",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "signature",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "hash_type",
+                        "type": "MessageHashType"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "compute_secp256k1_der_signature_legacy",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "r",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "s",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "echo_h256",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "h",
+                        "type": "H256"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "H256"
+                    }
+                ]
+            },
+            {
+                "name": "echo_boxed_array_u8",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "s",
+                        "type": "array128<u8>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "array128<u8>"
+                    }
+                ]
+            },
+            {
+                "name": "echo_boxed_bytes",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    },
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "echo_slice_u8",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "slice",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    },
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "echo_vec_u8",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    },
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "echo_string",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "s",
+                        "type": "utf-8 string"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "utf-8 string"
+                    },
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "echo_str",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "s",
+                        "type": "utf-8 string"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "utf-8 string"
+                    },
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "echo_str_box",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "s",
+                        "type": "utf-8 string"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "utf-8 string"
+                    },
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "echo_async_result_empty",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "a",
+                        "type": "AsyncCallResult<()>"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "echo_large_boxed_byte_array",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "lbba",
+                        "type": "LargeBoxedByteArray"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "LargeBoxedByteArray"
+                    }
+                ]
+            },
+            {
+                "name": "echo_boxed_ser_example_1",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "se",
+                        "type": "StructExampleAlloc"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "StructExampleAlloc"
+                    }
+                ]
+            },
+            {
+                "name": "echo_multi_value_tuples",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "m",
+                        "type": "variadic<multi<i32,bytes>>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "variadic<multi<i32,bytes>>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "echo_ser_example_1",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "se",
+                        "type": "StructExampleAlloc"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "StructExampleAlloc"
+                    }
+                ]
+            },
+            {
+                "docs": [
+                    "This tests that nested serialization of managed buffers within unmanaged types works."
+                ],
+                "name": "echo_vec_of_managed_buffer",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "mb",
+                        "type": "List<bytes>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "List<bytes>"
+                    }
+                ]
+            },
+            {
+                "docs": [
+                    "This tests that nested serialization of big ints within unmanaged types works."
+                ],
+                "name": "echo_big_int_vec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "x",
+                        "type": "List<BigInt>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "List<BigInt>"
+                    }
+                ]
+            },
+            {
+                "name": "echo_varags_u32",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "m",
+                        "type": "variadic<u32>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "u32"
+                    },
+                    {
+                        "type": "variadic<u32>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "echo_varags_big_uint",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "m",
+                        "type": "variadic<BigUint>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "variadic<BigUint>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "compute_get_values",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "tuple<BigUint,BigUint,BigUint,BigUint,BigUint,u32>"
+                    }
+                ]
+            },
+            {
+                "name": "compute_create_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve",
+                        "type": "utf-8 string"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "tuple<BigUint,BigUint,BigUint,BigUint,BigUint,u32>"
+                    }
+                ]
+            },
+            {
+                "name": "compute_get_ec_length",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "compute_get_priv_key_byte_length",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "name": "compute_ec_add",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "x_first_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_first_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "x_second_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_second_point",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            {
+                "name": "compute_ec_double",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "x_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_point",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            {
+                "name": "compute_is_on_curve_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "x_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_point",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "compute_scalar_mult",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "x_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_point",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "data",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            {
+                "name": "compute_scalar_base_mult",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "data",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            {
+                "name": "compute_marshal_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "x_pair",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_pair",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "compute_marshal_compressed_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "x_pair",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "y_pair",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "compute_unmarshal_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "data",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            {
+                "name": "compute_unmarshal_compressed_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "data",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            {
+                "name": "compute_generate_key_ec",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "curve_bitsize",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "BigUint"
+                    },
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "logLegacyEventA",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "data",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "logLegacyEventB",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg1",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "arg2",
+                        "type": "Address"
+                    },
+                    {
+                        "name": "data",
+                        "type": "BigUint"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "only_owner_legacy",
+                "mutability": "readonly",
+                "inputs": [],
+                "outputs": []
+            },
+            {
+                "name": "return_sc_error",
+                "mutability": "readonly",
+                "inputs": [],
+                "outputs": []
+            },
+            {
+                "name": "result_ok",
+                "mutability": "readonly",
+                "inputs": [],
+                "outputs": []
+            },
+            {
+                "name": "result_err_from_bytes_1",
+                "mutability": "readonly",
+                "inputs": [
+                    {
+                        "name": "e",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "result_err_from_bytes_2",
+                "mutability": "readonly",
+                "inputs": [
+                    {
+                        "name": "e",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "result_err_from_bytes_3",
+                "mutability": "readonly",
+                "inputs": [
+                    {
+                        "name": "e",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "result_err_from_string",
+                "mutability": "readonly",
+                "inputs": [
+                    {
+                        "name": "e",
+                        "type": "utf-8 string"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "result_err_from_str",
+                "mutability": "readonly",
+                "inputs": [
+                    {
+                        "name": "e",
+                        "type": "utf-8 string"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "result_echo",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "Option<utf-8 string>"
+                    },
+                    {
+                        "name": "test",
+                        "type": "bool"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "utf-8 string"
+                    }
+                ]
+            },
+            {
+                "name": "result_echo_2",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "Option<utf-8 string>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "utf-8 string"
+                    }
+                ]
+            },
+            {
+                "name": "result_echo_3",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "Option<utf-8 string>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "utf-8 string"
+                    }
+                ]
+            },
+            {
+                "name": "mbuffer_from_slice",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "slice",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "mbuffer_from_boxed_bytes",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "boxed_bytes",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "mbuffer_overwrite",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "mb1",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "bytes",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "mbuffer_append_bytes",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "mb",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "bytes",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "mbuffer_load_slice",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "mb",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "starting_position",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "slice_len",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "optional<bytes>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "mbuffer_set_slice",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "mb",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "index",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "item",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "managed_address_from",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "bytes",
+                        "type": "array32<u8>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "Address"
+                    }
+                ]
+            },
+            {
+                "name": "load_vec_u8",
+                "mutability": "mutable",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "load_addr",
+                "mutability": "mutable",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "Address"
+                    }
+                ]
+            },
+            {
+                "name": "load_opt_addr",
+                "mutability": "mutable",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "optional<Address>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "is_empty_opt_addr",
+                "mutability": "readonly",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "load_ser_1",
+                "mutability": "mutable",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "StructExampleAlloc"
+                    }
+                ]
+            },
+            {
+                "name": "store_vec_u8",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "store_addr",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "Address"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "store_opt_addr",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "opt_addr",
+                        "type": "optional<Address>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "store_ser_1",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "arg",
+                        "type": "StructExampleAlloc"
+                    }
+                ],
+                "outputs": []
+            },
+            {
+                "name": "compare_h256",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "h1",
+                        "type": "H256"
+                    },
+                    {
+                        "name": "h2",
+                        "type": "H256"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "h256_is_zero",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "h",
+                        "type": "H256"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bool"
+                    }
+                ]
+            },
+            {
+                "name": "boxed_bytes_zeros",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "len",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "boxed_bytes_concat_2",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "slice1",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "slice2",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "boxed_bytes_split",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "bb",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "at",
+                        "type": "u32"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    },
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "vec_concat_const",
+                "mutability": "readonly",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            }
+        ],
+        "events": [],
+        "hasCallback": false,
+        "types": {
+            "LargeBoxedByteArray": {
+                "type": "struct",
+                "fields": [
+                    {
+                        "name": "0",
+                        "type": "array512<u8>"
+                    }
+                ]
+            },
+            "StructExampleAlloc": {
+                "type": "struct",
+                "docs": [
+                    "Example serialization for a structure that uses the heap allocator.",
+                    "Also checking nested serialization of basic types."
+                ],
+                "fields": [
+                    {
+                        "name": "int",
+                        "type": "u16"
+                    },
+                    {
+                        "docs": [
+                            "Bytes buffer."
+                        ],
+                        "name": "seq",
+                        "type": "bytes"
+                    },
+                    {
+                        "name": "another_byte",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "uint_32",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "uint_64",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "boxed_bytes",
+                        "type": "bytes"
+                    }
+                ]
+            }
+        }
+    },
+    "size": 22354,
+    "code": "0061736d010000000186011560000060027f7f0060027f7f017f60037f7f7f017f60017f0060037f7f7f0060017f017f60047f7f7f7f017f60047f7f7f7f006000017f60057f7f7f7f7f017f60017f017e60067f7f7f7f7f7f017f60017e0060057f7f7f7f7f0060017e017f60027f7e0060077f7f7f7f7f7f7f0060077f7f7f7f7f7f7f017f60027f7f017e60027e7f0002ed0a3d03656e760b7369676e616c4572726f72000103656e76126d616e616765645369676e616c4572726f72000403656e760f6d4275666665725365744279746573000303656e760d6d42756666657246696e697368000603656e7611676574417267756d656e744c656e677468000603656e760b676574417267756d656e74000203656e76196d42756666657246726f6d426967496e74556e7369676e6564000203656e76126d42756666657253746f726167654c6f6164000203656e76106d4275666665724765744c656e677468000603656e760f6d4275666665724765744279746573000203656e761173746f726167654c6f61644c656e677468000203656e760b73746f726167654c6f6164000303656e7619626967496e74476574556e7369676e6564417267756d656e74000103656e76126d427566666572476574417267756d656e74000203656e76126d427566666572417070656e644279746573000303656e7619736d616c6c496e744765745369676e6564417267756d656e74000b03656e761b736d616c6c496e74476574556e7369676e6564417267756d656e74000b03656e76156d427566666572546f426967496e745369676e6564000203656e760f6765744e756d417267756d656e7473000903656e760666696e697368000103656e7614626967496e7446696e697368556e7369676e6564000403656e760a6d4275666665724e6577000903656e76146d427566666572436f707942797465536c696365000703656e7609626967496e744e6577000f03656e7616656c6c6970746963437572766547657456616c756573000c03656e761067657443757276654c656e6774684543000603656e76086372656174654543000203656e76136d42756666657247657442797465536c696365000703656e760d6d427566666572417070656e64000203656e760e626967496e74536574496e743634001003656e76136d42756666657253746f7261676553746f7265000203656e7618626967496e74556e7369676e6564427974654c656e677468000603656e7616626967496e74476574556e7369676e65644279746573000203656e760e636865636b4e6f5061796d656e74000003656e7606736861323536000303656e76096b656363616b323536000303656e7609726970656d64313630000303656e7609766572696679424c53000703656e7614736d616c6c496e7446696e6973685369676e6564000d03656e760d76657269667945643235353139000703656e760f766572696679536563703235366b31000a03656e7615766572696679437573746f6d536563703235366b31000c03656e761b656e636f6465536563703235366b314465725369676e6174757265000a03656e7616736d616c6c496e7446696e697368556e7369676e6564000d03656e76176d42756666657246726f6d426967496e745369676e6564000203656e7616676574507269764b6579427974654c656e6774684543000603656e76056164644543001103656e7608646f75626c654543000e03656e760b69734f6e43757276654543000303656e760c7363616c61724d756c744543001203656e76107363616c6172426173654d756c744543000a03656e76096d61727368616c4543000703656e76136d61727368616c436f6d707265737365644543000703656e760b756e6d61727368616c4543000a03656e7615756e6d61727368616c436f6d707265737365644543000a03656e760d67656e65726174654b65794543000703656e760d6d616e6167656443616c6c6572000403656e76136d616e616765644f776e657241646472657373000403656e76096d4275666665724571000203656e76136d42756666657253657442797465536c696365000703656e760877726974654c6f67000803b401b201030108010602050505040e13080303010404010101140101080902020901010101010106020301010103090303050505040304010404040101040400000404010101040401010701090705040505010505060505060105000802020000000000000000000000000000000000000000000000000000000000000000000000010000000000080000000000000000000000000000000000000000000002000000000000000000000200000000020405080203020405017001050505030100020616037f01418080020b7f0041dcd6060b7f0041e0d6060b07d80d4f066d656d6f7279020004696e69740098011b636f6d707574655f7368613235365f6c65676163795f616c6c6f630099011e636f6d707574655f6b656363616b3235365f6c65676163795f616c6c6f63009a0118636f6d707574655f726970656d643136305f6c6567616379009b011b7665726966795f626c735f7369676e61747572655f6c6567616379009c011f7665726966795f656432353531395f7369676e61747572655f6c6567616379009d01217665726966795f736563703235366b315f7369676e61747572655f6c6567616379009e01287665726966795f637573746f6d5f736563703235366b315f7369676e61747572655f6c6567616379009f0126636f6d707574655f736563703235366b315f6465725f7369676e61747572655f6c656761637900a001096563686f5f6832353600a101136563686f5f626f7865645f61727261795f753800a201106563686f5f626f7865645f627974657300a3010d6563686f5f736c6963655f753800a4010b6563686f5f7665635f753800a5010b6563686f5f737472696e6700a601086563686f5f73747200a701176563686f5f6173796e635f726573756c745f656d70747900a8011b6563686f5f6c617267655f626f7865645f627974655f617272617900a901186563686f5f626f7865645f7365725f6578616d706c655f3100aa01176563686f5f6d756c74695f76616c75655f7475706c657300ab01126563686f5f7365725f6578616d706c655f3100ac011a6563686f5f7665635f6f665f6d616e616765645f62756666657200ad01106563686f5f6269675f696e745f76656300ae010f6563686f5f7661726167735f75333200af01146563686f5f7661726167735f6269675f75696e7400b00112636f6d707574655f6765745f76616c75657300b10111636f6d707574655f6372656174655f656300b20115636f6d707574655f6765745f65635f6c656e67746800b30120636f6d707574655f6765745f707269765f6b65795f627974655f6c656e67746800b4010e636f6d707574655f65635f61646400b50111636f6d707574655f65635f646f75626c6500b60116636f6d707574655f69735f6f6e5f63757276655f656300b70113636f6d707574655f7363616c61725f6d756c7400b80118636f6d707574655f7363616c61725f626173655f6d756c7400b90112636f6d707574655f6d61727368616c5f656300ba011d636f6d707574655f6d61727368616c5f636f6d707265737365645f656300bc0114636f6d707574655f756e6d61727368616c5f656300bd011f636f6d707574655f756e6d61727368616c5f636f6d707265737365645f656300be0117636f6d707574655f67656e65726174655f6b65795f656300bf010f6c6f674c65676163794576656e744100c0010f6c6f674c65676163794576656e744200c201116f6e6c795f6f776e65725f6c656761637900c3010f72657475726e5f73635f6572726f7200c40109726573756c745f6f6b00c50117726573756c745f6572725f66726f6d5f62797465735f3100c60117726573756c745f6572725f66726f6d5f62797465735f3200c70117726573756c745f6572725f66726f6d5f62797465735f3300c80116726573756c745f6572725f66726f6d5f737472696e6700c90113726573756c745f6572725f66726f6d5f73747200ca010b726573756c745f6563686f00cb010d726573756c745f6563686f5f3200cc010d726573756c745f6563686f5f3300cd01126d6275666665725f66726f6d5f736c69636500ce01186d6275666665725f66726f6d5f626f7865645f627974657300cf01116d6275666665725f6f766572777269746500d001146d6275666665725f617070656e645f627974657300d101126d6275666665725f6c6f61645f736c69636500d201116d6275666665725f7365745f736c69636500d301146d616e616765645f616464726573735f66726f6d00d4010b6c6f61645f7665635f753800d501096c6f61645f6164647200d6010d6c6f61645f6f70745f6164647200d7011169735f656d7074795f6f70745f6164647200d9010a6c6f61645f7365725f3100da010c73746f72655f7665635f753800db010a73746f72655f6164647200dc010e73746f72655f6f70745f6164647200dd010b73746f72655f7365725f3100de010c636f6d706172655f6832353600df010c683235365f69735f7a65726f00e00111626f7865645f62797465735f7a65726f7300e10114626f7865645f62797465735f636f6e6361745f3200e20111626f7865645f62797465735f73706c697400e401107665635f636f6e6361745f636f6e737400e5010863616c6c4261636b00e6010c6563686f5f7374725f626f7800a7010a5f5f646174615f656e6403010b5f5f686561705f626173650302090e010041010b049701e9019601e8010a8c8c01b2013a01017f230041106b22032400200341086a2000103e200328020c41204704402001200241f18002410f103f000b2003280208200341106a24000b4901047f230041106b22022400200241086a200110042204104c200228020c210520022802082103200404402001200310051a0b2000200336020020002005360204200241106a24000b2e01017f419b800241171057220420002001100e1a200441b280024103100e1a200420022003100e1a20041001000b0900200020011000000b4601017f410141201042220141186a200041186a290000370000200141106a200041106a290000370000200141086a200041086a2900003700002001200029000037000020010b4401017f41a088062001200041a08806280200220220007022006b410020001b20026a22006a360200200041ffff034d0440200041a088026a0f0b4184880241171000000b100020012002105120022000200110440b800101027f230041106b220324000240024020002d000404404190ce0041d0d60628020022046b2002490d01200341086a2004200220046a2200108c012003280208200328020c20012002105541d0d60620003602000c020b200028020020012002100e1a0c010b2000108801200028020020012002100e1a0b200341106a24000bb00202047f037e230041406a22032400200341106a22041046200341003b01282004200341286a22054102200120021047200541021048210720052004200120021049200420012002104a2106200341003602382004200341386a220541042001200210472005410410482108200342003703382004200541082001200210472005410810482109200341086a200420012002104b104c200420032802082204200328020c22052001200210472003280214200328021046044020002003290328370310200020063a0022200020073d0120200020083e021c200020093703082000200536020420002004360200200041186a200341306a280200360200200341206a2d0000044041d0d606410036020041d4d60641003a00000b200341406b24000f0b2001200241808002410e103f000b080020001059105a0b3000200041086a20002802002001200210860104402003200441808102410f103f000b2000200028020020026a3602000b2b01017e034020010440200141016b210120003100002002420886842102200041016a21000c010b0b20020b5501037f230041106b22042400200441086a200120022003104b22054101109001200428020c21062001200428020822012005200220031047200020053602082000200636020420002001360200200441106a24000b2f01017f230041106b22032400200341003a000f20002003410f6a410120012002104720032d000f200341106a24000b3502017f017e230041106b220324002003410036020c20002003410c6a22004104200120021047200041041048200341106a2400a70b2701017f41012001417f73411f76200110e30122011042210220002001360204200020023602000b860101027f230041106b220124002001104e200120012d00043a000c2001200128020036020820002f0120200141086a2202104f200041106a280200200041186a28020020021043200220002d00221050200028021c200210512000290308200210522000280200200041046a28020020021043200128020820012d000c1053200141106a24000b7b01037f230041106b22012400024041d4d6062d0000220345044041d4d60641013a000041d0d6064100360200200141086a410010542001280208200128020c41dc8702410010551056220241dc8702410010021a0c010b41dc87024100105721020b20002002360200200020034101733a0004200141106a24000b3401017f230041106b220224002002200041087420004180fe0371410876723b010e20012002410e6a41021044200241106a24000b2601017f230041106b22022400200220013a000f20002002410f6a41011044200241106a24000b4501017f230041106b220224002002200041187420004180fe03714108747220004108764180fe03712000411876727236020c20012002410c6a41041044200241106a24000b7701017f230041106b220224002002200042388620004280fe0383422886842000428080fc0783421886200042808080f80f834208868484200042088842808080f80f832000421888428080fc07838420004228884280fe038320004238888484843703082001200241086a41081044200241106a24000b0b0020002001105810031a0b3801017f230041106b22022400200241086a41002001108701200228020c21012000200228020836020020002001360204200241106a24000b19002001200346044020002002200110ed011a0f0b109401000b1901017f419c8802419c880228020041016b220036020020000b1101017f105622022000200110021a20020b4901017f230041106b22022400200220013a000c20022000360208200241086a108801200228020820022d000c044041d0d606410036020041d4d60641003a00000b200241106a24000b0f01017f410010562200100d1a20000b3301017f200110082102200041106a41003a00002000410c6a20023602002000200136020820002002360204200041003602000b1301017f10562202200010061a20022001105c0bea0101047f230041106b22032400200320001008220241187420024180fe03714108747220024108764180fe03712002411876727236020c20012003410c6a4104104420012d00042102200141003a0004024002400240200204402000100822054190ce0041d0d60628020022046b4b0d0220032004200420056a2204108c0120004100200328020020032802041083011a41d0d60620043602000c010b200128020020001084010b200120023a00040c010b20011088012001280200200010840120012d0004200120023a0004450d0041d0d606410036020041d4d60641003a00000b200341106a24000b110020011056220110071a20002001105a0b7401057f230041106b22022400200241086a200110082203104c200228020c210520022802082104200341004a04402001200410091a0b200220042005100a2203104c200228020421062002280200210120030440200420052001100b1a0b2000200136020020002006360204200241106a24000b0900200020011040000b0c00200010562200100c20000b100020002001410110622001410110680b2f01017f2000280200220341d8d6062802004e04402001200241b580024111103f000b2000200341016a36020020030b2c01017f230041106b22022400200241086a2001103e20002002280208200228020c108f01200241106a24000b880201057f200028020822022000280204460440230041206b220324000240200241016a2202450d004104200028020422044101742205200220022005491b2202200241044d1b22024104742105200241808080c0004941027421060240200404402003200028020036021020034104360214200320044104743602180c010b200341003602140b200320062005200341106a1095012003280204210420032802000440200341086a2802001a0c010b200020023602042000200436020041818080807821040b2004106d200341206a2400200028020821020b2000200241016a360208200028020020024104746a22002001290200370200200041086a200141086a2902003702000bc30101047f230041206b220224000240200141016a2201450d004104200028020422034101742204200120012004491b2201200141044d1b2201410274210420014180808080024941027421050240200304402002410436021420022003410274360218200220002802003602100c010b200241003602140b200220052004200241106a1095012002280204210320022802000440200241086a28020021010c010b200020013602042000200336020041818080807821030b2003106d200241206a24000b0a00200020012002103d0b0c00410041dd8302410d10680b2501017e20001010220342ffffffff0f5804402003a70f0b2001200241808002410e103f000b4201037f200020012002104b210320002802002104101521052000280208200420032005101604402001200241808102410f103f000b2000200320046a36020020050b0a0020002001200210450b800101037f230041106b22032400200320012002106c20032802042202200328020822014b044002402001450440410121040c010b200328020021054101200110422204200520022001200120024b1b10ed011a0b20032004360200418180808078106d0b200328020021022000200136020420002002360200200341106a24000b5a01027f230041306b22032400200341086a220441001063200341186a2004107020032d0028410247044020012002418184024112103f000b20002003290318370200200041086a200341206a280200360200200341306a24000b1f00024020004181808080784704402000450d01109401000b0f0b109401000b2401017e2000101022034280808080105a04402001200241808002410e103f000b2003a70be70102027f017e230041406a2201240020011046024002400240200128020420012802004604400c010b024002400240200141b781024103104a41ff01710e020201000b41b781024103418e8002410d103f000b200141186a2202200141b7810241031049200141286a2002107020012d00384102470d02200129022c2103200128022821020b20012802042001280200470d020b200141106a2d0000044041d0d606410036020041d4d60641003a00000b2000200337020420002002360200200141406b24000f0b41b781024103418184024112103f000b41b78102410341808002410e103f000bc20501097f02400240024002400240024020012802082205450d00200541076b22024100200220054d1b21092001280200220641036a417c7120066b210a4100210203400240200220066a2d00002204c022084100480440418002210741012103024002400240024002400240200441f384026a2d000041026b0e030001020e0b200241016a22042005490d030c0b0b200241016a22032005490d010c0b0b200241016a220320054f0d0a200320066a2c000021030240024002400240200441f0016b0e050100000002000b2008410f6a41ff017141024b200341404e720d0b0c020b200341f0006a41ff017141304f0d0a0c010b2003418f7f4a0d090b41002107200241026a220420054f0d0a200420066a2c000041bf7f4a0d0741002103200241036a220420054f0d0b200420066a2c000041bf7f4c0d0241800621070c080b200320066a2c00002103024002400240200441e001470440200441ed01460d012008411f6a41ff0171410c490d022008417e71416e47200341404e720d0b0c030b200341607141a07f470d0a0c020b200341a07f4e0d090c010b200341bf7f4a0d080b200241026a220420054f0d08200420066a2c000041bf7f4a0d060c010b200420066a2c000041bf7f4a0d090b200441016a21020c010b0240200a20026b410371450440200220094f0d010340200220066a2204280200418081828478710d02200441046a280200418081828478710d022009200241086a22024b0d000b0c010b200241016a21020c010b200220054f0d000340200220066a2c00004100480d012005200241016a2202470d000b0c020b20022005490d000b0b200041023a001020002001290200370200200041086a200141086a2802003602000f0b41800421070b410121030c020b410021070b410021030b2000200236020c2000200129020037020020002003200772360210200041086a200141086a2802003602000b08002000410010630b1f01017f230041106b220124002000450440200141106a24000f0b109401000b3501027f230041106b22012400200141086a4100103e200128020c21022000200128020836020020002002360204200141106a24000b3501017f230041106b22022400200241086a2001103e200228020c21012000200228020836020020002001360204200241106a24000b3601017f230041106b22022400200220014101106c200041086a200241086a28020036020020002002290300370200200241106a24000b1900200041d8d6062802004e04400f0b41c6800241121000000b1400101220004604400f0b41d8800241191000000b190041d8d60628020041004e04400f0b41b5800241111000000b0b0041d8d60610123602000b2b01017f20002802002201450440200041046a280200200041086a2802001040000b2001200028020810130b7301027f230041106b220124002001104e200120012d00043a000c200120012802003602082000280200200141086a2202105b20002802042002105b20002802082002105b200028020c2002105b20002802102002105b200028021420021051200128020820012d000c1053200141106a24000b0a0020001014200110140b0e0020000440200020011040000b0b08002000200110130b070020001001000b08002000412010130b5301057f200142001017220242001017220342001017220442001017220542001017220610181a200020011019360214200020063602102000200536020c2000200436020820002003360204200020023602000b5c01017f027f027f419b8102200141e001460d001a2001418904470440200141800347044041002001418002470d031a419781020c020b419381020c010b418f81020b4104101a210241010b210120002002360204200020013602000b0f002000200120032002101b4100470b090020002001101c1a0b0e01017f105622004200101d20000bb50101037f230041106b22042400027f024020002d000845044020002802002205100822064190ce004b0d0141d4d6062d00000d0141d0d606200636020041d4d60641013a0000200441086a20061054200541002004280208200428020c1083011a200041013a00080b4101200120036a220041d0d6062802004b0d011a2004200120001087012002200320042802002004280204105541000c010b200041003a000820052001200220031083010b200441106a24000b34000240200120024d044020024190ce004d0d01109401000b109401000b2000200220016b3602042000200141c088066a3602000b5801027f230041106b2201240020002d0004200041003a00040440200141086a410041d0d60628020010870120002802002001280208200128020c100e1a41d0d606410036020041d4d60641003a00000b200141106a24000b0d002000200120021057101e1a0b0d002000200120021058101e1a0b1a01017f419f810241161057220220002001100e1a20021001000b3801017f230041106b22032400200341086a20012002108701200328020c21012000200328020836020020002001360204200341106a24000b2d00200041086a200028020020012002108601044041808102410f108b01000b2000200028020020026a3602000b3202017f017e230041106b220124002001410036020c20002001410c6a22004104108d01200041041048200141106a2400a70b1c00200020023602082000200236020420002001410120021b3602000b7101017f230041106b2203240002402001450440410121020c010b200141004e0440027f2002450440200341086a4101200110ea0120032802080c010b200341012001410110eb0120032802000b22020d01109401000b109401000b2000200136020420002002360200200341106a24000b2c01017f230041106b22012400200141003a000f20002001410f6a4101108d0120012d000f200141106a24000b6d01037f230041206b22022400200241186a2203410036020020024201370310200241086a20012802002201101f104c200228020c210420012002280208220110201a200241106a20012004109301200041086a200328020036020020002002290310370200200241206a24000bee0101067f230041206b220324000240200220002802042208200028020822076b4d0440200220076a21060c010b200220076a22062104024020062007490d004108200841017422042006200420064b1b2204200441084d1b2204417f73411f7621050240200804402003200836021820034101360214200320002802003602100c010b200341003602140b200320052004200341106a1095012003280204210520032802000440200341086a28020021040c010b200020043602042000200536020041818080807821050b2005106d0b200028020020076a2001200210ed011a20002006360208200341206a24000b060010e701000bde0101037f230041106b220424002000027f024020010440027f0240200241004e044020032802040d0120042001200210ea012004280200210320042802040c020b200041003602040c030b200341086a2802002205450440200441086a20012002410010eb0120042802082103200428020c0c010b2003280200210620012002104222032006200510ed011a20020b21052003044020002003360204200041086a200536020041000c030b20002001360204200041086a20023602000c010b20004100360204200041086a20023602000b41010b360200200441106a24000b990101017f230041306b2200240020004101360204200041dc840236020020012802142102200041206a200141186a2802002201360200200041033a002820004120360218200041003602242000200236021c2000410036021020004100360208027f0240200241b88402410f200128020c1103000d002000280200200041086a20002802041102000d0041000c010b41010b200041306a24000baf0c010d7f027f20002802002105200028020421070240024020012209280200220b2001280208220072044002402000450d00200520076a21082009410c6a28020041016a2104200521010340024020012100200441016b2204450d0020002008460d02027f20002c0000220141004e0440200141ff01712103200041016a0c010b20002d0001413f7121062001411f7121032001415f4d044020034106742006722103200041026a0c010b20002d0002413f7120064106747221062001417049044020062003410c74722103200041036a0c010b2003411274418080f0007120002d0003413f71200641067472722203418080c400460d03200041046a0b2201200220006b6a21022003418080c400470d010c020b0b20002008460d0020002c0000220141004e200141604972200141704972450440200141ff0171411274418080f0007120002d0003413f7120002d0002413f7141067420002d0001413f71410c74727272418080c400460d010b024002402002450d00200220074f04404100210020022007460d010c020b41002100200220056a2c00004140480d010b200521000b2002200720001b21072000200520001b21050b200b450d022009280204210b02400240200741104f04402007200541036a417c71220320056b22016b220a41037121064100210841002100024020032005460d002001410371210220032005417f736a41034f04404100210403402000200420056a22012c000041bf7f4a6a200141016a2c000041bf7f4a6a200141026a2c000041bf7f4a6a200141036a2c000041bf7f4a6a2100200441046a22040d000b0b2002450d00200521010340200020012c000041bf7f4a6a2100200141016a2101200241016b22020d000b0b02402006450d002003200a417c716a22012c000041bf7f4a210820064101460d00200820012c000141bf7f4a6a210820064102460d00200820012c000241bf7f4a6a21080b200a4102762106200020086a21020340200321042006450d0341c0012006200641c0014f1b220341037121082003410274210c0240200341fc0171220a450440410021010c010b2004200a4102746a210d410021012004210003402000450d0120012000280200220e417f73410776200e410676724181828408716a200041046a2802002201417f734107762001410676724181828408716a200041086a2802002201417f734107762001410676724181828408716a2000410c6a2802002201417f734107762001410676724181828408716a2101200041106a2200200d470d000b0b200620036b21062004200c6a2103200141087641ff81fc0771200141ff81fc07716a418180046c41107620026a21022008450d000b2004450440410021000c020b2004200a4102746a22012802002200417f73410776200041067672418182840871210020084101460d01200020012802042204417f734107762004410676724181828408716a210020084102460d01200020012802082201417f734107762001410676724181828408716a21000c010b2007450440410021020c020b2007410371210102402007410449044041002102200521000c010b2007417c71210341002102200521000340200220002c000041bf7f4a6a20002c000141bf7f4a6a20002c000241bf7f4a6a20002c000341bf7f4a6a2102200041046a2100200341046b22030d000b0b2001450d010340200220002c000041bf7f4a6a2102200041016a2100200141016b22010d000b0c010b200041087641ff811c71200041ff81fc07716a418180046c41107620026a21020b2002200b49044041002100200b20026b2201210202400240024020092d002041016b0e020001020b41002102200121000c010b20014101762100200141016a41017621020b200041016a2100200941186a2802002101200941146a28020021042009280210210302400340200041016b2200450d01200420032001280210110200450d000b41010c050b410121002003418080c400460d02200420052007200128020c1103000d02410021000340410020002002460d051a200041016a2100200420032001280210110200450d000b200041016b2002490c040b0c020b200928021420052007200941186a28020028020c11030021000b20000c010b200928021420052007200941186a28020028020c1103000b0b08001021410010770b9d0101067f230041d0006b2200240010214101107720001071200028020821012000280200200041c8006a22034200370300200041406b22044200370300200041386a22054200370300200042003703302001200041306a10221a200041286a2003290300370300200041206a2004290300370300200041186a200529030037030020002000290330370310200041106a1041108001200041d0006a24000b9d0101067f230041d0006b2200240010214101107720001071200028020821012000280200200041c8006a22034200370300200041406b22044200370300200041386a22054200370300200042003703302001200041306a10231a200041286a2003290300370300200041206a2004290300370300200041186a200529030037030020002000290330370310200041106a1041108001200041d0006a24000bab0101057f230041406a2200240010214101107720001071200028020821012000280200200041386a22034100360200200041306a22044200370300200042003703282001200041286a10241a200041206a22022003280200360200200041186a2203200429030037030020002000290328370310410141141042220141106a2002280200360000200141086a200329030037000020012000290310370000200141141013200041406b24000b5301047f230041206b22002400102141031077200041186a410010742000280218200041106a41011074200028021421022000280210200041086a4102107420022000280208102545ad1026200041206a24000b5301047f230041206b22002400102141031077200041186a410010742000280218200041106a41011074200028021421022000280210200041086a4102107420022000280208102745ad1026200041206a24000b6001057f230041206b22002400102141031077200041186a41001074200028021c21012000280218200041106a410110742000280214210320002802102104200041086a410210742001200420032000280208102845ad1026200041206a24000bb30102057f017e230041206b22002400102141041077200041186a41001074200028021c21012000280218200041106a410110742000280214210320002802102104200041086a410210742001200420032000280208027f410041031004450d001a02404103101022054280025404402005a7220141ff017141054f0d0120010c020b41b78202410941808002410e103f000b41b782024109418e8002410d103f000b41ff0171102945ad1026200041206a24000b940101067f230041206b22002400102141021077200041186a41001074200028021c210120002802182102200041106a41011074024020010440200028021422030d010b109401000b200041086a200120036a20022d00004107766a200028021022042d00004107766a41066a104c200028020c2105200220012004200320002802082201102a1a20012005107e200041206a24000b1500102141011077410041b68102410110661080010b4801027f102141011077230041106b22002400200041086a4100103e200028020c41800147044041b58102410141ef83024112103f000b2000280208200041106a240041800110130b3401027f230041106b22002400102141011077200041086a10732000280208200028020c220110132001ad102b200041106a24000b3601027f230041106b22002400102141011077200041086a410010742000280208200028020c220110132001ad102b200041106a24000b3101027f230041106b220024001021410110772000107120002802002000280208220110132001ad102b200041106a24000b3501027f230041106b22002400102141011077200041b58102107520002802002000280208220110132001ad102b200041106a24000b3a01027f230041106b22002400102141011077200041086a41b581024101106b2000280208200028020c220110132001ad102b200041106a24000baa0101057f230041106b220024001021107910782000410036020c230041106b22022400027f41002000410c6a220141bc810210612204450d001a4101200128020041d8d6062802004e0d001a200241086a200141bc810241011062103e200228020c210320022802080b2101200020043602082000200336020420002001360200200241106a2400200028020c107620002802002201044020012000280204105f000b200041106a24000ba80201067f230041106b22022400102141011077027f230041a0086b22002400200010464180042103034020030440200041be81024104104a2104200141ff034b220545044020004198046a20016a20043a0000200141016a21010b20051072200341016b21030c0105200141800449044041be8102410441ef83024112103f000b0b0b200041186a220120004198046a41800410ed011a41014180041042200141800410ed01210120002802042000280200460440200041106a2d0000044041d0d606410036020041d4d60641003a00000b200041a0086a240020010c010b41be8102410441808002410e103f000b21002002104e200220022d00043a000c20022002280200360208200241086a20004180041044200228020820022d000c1053200241106a24000b3801027f102141011077230041306b22012400200141086a220041ba8102410210454108412810422000412810ed01200141306a2400104d0bc60302067f017e230041206b2200240010211079107820004100360200200041106a2105230041306b220124002001410036020820014204370300200141206a4104722103024002400340200028020041d8d606280200480440200041bd810241011062100f22064280808080087d42ffffffff6f580d02200141106a200041bd810241011062106320032001290310370200200341086a200141186a280200360200200120063e02202001200141206a10640c010b0b200141186a200141086a2802002203360200200120012903002206370310200541086a200336020020052006370200200141306a24000c010b41bd81024101419384024112103f000b200028020010762000280218200028021021022000410036020820004204370300200241106a21014104742104034002402004450d0020022802042205450d0020022802002103200020022902083703182000200536021420002003360210200441106b2104200141106a21012000200041106a1064200241106a21020c010b0b20002802084104742104200028020021020340200404402002340200102620022802042002410c6a2802001013200441106b2104200241106a21020c010b0b200041206a24000b2d01027f230041306b22002400102141011077200041086a220141ba81024102106a2001104d200041306a24000bd20201067f230041206b22012400102141011077200141086a2103230041406a220024002000410036022020004204370318200041286a1046410421040340200028022c2000280228470440200041286a41c38102410210692105200028021c200246047f200041186a200210652000280218210420002802200520020b41027420046a20053602002000200028022041016a22023602200c010b0b200041106a2202200041206a28020036020020002000290318370308200041386a2d0000044041d0d606410036020041d4d60641003a00000b20032000290308370200200341086a2002280200360200200041406b24002001280208210020012802102001104e200120012d00043a001c2001200128020036021841027421020340200204402000280200200141186a105c200241046b2102200041046a21000c010b0b200128021820012d001c1053200141206a24000be00201067f230041206b22012400102141011077200141086a2103230041406a220024002000410036022020004204370318200041286a1046410421040340200028022c2000280228470440200041286a41c28102410110691056220510111a200028021c200246047f200041186a200210652000280218210420002802200520020b41027420046a20053602002000200028022041016a22023602200c010b0b200041106a2202200041206a28020036020020002000290318370308200041386a2d0000044041d0d606410036020041d4d60641003a00000b20032000290308370200200341086a2002280200360200200041406b24002001280208210020012802102001104e200120012d00043a001c200120012802003602184102742102034020020440105622032000280200102c1a2003200141186a105c200241046b2102200041046a21000c010b0b200128021820012d001c1053200141206a24000b970202077f017e230041206b220224001021107910782002410036020c200241106a21032002410c6a2104230041206b220024002000420437031041042105034020002001360218200428020041d8d606280200480440200441bd8102106121062000280214200146047f200041106a200110652000280210210520002802180520010b41027420056a2006360200200028021841016a21010c010b0b200041086a200041186a2802002201360200200020002903102207370300200341086a200136020020032007370200200041206a2400200228020c10762002280210210020022802182201ad102b200141027421010340200104402000350200102b200141046b2101200041046a21000c010b0b200241206a24000b8d0202067f017e230041106b220224001021107910782002410036020c2002410c6a2103230041206b220024002000420437031041042104034020002001360218200328020041d8d606280200480440200341bd810241011062106021052000280214200146047f200041106a200110652000280210210420002802180520010b41027420046a2005360200200028021841016a21010c010b0b200041086a200041186a2802002201360200200020002903102206370300200241086a200136020020022006370200200041206a2400200228020c1076200228020841027421002002280200210103402000044020012802001014200041046b2100200141046a21010c010b0b200241106a24000b860101067f230041206b220024001021410110772000106710820102402000280200450440108501210110850121021085012103108501210410850121052000410036021c2000200536021820002004360214200020033602102000200236020c200020013602080c010b200041086a20002802041081010b200041086a107b200041206a24000b3e01027f230041206b22002400102141011077200041ea83024105106b200041086a220120002802002000280204101a1081012001107b200041206a24000b3b01027f230041106b22002400102141011077200041086a106722011082012000280208047f200028020c10190520010bad102b200041106a24000b3901017f230041106b22002400102141011077200041086a10671082012000280208047e200028020c102dad0542000b102b200041106a24000b7d01087f230041106b2200240010214105107710672101410110602103410210602104410310602105410410602106200041086a200110820102402000280208450440108501210110850121020c010b200028020c210742001017220142001017220220072003200420052006102e0b20012002107c200041106a24000b6d01067f230041106b2200240010214103107710672101410110602103410210602104200041086a200110820102402000280208450440108501210110850121020c010b200028020c2105420010172201420010172202200520032004102f0b20012002107c200041106a24000b5001047f230041106b2200240010214103107710672101410110602102410210602103200041086a20011082012000280208047e200028020c20022003103041004aad0542000b1026200041106a24000b860101087f230041106b2200240010214104107710672101410110602103410210602104200041086a41031074200028020c2105200028020821062000200110820102402000280200450440108501210110850121020c010b200028020421074200101722014200101722022007200320042006200510311a0b20012002107c200041106a24000b7601067f230041106b2200240010214102107710672101200041086a41011074200028020c2103200028020821042000200110820102402000280200450440108501210110850121020c010b2000280204210542001017220142001017220220052004200310321a0b20012002107c200041106a24000b930101057f230041206b2200240010214103107710672101410110602102410210602103200041186a200110820102402000280218450440200041086a410010bb01200028020c2101200028020821020c010b200041106a200028021c2204101941076a41086d410174410172104c200028021421012002200320042000280210220210331a0b20022001107e200041206a24000b2801017f2001417f73411f76200110e3012201410110d801210220002001360204200020023602000b900101057f230041206b2200240010214103107710672101410110602102410210602103200041186a200110820102402000280218450440200041086a410010bb01200028020c2101200028020821020c010b200041106a200028021c2204101941076a41086d41016a104c200028021421012002200320042000280210220210341a0b20022001107e200041206a24000b7601067f230041106b2200240010214102107710672101200041086a41011074200028020c2103200028020821042000200110820102402000280200450440108501210110850121020c010b2000280204210542001017220142001017220220052004200310351a0b20012002107c200041106a24000b7601067f230041106b2200240010214102107710672101200041086a41011074200028020c2103200028020821042000200110820102402000280200450440108501210110850121020c010b2000280204210542001017220142001017220220052004200310361a0b20012002107c200041106a24000b970101057f230041206b22002400102141011077200041186a10671082010240200028021845044010850121021085012103200041086a410010bb01200028020c2104200028020821010c010b200028021c2101420010172102420010172103200041106a2001102d104c200028021421042002200320012000280210220110371a0b2002101420031014200120041013200041206a24000be20101037f230041406a2200240010214101107720004100106036020c034020014120470440200041106a20016a22024200370000200241186a4200370000200241106a4200370000200241086a4200370000200141206a21010c010b0b2000412b6a410036000020004281c694ba96f1eae66f37002020004281c694ba96f1eae66f37001820004281c694ba96f1eae66f370010200041003600282000410a3a002f200041306a2000410c6a109201200028023022014504402000280234200041386a2802001000000b200041106a41012001200028023810c101200041406b24000b6801037f230041c0026b22042400200441c00210ec0121064100210402400340200120044704402004410a460d02200520066a4120200020056a41201055200541206a2105200441016a21040c010b0b2002200320062001103c200641c0026a24000f0b109401000be80201057f23004180016b22002400102141031077410010602104410141c0820241041066210120004102106036020c0340200241e000470440200041106a20026a22034200370000200341186a4200370000200341106a4200370000200341086a4200370000200241206a21020c010b0b2000412b6a410036000020004281c694ba96f1eae66f37002020004281c694ba96f1eae66f37001820004281c694ba96f1eae66f370010200041003600282000410b3a002f4167200410061a024041671008220241204d0440200204404167200020026b41d0006a10091a0b200041e8006a200141186a290000370000200041e0006a200141106a290000370000200041d8006a200141086a29000037000020002001290000370050200041f0006a2000410c6a10920120002802702201450d01200041106a41032001200028027810c10120004180016a24000f0b41dc8702411a1000000b2000280274200041f8006a2802001000000b2a01027f10214100107710562200103810562201103941858302410020002001103a41004c1b4119107d0b100010214100107741f68202410f107d0b0e0010214100107741004100107d0b2f01017f230041106b22002400102141011077200041086a10732000280208200028020c1057107f200041106a24000b3101017f230041106b22002400102141011077200041086a410010742000280208200028020c1057107f200041106a24000b2c01017f230041106b2200240010214101107720001071200028020020002802081057107f200041106a24000b3001017f230041106b22002400102141011077200041c882021075200028020020002802081057107f200041106a24000b3501017f230041106b22002400102141011077200041086a41c882024101106b2000280208200028020c1057107f200041106a24000ba20102037f017e230041106b220024001021410210772000106f027f0240410110102203420158044041002003a741016b0d021a0c010b41c482024104419384024112103f000b41010b044002402000280200220104402000280204210220002000280208360208200020023602040c010b200041086a4117360200200041df82023602040b200020013602002000107a200041106a24000f0b41c982024116105f000b6301037f230041106b220024001021410110772000106f02402000280200220104402000280204210220002000280208360208200020023602040c010b200041086a4117360200200041df82023602040b200020013602002000107a200041106a24000b3b01027f230041106b220024001021410110772000106f2000280200220145044041df820241171040000b200120002802081013200041106a24000b3201017f230041106b22002400102141011077200041086a410010742000280208200028020c105710031a200041106a24000b3001017f230041106b22002400102141011077200041086a10732000280208200028020c105710031a200041106a24000b3b01027f230041106b2200240010214102107710592101200041086a4101107420012000280208200028020c10021a200110031a200041106a24000b3b01027f230041106b2200240010214102107710592101200041086a4101107420012000280208200028020c100e1a200110031a200041106a24000b5301037f230041106b220024001021410310771059410141b983024111106e200041086a410241b083024109106e10bb0120002802082201200028020c22021083014504402001200210130b200041106a24000b5401037f230041106b2200240010214103107710592101410141ab83024105106e2102200041086a4102107420012002200028020c2000280208103b044041ca83024113105f000b200110031a200041106a24000bc70201067f230041206b22022400102141011077230041e0006b220024002000104641202103034020030440200041a683024105104a21042001411f4b2205450440200041386a20016a20043a0000200141016a21010b20051072200341016b21030c01052001412049044041a68302410541ef83024112103f000b0b0b200041306a2201200041d0006a290300370300200041286a2203200041c8006a290300370300200041206a2204200041406b2903003703002000200029033837031802402000280204200028020046044020022000290318370000200241186a2001290300370000200241106a2003290300370000200241086a2004290300370000200041106a2d0000044041d0d606410036020041d4d60641003a00000b200041e0006a24000c010b41a68302410541808002410e103f000b20024120105710031a200241206a24000b4701017f230041206b22002400102141001077200041086a41e9840241061057105e200041106a2000280208200028020c108f0120002802102000280218107e200041206a24000b4701017f230041106b22002400102141001077200041086a41ef840241041057105e200028020c412047044041f18002410f108b01000b200028020841201013200041106a24000bb10101027f230041206b22002400102141001077200041086a419e830241081057105d0240200028020c2000280208470440024002400240200041086a10910141ff01710e020201000b418e8002410d108b01000b200041086a4120410110d80122014120108d010b200028020c2000280208470d010b200041186a2d0000044041d0d606410036020041d4d60641003a00000b200104402001412010130b200041206a24000f0b41808002410e108b01000b0d00200120001042200010ec010b1d00102141001077419e830241081057416710071a4167100845ad10260bc50202077f037e230041d0006b22002400102141001077200041386a220141e4840241051057105d200041003b01102001200041106a22024102108d012002410210482107200041086a2001108e0122034101109001200028020c21042001200028020822052003108d012001109101210620004100360210200120024104108d01200241041048210820004200370310200120024108108d0120024108104821092000200041386a108e01104c20012000280200220120002802042202108d01200028023c2000280238460440200041c8006a2d0000044041d0d606410036020041d4d60641003a00000b200020063a0032200020073d0130200020083e022c200020033602282000200536022020002009370318200020023602142000200136021020002004360224200041106a104d200041d0006a24000f0b41808002410e108b01000b3301017f230041106b220024001021410110772000107141e984024106105720002802002000280208108901200041106a24000b2501017f102141011077410041b7810241031066210041ef840241041057200041201089010bae0101047f230041106b2200240010211079107820004100360208200041086a220128020041d8d60628020048047f2001419e830241081062419e83024108103d0541000b210120002802081076419e830241081057210202402001450440200241dc870241001089010c010b2000104e200020002d00043a000c20002000280200360208200041086a22034101105020032001412010442002200028020820002d000c108a010b200041106a24000b9f0101037f230041406a22002400102141011077200041106a41b781024103106a41e4840241051057200041086a104e200020002d000c3a003c2000200028020836023820002f0130200041386a2201104f2000280220200041286a28020020011043200120002d00321050200028022c200110512000290318200110522000280210200028021420011043200028023820002d003c108a01200041406b24000b2300102141021077410041c7810241021066410141c581024102106610ee0145ad10260b1d00102141011077410041b681024101106641bc870210ee0145ad10260b3801017f230041106b22002400102141011077200041086a410041cb81024103106e10bb012000280208200028020c107e200041106a24000bcb0102067f017e230041206b22002400102141021077200041086a41001074200029030821062000410110742000200029030037031820002006370310410c210103402001417c4604404100210141012002417f73411f76200210e3012205104221044100210203402001411046450440200220046a200041106a20016a2203280200200341046a280200220310ed011a200141086a2101200220036a21020c010b0b20042005107e200041206a240005200041106a20016a28020020026a2102200141086b21010c010b0b0b2001017f230041106b2202240020000440200241106a240020010f0b109401000b9f0101077f230041106b22022400102141021077200241086a107320022802082103410121050240200228020c2200410141c981024102106e22014d044020032106200021010c010b2000417f73411f76200010e3011a4101200020016b2200417f73411f76200010e301220410422205200120036a200410ed011a41012001104222062003200110ed011a0b200620011013200520041013200241106a24000b7d01037f230041206b22002400102141001077200041086a41054100109001200028020c21022000280208220141ce8102280000360000200141046a41d281022d00003a0000200041053602182000200236021420002001360210200041106a41d3810241e40010930120002802102000280218107e200041206a24000b0300010b0b0041f68702410e1000000b1b00200128021441f38602410b200141186a28020028020c1103000b0300010b3a01017f230041106b22032400200341086a20012002410010eb01200328020c21012000200328020836020020002001360204200341106a24000b310002402002450d00200345044020012002104221010c010b2002200110d80121010b20002002360204200020013602000b9f0101037f024020012202410f4d0440200021010c010b2000410020006b41037122046a210320040440200021010340200141003a0000200141016a22012003490d000b0b2003200220046b2202417c7122046a2101200441004a0440034020034100360200200341046a22032001490d000b0b200241037121020b20020440200120026a21020340200141003a0000200141016a22012002490d000b0b20000bb30201077f024020022204410f4d0440200021020c010b2000410020006b41037122036a21052003044020002102200121060340200220062d00003a0000200641016a2106200241016a22022005490d000b0b2005200420036b2208417c7122076a21020240200120036a220341037122040440200741004c0d012003417c71220641046a21014100200441037422096b4118712104200628020021060340200520062009762001280200220620047472360200200141046a2101200541046a22052002490d000b0c010b200741004c0d0020032101034020052001280200360200200141046a2101200541046a22052002490d000b0b20084103712104200320076a21010b20040440200220046a21030340200220012d00003a0000200141016a2101200241016a22022003490d000b0b20000b4201047f412021030240034020002d0000220420012d00002205460440200041016a2100200141016a2101200341016b22030d010c020b0b200420056b21020b20020b0bf8060600418080020bd301696e70757420746f6f206c6f6e67696e76616c69642076616c7565617267756d656e74206465636f6465206572726f722028293a20746f6f2066657720617267756d656e7473746f6f206d616e7920617267756d656e747377726f6e67206e756d626572206f6620617267756d656e74736261642048323536206c656e677468696e70757420746f6f2073686f72747035323170333834703235367032323473746f72616765206465636f6465206572726f723a2073686172677365616d6c626261786d626832683161746c656e70617274310041b782020bbc03686173685f747970656172673274657374657465737420617267756d656e742069732066616c73656f7074696f6e20617267756d656e74206973206e6f6e6572657475726e5f73635f6572726f72437573746f6d206f6e6c79206f776e6572206d6573736167656f70745f616464726279746573696e646578736c6963655f6c656e7374617274696e675f706f736974696f6e696e646578206f7574206f6620626f756e647363757276655f62697473697a6563757276656172726179206465636f6465206572726f727574662d38206465636f6465206572726f72696e707574206f7574206f662072616e67650000000200000001000000010000000300000043617061636974794572726f723a20696e73756666696369656e7420636170616369747947820000150000007365725f317665635f75386164647201010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010041b586020b330202020202020202020202020202020202020202020202020202020202020303030303030303030303030303030304040404040041f386020b464c61796f75744572726f7263616c6c65642060526573756c743a3a756e77726170282960206f6e20616e2060457272602076616c7565000000020000000000000001000000040041dc87020b3f76616c756520657863656564732074617267657420736c69636570616e6963206f636375727265646d656d6f727920616c6c6f636174696f6e206572726f7200419c88020b049cffffff"
+}
