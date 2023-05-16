@@ -32,7 +32,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-owner_total_stake-3",
+            "id": "check-owner_total_stake-3",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
@@ -55,7 +55,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-total_stake-3",
+            "id": "check-total_stake-3",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",

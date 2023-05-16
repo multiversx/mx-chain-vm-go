@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "claim-ok",
+            "id": "claim-ok",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:contract",
-                "value": "0",
                 "function": "claim",
                 "arguments": [],
                 "gasLimit": "100,000",

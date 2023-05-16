@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "transfer",
-            "txId": "supply delegator 1",
+            "id": "supply delegator 1",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator1",
@@ -12,7 +12,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply delegator 2",
+            "id": "supply delegator 2",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator2",
@@ -21,7 +21,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 stake",
+            "id": "delegator 1 stake",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
@@ -51,7 +51,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 2 stake 1",
+            "id": "delegator 2 stake 1",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",

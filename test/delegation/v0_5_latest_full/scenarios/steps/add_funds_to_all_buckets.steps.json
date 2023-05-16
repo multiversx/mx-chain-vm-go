@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "user-unstake",
+            "id": "user-unstake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -24,7 +24,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply delegator 2",
+            "id": "supply delegator 2",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator2",
@@ -33,7 +33,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 2 stake",
+            "id": "delegator 2 stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",

@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "add nodes",
+            "id": "add nodes",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -37,7 +37,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-node_state-1",
+            "id": "check-node_state-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -71,7 +71,7 @@
         },
         {
             "step": "scCall",
-            "txId": "rem nodes",
+            "id": "rem nodes",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -94,7 +94,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-node_state-2",
+            "id": "check-node_state-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -128,7 +128,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check signature",
+            "id": "check signature",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -151,7 +151,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check signature for node that doesn't exist",
+            "id": "check signature for node that doesn't exist",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -172,7 +172,7 @@
         },
         {
             "step": "scCall",
-            "txId": "rem nodes bad 1",
+            "id": "rem nodes bad 1",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -195,7 +195,7 @@
         },
         {
             "step": "scCall",
-            "txId": "rem nodes bad 2",
+            "id": "rem nodes bad 2",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

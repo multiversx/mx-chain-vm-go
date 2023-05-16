@@ -13,11 +13,10 @@
         },
         {
             "step": "scDeploy",
-            "txId": "deploy-1",
+            "id": "deploy-1",
             "comment": "in this scenario the owner stakes 11,000,000,000,000 out of 444,001,000,000,000 = 2.477%",
             "tx": {
                 "from": "''node_address__________________s1",
-                "value": "0",
                 "contractCode": "file:../../../output/delegation.wasm",
                 "arguments": [
                     "sc:auction",
@@ -39,11 +38,10 @@
         },
         {
             "step": "scCall",
-            "txId": "set-stake-per-node",
+            "id": "set-stake-per-node",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setStakePerNode",
                 "arguments": [
                     "111,000,000,000,000"
@@ -61,11 +59,10 @@
         },
         {
             "step": "scCall",
-            "txId": "set-fee",
+            "id": "set-fee",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "5000"
@@ -83,11 +80,10 @@
         },
         {
             "step": "scCall",
-            "txId": "enable-unstake",
+            "id": "enable-unstake",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "enableUnStake",
                 "arguments": [],
                 "gasLimit": "1,000,000",

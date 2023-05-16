@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "pause staking",
+            "id": "pause staking",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "pauseStaking",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -23,11 +22,11 @@
         },
         {
             "step": "scCall",
-            "txId": "attempt to stake while paused",
+            "id": "attempt to stake while paused",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "sc:delegation",
-                "value": "1234567890",
+                "egldValue": "1234567890",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -44,11 +43,10 @@
         },
         {
             "step": "scCall",
-            "txId": "unpause staking",
+            "id": "unpause staking",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unpauseStaking",
                 "arguments": [],
                 "gasLimit": "1,000,000",
