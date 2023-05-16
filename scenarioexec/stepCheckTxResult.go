@@ -118,7 +118,7 @@ func (ae *VMTestExecutor) checkTxLog(
 			checkBytesListPretty(expectedLog.Topics),
 			ae.exprReconstructor.ReconstructList(actualLog.Topics, er.NoHint))
 	}
-	if !expectedLog.Data.Check(actualLog.GetFirstDataItem()) {
+	if !expectedLog.Data.CheckList(actualLog.Data) {
 		return fmt.Errorf("bad log data. Tx '%s'. Log index: %d. Want:\n%s\nGot:\n%s",
 			txIndex,
 			logIndex,
