@@ -23,7 +23,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1-promise-diff-shard",
+            "id": "1-promise-diff-shard",
             "tx": {
                 "from": "``my_account______________________",
                 "to": "``promiseSC.......................",

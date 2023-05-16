@@ -24,7 +24,7 @@
         },
         {
             "step": "scCall",
-            "txId": "withdraw-inactive-stake",
+            "id": "withdraw-inactive-stake",
             "comment": "withdraw partially",
             "tx": {
                 "from": "address:delegator2",
@@ -46,7 +46,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-total",
+            "id": "check-stake-by-type-total",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -71,7 +71,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond",
+            "id": "unBond",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -92,7 +92,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-2",
+            "id": "check-stake-by-type-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",

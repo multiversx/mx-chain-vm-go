@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "transfer",
-            "txId": "supply delegator 3",
+            "id": "supply delegator 3",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator3",
@@ -12,7 +12,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 3 stake",
+            "id": "delegator 3 stake",
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
@@ -42,7 +42,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-total",
+            "id": "check-stake-by-type-total",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -67,7 +67,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type",
+            "id": "check-stake-by-type",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -94,7 +94,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-total_stake",
+            "id": "check-total_stake",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",

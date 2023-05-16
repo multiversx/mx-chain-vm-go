@@ -8,11 +8,11 @@
         },
         {
             "step": "scCall",
-            "txId": "first bid",
+            "id": "first bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "100",
+                "egldValue": "100",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -23,6 +23,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Cannot bid on this type of auction",
                 "gas": "*",
@@ -31,11 +32,11 @@
         },
         {
             "step": "scCall",
-            "txId": "buy-sft",
+            "id": "buy-sft",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "100",
+                "egldValue": "100",
                 "function": "buySft",
                 "arguments": [
                     "1",
@@ -46,6 +47,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -147,7 +149,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

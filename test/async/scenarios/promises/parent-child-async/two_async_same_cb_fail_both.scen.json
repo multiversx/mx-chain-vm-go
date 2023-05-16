@@ -6,31 +6,26 @@
             "accounts": {
                 "address:user": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "0x00000000000000000f0f706172656e7453432e2e2e2e2e2e2e2e2e2e2e2e2e2e": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../../../../contracts/promises/parent-simple/output/parent-simple.wasm"
                 },
                 "0x00000000000000000f0f6368696c6453432e2e2e2e2e2e2e2e2e2e2e2e2e2e2e": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../../../../contracts/promises/child-simple/output/child-simple.wasm"
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "two_async_same_cb_fail_both",
+            "id": "two_async_same_cb_fail_both",
             "tx": {
                 "from": "address:user",
                 "to": "0x00000000000000000f0f706172656e7453432e2e2e2e2e2e2e2e2e2e2e2e2e2e",
-                "value": "0",
                 "function": "two_async_same_cb_fail_both",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",

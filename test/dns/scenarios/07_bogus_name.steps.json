@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "bogus-name",
+            "id": "bogus-name",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:dns#bb",
-                "value": "0",
                 "function": "resolve",
                 "arguments": [
                     "str:bogusname000.|0x656C726F6E64"

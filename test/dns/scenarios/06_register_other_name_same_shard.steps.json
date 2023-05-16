@@ -1,15 +1,14 @@
 {
     "name": "register, name taken",
     "steps": [
-        
         {
             "step": "scCall",
-            "txId": "try-register-coolname1075-same-user",
+            "id": "try-register-coolname1075-same-user",
             "comment": "keccak256(coolname1075.|0x656C726F6E64) also happens to end in 0x87, found using name-miner",
             "tx": {
                 "from": "address:cool_address",
                 "to": "sc:dns#87",
-                "value": "123,000",
+                "egldValue": "123,000",
                 "function": "register",
                 "arguments": [
                     "str:coolname1075.|0x656C726F6E64"
@@ -27,11 +26,10 @@
         },
         {
             "step": "scCall",
-            "txId": "resolve-coolname0001-again",
+            "id": "resolve-coolname0001-again",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:dns#87",
-                "value": "0",
                 "function": "resolve",
                 "arguments": [
                     "str:coolname1075.|0x656C726F6E64"

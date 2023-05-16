@@ -8,12 +8,11 @@
         },
         {
             "step": "scCall",
-            "txId": "auction max bid reached",
+            "id": "auction max bid reached",
             "comment": "owner, creator and seller will receive part of the final bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "endAuction",
                 "arguments": [
                     "1"
@@ -22,6 +21,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -97,7 +97,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

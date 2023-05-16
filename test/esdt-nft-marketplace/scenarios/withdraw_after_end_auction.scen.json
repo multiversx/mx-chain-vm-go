@@ -8,11 +8,10 @@
         },
         {
             "step": "scCall",
-            "txId": "withdraw",
+            "id": "withdraw",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "withdraw",
                 "arguments": [
                     "1"
@@ -21,6 +20,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -118,7 +118,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

@@ -13,7 +13,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234",
                 "contractCode": "file:contracts/erc20-c.wasm",
@@ -33,7 +33,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "id": "2",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234",
                 "to": "0x00000000000000000f0f11111111a94f5374fce5edbc8e2a8697c15331001234",

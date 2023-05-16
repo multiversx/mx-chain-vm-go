@@ -6,26 +6,22 @@
             "accounts": {
                 "address:acc1": {
                     "nonce": "0",
-                    "balance": "1,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000"
                 },
                 "address:attester": {
                     "nonce": "0",
-                    "balance": "1,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000"
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "register-ok",
+            "id": "register-ok",
             "comment": "arg is keccak256(keccak256(str:0123 456 789))",
             "tx": {
                 "from": "address:acc1",
                 "to": "sc:contract",
-                "value": "500,000",
+                "egldValue": "500,000",
                 "function": "registerData",
                 "arguments": [
                     "0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d"

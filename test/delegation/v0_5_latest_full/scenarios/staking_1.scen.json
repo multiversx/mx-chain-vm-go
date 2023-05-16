@@ -12,7 +12,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check auction addr",
+            "id": "check auction addr",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -33,7 +33,7 @@
         },
         {
             "step": "scCall",
-            "txId": "getNumBlocksBeforeUnBond",
+            "id": "getNumBlocksBeforeUnBond",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -54,7 +54,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-fee",
+            "id": "check-fee",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -83,7 +83,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-total_stake",
+            "id": "check-total_stake",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -104,7 +104,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "check-stake-by-type",
+            "id": "check-stake-by-type",
             "tx": {
                 "to": "sc:delegation",
                 "function": "getAllUserStakeByType",
@@ -136,7 +136,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "check-stake-by-type-total",
+            "id": "check-stake-by-type-total",
             "tx": {
                 "to": "sc:delegation",
                 "function": "getTotalStakeByType",

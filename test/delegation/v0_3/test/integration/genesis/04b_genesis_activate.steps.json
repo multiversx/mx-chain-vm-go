@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "activate-genesis-1",
+            "id": "activate-genesis-1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "activateGenesis",
                 "arguments": [],
                 "gasLimit": "100,000,000",

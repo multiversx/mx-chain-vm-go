@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "increase-delegation-cap",
+            "id": "increase-delegation-cap",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -26,7 +26,7 @@
         },
         {
             "step": "scCall",
-            "txId": "continue",
+            "id": "continue",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

@@ -3,12 +3,11 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-12_total",
+            "id": "check-stake-by-type-12_total",
             "comment": "total stake by type must be unchanged",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -16,7 +15,16 @@
             },
             "expect": {
                 "out": [
-                    "111,001,000,000,000", "0", "110,000,000,000,000", "0", "111,000,000,000,000", "0", "0", "0", "112,000,000,000,000", "0"
+                    "111,001,000,000,000",
+                    "0",
+                    "110,000,000,000,000",
+                    "0",
+                    "111,000,000,000,000",
+                    "0",
+                    "0",
+                    "0",
+                    "112,000,000,000,000",
+                    "0"
                 ],
                 "status": "",
                 "logs": "*",
@@ -26,11 +34,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-12_0",
+            "id": "check-stake-by-type-12_0",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "''node_address__________________s1"
@@ -40,7 +47,16 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "012,000,000,000,000", "0", "0", "0", "0", "0", "0", "0"
+                    "0",
+                    "0",
+                    "012,000,000,000,000",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
                 ],
                 "status": "",
                 "logs": "*",
@@ -50,11 +66,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-12_1",
+            "id": "check-stake-by-type-12_1",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -64,7 +79,16 @@
             },
             "expect": {
                 "out": [
-                    "111,000,000,000,000", "0", "64,000,000,000,000", "0", "111,000,000,000,000", "0", "0", "0", "112,000,000,000,000", "0"
+                    "111,000,000,000,000",
+                    "0",
+                    "64,000,000,000,000",
+                    "0",
+                    "111,000,000,000,000",
+                    "0",
+                    "0",
+                    "0",
+                    "112,000,000,000,000",
+                    "0"
                 ],
                 "status": "",
                 "logs": "*",
@@ -74,11 +98,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-12_3",
+            "id": "check-stake-by-type-12_3",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "''delegator_3___________________s1"
@@ -88,7 +111,16 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "1,000,000,000,000", "0", "0", "0", "0", "0", "0", "0"
+                    "0",
+                    "0",
+                    "1,000,000,000,000",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
                 ],
                 "status": "",
                 "logs": "*",

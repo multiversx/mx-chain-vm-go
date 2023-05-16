@@ -7,8 +7,7 @@
             "accounts": {
                 "address:owner": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {}
+                    "balance": "0"
                 },
                 "sc:nft_creator": {
                     "nonce": "0",
@@ -20,8 +19,7 @@
                             ]
                         }
                     },
-                    "code": "file:../output/esdt-nft-marketplace.wasm",
-                    "storage": {}
+                    "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
                 "address:seller": {
                     "nonce": "0",
@@ -37,13 +35,11 @@
                                 }
                             ]
                         }
-                    },
-                    "storage": {}
+                    }
                 },
                 "address:first_bidder": {
                     "nonce": "0",
-                    "balance": "1,000",
-                    "storage": {}
+                    "balance": "1,000"
                 }
             },
             "newAddresses": [
@@ -56,11 +52,10 @@
         },
         {
             "step": "scDeploy",
-            "txId": "deploy",
+            "id": "deploy",
             "comment": "10% cut for the marketplace",
             "tx": {
                 "from": "address:owner",
-                "value": "0",
                 "contractCode": "file:../output/esdt-nft-marketplace.wasm",
                 "arguments": [
                     "1000"
@@ -69,6 +64,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -77,17 +73,18 @@
         },
         {
             "step": "scCall",
-            "txId": "auctionToken",
+            "id": "auctionToken",
             "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:NFT-123456",
-                    "nonce": "1",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:NFT-123456",
+                        "nonce": "1",
+                        "value": "1"
+                    }
+                ],
                 "function": "auctionToken",
                 "arguments": [
                     "100",
@@ -99,22 +96,22 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "status": "0",
-                "message": "*",
                 "out": [
                     "1"
                 ],
+                "status": "0",
+                "message": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "txId": "first bid",
+            "id": "first bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "1000",
+                "egldValue": "1000",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -125,6 +122,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -133,12 +131,11 @@
         },
         {
             "step": "scCall",
-            "txId": "auction max bid reached",
+            "id": "auction max bid reached",
             "comment": "owner, creator and seller will receive part of the final bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "endAuction",
                 "arguments": [
                     "1"
@@ -147,6 +144,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -171,13 +169,12 @@
                             ]
                         }
                     },
-                    "code": "file:../output/esdt-nft-marketplace.wasm",
-                    "storage": {}
+                    "storage": {},
+                    "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
                 "address:seller": {
                     "nonce": "1",
                     "balance": "700",
-                    "esdt": {},
                     "storage": {}
                 },
                 "address:first_bidder": {
@@ -205,7 +202,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

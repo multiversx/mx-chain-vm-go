@@ -21,7 +21,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "id": "2",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:promises",
