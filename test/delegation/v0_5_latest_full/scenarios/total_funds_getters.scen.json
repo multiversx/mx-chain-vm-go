@@ -28,7 +28,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply delegator 1",
+            "id": "supply delegator 1",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator1",
@@ -37,7 +37,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 stake",
+            "id": "delegator 1 stake",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
@@ -57,7 +57,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-stake",
+            "id": "get-total-stake",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
@@ -78,7 +78,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-withdraw-only",
+            "id": "get-total-withdraw-only",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -99,7 +99,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-waiting-stake",
+            "id": "get-total-waiting-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -120,7 +120,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-active-stake",
+            "id": "get-total-active-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -141,7 +141,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-unstaked-stake",
+            "id": "get-total-unstaked-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -162,7 +162,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-deferred-stake",
+            "id": "get-total-deferred-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -190,7 +190,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-unbondable",
+            "id": "get-user-unbondable",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -213,7 +213,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-unstakeable",
+            "id": "get-user-unstakeable",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",

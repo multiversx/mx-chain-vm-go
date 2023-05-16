@@ -25,7 +25,7 @@
         },
         {
             "step": "scCall",
-            "txId": "user-unstake",
+            "id": "user-unstake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -46,7 +46,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "check-stake-by-type-1",
+            "id": "check-stake-by-type-1",
             "tx": {
                 "to": "sc:delegation",
                 "function": "getUserStakeByType",
@@ -66,7 +66,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "check-stake-by-type-2",
+            "id": "check-stake-by-type-2",
             "tx": {
                 "to": "sc:delegation",
                 "function": "getUserStakeByType",
@@ -86,7 +86,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "check-stake-by-type-total",
+            "id": "check-stake-by-type-total",
             "tx": {
                 "to": "sc:delegation",
                 "function": "getTotalStakeByType",
@@ -104,7 +104,7 @@
         },
         {
             "step": "scCall",
-            "txId": "partial-unBond-out-of-gas",
+            "id": "partial-unBond-out-of-gas",
             "comment": "test partial unbond first",
             "tx": {
                 "from": "address:delegator2",
@@ -126,7 +126,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "check-stake-by-type-3a",
+            "id": "check-stake-by-type-3a",
             "tx": {
                 "to": "sc:delegation",
                 "function": "getUserStakeByType",
@@ -146,7 +146,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond-ok",
+            "id": "unBond-ok",
             "comment": "unbond after unbonding period over should work",
             "tx": {
                 "from": "address:delegator2",
@@ -168,7 +168,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-3b",
+            "id": "check-stake-by-type-3b",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -207,7 +207,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply owner",
+            "id": "supply owner",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:node_address",
@@ -216,7 +216,7 @@
         },
         {
             "step": "scCall",
-            "txId": "owner stake",
+            "id": "owner stake",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -253,7 +253,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond-more",
+            "id": "unBond-more",
             "comment": "unbond after unbonding period over should work",
             "tx": {
                 "from": "address:delegator2",
@@ -275,7 +275,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-4",
+            "id": "check-stake-by-type-4",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",

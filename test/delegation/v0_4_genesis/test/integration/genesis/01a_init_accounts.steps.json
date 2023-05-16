@@ -6,9 +6,7 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:auction": {
                     "nonce": "0",
@@ -20,34 +18,24 @@
                 },
                 "''someone_______________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "''endless_sack_of_erd___________s1": {
                     "nonce": "0",
-                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000"
                 },
                 "''delegator_1___________________s1": {
                     "comment": "starting with 0 balance, transferring funds only when needed to make it easier to keep track of rewards",
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "''delegator_3___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         }

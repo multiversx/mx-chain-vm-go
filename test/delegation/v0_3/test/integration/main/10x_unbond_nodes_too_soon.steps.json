@@ -10,11 +10,10 @@
         },
         {
             "step": "scCall",
-            "txId": "unBondNodes-too-soon",
+            "id": "unBondNodes-too-soon",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBondNodes",
                 "arguments": [
                     "''bls_key_5_______________________________________________________________________________________"

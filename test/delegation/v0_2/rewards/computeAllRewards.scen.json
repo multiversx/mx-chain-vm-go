@@ -53,7 +53,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",

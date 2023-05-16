@@ -24,7 +24,7 @@
         },
         {
             "step": "scCall",
-            "txId": "user-unstake",
+            "id": "user-unstake",
             "comment": "unStake 1,000,000,000 from delegator_1 so that the first delegator has 33,(3)% stake, and the second one 66,(6)%",
             "tx": {
                 "from": "address:delegator1",
@@ -46,7 +46,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "validatorReward-1",
+            "id": "validatorReward-1",
             "tx": {
                 "to": "sc:delegation",
                 "egldValue": "100,000,000"
@@ -54,7 +54,7 @@
         },
         {
             "step": "scCall",
-            "txId": "user-unstake",
+            "id": "user-unstake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -75,7 +75,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-1",
+            "id": "check-stake-by-type-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -100,7 +100,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-0",
+            "id": "claimable-0",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -123,7 +123,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-1",
+            "id": "claimable-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -146,7 +146,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-2",
+            "id": "claimable-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -169,7 +169,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "validatorReward-2",
+            "id": "validatorReward-2",
             "tx": {
                 "to": "sc:delegation",
                 "egldValue": "100,000,000"
@@ -177,7 +177,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-3",
+            "id": "claimable-3",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -200,7 +200,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-4",
+            "id": "claimable-4",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -223,7 +223,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-5",
+            "id": "claimable-5",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",

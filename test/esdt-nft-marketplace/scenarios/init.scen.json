@@ -7,8 +7,7 @@
             "accounts": {
                 "address:owner": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {}
+                    "balance": "0"
                 },
                 "address:nft_creator": {
                     "nonce": "0",
@@ -19,8 +18,7 @@
                                 "ESDTRoleNFTCreate"
                             ]
                         }
-                    },
-                    "storage": {}
+                    }
                 },
                 "address:seller": {
                     "nonce": "0",
@@ -46,18 +44,15 @@
                                 }
                             ]
                         }
-                    },
-                    "storage": {}
+                    }
                 },
                 "address:first_bidder": {
                     "nonce": "0",
-                    "balance": "1,000",
-                    "storage": {}
+                    "balance": "1,000"
                 },
                 "address:second_bidder": {
                     "nonce": "0",
-                    "balance": "1,000",
-                    "storage": {}
+                    "balance": "1,000"
                 }
             },
             "newAddresses": [
@@ -70,11 +65,10 @@
         },
         {
             "step": "scDeploy",
-            "txId": "deploy",
+            "id": "deploy",
             "comment": "10% cut for the marketplace",
             "tx": {
                 "from": "address:owner",
-                "value": "0",
                 "contractCode": "file:../output/esdt-nft-marketplace.wasm",
                 "arguments": [
                     "1000"
@@ -83,6 +77,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -105,7 +100,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

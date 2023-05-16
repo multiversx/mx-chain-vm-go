@@ -3,21 +3,20 @@
     "steps": [
         {
             "step": "validatorReward",
-            "txId": "validatorReward-2",
+            "id": "validatorReward-2",
             "comment": "reward value proportional to stake to make it easier to check, 50% are fees",
             "tx": {
                 "to": "sc:delegation",
-                "value": "888,000,000"
+                "egldValue": "888,000,000"
             }
         },
         {
             "step": "scCall",
-            "txId": "get-total-cumulated-2",
+            "id": "get-total-cumulated-2",
             "comment": "666,000,000 + 888,000,000",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalCumulatedRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -35,12 +34,11 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-8_0",
+            "id": "claimable-8_0",
             "comment": "50% * 666,000,000 + 50% * 888,000,000 + delegation reward",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''node_address__________________s1"
@@ -60,11 +58,10 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-8_1",
+            "id": "claimable-8_1",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -84,11 +81,10 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-8_2",
+            "id": "claimable-8_2",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator_2___________________s1"
@@ -123,7 +119,6 @@
                     "storage": {},
                     "code": "",
                     "asyncCallData": "str:delegation withdraw inactive stake"
-                    
                 },
                 "+": ""
             }

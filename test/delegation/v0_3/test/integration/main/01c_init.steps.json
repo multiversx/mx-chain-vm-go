@@ -3,18 +3,19 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "check auction addr",
+            "id": "check auction addr",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getAuctionContractAddress",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "sc:auction" ],
+                "out": [
+                    "sc:auction"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -23,18 +24,19 @@
         },
         {
             "step": "scCall",
-            "txId": "getNumBlocksBeforeForceUnstake",
+            "id": "getNumBlocksBeforeForceUnstake",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlocksBeforeForceUnstake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "50" ],
+                "out": [
+                    "50"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -43,18 +45,19 @@
         },
         {
             "step": "scCall",
-            "txId": "getNumBlocksBeforeUnBond",
+            "id": "getNumBlocksBeforeUnBond",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "60" ],
+                "out": [
+                    "60"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -63,18 +66,19 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-per-node",
+            "id": "check-stake-per-node",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getStakePerNode",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "111,000,000,000,000" ],
+                "out": [
+                    "111,000,000,000,000"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -83,18 +87,19 @@
         },
         {
             "step": "scCall",
-            "txId": "check-fee",
+            "id": "check-fee",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "5000" ],
+                "out": [
+                    "5000"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",

@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "stakeNodes paused",
+            "id": "stakeNodes paused",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -28,7 +28,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unStakeNodes paused",
+            "id": "unStakeNodes paused",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -50,7 +50,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBondNodes paused",
+            "id": "unBondNodes paused",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -72,7 +72,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBondAllPossibleNodes paused",
+            "id": "unBondAllPossibleNodes paused",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

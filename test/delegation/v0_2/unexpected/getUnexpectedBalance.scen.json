@@ -49,7 +49,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
@@ -70,7 +70,7 @@
         },
         {
             "step": "transfer",
-            "txId": "2",
+            "id": "2",
             "tx": {
                 "from": "''someone_______________________s2",
                 "to": "sc:delegation",
@@ -79,7 +79,7 @@
         },
         {
             "step": "scCall",
-            "txId": "3",
+            "id": "3",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",

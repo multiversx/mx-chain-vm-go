@@ -5,15 +5,13 @@
             "step": "setState",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234": {
-                    "nonce": "0",
                     "shard": "0",
-                    "balance": "0x10000000000000e8d4a51000",
-                    "storage": {},
-                    "code": ""
+                    "nonce": "0",
+                    "balance": "0x10000000000000e8d4a51000"
                 },
                 "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234": {
-                    "nonce": "0",
                     "shard": "1",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
@@ -24,11 +22,11 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234",
                 "to": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234",
-                "value": "0x123400",
+                "egldValue": "0x123400",
                 "function": "forwardToOtherContractWithCallback",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",

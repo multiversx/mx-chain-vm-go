@@ -24,7 +24,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-delegation-cap",
+            "id": "check-delegation-cap",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -45,7 +45,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-1",
+            "id": "check-stake-by-type-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -72,7 +72,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-2",
+            "id": "check-stake-by-type-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -99,7 +99,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-total",
+            "id": "check-stake-by-type-total",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
