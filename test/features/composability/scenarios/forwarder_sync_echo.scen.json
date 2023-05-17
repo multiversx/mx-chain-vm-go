@@ -40,6 +40,20 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
                         "address": "sc:forwarder",
                         "endpoint": "str:echo_arguments_sync",
                         "topics": [
@@ -79,6 +93,20 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
                         "address": "sc:forwarder",
                         "endpoint": "str:echo_arguments_sync_twice",
                         "topics": [
@@ -91,6 +119,20 @@
                                     "biguint:2"
                                 ]
                             }
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
                         ]
                     },
                     {

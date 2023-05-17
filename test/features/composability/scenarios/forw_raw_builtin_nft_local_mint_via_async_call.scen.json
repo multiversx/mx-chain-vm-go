@@ -56,6 +56,19 @@
                     },
                     {
                         "address": "sc:forwarder",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder",
                         "endpoint": "str:callBack",
                         "topics": [
                             "str:callback_raw"

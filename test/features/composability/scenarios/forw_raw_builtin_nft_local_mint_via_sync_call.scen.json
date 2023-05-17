@@ -60,7 +60,7 @@
                         "topics": [
                             "str:execute_on_dest_context_result"
                         ],
-                        "data": []
+                        "data": [ "" ]
                     }
                 ],
                 "gas": "*",
