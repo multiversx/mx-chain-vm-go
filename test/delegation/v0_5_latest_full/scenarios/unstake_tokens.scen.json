@@ -136,11 +136,10 @@
                             "sc:delegation",
                             "0"
                         ],
-                        "data": [ 
+                        "data": [
                             "str:AsyncCall",
                             "str:unBondTokens",
                             "1000"
-
                         ]
                     },
                     {

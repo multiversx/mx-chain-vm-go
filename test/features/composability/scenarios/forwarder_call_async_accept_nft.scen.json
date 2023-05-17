@@ -87,7 +87,9 @@
                             "5",
                             "1"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:forwarder",

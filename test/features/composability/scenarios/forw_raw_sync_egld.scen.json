@@ -58,7 +58,9 @@
                             "str:accept_funds",
                             "1000"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
@@ -113,7 +115,9 @@
                             "str:accept_funds",
                             "500"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
@@ -144,7 +148,9 @@
                             "str:accept_funds",
                             "500"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:forwarder",

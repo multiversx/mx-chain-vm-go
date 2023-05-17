@@ -192,7 +192,9 @@
                             "3",
                             "10"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "address:esdt-owner",
@@ -246,7 +248,9 @@
                         "topics": [
                             "str:asyncCallSuccess"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

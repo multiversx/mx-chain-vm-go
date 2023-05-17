@@ -172,7 +172,9 @@
                             "3",
                             "6"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:promises",

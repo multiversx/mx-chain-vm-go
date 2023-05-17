@@ -84,7 +84,9 @@
                             "0",
                             "1"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:recursive-caller",

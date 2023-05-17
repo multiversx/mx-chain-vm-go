@@ -74,7 +74,9 @@
                             "0",
                             "1000"
                         ],
-                        "data": [ "" ]
+                        "data": [
+                            ""
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
