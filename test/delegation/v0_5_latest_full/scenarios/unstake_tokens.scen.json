@@ -47,7 +47,9 @@
                         "topics": [
                             "str:tokensUnstake"
                         ],
-                        "data": "1000"
+                        "data": [
+                            "1000"
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -97,7 +99,9 @@
                         "topics": [
                             "str:tokensUnbond"
                         ],
-                        "data": "1000"
+                        "data": [
+                            "1000"
+                        ]
                     },
                     {
                         "address": "*",
@@ -107,7 +111,7 @@
                             "sc:delegation",
                             "1000"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",

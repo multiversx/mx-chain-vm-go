@@ -24,7 +24,7 @@
                             "address:dns_owner",
                             "123,000"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",

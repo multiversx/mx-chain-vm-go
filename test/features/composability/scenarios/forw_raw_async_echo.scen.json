@@ -49,13 +49,15 @@
                         "topics": [
                             "str:callback_raw"
                         ],
-                        "data": {
-                            "0-status": "nested:0x00",
-                            "1-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-status": "nested:0x00",
+                                "1-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",

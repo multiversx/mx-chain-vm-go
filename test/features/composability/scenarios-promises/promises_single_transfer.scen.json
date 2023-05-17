@@ -98,11 +98,13 @@
                             "1001",
                             "1002"
                         ],
-                        "data": {
-                            "0-status": "nested:0x00",
-                            "1-arg1": "biguint:1",
-                            "2-arg2": "biguint:2"
-                        }
+                        "data": [
+                            {
+                                "0-status": "nested:0x00",
+                                "1-arg1": "biguint:1",
+                                "2-arg2": "biguint:2"
+                            }
+                        ]
                     },
                     "+"
                 ],
@@ -162,13 +164,15 @@
                             "1001",
                             "1002"
                         ],
-                        "data": {
-                            "0-status": "nested:0x00",
-                            "1-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-status": "nested:0x00",
+                                "1-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",

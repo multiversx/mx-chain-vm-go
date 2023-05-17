@@ -49,10 +49,12 @@
                             "1001",
                             "1002"
                         ],
-                        "data": {
-                            "0-status": "biguint:5",
-                            "1-message": "nested:str:not enough gas"
-                        }
+                        "data": [
+                            {
+                                "0-status": "biguint:5",
+                                "1-message": "nested:str:not enough gas"
+                            }
+                        ]
                     },
                     "+"
                 ],

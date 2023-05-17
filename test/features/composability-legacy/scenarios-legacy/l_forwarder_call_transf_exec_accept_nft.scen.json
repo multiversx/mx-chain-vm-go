@@ -63,7 +63,7 @@
                             "01",
                             "sc:vault"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:vault",
@@ -75,7 +75,7 @@
                             "5",
                             "1"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",
