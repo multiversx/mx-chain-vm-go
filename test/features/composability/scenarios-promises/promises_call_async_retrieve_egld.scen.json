@@ -48,7 +48,7 @@
                             "0",
                             "1000"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:vault",
@@ -58,7 +58,7 @@
                             "sc:forwarder",
                             "1000"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:forwarder",
@@ -69,7 +69,7 @@
                             "0",
                             "1000"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",

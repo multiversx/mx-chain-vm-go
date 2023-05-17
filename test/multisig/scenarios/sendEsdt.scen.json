@@ -192,7 +192,7 @@
                             "3",
                             "10"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:multisig",
@@ -203,7 +203,7 @@
                             "1000",
                             "address:esdt-owner"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:multisig",
@@ -214,7 +214,7 @@
                             "1",
                             "address:esdt-owner"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:multisig",
@@ -225,7 +225,7 @@
                             "10",
                             "address:esdt-owner"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:multisig",
@@ -233,7 +233,7 @@
                         "topics": [
                             "str:asyncCallSuccess"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",

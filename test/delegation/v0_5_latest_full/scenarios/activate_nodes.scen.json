@@ -260,7 +260,7 @@
                             "sc:delegation",
                             "100,000,000,000,000"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:delegation",
@@ -268,7 +268,7 @@
                         "topics": [
                             "str:nodeUnbondOk"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",

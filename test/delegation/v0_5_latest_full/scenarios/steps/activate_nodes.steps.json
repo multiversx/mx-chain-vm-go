@@ -29,7 +29,7 @@
                             "sc:auction",
                             "300,000,000,000,000"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:delegation",
@@ -37,7 +37,9 @@
                         "topics": [
                             "str:nodeStakeOk"
                         ],
-                        "data": "0x"
+                        "data": [
+                            "0x"
+                        ]
                     }
                 ],
                 "gas": "*",

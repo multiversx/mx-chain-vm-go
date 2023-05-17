@@ -77,7 +77,7 @@
                             "sc:auction",
                             "333,000,000,000,000"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:delegation",
@@ -85,7 +85,9 @@
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000003"
                         ],
-                        "data": "0x"
+                        "data": [
+                            "0x"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -93,7 +95,9 @@
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000004"
                         ],
-                        "data": "''staking failed for some nodes"
+                        "data": [
+                            "''staking failed for some nodes"
+                        ]
                     }
                 ],
                 "gas": "*",

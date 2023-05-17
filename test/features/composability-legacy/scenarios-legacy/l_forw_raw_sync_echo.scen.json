@@ -49,12 +49,14 @@
                         "topics": [
                             "str:execute_on_dest_context_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -92,12 +94,14 @@
                         "topics": [
                             "str:execute_on_dest_context_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
@@ -105,12 +109,14 @@
                         "topics": [
                             "str:execute_on_dest_context_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",

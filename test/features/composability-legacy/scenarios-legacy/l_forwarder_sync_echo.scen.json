@@ -45,12 +45,14 @@
                         "topics": [
                             "str:echo_arguments_sync_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -82,12 +84,14 @@
                         "topics": [
                             "str:echo_arguments_sync_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
@@ -95,12 +99,14 @@
                         "topics": [
                             "str:echo_arguments_sync_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",

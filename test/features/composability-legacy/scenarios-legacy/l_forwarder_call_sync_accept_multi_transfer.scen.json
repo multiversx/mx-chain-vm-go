@@ -82,7 +82,7 @@
                             "100",
                             "sc:vault"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:forwarder",
@@ -93,7 +93,7 @@
                             "200",
                             "sc:vault"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:forwarder",
@@ -104,7 +104,7 @@
                             "1",
                             "sc:vault"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:forwarder",
@@ -115,7 +115,7 @@
                             "3",
                             "sc:vault"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:forwarder",
@@ -126,7 +126,7 @@
                             "4",
                             "sc:vault"
                         ],
-                        "data": ""
+                        "data": []
                     },
                     {
                         "address": "sc:vault",
@@ -150,7 +150,7 @@
                             "3",
                             "4"
                         ],
-                        "data": ""
+                        "data": []
                     }
                 ],
                 "gas": "*",
