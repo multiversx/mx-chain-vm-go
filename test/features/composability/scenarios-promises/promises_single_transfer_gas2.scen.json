@@ -43,6 +43,20 @@
                 "logs": [
                     {
                         "address": "sc:promises",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:vault",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:the_one_callback",
+                            "0x05",
+                            "str:not enough gas"
+                        ]
+                    },
+                    {
+                        "address": "sc:promises",
                         "endpoint": "str:the_one_callback",
                         "topics": [
                             "str:async_call_event_callback",
