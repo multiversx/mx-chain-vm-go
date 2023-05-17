@@ -120,10 +120,28 @@
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "sc:auction",
                             "1,000,000,000"
                         ],
-                        "data": []
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unJail",
+                            "str:bls_key_2_______________________________________________________________________________________",
+                            "str:bls_key_3_______________________________________________________________________________________"
+
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:auction",
+                            ""
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     }
                 ],
                 "gas": "*",

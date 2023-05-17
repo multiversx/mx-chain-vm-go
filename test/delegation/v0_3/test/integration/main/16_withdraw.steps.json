@@ -19,14 +19,17 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:delegation",
+                        "address": "address:delegator_1___________________s#31",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "''delegator_1___________________s1",
                             "1,000,000,000,000"
                         ],
-                        "data": []
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "1,000,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -94,14 +97,17 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:delegation",
+                        "address": "address:delegator_1___________________s#31",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "''delegator_1___________________s1",
                             "113,000,000,000,000"
                         ],
-                        "data": []
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "113,000,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -169,14 +175,17 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:delegation",
+                        "address": "address:delegator_1___________________s#31",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "''delegator_1___________________s1",
                             "284,000,000,000,000"
                         ],
-                        "data": []
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "284,000,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
