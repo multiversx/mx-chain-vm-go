@@ -73,7 +73,21 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": [
+                    {
+                        "address": "sc:dns#87",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "str:cool_address____________________",
+                            ""
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
