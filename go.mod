@@ -12,7 +12,7 @@ require (
 	github.com/multiversx/mx-chain-crypto-go v1.2.6
 	github.com/multiversx/mx-chain-logger-go v1.0.11
 	github.com/multiversx/mx-chain-scenario-go v1.1.2
-	github.com/multiversx/mx-chain-vm-common-go v1.4.2-0.20230425081117-bd6069791f3b
+	github.com/multiversx/mx-chain-vm-common-go v1.4.2-0.20230519072839-20d81e0111ec
 	github.com/multiversx/mx-components-big-int v0.1.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.8.1
@@ -36,3 +36,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// replace github.com/multiversx/mx-chain-vm-common-go v1.4.2-0.20230425081117-bd6069791f3b => /home/bogdan/Elrond/elrond-vm-common

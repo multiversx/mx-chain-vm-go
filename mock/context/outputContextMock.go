@@ -206,3 +206,8 @@ func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOut
 func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
 	return 0, false
 }
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextMock) NextOutputTransferIndex() uint32 {
+	return 0
+}

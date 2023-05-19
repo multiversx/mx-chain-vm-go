@@ -376,6 +376,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	}
 
 	err = contexts.AddAsyncArgumentsToOutputTransfers(
+		host.Output(),
 		input.RecipientAddr,
 		input.AsyncArguments,
 		vm.AsynchronousCall,
@@ -991,10 +992,10 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 		return
 	}
 
-	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, parsedTransfer.RcvAddr, input.CallType, output)
+	host.addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, parsedTransfer.RcvAddr, input.CallType, output)
 }
 
-func addOutputTransferToVMOutput(
+func (host *vmHost) addOutputTransferToVMOutput(
 	function string,
 	arguments [][]byte,
 	sender []byte,
@@ -1007,6 +1008,7 @@ func addOutputTransferToVMOutput(
 		esdtTransferTxData += "@" + hex.EncodeToString(arg)
 	}
 	outTransfer := vmcommon.OutputTransfer{
+		Index:         host.Output().NextOutputTransferIndex(),
 		Value:         big.NewInt(0),
 		Data:          []byte(esdtTransferTxData),
 		CallType:      callType,

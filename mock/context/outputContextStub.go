@@ -45,6 +45,7 @@ type OutputContextStub struct {
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	RemoveNonUpdatedStorageCalled     func()
+	NextOutputTransferIndexCalled     func() uint32
 }
 
 // AddToActiveState mocked method
@@ -289,4 +290,12 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
+}
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextStub) NextOutputTransferIndex() uint32 {
+	if o.CreateVMOutputInCaseOfErrorCalled != nil {
+		return o.NextOutputTransferIndexCalled()
+	}
+	return 0
 }

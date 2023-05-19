@@ -20,10 +20,11 @@ var _ vmhost.OutputContext = (*outputContext)(nil)
 var logOutput = logger.GetOrCreate("vm/output")
 
 type outputContext struct {
-	host        vmhost.VMHost
-	outputState *vmcommon.VMOutput
-	stateStack  []*vmcommon.VMOutput
-	codeUpdates map[string]struct{}
+	host             vmhost.VMHost
+	outputState      *vmcommon.VMOutput
+	stateStack       []*vmcommon.VMOutput
+	codeUpdates      map[string]struct{}
+	crtTransferIndex uint32
 }
 
 // NewOutputContext creates a new outputContext
@@ -33,8 +34,9 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 	}
 
 	context := &outputContext{
-		host:       host,
-		stateStack: make([]*vmcommon.VMOutput, 0),
+		host:             host,
+		stateStack:       make([]*vmcommon.VMOutput, 0),
+		crtTransferIndex: 0,
 	}
 
 	context.InitState()
@@ -342,6 +344,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
+		Index:         context.NextOutputTransferIndex(),
 		Value:         big.NewInt(0).Set(value),
 		GasLimit:      gasLimit,
 		GasLocked:     gasLocked,
@@ -401,6 +404,7 @@ func (context *outputContext) TransferESDT(
 
 	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputTransfer := vmcommon.OutputTransfer{
+		Index:         context.NextOutputTransferIndex(),
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
@@ -627,6 +631,13 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
+}
+
+// NextOutputTransferIndex returns next available output transfer index
+func (context *outputContext) NextOutputTransferIndex() uint32 {
+	index := context.crtTransferIndex
+	context.crtTransferIndex++
+	return index
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {

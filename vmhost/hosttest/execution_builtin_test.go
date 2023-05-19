@@ -67,7 +67,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ParentAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ParentAddress, 0).
 			WithData(expectedTransfer.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
@@ -274,7 +274,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, exchangeAddress).
+		test.CreateTransferEntry(test.ParentAddress, exchangeAddress, 0).
 			WithData(expectedTransfer.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).

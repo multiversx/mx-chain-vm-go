@@ -246,6 +246,7 @@ type OutputContext interface {
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
+	NextOutputTransferIndex() uint32
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context
