@@ -28,7 +28,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "contractCode": "file:../delegation.wasm",
@@ -50,7 +50,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2-setNumNodes",
+            "id": "2-setNumNodes",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -71,7 +71,7 @@
         },
         {
             "step": "scCall",
-            "txId": "3-setStakePerNode",
+            "id": "3-setStakePerNode",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -92,7 +92,7 @@
         },
         {
             "step": "scCall",
-            "txId": "4-check expected",
+            "id": "4-check expected",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -113,7 +113,7 @@
         },
         {
             "step": "scCall",
-            "txId": "5-stake",
+            "id": "5-stake",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",

@@ -20,7 +20,7 @@
         },
         {
             "step": "scCall",
-            "txId": "only delegator only stake",
+            "id": "only delegator only stake",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
@@ -45,7 +45,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "validatorReward-1",
+            "id": "validatorReward-1",
             "tx": {
                 "to": "sc:delegation",
                 "egldValue": "1"
@@ -53,7 +53,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 claim 1",
+            "id": "delegator 1 claim 1",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
@@ -70,7 +70,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "validatorReward-2",
+            "id": "validatorReward-2",
             "tx": {
                 "to": "sc:delegation",
                 "egldValue": "1"
@@ -78,7 +78,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 claim 2",
+            "id": "delegator 1 claim 2",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
@@ -95,7 +95,7 @@
         },
         {
             "step": "scCall",
-            "txId": "owner gets fee",
+            "id": "owner gets fee",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",

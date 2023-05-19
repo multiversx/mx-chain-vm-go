@@ -20,7 +20,7 @@
         },
         {
             "step": "scCall",
-            "txId": "getFullWaitingList",
+            "id": "getFullWaitingList",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -50,7 +50,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "validatorReward-1",
+            "id": "validatorReward-1",
             "tx": {
                 "to": "sc:delegation",
                 "egldValue": "100,000,000"
@@ -58,7 +58,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-total-cumulated-1",
+            "id": "get-total-cumulated-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -79,7 +79,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-0",
+            "id": "claimable-0",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -102,7 +102,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-1",
+            "id": "claimable-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -125,7 +125,7 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-2",
+            "id": "claimable-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -148,7 +148,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 claim 1",
+            "id": "delegator 1 claim 1",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",

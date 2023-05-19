@@ -76,7 +76,7 @@
         },
         {
             "step": "scCall",
-            "txId": "genesis delegator stake",
+            "id": "genesis delegator stake",
             "tx": {
                 "from": "address:delegator_1",
                 "to": "sc:delegation",
@@ -106,7 +106,7 @@
         },
         {
             "step": "scCall",
-            "txId": "getFullWaitingList",
+            "id": "getFullWaitingList",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

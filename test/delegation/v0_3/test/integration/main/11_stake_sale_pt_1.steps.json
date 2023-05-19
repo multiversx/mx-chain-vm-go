@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "offer-1",
+            "id": "offer-1",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1,000,000,000,000"
@@ -25,11 +24,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-offer",
+            "id": "check-stake-offer",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getStakeForSale",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -38,7 +36,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "1,000,000,000,000" ],
+                "out": [
+                    "1,000,000,000,000"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -47,20 +47,19 @@
         },
         {
             "step": "transfer",
-            "txId": "supply delegator 3",
+            "id": "supply delegator 3",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator_3___________________s1",
-                "value": "1,000,000,000,000"
+                "egldValue": "1,000,000,000,000"
             }
         },
         {
             "step": "scCall",
-            "txId": "pause stake sale",
+            "id": "pause stake sale",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "pauseStakeSale",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -76,12 +75,12 @@
         },
         {
             "step": "scCall",
+            "id": "purchaseStake-paused",
             "comment": "new delegator tries to buy the stake, but cannot",
-            "txId": "purchaseStake-paused",
             "tx": {
                 "from": "''delegator_3___________________s1",
                 "to": "sc:delegation",
-                "value": "1,000,000,000,000",
+                "egldValue": "1,000,000,000,000",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -100,11 +99,10 @@
         },
         {
             "step": "scCall",
-            "txId": "unpause stake sale",
+            "id": "unpause stake sale",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unpauseStakeSale",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -120,12 +118,12 @@
         },
         {
             "step": "scCall",
+            "id": "purchaseStake",
             "comment": "new delegator now buys the stake",
-            "txId": "purchaseStake",
             "tx": {
                 "from": "''delegator_3___________________s1",
                 "to": "sc:delegation",
-                "value": "1,000,000,000,000",
+                "egldValue": "1,000,000,000,000",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -152,6 +150,5 @@
                 "refund": "*"
             }
         }
-       
     ]
 }

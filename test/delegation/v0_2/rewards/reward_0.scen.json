@@ -41,7 +41,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "to": "sc:delegation",
                 "egldValue": "546,000"
@@ -49,7 +49,7 @@
         },
         {
             "step": "transfer",
-            "txId": "2",
+            "id": "2",
             "comment": "someone sends funds directly by accident, but this is not a validator reward",
             "tx": {
                 "from": "''delegator_1___________________s1",

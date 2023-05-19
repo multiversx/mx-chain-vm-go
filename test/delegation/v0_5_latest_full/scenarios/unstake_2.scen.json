@@ -29,7 +29,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply delegator 3",
+            "id": "supply delegator 3",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator3",
@@ -38,7 +38,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 3 stake",
+            "id": "delegator 3 stake",
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
@@ -75,7 +75,7 @@
         },
         {
             "step": "scCall",
-            "txId": "user-unstake",
+            "id": "user-unstake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -96,7 +96,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-A1",
+            "id": "check-stake-by-type-A1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -123,7 +123,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-A2",
+            "id": "check-stake-by-type-A2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -150,7 +150,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-defered-payment-list-2",
+            "id": "check-defered-payment-list-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -174,7 +174,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-A3",
+            "id": "check-stake-by-type-A3",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -201,7 +201,7 @@
         },
         {
             "step": "scCall",
-            "txId": "user-unstake-from-waiting+active",
+            "id": "user-unstake-from-waiting+active",
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
@@ -222,7 +222,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-B3",
+            "id": "check-stake-by-type-B3",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",

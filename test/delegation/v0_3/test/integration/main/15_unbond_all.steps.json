@@ -8,15 +8,12 @@
                 "blockNonce": "521111"
             }
         },
-
-
         {
             "step": "scCall",
-            "txId": "15-unBondAllAvailable",
+            "id": "15-unBondAllAvailable",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBondAllAvailable",
                 "arguments": [],
                 "gasLimit": "100,000,000",

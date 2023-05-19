@@ -26,7 +26,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unStakeTokens",
+            "id": "unStakeTokens",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -76,7 +76,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBondTokens",
+            "id": "unBondTokens",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
