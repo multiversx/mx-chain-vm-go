@@ -14,7 +14,6 @@ import (
 /*
 	Called to process OutputTransfers created by a
 	direct call (on dest) builtin function call by the VM
-    TODO(fix) this function
 */
 func AddAsyncArgumentsToOutputTransfers(
 	output vmhost.OutputContext,

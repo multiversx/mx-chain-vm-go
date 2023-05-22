@@ -48,6 +48,7 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
+	context.crtTransferIndex = 0
 }
 
 func newVMOutput() *vmcommon.VMOutput {
