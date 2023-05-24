@@ -909,7 +909,10 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 		return vmOutput, esdtTransferInput.GasProvided, vmhost.ErrExecutionFailed
 	}
 
-	vmOutput.ReindexTransfers(host.Output())
+	err = vmOutput.ReindexTransfers(host.Output())
+	if err != nil {
+		return nil, 0, err
+	}
 
 	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
@@ -937,7 +940,10 @@ func (host *vmHost) callFunctionOnOtherVM(input *vmcommon.ContractCallInput) (*v
 		return nil, err
 	}
 
-	vmOutput.ReindexTransfers(host.Output())
+	err = vmOutput.ReindexTransfers(host.Output())
+	if err != nil {
+		return nil, err
+	}
 
 	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, nil)
 
@@ -969,9 +975,12 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		for _, outAcc := range vmOutput.OutputAccounts {
 			outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
-	} else {
-		// reindex only for the case of no execution after builtin call
-		vmOutput.ReindexTransfers(host.Output())
+	}
+
+	// reindex only for the case of no execution after builtin call
+	err = vmOutput.ReindexTransfers(host.Output())
+	if err != nil {
+		return nil, nil, err
 	}
 
 	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, newVMInput)

@@ -211,3 +211,13 @@ func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
 func (o *OutputContextMock) NextOutputTransferIndex() uint32 {
 	return 0
 }
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextMock) GetCrtTransferIndex() uint32 {
+	return 0
+}
+
+// IsInterfaceNil mocked method
+func (o *OutputContextMock) IsInterfaceNil() bool {
+	return false
+}

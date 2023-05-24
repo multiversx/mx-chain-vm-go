@@ -37,7 +37,6 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
 			big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes(),
-			// arguments[2],
 		}
 		input.Arguments = append(input.Arguments, arguments[2:]...)
 		input.RecipientAddr = arguments[0]

@@ -641,6 +641,11 @@ func (context *outputContext) NextOutputTransferIndex() uint32 {
 	return index
 }
 
+// GetCrtTransferIndex returns the current output transfer index
+func (context *outputContext) GetCrtTransferIndex() uint32 {
+	return context.crtTransferIndex
+}
+
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
 	mergeVMOutputsConditionally(leftOutput, rightOutput, false)
 }
@@ -767,4 +772,9 @@ func mergeStorageUpdates(
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
 	}
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (context *outputContext) IsInterfaceNil() bool {
+	return context == nil
 }

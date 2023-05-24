@@ -247,6 +247,8 @@ type OutputContext interface {
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 	NextOutputTransferIndex() uint32
+	GetCrtTransferIndex() uint32
+	IsInterfaceNil() bool
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context

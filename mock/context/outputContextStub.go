@@ -46,6 +46,8 @@ type OutputContextStub struct {
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	RemoveNonUpdatedStorageCalled     func()
 	NextOutputTransferIndexCalled     func() uint32
+	GetCrtTransferIndexCalled         func() uint32
+	IsInterfaceNilCalled              func() bool
 }
 
 // AddToActiveState mocked method
@@ -294,8 +296,24 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 
 // NextOutputTransferIndex mocked method
 func (o *OutputContextStub) NextOutputTransferIndex() uint32 {
-	if o.CreateVMOutputInCaseOfErrorCalled != nil {
+	if o.NextOutputTransferIndexCalled != nil {
 		return o.NextOutputTransferIndexCalled()
 	}
 	return 0
+}
+
+// GetCrtTransferIndex mocked method
+func (o *OutputContextStub) GetCrtTransferIndex() uint32 {
+	if o.GetCrtTransferIndexCalled != nil {
+		return o.GetCrtTransferIndexCalled()
+	}
+	return 0
+}
+
+// IsInterfaceNil mocked method
+func (o *OutputContextStub) IsInterfaceNil() bool {
+	if o.IsInterfaceNilCalled != nil {
+		return o.IsInterfaceNilCalled()
+	}
+	return false
 }
