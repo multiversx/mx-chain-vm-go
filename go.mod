@@ -37,4 +37,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// replace github.com/multiversx/mx-chain-vm-common-go v1.4.2-0.20230524071014-8b5e5cba23ea => /home/bogdan/Elrond/elrond-vm-common
