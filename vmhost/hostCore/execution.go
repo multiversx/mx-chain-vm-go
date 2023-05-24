@@ -896,8 +896,6 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
-	vmOutput.ReindexTransfers(host.Output())
-
 	log.Trace("ESDT transfer", "sender", transfersArgs.Sender, "dest", transfersArgs.Destination)
 	for _, transfer := range transfers {
 		log.Trace("ESDT transfer", "token", transfer.ESDTTokenName, "nonce", transfer.ESDTTokenNonce, "value", transfer.ESDTValue)
@@ -910,6 +908,8 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 		log.Trace("ESDT transfer", "error", err, "retcode", vmOutput.ReturnCode, "message", vmOutput.ReturnMessage)
 		return vmOutput, esdtTransferInput.GasProvided, vmhost.ErrExecutionFailed
 	}
+
+	vmOutput.ReindexTransfers(host.Output())
 
 	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {

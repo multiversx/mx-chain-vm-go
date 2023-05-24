@@ -1173,6 +1173,7 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 
 func TestExecution_Call_Breakpoints_UserError(t *testing.T) {
 	t.Parallel()
+
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
