@@ -631,7 +631,7 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		}
 	}
 
-	mergeVMOutputs(context.outputState, rightOutput)
+	mergeVMOutputsConditionally(context.outputState, rightOutput, true)
 }
 
 // NextOutputTransferIndex returns next available output transfer index
@@ -642,6 +642,10 @@ func (context *outputContext) NextOutputTransferIndex() uint32 {
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+	mergeVMOutputsConditionally(leftOutput, rightOutput, false)
+}
+
+func mergeVMOutputsConditionally(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput, mergeAllTransfers bool) {
 	if leftOutput.OutputAccounts == nil {
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 	}
@@ -652,7 +656,7 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 			leftAccount = &vmcommon.OutputAccount{}
 			leftOutput.OutputAccounts[string(rightAccount.Address)] = leftAccount
 		}
-		mergeOutputAccounts(leftAccount, rightAccount)
+		mergeOutputAccounts(leftAccount, rightAccount, mergeAllTransfers)
 	}
 
 	leftOutput.Logs = append(leftOutput.Logs, rightOutput.Logs...)
@@ -672,6 +676,7 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 func mergeOutputAccounts(
 	leftAccount *vmcommon.OutputAccount,
 	rightAccount *vmcommon.OutputAccount,
+	mergeAllTransfers bool,
 ) {
 	if len(rightAccount.Address) != 0 {
 		leftAccount.Address = rightAccount.Address
@@ -698,7 +703,7 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
-	mergeTransfers(leftAccount, rightAccount)
+	mergeTransfers(leftAccount, rightAccount, mergeAllTransfers)
 
 	leftAccount.GasUsed = rightAccount.GasUsed
 
@@ -714,7 +719,7 @@ func mergeOutputAccounts(
 	}
 }
 
-func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount) {
+func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount, mergeAllTransfers bool) {
 	leftAsyncCallTransfers, leftOtherTransfers := splitTransfers(leftAccount)
 	rightAsyncCallTransfers, rightOtherTransfers := splitTransfers(rightAccount)
 
@@ -722,7 +727,9 @@ func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.
 
 	lenLeftOtherTransfers := len(leftOtherTransfers)
 	lenRightOtherTransfers := len(rightOtherTransfers)
-	if lenRightOtherTransfers > lenLeftOtherTransfers {
+	if mergeAllTransfers {
+		leftOtherTransfers = append(leftOtherTransfers, rightOtherTransfers...)
+	} else if lenRightOtherTransfers > lenLeftOtherTransfers {
 		leftOtherTransfers = append(leftOtherTransfers, rightOtherTransfers[lenLeftOtherTransfers:]...)
 	}
 

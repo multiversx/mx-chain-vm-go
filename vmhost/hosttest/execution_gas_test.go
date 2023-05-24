@@ -349,6 +349,85 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGasUsed_ESDTTransfer_TwoChaninedCalls(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = 20000
+	testConfig.GasProvidedToChild = 5000
+	testConfig.ESDTTokensToTransfer = 5
+
+	firstExpectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	firstExpectedTransferFromParentToChild.
+		TransferESDT(
+			string(test.ESDTTestTokenName),
+			int64(testConfig.ESDTTokensToTransfer)).
+		Bytes([]byte("execESDTTransferAndCall")).
+		Bytes(test.NephewAddress).
+		Bytes([]byte("ESDTTransfer")).
+		Bytes([]byte("wasteGas"))
+
+	secondExpectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	secondExpectedTransferFromParentToChild.
+		TransferESDT(
+			string(test.ESDTTestTokenName),
+			int64(testConfig.ESDTTokensToTransfer)).
+		Bytes([]byte("wasteGas"))
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
+			test.CreateMockContract(test.NephewAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.WasteGasChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execESDTTransferAndCall").
+			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("execESDTTransferAndCall"),
+				test.NephewAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				Transfers(
+					test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 0).
+						WithData(firstExpectedTransferFromParentToChild.ToBytes()).
+						WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ChildAddress, test.NephewAddress, 1).
+						WithData(secondExpectedTransferFromParentToChild.ToBytes()).
+						WithValue(big.NewInt(0)),
+				)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, uint64(0), childESDTBalance)
+
+			nephewAccount := world.AcctMap.GetAccount(test.NephewAddress)
+			nephewESDTBalance, _ := nephewAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, testConfig.ESDTTokensToTransfer, nephewESDTBalance)
+		})
+	assert.Nil(t, err)
+}
+
 func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
@@ -897,7 +976,7 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("sendMessage"), vmhost.One.Bytes()).
+			WithArguments(test.UserAddress, []byte("sendMessage"), []byte{2}, vmhost.One.Bytes()).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
@@ -914,6 +993,10 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 					test.CreateTransferEntry(test.ParentAddress, test.UserAddress, 0).
 						WithData([]byte("message")).
 						WithGasLimit(480).
+						WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ParentAddress, test.UserAddress, 1).
+						WithData([]byte("message")).
+						WithGasLimit(0).
 						WithValue(big.NewInt(0)),
 				)
 		})
@@ -1961,7 +2044,7 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("execOnDestCtx").
-			WithArguments(childAddress, []byte("wasteGas"), big.NewInt(1).Bytes()).
+			WithArguments(childAddress, []byte("wasteGas"), big.NewInt(2).Bytes()).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
@@ -1970,6 +2053,9 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 			verify.Ok().
 				Transfers(
 					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 0).
+						WithData([]byte("test")).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("test")).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 				)
@@ -2079,14 +2165,22 @@ func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldm
 				return vmOutput, nil
 			}
 
-			account := test.AddNewOutputTransfer(
-				vmOutput,
-				acntSnd.AddressBytes(),
-				vmInput.RecipientAddr,
-				0,
-				[]byte("message"),
-			)
-			account.OutputTransfers[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			numberOfTransfers := 1
+			args := vmInput.Arguments
+			if len(args) > 0 {
+				numberOfTransfers = int(big.NewInt(0).SetBytes(args[0]).Int64())
+			}
+
+			for t := 0; t < numberOfTransfers; t++ {
+				account := test.AddNewOutputTransfer(
+					vmOutput,
+					acntSnd.AddressBytes(),
+					vmInput.RecipientAddr,
+					0,
+					[]byte("message"),
+				)
+				account.OutputTransfers[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			}
 			vmOutput.GasRemaining = 0
 			return vmOutput, nil
 		},

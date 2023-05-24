@@ -896,6 +896,8 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
+	vmOutput.ReindexTransfers(host.Output())
+
 	log.Trace("ESDT transfer", "sender", transfersArgs.Sender, "dest", transfersArgs.Destination)
 	for _, transfer := range transfers {
 		log.Trace("ESDT transfer", "token", transfer.ESDTTokenName, "nonce", transfer.ESDTTokenNonce, "value", transfer.ESDTValue)
@@ -935,6 +937,8 @@ func (host *vmHost) callFunctionOnOtherVM(input *vmcommon.ContractCallInput) (*v
 		return nil, err
 	}
 
+	vmOutput.ReindexTransfers(host.Output())
+
 	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, nil)
 
 	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
@@ -965,6 +969,9 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		for _, outAcc := range vmOutput.OutputAccounts {
 			outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
+	} else {
+		// reindex only for the case of no execution after builtin call
+		vmOutput.ReindexTransfers(host.Output())
 	}
 
 	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, newVMInput)

@@ -26,7 +26,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		}
 
 		arguments := host.Runtime().Arguments()
-		if len(arguments) != 3 {
+		if len(arguments) < 3 {
 			host.Runtime().SignalUserError("need 3 arguments")
 			return instance
 		}
@@ -37,8 +37,9 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
 			big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes(),
-			arguments[2],
+			// arguments[2],
 		}
+		input.Arguments = append(input.Arguments, arguments[2:]...)
 		input.RecipientAddr = arguments[0]
 		input.Function = string(arguments[1])
 
