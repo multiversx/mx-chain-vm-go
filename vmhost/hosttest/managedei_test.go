@@ -307,6 +307,71 @@ func Test_BigIntToString(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// Real contracts always check first that the big int fits.
+// This special test case represents an intentionally badly written contract.
+func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, config interface{}) {
+	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
+
+		inputHandle := int32(0)
+		vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
+		result := vmHooksImpl.BigIntGetInt64(inputHandle)
+		vmHooksImpl.SmallIntFinishSigned(result)
+
+		return parentInstance
+	})
+}
+
+func Test_BigIntToInt64(t *testing.T) {
+	testConfig := baseTestConfig
+
+	bigIntArg := []byte{0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(bigIntToInt64MockContract),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithArguments(bigIntArg).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok()
+			assert.Equal(t, verify.VmOutput.ReturnData, [][]byte{bigIntArg})
+		})
+	assert.Nil(t, err)
+}
+
+func Test_BigIntToInt64_NotRepresentable(t *testing.T) {
+	testConfig := baseTestConfig
+
+	bigIntArg := []byte{0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(bigIntToInt64MockContract),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithArguments(bigIntArg).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed()
+			assert.Equal(t, verify.VmOutput.ReturnMessage, vmhost.ErrBigIntCannotBeRepresentedAsInt64.Error())
+		})
+	assert.Nil(t, err)
+}
+
 func Test_ManagedRipemd160(t *testing.T) {
 	testConfig := baseTestConfig
 
