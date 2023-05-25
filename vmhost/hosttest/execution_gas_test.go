@@ -1572,9 +1572,9 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 			WithCallType(vm.AsynchronousCall).
 			WithValue(big.NewInt(0)))
 
-	for transfer := 1; transfer < numOfTransfersInChild; transfer++ {
+	for transfer := 0; transfer < numOfTransfersInChild; transfer++ {
 		expectedTransfers = append(expectedTransfers,
-			test.CreateTransferEntry(test.ChildAddress, test.ParentAddress, uint32(1+transfer)).
+			test.CreateTransferEntry(test.ChildAddress, test.ParentAddress, uint32(2+transfer)).
 				WithData(expectedTransferFromChildToParent.ToBytes()).
 				WithGasLimit(0).
 				WithGasLocked(0).
