@@ -119,6 +119,9 @@ var ErrStorageValueOutOfRange = errors.New("storage value out of range")
 var ErrDivZero = errors.New("division by 0")
 
 // ErrBitwiseNegative signals that an attempt to apply a bitwise operation on negative numbers has been made
+var ErrBigIntCannotBeRepresentedAsInt64 = errors.New("big int cannot be represented as int64")
+
+// ErrBitwiseNegative signals that an attempt to apply a bitwise operation on negative numbers has been made
 var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive integers")
 
 // ErrShiftNegative signals that an attempt to apply a bitwise shift operation on negative numbers has been made
