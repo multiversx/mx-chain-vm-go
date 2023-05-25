@@ -45,6 +45,10 @@ type OutputContextStub struct {
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	RemoveNonUpdatedStorageCalled     func()
+	NextOutputTransferIndexCalled     func() uint32
+	GetCrtTransferIndexCalled         func() uint32
+	SetCrtTransferIndexCalled         func(index uint32)
+	IsInterfaceNilCalled              func() bool
 }
 
 // AddToActiveState mocked method
@@ -289,4 +293,35 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
+}
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextStub) NextOutputTransferIndex() uint32 {
+	if o.NextOutputTransferIndexCalled != nil {
+		return o.NextOutputTransferIndexCalled()
+	}
+	return 0
+}
+
+// GetCrtTransferIndex mocked method
+func (o *OutputContextStub) GetCrtTransferIndex() uint32 {
+	if o.GetCrtTransferIndexCalled != nil {
+		return o.GetCrtTransferIndexCalled()
+	}
+	return 0
+}
+
+// SetCrtTransferIndex mocked method
+func (o *OutputContextStub) SetCrtTransferIndex(index uint32) {
+	if o.GetCrtTransferIndexCalled != nil {
+		o.SetCrtTransferIndexCalled(index)
+	}
+}
+
+// IsInterfaceNil mocked method
+func (o *OutputContextStub) IsInterfaceNil() bool {
+	if o.IsInterfaceNilCalled != nil {
+		return o.IsInterfaceNilCalled()
+	}
+	return false
 }

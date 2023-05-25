@@ -8,14 +8,15 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 /*
 	Called to process OutputTransfers created by a
 	direct call (on dest) builtin function call by the VM
-    TODO(fix) this function
 */
 func AddAsyncArgumentsToOutputTransfers(
+	output vmhost.OutputContext,
 	address []byte,
 	asyncParams *vmcommon.AsyncArguments,
 	callType vm.CallType,
@@ -45,6 +46,7 @@ func AddAsyncArgumentsToOutputTransfers(
 			}
 
 			outAcc.OutputTransfers[t] = vmcommon.OutputTransfer{
+				Index:         outTransfer.Index,
 				Value:         outTransfer.Value,
 				GasLimit:      outTransfer.GasLimit,
 				GasLocked:     outTransfer.GasLocked,
