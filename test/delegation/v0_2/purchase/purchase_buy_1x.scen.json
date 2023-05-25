@@ -60,14 +60,17 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:delegation",
+                        "address": "address:delegator_1___________________s#31",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "''delegator_1___________________s1",
                             "40,000,000,002"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:purchaseStake",
+                            "str:delegator_1___________________s1"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -77,7 +80,9 @@
                             "''delegator_1___________________s1",
                             "''delegator_2___________________s1"
                         ],
-                        "data": "40,000,000,002"
+                        "data": [
+                            "40,000,000,002"
+                        ]
                     }
                 ],
                 "gas": "*",

@@ -59,15 +59,23 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
+                        "address": "sc:vault",
                         "endpoint": "str:ESDTNFTTransfer",
                         "topics": [
+                            "sc:forwarder",
                             "str:NFT-000001",
                             "5",
-                            "01",
-                            "sc:vault"
+                            "01"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCall",
+                            "str:ESDTNFTTransfer",
+                            "str:NFT-000001",
+                            "5",
+                            "1",
+                            "sc:vault",
+                            "str:accept_funds"
+                        ]
                     },
                     {
                         "address": "sc:vault",
@@ -79,7 +87,22 @@
                             "5",
                             "1"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:vault",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     }
                 ],
                 "gas": "*",

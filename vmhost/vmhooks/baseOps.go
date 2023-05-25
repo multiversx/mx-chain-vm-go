@@ -102,6 +102,13 @@ const (
 	getPrevTxHashName                = "getPrevTxHash"
 )
 
+type CreateContractCallType int
+
+const (
+	CreateContract = iota
+	DeployContract
+)
+
 var logEEI = logger.GetOrCreate("vm/eei")
 
 func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
@@ -2216,7 +2223,7 @@ func (context *VMHooksImpl) WriteLog(
 		}
 	}
 
-	output.WriteLog(runtime.GetContextAddress(), topics, log)
+	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{log})
 }
 
 // WriteEventLog VMHooks implementation.
@@ -2256,7 +2263,7 @@ func (context *VMHooksImpl) WriteEventLog(
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseGasAndAddTracedGas(writeEventLogName, gasToUse)
 
-	output.WriteLog(runtime.GetContextAddress(), topics, data)
+	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{data})
 }
 
 // GetBlockTimestamp VMHooks implementation.
@@ -2811,7 +2818,7 @@ func (context *VMHooksImpl) createContractWithHost(
 	}
 
 	valueAsInt := big.NewInt(0).SetBytes(value)
-	newAddress, err := createContract(sender, data, valueAsInt, gasLimit, code, codeMetadata, host)
+	newAddress, err := createContract(sender, data, valueAsInt, gasLimit, code, codeMetadata, host, CreateContract)
 
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
@@ -2913,7 +2920,7 @@ func DeployFromSourceContractWithTypedArgs(
 		return nil, err
 	}
 
-	return createContract(sender, data, value, gasLimit, code, codeMetadata, host)
+	return createContract(sender, data, value, gasLimit, code, codeMetadata, host, DeployContract)
 }
 
 func createContract(
@@ -2924,6 +2931,7 @@ func createContract(
 	code []byte,
 	codeMetadata []byte,
 	host vmhost.VMHost,
+	createContractCallType CreateContractCallType,
 ) ([]byte, error) {
 	originalCaller := host.Runtime().GetOriginalCallerAddress()
 	metering := host.Metering()
@@ -2940,7 +2948,7 @@ func createContract(
 		ContractCodeMetadata: codeMetadata,
 	}
 
-	return host.CreateNewContract(contractCreate)
+	return host.CreateNewContract(contractCreate, int(createContractCallType))
 }
 
 // GetNumReturnData VMHooks implementation.
@@ -3170,6 +3178,8 @@ func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCal
 	if err != nil {
 		return nil, err
 	}
+	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
 		return nil, err

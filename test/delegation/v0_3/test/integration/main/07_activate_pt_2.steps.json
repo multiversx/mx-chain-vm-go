@@ -38,14 +38,17 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:delegation",
+                        "address": "address:delegator_2___________________s#31",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "''delegator_2___________________s1",
                             "1,000,000,000"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "1,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -54,7 +57,9 @@
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
                             "''delegator_2___________________s1"
                         ],
-                        "data": "1,000,000,000"
+                        "data": [
+                            "1,000,000,000"
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -85,17 +90,37 @@
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "''delegator_2___________________s1"
                         ],
-                        "data": "1,000,000,000"
+                        "data": [
+                            "1,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "sc:auction",
                             "111,000,000,000,000"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCall",
+                            "str:stake",
+                            "1",
+                            "str:bls_key_5_______________________________________________________________________________________",
+                            "str:signature_5_____________________"
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:auction",
+                            ""
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -103,7 +128,9 @@
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000003"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

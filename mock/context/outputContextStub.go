@@ -23,7 +23,7 @@ type OutputContextStub struct {
 	GetOutputAccountsCalled           func() map[string]*vmcommon.OutputAccount
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	DeleteOutputAccountCalled         func(address []byte)
-	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
+	WriteLogCalled                    func(address []byte, topics [][]byte, data [][]byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
 	TransferESDTCalled                func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
 	GetRefundCalled                   func() uint64
@@ -134,7 +134,7 @@ func (o *OutputContextStub) DeleteOutputAccount(address []byte) {
 }
 
 // WriteLog mocked method
-func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byte) {
+func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data [][]byte) {
 	if o.WriteLogCalled != nil {
 		o.WriteLogCalled(address, topics, data)
 	}

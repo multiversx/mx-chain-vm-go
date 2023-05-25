@@ -192,40 +192,55 @@
                             "3",
                             "10"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     },
                     {
-                        "address": "sc:multisig",
+                        "address": "address:esdt-owner",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
+                            "sc:multisig",
                             "str:FUNG-TOKEN",
                             "0",
-                            "1000",
-                            "address:esdt-owner"
+                            "1000"
                         ],
-                        "data": ""
+                        "data": "*"
                     },
                     {
-                        "address": "sc:multisig",
+                        "address": "address:esdt-owner",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
+                            "sc:multisig",
                             "str:NFT-123456",
                             "1",
-                            "1",
-                            "address:esdt-owner"
+                            "1"
                         ],
-                        "data": ""
+                        "data": "*"
+                    },
+                    {
+                        "address": "address:esdt-owner",
+                        "endpoint": "str:MultiESDTNFTTransfer",
+                        "topics": [
+                            "sc:multisig",
+                            "str:SFT-456789",
+                            "3",
+                            "10"
+                        ],
+                        "data": "*"
                     },
                     {
                         "address": "sc:multisig",
-                        "endpoint": "str:MultiESDTNFTTransfer",
+                        "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "str:SFT-456789",
-                            "3",
-                            "10",
-                            "address:esdt-owner"
+                            "address:esdt-owner",
+                            ""
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     },
                     {
                         "address": "sc:multisig",
@@ -233,7 +248,9 @@
                         "topics": [
                             "str:asyncCallSuccess"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

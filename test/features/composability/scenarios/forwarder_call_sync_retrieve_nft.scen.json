@@ -52,6 +52,21 @@
                 "logs": [
                     {
                         "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            ""
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:retrieve_funds",
+                            "str:NFT-000001",
+                            "5",
+                            "01"
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
                         "endpoint": "str:retrieve_funds",
                         "topics": [
                             "str:retrieve_funds",
@@ -59,18 +74,27 @@
                             "5",
                             "1"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     },
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:ESDTNFTTransfer",
                         "topics": [
+                            "sc:vault",
+                            "str:NFT-000001",
+                            "5",
+                            "01"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:ESDTNFTTransfer",
                             "str:NFT-000001",
                             "5",
                             "01",
                             "sc:forwarder"
-                        ],
-                        "data": ""
+                        ]
                     }
                 ],
                 "gas": "*",

@@ -122,17 +122,21 @@
                             "0x000000000000000000000000000000000000000000000000000000000000000a",
                             "''delegator_1___________________s1"
                         ],
-                        "data": "300,000,000"
+                        "data": [
+                            "300,000,000"
+                        ]
                     },
                     {
-                        "address": "sc:delegation",
+                        "address": "address:delegator_1___________________s#31",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:delegation",
-                            "''delegator_1___________________s1",
                             "300,000,000"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:claimRewards"
+                        ]
                     }
                 ],
                 "gas": "*",

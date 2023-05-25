@@ -45,6 +45,21 @@
                 "logs": [
                     {
                         "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            ""
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:retrieve_funds",
+                            "str:TEST-TOKENA",
+                            "0",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
                         "endpoint": "str:retrieve_funds",
                         "topics": [
                             "str:retrieve_funds",
@@ -52,18 +67,25 @@
                             "0",
                             "1000"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     },
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
+                            "sc:vault",
                             "str:TEST-TOKENA",
-                            "",
-                            "1000",
-                            "sc:forwarder"
+                            "0",
+                            "1000"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:ESDTTransfer",
+                            "str:TEST-TOKENA",
+                            "1000"
+                        ]
                     }
                 ],
                 "gas": "*",

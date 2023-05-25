@@ -41,6 +41,21 @@
                 "logs": [
                     {
                         "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:retrieve_funds",
+                            "str:EGLD",
+                            "0",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
                         "endpoint": "str:retrieve_funds",
                         "topics": [
                             "str:retrieve_funds",
@@ -48,17 +63,24 @@
                             "0",
                             "1000"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     },
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:vault",
-                            "sc:forwarder",
                             "1000"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCall",
+                            "str:retrieve_funds",
+                            "str:EGLD",
+                            "0",
+                            "1000"
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
@@ -69,7 +91,9 @@
                             "0",
                             "1000"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

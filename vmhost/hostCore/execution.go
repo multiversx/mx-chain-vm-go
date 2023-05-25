@@ -15,6 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -273,6 +274,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		output.RemoveNonUpdatedStorage()
 	}
 	vmOutput = output.GetVMOutput()
+	host.CompleteLogEntriesWithCallType(vmOutput, "DirectCall")
 
 	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
@@ -332,6 +334,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			isChildComplete = true
 			return
 		}
+		host.completeLogEntriesAfterBuiltinCall(input, vmOutput)
 	}
 
 	isChildComplete = true
@@ -346,6 +349,17 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	return
+}
+
+func (host *vmHost) completeLogEntriesAfterBuiltinCall(input *vmcommon.ContractCallInput, vmOutput *vmcommon.VMOutput) {
+	switch input.CallType {
+	case vm.AsynchronousCall:
+		host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+	case vm.AsynchronousCallBack:
+		host.CompleteLogEntriesWithCallType(vmOutput, "AyncCallback")
+	default:
+		host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+	}
 }
 
 func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -425,7 +439,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	if input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0 {
+	if len(input.ESDTTransfers) == 0 && (input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0) {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
@@ -568,6 +582,8 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// GasUsed for all accounts.
 	vmOutput := output.GetVMOutput()
 
+	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnSameContext")
+
 	metering.PopMergeActiveState()
 	output.PopDiscard()
 	blockchain.PopDiscard()
@@ -614,7 +630,7 @@ func (host *vmHost) IsBuiltinFunctionCall(data []byte) bool {
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
-func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
+func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) (newContractAddress []byte, err error) {
 	newContractAddress = nil
 	err = nil
 
@@ -672,10 +688,17 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 
 	var isChildComplete bool
 	host.Async().SetAsyncArgumentsForCall(initCallInput)
-	_, isChildComplete, err = host.ExecuteOnDestContext(initCallInput)
+	initVmOutput, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
+
+	if createContractCallType == vmhooks.DeployContract {
+		host.CompleteLogEntriesWithCallType(initVmOutput, "DeployFromSource")
+	} else {
+		host.CompleteLogEntriesWithCallType(initVmOutput, "CreateSmartContract")
+	}
+
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
 		return

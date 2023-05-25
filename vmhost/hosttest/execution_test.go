@@ -2901,7 +2901,13 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 				CodeDeployerAddress(childAddress, test.ParentAddress).
 				GasUsed(childAddress, 570).
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
-				Storage()
+				Storage().
+				Logs(vmcommon.LogEntry{
+					Identifier: []byte("transferValueOnly"),
+					Address:    childAddress,
+					Topics:     [][]byte{test.ParentAddress, {42}},
+					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{{0}}),
+				})
 		})
 }
 
@@ -2934,7 +2940,13 @@ func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
 					[]byte("init successful"),
 					// returned by the deployer contract
 					[]byte("succ"),
-				)
+				).
+				Logs(vmcommon.LogEntry{
+					Identifier: []byte("transferValueOnly"),
+					Address:    generatedNewAddress,
+					Topics:     [][]byte{test.ParentAddress, {42}},
+					Data:       vmcommon.FormatLogDataForCall("DeployFromSource", "init", [][]byte{}),
+				})
 		})
 }
 
@@ -3010,10 +3022,12 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
-	newAddr := "newAddr_"
+	newAddrPrefix := "newAddr_"
 	ownerNonce := uint64(23)
-	parentAddress := test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 24))
-	childAddress := test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 25))
+	parentAddress := test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddrPrefix, 24))
+	childAddress := test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddrPrefix, 25))
+
+	var createdNewAddr [][]byte
 
 	input := test.CreateTestContractCreateInputBuilder().
 		WithCallValue(1000).
@@ -3036,7 +3050,8 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 			}
 			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 				ownerNonce++
-				return test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
+				createdNewAddr = append(createdNewAddr, test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddrPrefix, ownerNonce)))
+				return createdNewAddr[len(createdNewAddr)-1], nil
 			}
 			stubBlockchainHook.IsSmartContractCalled = func(address []byte) bool {
 				outputAccounts := host.Output().GetOutputAccounts()
@@ -3046,7 +3061,13 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				ReturnData([]byte("succ")) /* returned from child contract init */
+				ReturnData([]byte("succ")). /* returned from child contract init */
+				Logs(vmcommon.LogEntry{
+					Identifier: []byte("transferValueOnly"),
+					Address:    createdNewAddr[1],
+					Topics:     [][]byte{createdNewAddr[0], {42}},
+					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{createdNewAddr[0]}),
+				})
 		})
 }
 
@@ -3372,7 +3393,7 @@ func runMemGrowTest(
 			if expectedRetCode == vmcommon.ExecutionFailed {
 				vmOutput := verify.VmOutput
 				require.Len(tb, vmOutput.Logs, 1)
-				require.Contains(tb, string(vmOutput.Logs[0].Data), vmhost.ErrMemoryLimit.Error())
+				require.Contains(tb, string(vmOutput.Logs[0].GetFirstDataItem()), vmhost.ErrMemoryLimit.Error())
 			}
 		})
 }

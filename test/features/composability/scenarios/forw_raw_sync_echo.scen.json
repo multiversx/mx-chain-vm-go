@@ -44,17 +44,33 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
                         "address": "sc:forwarder",
                         "endpoint": "str:call_execute_on_dest_context",
                         "topics": [
                             "str:execute_on_dest_context_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -87,17 +103,18 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:call_execute_on_dest_context_twice",
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "str:execute_on_dest_context_result"
+                            "sc:forwarder",
+                            "0"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
                     },
                     {
                         "address": "sc:forwarder",
@@ -105,12 +122,43 @@
                         "topics": [
                             "str:execute_on_dest_context_result"
                         ],
-                        "data": {
-                            "0-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "0"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:call_execute_on_dest_context_twice",
+                        "topics": [
+                            "str:execute_on_dest_context_result"
+                        ],
+                        "data": [
+                            {
+                                "0-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",

@@ -59,7 +59,9 @@
                             "str:userStake",
                             "address:delegator3"
                         ],
-                        "data": "200,000,000,000,000"
+                        "data": [
+                            "200,000,000,000,000"
+                        ]
                     }
                 ],
                 "gas": "*",

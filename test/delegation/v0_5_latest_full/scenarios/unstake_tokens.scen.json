@@ -47,7 +47,35 @@
                         "topics": [
                             "str:tokensUnstake"
                         ],
-                        "data": "1000"
+                        "data": [
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            ""
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unStakeTokens",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:auction",
+                            ""
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -97,17 +125,35 @@
                         "topics": [
                             "str:tokensUnbond"
                         ],
-                        "data": "1000"
+                        "data": [
+                            "1000"
+                        ]
                     },
                     {
                         "address": "*",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "sc:auction",
                             "sc:delegation",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unBondTokens",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:auction",
                             "1000"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unBondTokens",
+                            "1000"
+                        ]
                     }
                 ],
                 "gas": "*",

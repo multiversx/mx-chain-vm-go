@@ -91,6 +91,35 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:promises",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
+                        "address": "sc:promises",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:vault",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:the_one_callback",
+                            "0x00",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
                         "address": "sc:promises",
                         "endpoint": "str:the_one_callback",
                         "topics": [
@@ -98,11 +127,13 @@
                             "1001",
                             "1002"
                         ],
-                        "data": {
-                            "0-status": "nested:0x00",
-                            "1-arg1": "biguint:1",
-                            "2-arg2": "biguint:2"
-                        }
+                        "data": [
+                            {
+                                "0-status": "nested:0x00",
+                                "1-arg1": "biguint:1",
+                                "2-arg2": "biguint:2"
+                            }
+                        ]
                     },
                     "+"
                 ],
@@ -155,6 +186,35 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:promises",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:echo_arguments",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
+                        "address": "sc:promises",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:vault",
+                            "0"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:the_one_callback",
+                            "0x00",
+                            "1",
+                            "2"
+                        ]
+                    },
+                    {
                         "address": "sc:promises",
                         "endpoint": "str:the_one_callback",
                         "topics": [
@@ -162,13 +222,15 @@
                             "1001",
                             "1002"
                         ],
-                        "data": {
-                            "0-status": "nested:0x00",
-                            "1-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": [
+                            {
+                                "0-status": "nested:0x00",
+                                "1-echoed-args": [
+                                    "biguint:1",
+                                    "biguint:2"
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "gas": "*",
