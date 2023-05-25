@@ -47,6 +47,7 @@ type OutputContextStub struct {
 	RemoveNonUpdatedStorageCalled     func()
 	NextOutputTransferIndexCalled     func() uint32
 	GetCrtTransferIndexCalled         func() uint32
+	SetCrtTransferIndexCalled         func(index uint32)
 	IsInterfaceNilCalled              func() bool
 }
 
@@ -308,6 +309,13 @@ func (o *OutputContextStub) GetCrtTransferIndex() uint32 {
 		return o.GetCrtTransferIndexCalled()
 	}
 	return 0
+}
+
+// SetCrtTransferIndex mocked method
+func (o *OutputContextStub) SetCrtTransferIndex(index uint32) {
+	if o.GetCrtTransferIndexCalled != nil {
+		o.SetCrtTransferIndexCalled(index)
+	}
 }
 
 // IsInterfaceNil mocked method

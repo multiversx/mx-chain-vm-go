@@ -27,6 +27,7 @@ type OutputContextMock struct {
 	OutputAccountIsNew bool
 	Err                error
 	TransferResult     error
+	CrtTransferIndex   uint32
 }
 
 // AddToActiveState mocked method
@@ -209,12 +210,18 @@ func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
 
 // NextOutputTransferIndex mocked method
 func (o *OutputContextMock) NextOutputTransferIndex() uint32 {
-	return 0
+	o.CrtTransferIndex++
+	return o.CrtTransferIndex
 }
 
 // NextOutputTransferIndex mocked method
 func (o *OutputContextMock) GetCrtTransferIndex() uint32 {
-	return 0
+	return o.CrtTransferIndex
+}
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextMock) SetCrtTransferIndex(index uint32) {
+	o.CrtTransferIndex = index
 }
 
 // IsInterfaceNil mocked method

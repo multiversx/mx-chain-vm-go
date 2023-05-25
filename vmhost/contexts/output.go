@@ -36,7 +36,7 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 	context := &outputContext{
 		host:             host,
 		stateStack:       make([]*vmcommon.VMOutput, 0),
-		crtTransferIndex: 0,
+		crtTransferIndex: 1,
 	}
 
 	context.InitState()
@@ -48,7 +48,7 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
-	context.crtTransferIndex = 0
+	context.crtTransferIndex = 1
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -644,6 +644,11 @@ func (context *outputContext) NextOutputTransferIndex() uint32 {
 // GetCrtTransferIndex returns the current output transfer index
 func (context *outputContext) GetCrtTransferIndex() uint32 {
 	return context.crtTransferIndex
+}
+
+// SetOutputTransferIndex sets the current output transfer index
+func (context *outputContext) SetCrtTransferIndex(index uint32) {
+	context.crtTransferIndex = index
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {

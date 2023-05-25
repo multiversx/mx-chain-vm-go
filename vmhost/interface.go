@@ -248,6 +248,7 @@ type OutputContext interface {
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 	NextOutputTransferIndex() uint32
 	GetCrtTransferIndex() uint32
+	SetCrtTransferIndex(index uint32)
 	IsInterfaceNil() bool
 }
 
