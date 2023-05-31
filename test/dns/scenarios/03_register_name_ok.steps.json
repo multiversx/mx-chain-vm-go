@@ -75,11 +75,11 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:dns#87",
+                        "address": "str:cool_address____________________",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "str:cool_address____________________",
-                            ""
+                        "topics": [                            
+                            "",
+                            "sc:dns#87"
                         ],
                         "data": [
                             "str:AsyncCallback",

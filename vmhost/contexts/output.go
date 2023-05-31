@@ -318,8 +318,8 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 
 	vmInput := context.host.Runtime().GetVMInput()
 	context.WriteLogWithIdentifier(
-		destination,
-		[][]byte{sender, value.Bytes()},
+		sender,
+		[][]byte{value.Bytes(), destination},
 		vmcommon.FormatLogDataForCall("", vmInput.Function, vmInput.Arguments),
 		[]byte("transferValueOnly"),
 	)

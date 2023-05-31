@@ -61,13 +61,13 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "address:an_account",
+                        "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
-                        "topics": [
-                            "sc:forwarder",
+                        "topics": [                            
                             "str:SENDESDT",
                             "0",
-                            "200"
+                            "200",
+                            "address:an_account"
                         ],
                         "data": [
                             "str:DirectCall",

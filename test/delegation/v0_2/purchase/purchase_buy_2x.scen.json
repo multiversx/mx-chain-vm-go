@@ -60,11 +60,11 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "address:delegator_1___________________s#31",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "40,000,000,002"
+                        "topics": [                            
+                            "40,000,000,002",
+                            "address:delegator_1___________________s#31"
                         ],
                         "data": [
                             "str:DirectCall",
@@ -108,11 +108,11 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "address:delegator_1___________________s#31",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "30,000,000,003"
+                        "topics": [                            
+                            "30,000,000,003",
+                            "address:delegator_1___________________s#31"
                         ],
                         "data": [
                             "str:DirectCall",

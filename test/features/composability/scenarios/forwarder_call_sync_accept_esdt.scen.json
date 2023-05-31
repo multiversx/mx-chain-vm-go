@@ -77,13 +77,13 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
-                        "topics": [
-                            "sc:forwarder",
+                        "topics": [                            
                             "str:TEST-TOKENA",
                             "0",
-                            "1000"
+                            "1000",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:ExecuteOnDestContext",

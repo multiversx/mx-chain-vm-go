@@ -80,11 +80,11 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:auction",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "sc:delegation",
-                            ""
+                            "",
+                            "sc:auction"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -94,11 +94,11 @@
                         ]
                     },
                     {
-                        "address": "sc:delegation",
+                        "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "sc:auction",
-                            ""
+                            "",
+                            "sc:delegation"
                         ],
                         "data": [
                             "str:AsyncCallback",

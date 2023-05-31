@@ -2904,8 +2904,8 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 				Storage().
 				Logs(vmcommon.LogEntry{
 					Identifier: []byte("transferValueOnly"),
-					Address:    childAddress,
-					Topics:     [][]byte{test.ParentAddress, {42}},
+					Address:    test.ParentAddress,
+					Topics:     [][]byte{{42}, childAddress},
 					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{{0}}),
 				})
 		})
@@ -2943,8 +2943,8 @@ func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
 				).
 				Logs(vmcommon.LogEntry{
 					Identifier: []byte("transferValueOnly"),
-					Address:    generatedNewAddress,
-					Topics:     [][]byte{test.ParentAddress, {42}},
+					Address:    test.ParentAddress,
+					Topics:     [][]byte{{42}, generatedNewAddress},
 					Data:       vmcommon.FormatLogDataForCall("DeployFromSource", "init", [][]byte{}),
 				})
 		})
@@ -3064,8 +3064,8 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 				ReturnData([]byte("succ")). /* returned from child contract init */
 				Logs(vmcommon.LogEntry{
 					Identifier: []byte("transferValueOnly"),
-					Address:    createdNewAddr[1],
-					Topics:     [][]byte{createdNewAddr[0], {42}},
+					Address:    createdNewAddr[0],
+					Topics:     [][]byte{{42}, createdNewAddr[1]},
 					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{createdNewAddr[0]}),
 				})
 		})

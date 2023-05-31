@@ -197,44 +197,28 @@
                         ]
                     },
                     {
-                        "address": "address:esdt-owner",
+                        "address": "sc:multisig",
                         "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:multisig",
+                        "topics": [                            
                             "str:FUNG-TOKEN",
                             "0",
-                            "1000"
-                        ],
-                        "data": "*"
-                    },
-                    {
-                        "address": "address:esdt-owner",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:multisig",
+                            "1000",
                             "str:NFT-123456",
                             "1",
-                            "1"
-                        ],
-                        "data": "*"
-                    },
-                    {
-                        "address": "address:esdt-owner",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:multisig",
+                            "1",
                             "str:SFT-456789",
                             "3",
-                            "10"
+                            "10",
+                            "address:esdt-owner"
                         ],
                         "data": "*"
-                    },
+                    },                  
                     {
-                        "address": "sc:multisig",
+                        "address": "address:esdt-owner",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "address:esdt-owner",
-                            ""
+                            "",
+                            "sc:multisig"
                         ],
                         "data": [
                             "str:AsyncCallback",

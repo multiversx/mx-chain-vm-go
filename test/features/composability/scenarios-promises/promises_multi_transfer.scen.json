@@ -79,19 +79,9 @@
                 "message": "",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:promises",
                         "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:promises",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "500"
-                        ],
-                        "data": [
-                            "str:AsyncCall",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "3",
+                        "topics": [                            
                             "str:FWD-TOKEN",
                             "0",
                             "500",
@@ -101,43 +91,7 @@
                             "str:SFT-456789",
                             "3",
                             "6",
-                            "str:accept_funds_echo_payment"
-                        ]
-                    },
-                    {
-                        "address": "sc:vault",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:promises",
-                            "str:NFT-123456",
-                            "1",
-                            "1"
-                        ],
-                        "data": [
-                            "str:AsyncCall",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "3",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "500",
-                            "str:NFT-123456",
-                            "1",
-                            "1",
-                            "str:SFT-456789",
-                            "3",
-                            "6",
-                            "str:accept_funds_echo_payment"
-                        ]
-                    },
-                    {
-                        "address": "sc:vault",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:promises",
-                            "str:SFT-456789",
-                            "3",
-                            "6"
+                            "sc:vault"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -177,11 +131,11 @@
                         ]
                     },
                     {
-                        "address": "sc:promises",
+                        "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:vault",
-                            ""
+                        "topics": [                            
+                            "",
+                            "sc:promises"
                         ],
                         "data": [
                             "str:AsyncCallback",

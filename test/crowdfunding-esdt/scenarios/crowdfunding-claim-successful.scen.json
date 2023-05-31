@@ -123,13 +123,13 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "address:my_address",
+                        "address": "sc:crowdfunding",
                         "endpoint": "str:ESDTTransfer",
-                        "topics": [
-                            "sc:crowdfunding",
+                        "topics": [                            
                             "str:CROWD-123456",
                             "",
-                            "500,000,000,000"
+                            "500,000,000,000",
+                            "address:my_address"
                         ],
                         "data": "*"
                     }

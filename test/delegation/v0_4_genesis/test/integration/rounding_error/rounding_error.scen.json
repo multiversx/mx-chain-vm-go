@@ -120,11 +120,11 @@
                         ]
                     },
                     {
-                        "address": "address:node_address__________________s#31",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "1"
+                        "topics": [                            
+                            "1",
+                            "address:node_address__________________s#31"
                         ],
                         "data": [
                             "str:DirectCall",

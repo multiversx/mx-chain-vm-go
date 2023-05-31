@@ -73,11 +73,11 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "sc:auction",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "789,000,000,000"
+                        "topics": [                            
+                            "789,000,000,000",
+                            "sc:auction"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -90,11 +90,11 @@
                         ]
                     },
                     {
-                        "address": "sc:delegation",
+                        "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "sc:auction",
-                            ""
+                            "",
+                            "sc:delegation"
                         ],
                         "data": [
                             "str:AsyncCallback",
