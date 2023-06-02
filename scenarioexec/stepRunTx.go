@@ -69,6 +69,15 @@ func (ae *VMTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcomm
 			if ae.PeekTraceGas() {
 				fmt.Println("\nIn txID:", txIndex, ", step type:Deploy", ", total gas used:", gasForExecution-output.GasRemaining)
 			}
+		case mj.ScUpgrade:
+			output, err = ae.scCall(txIndex, tx, gasForExecution)
+			ae.upgradeContract()
+			if err != nil {
+				return nil, err
+			}
+			if ae.PeekTraceGas() {
+				fmt.Println("\nIn txID:", txIndex, ", step type:ScUpgrade, total gas used:", gasForExecution-output.GasRemaining)
+			}
 		case mj.ScQuery:
 			// imitates the behaviour of the protocol
 			// the sender is the contract itself during SC queries
