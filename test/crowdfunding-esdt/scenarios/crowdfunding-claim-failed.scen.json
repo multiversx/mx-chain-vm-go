@@ -105,13 +105,13 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "address:donor1",
+                        "address": "sc:crowdfunding",
                         "endpoint": "str:ESDTTransfer",
-                        "topics": [
-                            "sc:crowdfunding",
+                        "topics": [                            
                             "str:CROWD-123456",
                             "",
-                            "250,000,000,000"
+                            "250,000,000,000",
+                            "address:donor1"
                         ],
                         "data": "*"
                     }
@@ -136,13 +136,13 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "address:donor2",
+                        "address": "sc:crowdfunding",
                         "endpoint": "str:ESDTTransfer",
-                        "topics": [
-                            "sc:crowdfunding",
+                        "topics": [                            
                             "str:CROWD-123456",
                             "",
-                            "200,000,000,000"
+                            "200,000,000,000",
+                            "address:donor2"
                         ],
                         "data": "*"
                     }

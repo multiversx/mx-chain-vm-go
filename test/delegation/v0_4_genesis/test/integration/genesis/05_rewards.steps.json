@@ -127,11 +127,11 @@
                         ]
                     },
                     {
-                        "address": "address:delegator_1___________________s#31",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "300,000,000"
+                        "topics": [                            
+                            "300,000,000",
+                            "address:delegator_1___________________s#31"
                         ],
                         "data": [
                             "str:DirectCall",

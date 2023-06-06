@@ -17,11 +17,11 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "address:dns_owner",
+                        "address": "sc:dns#87",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:dns#87",
-                            "123,000"
+                        "topics": [                            
+                            "123,000",
+                            "address:dns_owner"
                         ],
                         "data": [
                             "str:DirectCall",

@@ -65,35 +65,16 @@
                 "message": "",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:forwarder",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "100"
-                        ],
-                        "data": [
-                            "str:DirectCall",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "2",
+                        "topics": [                            
                             "str:FWD-TOKEN",
                             "0",
                             "100",
                             "str:FWD-TOKEN",
                             "0",
-                            "200"
-                        ]
-                    },
-                    {
-                        "address": "sc:vault",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "sc:forwarder",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "200"
+                            "200",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:DirectCall",

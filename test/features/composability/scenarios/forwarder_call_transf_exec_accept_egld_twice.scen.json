@@ -39,11 +39,11 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:forwarder",
-                            "1000"
+                        "topics": [                            
+                            "1000",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:ExecuteOnDestContext",
@@ -62,11 +62,11 @@
                         ]
                     },
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:forwarder",
-                            "1000"
+                        "topics": [                            
+                            "1000",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:ExecuteOnDestContext",

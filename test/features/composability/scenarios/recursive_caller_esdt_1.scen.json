@@ -58,13 +58,13 @@
                         ]
                     },
                     {
-                        "address": "sc:vault",
+                        "address": "sc:recursive-caller",
                         "endpoint": "str:ESDTTransfer",
-                        "topics": [
-                            "sc:recursive-caller",
+                        "topics": [                            
                             "str:REC-TOKEN",
                             "",
-                            "1"
+                            "1",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -89,11 +89,11 @@
                         ]
                     },
                     {
-                        "address": "sc:recursive-caller",
+                        "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:vault",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "sc:recursive-caller"
                         ],
                         "data": [
                             "str:AsyncCallback",

@@ -42,11 +42,11 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:promises",
+                        "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:vault",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "sc:promises"
                         ],
                         "data": [
                             "str:AsyncCallback",

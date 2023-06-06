@@ -61,13 +61,13 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:ESDTNFTTransfer",
-                        "topics": [
-                            "sc:forwarder",
+                        "topics": [                            
                             "str:NFT-000001",
                             "5",
-                            "01"
+                            "01",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:ExecuteOnDestContext",
@@ -94,11 +94,11 @@
                         ]
                     },
                     {
-                        "address": "sc:vault",
+                        "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:forwarder",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:ExecuteOnDestContext",

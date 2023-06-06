@@ -91,11 +91,11 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:promises",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:promises",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -105,11 +105,11 @@
                         ]
                     },
                     {
-                        "address": "sc:promises",
+                        "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:vault",
-                            "0"
+                        "topics": [                                                        
+                            "0",
+                            "sc:promises"
                         ],
                         "data": [
                             "str:AsyncCallback",
@@ -186,11 +186,11 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "sc:promises",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:promises",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "sc:vault"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -200,11 +200,11 @@
                         ]
                     },
                     {
-                        "address": "sc:promises",
+                        "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:vault",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "sc:promises"
                         ],
                         "data": [
                             "str:AsyncCallback",

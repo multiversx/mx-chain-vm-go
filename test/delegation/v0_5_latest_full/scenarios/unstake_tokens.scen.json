@@ -52,11 +52,11 @@
                         ]
                     },
                     {
-                        "address": "sc:auction",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            ""
+                        "topics": [                            
+                            "",
+                            "sc:auction"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -65,11 +65,11 @@
                         ]
                     },
                     {
-                        "address": "sc:delegation",
+                        "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:auction",
-                            ""
+                        "topics": [                            
+                            "",
+                            "sc:delegation"
                         ],
                         "data": [
                             "str:AsyncCallback",
@@ -130,11 +130,11 @@
                         ]
                     },
                     {
-                        "address": "*",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "0"
+                        "topics": [                            
+                            "0",
+                            "*"
                         ],
                         "data": [
                             "str:AsyncCall",
@@ -143,11 +143,11 @@
                         ]
                     },
                     {
-                        "address": "sc:delegation",
+                        "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:auction",
-                            "1000"
+                        "topics": [                            
+                            "1000",
+                            "sc:delegation"
                         ],
                         "data": [
                             "str:AsyncCall",

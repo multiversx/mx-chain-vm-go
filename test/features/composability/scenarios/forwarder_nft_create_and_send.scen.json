@@ -88,13 +88,13 @@
                         ]
                     },
                     {
-                        "address": "address:a_user",
+                        "address": "sc:forwarder",
                         "endpoint": "str:ESDTNFTTransfer",
-                        "topics": [
-                            "sc:forwarder",
+                        "topics": [                            
                             "str:NFT-000001",
                             "2",
-                            "01"
+                            "01",
+                            "address:a_user"
                         ],
                         "data": [
                             "str:DirectCall",
