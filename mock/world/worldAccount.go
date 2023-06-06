@@ -220,6 +220,11 @@ func (a *Account) RetrieveValue(key []byte) ([]byte, uint32, error) {
 	return a.Storage[string(key)], 0, nil
 }
 
+// MigrateDataTrieLeaves -
+func (a *Account) MigrateDataTrieLeaves(_ vmcommon.ArgsMigrateDataTrieLeaves) error {
+	return nil
+}
+
 // SaveKeyValue -
 func (a *Account) SaveKeyValue(key []byte, value []byte) error {
 	a.Storage[string(key)] = value
