@@ -1068,7 +1068,7 @@ func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, res
 	}
 
 	contract, err := host.Blockchain().GetUserAccount(mBuffAddress)
-	if err != nil || check.IfNilReflect(contract) {
+	if err != nil || check.IfNil(contract) {
 		WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
