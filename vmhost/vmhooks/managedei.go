@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -42,6 +43,8 @@ const (
 	managedIsESDTLimitedTransferName        = "managedIsESDTLimitedTransfer"
 	managedIsESDTPausedName                 = "managedIsESDTPaused"
 	managedBufferToHexName                  = "managedBufferToHex"
+	managedGetCodeMetadataName              = "managedGetCodeMetadata"
+	managedIsBuiltinFunction                = "managedIsBuiltinFunction"
 )
 
 // ManagedSCAddress VMHooks implementation.
@@ -1038,4 +1041,68 @@ func ManagedBufferToHexWithHost(host vmhost.VMHost, sourceHandle int32, destHand
 
 	encoded := hex.EncodeToString(mBuff)
 	managedType.SetBytes(destHandle, []byte(encoded))
+}
+
+// ManagedGetCodeMetadata VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetCodeMetadata(addressHandle int32, responseHandle int32) {
+	host := context.GetVMHost()
+	ManagedGetCodeMetadataWithHost(host, addressHandle, responseHandle)
+}
+
+func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, responseHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCodeMetadata
+	metering.UseGasAndAddTracedGas(managedGetCodeMetadataName, gasToUse)
+
+	gasToUse = metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
+	metering.UseGasAndAddTracedGas(managedGetCodeMetadataName, gasToUse)
+
+	mBuffAddress, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
+		return
+	}
+
+	contract, err := host.Blockchain().GetUserAccount(mBuffAddress)
+	if err != nil || check.IfNilReflect(contract) {
+		WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
+		return
+	}
+
+	codeMetadata := contract.GetCodeMetadata()
+
+	managedType.SetBytes(responseHandle, codeMetadata)
+}
+
+// ManagedIsBuiltinFunction VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedIsBuiltinFunction(functionNameHandle int32) int32 {
+	host := context.GetVMHost()
+	return ManagedIsBuiltinFunctionWithHost(host, functionNameHandle)
+}
+
+func ManagedIsBuiltinFunctionWithHost(host vmhost.VMHost, functionNameHandle int32) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsBuiltinFunction
+	metering.UseGasAndAddTracedGas(managedIsBuiltinFunction, gasToUse)
+
+	mBuffFunctionName, err := managedType.GetBytes(functionNameHandle)
+	if err != nil {
+		WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
+		return -1
+	}
+
+	isBuiltinFunction := host.IsBuiltinFunctionName(string(mBuffFunctionName))
+	if isBuiltinFunction {
+		return 1
+	}
+
+	return 0
 }
