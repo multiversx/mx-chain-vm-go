@@ -968,6 +968,23 @@ func (w *WrapperVMHooks) ManagedBufferToHex(sourceHandle int32, destHandle int32
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetCodeMetadata VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetCodeMetadata(addressHandle int32, responseHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetCodeMetadata(%d, %d)", addressHandle, responseHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedIsBuiltinFunction VM hook wrapper
+func (w *WrapperVMHooks) ManagedIsBuiltinFunction(functionNameHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedIsBuiltinFunction(%d)", functionNameHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedIsBuiltinFunction(functionNameHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // BigFloatNewFromParts VM hook wrapper
 func (w *WrapperVMHooks) BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32 {
 	callInfo := fmt.Sprintf("BigFloatNewFromParts(%d, %d, %d)", integralPart, fractionalPart, exponent)

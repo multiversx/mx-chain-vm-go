@@ -132,6 +132,8 @@ type ManagedVMHooks interface {
 	ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32
 	ManagedIsESDTPaused(tokenIDHandle int32) int32
 	ManagedBufferToHex(sourceHandle int32, destHandle int32)
+	ManagedGetCodeMetadata(addressHandle int32, responseHandle int32)
+	ManagedIsBuiltinFunction(functionNameHandle int32) int32
 }
 
 type BigFloatVMHooks interface {

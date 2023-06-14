@@ -119,6 +119,8 @@ var functionNames = map[string]struct{}{
 	"managedIsESDTLimitedTransfer": empty,
 	"managedIsESDTPaused": empty,
 	"managedBufferToHex": empty,
+	"managedGetCodeMetadata": empty,
+	"managedIsBuiltinFunction": empty,
 	"bigFloatNewFromParts": empty,
 	"bigFloatNewFromFrac": empty,
 	"bigFloatNewFromSci": empty,
