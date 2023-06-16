@@ -524,18 +524,31 @@ func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost
 }
 
 func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoadCostCoefficients, staticGasCost uint64) (uint64, error) {
-	quadraticTerm := math.MulInt64(
-		coefficients.Quadratic,
-		math.MulInt64(trieDepth, trieDepth))
+	squaredTrieDepth, err := math.MulInt64WithErr(trieDepth, trieDepth)
+	if err != nil {
+		return 0, err
+	}
 
-	linearTerm := math.MulInt64(
+	quadraticTerm, err := math.MulInt64WithErr(
+		coefficients.Quadratic,
+		squaredTrieDepth)
+
+	linearTerm, err := math.MulInt64WithErr(
 		coefficients.Linear,
 		trieDepth)
+	if err != nil {
+		return 0, err
+	}
 
-	fx := math.AddInt64(
-		math.AddInt64(quadraticTerm, linearTerm),
-		coefficients.Constant)
+	firstSum, err := math.AddInt64WithErr(quadraticTerm, linearTerm)
+	if err != nil {
+		return 0, err
+	}
 
+	fx, err := math.AddInt64WithErr(firstSum, coefficients.Constant)
+	if err != nil {
+		return 0, err
+	}
 	if fx < 0 {
 		return 0, fmt.Errorf("invalid value for gas cost, quadratic coefficient = %v, linear coefficient = %v, constant coefficient = %v, trie depth = %v",
 			coefficients.Quadratic, coefficients.Linear, coefficients.Constant, trieDepth)
