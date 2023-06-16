@@ -114,6 +114,8 @@ const (
     GetReturnDataSize = 100
     CleanReturnData = 100
     DeleteFromReturnData = 100
+    GetCodeMetadata = 100
+    IsBuiltinFunction = 100
 
 [EthAPICost]
     UseGas = 100
@@ -921,6 +923,8 @@ const (
     GetReturnDataSize = 100
     CleanReturnData = 100
     DeleteFromReturnData = 100
+    GetCodeMetadata = 100
+    IsBuiltinFunction = 100
 
 [EthAPICost]
     UseGas = 100

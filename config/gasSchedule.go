@@ -244,6 +244,8 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetReturnDataSize"] = value
 	gasMap["CleanReturnData"] = value
 	gasMap["DeleteFromReturnData"] = value
+	gasMap["GetCodeMetadata"] = value
+	gasMap["IsBuiltinFunction"] = value
 
 	return gasMap
 }

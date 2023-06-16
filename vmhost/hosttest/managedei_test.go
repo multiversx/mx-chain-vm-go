@@ -1297,3 +1297,101 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 		})
 	assert.Nil(t, err)
 }
+
+func Test_ManagedGetCodeMetadata(t *testing.T) {
+	testConfig := baseTestConfig
+
+	metadata := []byte{0, vmcommon.MetadataPayable}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata(metadata).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						managedTypes := host.ManagedTypes()
+						addressHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
+						destHandle := managedTypes.NewManagedBuffer()
+
+						vmhooks.ManagedGetCodeMetadataWithHost(
+							host,
+							addressHandle,
+							destHandle)
+
+						bytesResult, _ := managedTypes.GetBytes(destHandle)
+						if !bytes.Equal(metadata, bytesResult) {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_ManagedIsBuiltinFunction(t *testing.T) {
+	testConfig := baseTestConfig
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						managedTypes := host.ManagedTypes()
+						functionNameHandle := managedTypes.NewManagedBufferFromBytes([]byte("ESDTTransfer"))
+
+						returnValue := vmhooks.ManagedIsBuiltinFunctionWithHost(
+							host,
+							functionNameHandle)
+						if returnValue != 1 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						functionNameHandle = managedTypes.NewManagedBufferFromBytes([]byte("NotABuiltInFunction"))
+
+						returnValue = vmhooks.ManagedIsBuiltinFunctionWithHost(
+							host,
+							functionNameHandle)
+						if returnValue != 0 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
