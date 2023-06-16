@@ -121,6 +121,8 @@ package wasmer
 // extern int32_t   v1_5_managedIsESDTLimitedTransfer(void* context, int32_t tokenIDHandle);
 // extern int32_t   v1_5_managedIsESDTPaused(void* context, int32_t tokenIDHandle);
 // extern void      v1_5_managedBufferToHex(void* context, int32_t sourceHandle, int32_t destHandle);
+// extern void      v1_5_managedGetCodeMetadata(void* context, int32_t addressHandle, int32_t responseHandle);
+// extern int32_t   v1_5_managedIsBuiltinFunction(void* context, int32_t functionNameHandle);
 // extern int32_t   v1_5_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
 // extern int32_t   v1_5_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
 // extern int32_t   v1_5_bigFloatNewFromSci(void* context, long long significand, long long exponent);
@@ -820,6 +822,16 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("managedBufferToHex", v1_5_managedBufferToHex, C.v1_5_managedBufferToHex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedGetCodeMetadata", v1_5_managedGetCodeMetadata, C.v1_5_managedGetCodeMetadata)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedIsBuiltinFunction", v1_5_managedIsBuiltinFunction, C.v1_5_managedIsBuiltinFunction)
 	if err != nil {
 		return err
 	}
@@ -2195,6 +2207,18 @@ func v1_5_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32
 func v1_5_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
+}
+
+//export v1_5_managedGetCodeMetadata
+func v1_5_managedGetCodeMetadata(context unsafe.Pointer, addressHandle int32, responseHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+}
+
+//export v1_5_managedIsBuiltinFunction
+func v1_5_managedIsBuiltinFunction(context unsafe.Pointer, functionNameHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
 }
 
 //export v1_5_bigFloatNewFromParts

@@ -39,7 +39,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -62,7 +62,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1-nr-nodes",
+            "id": "1-nr-nodes",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -83,7 +83,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "id": "2",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -107,7 +107,7 @@
         },
         {
             "step": "scCall",
-            "txId": "3-nr-nodes",
+            "id": "3-nr-nodes",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -128,7 +128,7 @@
         },
         {
             "step": "scCall",
-            "txId": "3",
+            "id": "3",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -151,7 +151,7 @@
         },
         {
             "step": "scCall",
-            "txId": "4",
+            "id": "4",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -174,7 +174,7 @@
         },
         {
             "step": "scCall",
-            "txId": "5",
+            "id": "5",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -193,7 +193,7 @@
         },
         {
             "step": "scCall",
-            "txId": "6",
+            "id": "6",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",

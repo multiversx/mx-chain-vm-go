@@ -46,7 +46,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1-get-before",
+            "id": "1-get-before",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
@@ -69,7 +69,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2-offer",
+            "id": "2-offer",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
@@ -90,7 +90,7 @@
         },
         {
             "step": "scCall",
-            "txId": "3-get-after",
+            "id": "3-get-after",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",

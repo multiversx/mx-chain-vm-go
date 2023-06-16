@@ -376,6 +376,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	}
 
 	err = contexts.AddAsyncArgumentsToOutputTransfers(
+		host.Output(),
 		input.RecipientAddr,
 		input.AsyncArguments,
 		vm.AsynchronousCall,
@@ -908,6 +909,11 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 		return vmOutput, esdtTransferInput.GasProvided, vmhost.ErrExecutionFailed
 	}
 
+	err = vmOutput.ReindexTransfers(host.Output())
+	if err != nil {
+		return nil, 0, err
+	}
+
 	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
 		for _, transfer := range outAcc.OutputTransfers {
@@ -931,6 +937,11 @@ func (host *vmHost) callFunctionOnOtherVM(input *vmcommon.ContractCallInput) (*v
 	vmOutput, err := host.Blockchain().ExecuteSmartContractCallOnOtherVM(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
+		return nil, err
+	}
+
+	err = vmOutput.ReindexTransfers(host.Output())
+	if err != nil {
 		return nil, err
 	}
 
@@ -966,6 +977,12 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		}
 	}
 
+	// reindex only for the case of no execution after builtin call
+	err = vmOutput.ReindexTransfers(host.Output())
+	if err != nil {
+		return nil, nil, err
+	}
+
 	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, newVMInput)
 
 	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
@@ -991,10 +1008,10 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 		return
 	}
 
-	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, parsedTransfer.RcvAddr, input.CallType, output)
+	host.addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, parsedTransfer.RcvAddr, input.CallType, output)
 }
 
-func addOutputTransferToVMOutput(
+func (host *vmHost) addOutputTransferToVMOutput(
 	function string,
 	arguments [][]byte,
 	sender []byte,
@@ -1007,6 +1024,7 @@ func addOutputTransferToVMOutput(
 		esdtTransferTxData += "@" + hex.EncodeToString(arg)
 	}
 	outTransfer := vmcommon.OutputTransfer{
+		Index:         host.Output().NextOutputTransferIndex(),
 		Value:         big.NewInt(0),
 		Data:          []byte(esdtTransferTxData),
 		CallType:      callType,

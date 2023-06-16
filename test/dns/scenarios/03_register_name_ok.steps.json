@@ -12,11 +12,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-hash",
+            "id": "check-hash",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:dns#00",
-                "value": "0",
                 "function": "nameHash",
                 "arguments": [
                     "0x636f6f6c6e616d65303030312e656c726f6e64"
@@ -25,7 +24,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "keccak256:0x636f6f6c6e616d65303030312e656c726f6e64" ],
+                "out": [
+                    "keccak256:0x636f6f6c6e616d65303030312e656c726f6e64"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -34,11 +35,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-shard",
+            "id": "check-shard",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:dns#00",
-                "value": "0",
                 "function": "nameShard",
                 "arguments": [
                     "0x636f6f6c6e616d65303030312e656c726f6e64"
@@ -47,7 +47,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0x87" ],
+                "out": [
+                    "0x87"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -56,11 +58,11 @@
         },
         {
             "step": "scCall",
-            "txId": "register-coolname0001",
+            "id": "register-coolname0001",
             "tx": {
                 "from": "address:cool_address",
                 "to": "sc:dns#87",
-                "value": "123,000",
+                "egldValue": "123,000",
                 "function": "register",
                 "arguments": [
                     "0x636f6f6c6e616d65303030312e656c726f6e64"
@@ -71,18 +73,17 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "txId": "resolve-coolname0001",
+            "id": "resolve-coolname0001",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:dns#87",
-                "value": "0",
                 "function": "resolve",
                 "arguments": [
                     "0x636f6f6c6e616d65303030312e656c726f6e64"
@@ -91,9 +92,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "address:cool_address" ],
+                "out": [
+                    "address:cool_address"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

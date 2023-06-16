@@ -51,6 +51,9 @@ type EnableEpochsHandlerStub struct {
 	IsRuntimeCodeSizeFixEnabledField                     bool
 	IsSetGuardianEnabledField                            bool
 	IsGuardAccountEnabledField                           bool
+	IsChangeUsernameEnabledField                         bool
+	IsConsistentTokensValuesLengthCheckEnabledField      bool
+	IsAutoBalanceDataTriesEnabledField                   bool
 }
 
 // IsGuardAccountEnabled -
@@ -276,6 +279,21 @@ func (stub *EnableEpochsHandlerStub) IsDynamicGasCostForDataTrieStorageLoadEnabl
 // IsSetGuardianEnabled -
 func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
 	return stub.IsSetGuardianEnabledField
+}
+
+// IsChangeUsernameEnabled -
+func (stub *EnableEpochsHandlerStub) IsChangeUsernameEnabled() bool {
+	return stub.IsChangeUsernameEnabledField
+}
+
+// IsConsistentTokensValuesLengthCheckEnabled -
+func (stub *EnableEpochsHandlerStub) IsConsistentTokensValuesLengthCheckEnabled() bool {
+	return stub.IsConsistentTokensValuesLengthCheckEnabledField
+}
+
+// IsAutoBalanceDataTriesEnabled -
+func (stub *EnableEpochsHandlerStub) IsAutoBalanceDataTriesEnabled() bool {
+	return stub.IsAutoBalanceDataTriesEnabledField
 }
 
 // IsInterfaceNil -

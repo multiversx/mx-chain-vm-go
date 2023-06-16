@@ -30,6 +30,8 @@ const (
     SetGuardian              = 250000
     GuardAccount             = 250000
     UnGuardAccount           = 250000
+    TrieLoadPerNode          = 20000
+    TrieStorePerNode         = 50000
 
 [MetaChainSystemSCsCost]
     Stake = 5000000
@@ -112,6 +114,8 @@ const (
     GetReturnDataSize = 100
     CleanReturnData = 100
     DeleteFromReturnData = 100
+    GetCodeMetadata = 100
+    IsBuiltinFunction = 100
 
 [EthAPICost]
     UseGas = 100
@@ -846,6 +850,8 @@ const (
     SetGuardian              = 250000
     GuardAccount             = 250000
     UnGuardAccount           = 250000
+    TrieLoadPerNode          = 20000
+    TrieStorePerNode         = 50000
 
 [MetaChainSystemSCsCost]
     Stake = 5000000
@@ -930,6 +936,8 @@ const (
     GetReturnDataSize = 100
     CleanReturnData = 100
     DeleteFromReturnData = 100
+    GetCodeMetadata = 100
+    IsBuiltinFunction = 100
 
 [EthAPICost]
     UseGas = 100

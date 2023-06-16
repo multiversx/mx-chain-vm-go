@@ -421,11 +421,17 @@ func (context *VMHooksImpl) BigIntIsInt64(destinationHandle int32) int32 {
 func (context *VMHooksImpl) BigIntGetInt64(destinationHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
+	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
 	metering.UseGasAndAddTracedGas(bigIntGetInt64Name, gasToUse)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
+	if !value.IsInt64() {
+		if context.WithFault(vmhost.ErrBigIntCannotBeRepresentedAsInt64, runtime.BigIntAPIErrorShouldFailExecution()) {
+			return -1
+		}
+	}
 	return value.Int64()
 }
 

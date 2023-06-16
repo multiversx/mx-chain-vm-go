@@ -234,6 +234,8 @@ func FillGasMapBuiltInCosts(value uint64) map[string]uint64 {
 	gasMap["SetGuardian"] = value
 	gasMap["GuardAccount"] = value
 	gasMap["UnGuardAccount"] = value
+	gasMap["TrieLoadPerNode"] = value
+	gasMap["TrieStorePerNode"] = value
 
 	return gasMap
 }
@@ -304,6 +306,8 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetReturnDataSize"] = value
 	gasMap["CleanReturnData"] = value
 	gasMap["DeleteFromReturnData"] = value
+	gasMap["GetCodeMetadata"] = value
+	gasMap["IsBuiltinFunction"] = value
 
 	return gasMap
 }

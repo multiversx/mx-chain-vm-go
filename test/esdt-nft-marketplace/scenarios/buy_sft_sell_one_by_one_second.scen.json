@@ -8,11 +8,11 @@
         },
         {
             "step": "scCall",
-            "txId": "second-bidder-buy",
+            "id": "second-bidder-buy",
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "100",
+                "egldValue": "100",
                 "function": "buySft",
                 "arguments": [
                     "1",
@@ -23,6 +23,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -136,7 +137,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

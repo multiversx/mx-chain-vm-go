@@ -78,7 +78,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "-deploy-",
+            "id": "-deploy-",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "contractCode": "file:../output/delegation.wasm",
@@ -102,7 +102,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-setStakePerNode-",
+            "id": "-setStakePerNode-",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -123,7 +123,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -142,7 +142,7 @@
         },
         {
             "step": "scCall",
-            "txId": "enable-unstake",
+            "id": "enable-unstake",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -161,7 +161,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "id": "2",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -184,7 +184,7 @@
         },
         {
             "step": "transfer",
-            "txId": "3",
+            "id": "3",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
@@ -193,7 +193,7 @@
         },
         {
             "step": "scCall",
-            "txId": "4",
+            "id": "4",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -208,7 +208,7 @@
         },
         {
             "step": "transfer",
-            "txId": "5",
+            "id": "5",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "''endless_sack_of_erd___________s1",
@@ -217,7 +217,7 @@
         },
         {
             "step": "scCall",
-            "txId": "6",
+            "id": "6",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -240,7 +240,7 @@
         },
         {
             "step": "scCall",
-            "txId": "7",
+            "id": "7",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -254,7 +254,7 @@
         },
         {
             "step": "scCall",
-            "txId": "8",
+            "id": "8",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -277,7 +277,7 @@
         },
         {
             "step": "scCall",
-            "txId": "9",
+            "id": "9",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -300,7 +300,7 @@
         },
         {
             "step": "scCall",
-            "txId": "10",
+            "id": "10",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -324,7 +324,7 @@
         },
         {
             "step": "transfer",
-            "txId": "11",
+            "id": "11",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     3               s1",
@@ -333,7 +333,7 @@
         },
         {
             "step": "scCall",
-            "txId": "12",
+            "id": "12",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -353,7 +353,7 @@
         },
         {
             "step": "scCall",
-            "txId": "13",
+            "id": "13",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -375,7 +375,7 @@
         },
         {
             "step": "scCall",
-            "txId": "14",
+            "id": "14",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -389,7 +389,7 @@
         },
         {
             "step": "scCall",
-            "txId": "15",
+            "id": "15",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -411,7 +411,7 @@
         },
         {
             "step": "transfer",
-            "txId": "16",
+            "id": "16",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     2               s1",
@@ -420,7 +420,7 @@
         },
         {
             "step": "scCall",
-            "txId": "17",
+            "id": "17",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -440,7 +440,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "18",
+            "id": "18",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "12642127"
@@ -448,7 +448,7 @@
         },
         {
             "step": "scCall",
-            "txId": "19",
+            "id": "19",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -462,7 +462,7 @@
         },
         {
             "step": "transfer",
-            "txId": "20",
+            "id": "20",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "''withdraw_target_______________s1",
@@ -471,7 +471,7 @@
         },
         {
             "step": "scCall",
-            "txId": "21",
+            "id": "21",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -494,7 +494,7 @@
         },
         {
             "step": "scCall",
-            "txId": "22",
+            "id": "22",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -508,7 +508,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "23",
+            "id": "23",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "627846195"
@@ -516,7 +516,7 @@
         },
         {
             "step": "scCall",
-            "txId": "24",
+            "id": "24",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -539,7 +539,7 @@
         },
         {
             "step": "scCall",
-            "txId": "25",
+            "id": "25",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -558,7 +558,7 @@
         },
         {
             "step": "scCall",
-            "txId": "26",
+            "id": "26",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -581,7 +581,7 @@
         },
         {
             "step": "transfer",
-            "txId": "27",
+            "id": "27",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
@@ -590,7 +590,7 @@
         },
         {
             "step": "scCall",
-            "txId": "28",
+            "id": "28",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -610,7 +610,7 @@
         },
         {
             "step": "scCall",
-            "txId": "29",
+            "id": "29",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -633,7 +633,7 @@
         },
         {
             "step": "scCall",
-            "txId": "30",
+            "id": "30",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -652,7 +652,7 @@
         },
         {
             "step": "scCall",
-            "txId": "31",
+            "id": "31",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -675,7 +675,7 @@
         },
         {
             "step": "scCall",
-            "txId": "32",
+            "id": "32",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -698,7 +698,7 @@
         },
         {
             "step": "scCall",
-            "txId": "33",
+            "id": "33",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -720,7 +720,7 @@
         },
         {
             "step": "transfer",
-            "txId": "34",
+            "id": "34",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
@@ -729,7 +729,7 @@
         },
         {
             "step": "scCall",
-            "txId": "35",
+            "id": "35",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -744,7 +744,7 @@
         },
         {
             "step": "transfer",
-            "txId": "36",
+            "id": "36",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "''endless_sack_of_erd___________s1",
@@ -753,7 +753,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "37",
+            "id": "37",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "838671303"
@@ -761,7 +761,7 @@
         },
         {
             "step": "scCall",
-            "txId": "38",
+            "id": "38",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -785,7 +785,7 @@
         },
         {
             "step": "transfer",
-            "txId": "39",
+            "id": "39",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
@@ -794,7 +794,7 @@
         },
         {
             "step": "scCall",
-            "txId": "40",
+            "id": "40",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -814,7 +814,7 @@
         },
         {
             "step": "scCall",
-            "txId": "41",
+            "id": "41",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -837,7 +837,7 @@
         },
         {
             "step": "scCall",
-            "txId": "42",
+            "id": "42",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -856,7 +856,7 @@
         },
         {
             "step": "scCall",
-            "txId": "43",
+            "id": "43",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -879,7 +879,7 @@
         },
         {
             "step": "scCall",
-            "txId": "44",
+            "id": "44",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -902,7 +902,7 @@
         },
         {
             "step": "scCall",
-            "txId": "45",
+            "id": "45",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -925,7 +925,7 @@
         },
         {
             "step": "scCall",
-            "txId": "46",
+            "id": "46",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -944,7 +944,7 @@
         },
         {
             "step": "scCall",
-            "txId": "47",
+            "id": "47",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -967,7 +967,7 @@
         },
         {
             "step": "scCall",
-            "txId": "48",
+            "id": "48",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -989,7 +989,7 @@
         },
         {
             "step": "transfer",
-            "txId": "49",
+            "id": "49",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
@@ -998,7 +998,7 @@
         },
         {
             "step": "scCall",
-            "txId": "50",
+            "id": "50",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -1018,7 +1018,7 @@
         },
         {
             "step": "scCall",
-            "txId": "51",
+            "id": "51",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1041,7 +1041,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "52",
+            "id": "52",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "87632960"
@@ -1049,7 +1049,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "53",
+            "id": "53",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "180236611"
@@ -1057,7 +1057,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "54",
+            "id": "54",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "757891758"
@@ -1065,7 +1065,7 @@
         },
         {
             "step": "transfer",
-            "txId": "55",
+            "id": "55",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
@@ -1074,7 +1074,7 @@
         },
         {
             "step": "scCall",
-            "txId": "56",
+            "id": "56",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1094,7 +1094,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "57",
+            "id": "57",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "89533436"
@@ -1102,7 +1102,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "58",
+            "id": "58",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "385811304"
@@ -1110,7 +1110,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "59",
+            "id": "59",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "327899858"
@@ -1118,7 +1118,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "60",
+            "id": "60",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "384963639"
@@ -1126,7 +1126,7 @@
         },
         {
             "step": "scCall",
-            "txId": "61",
+            "id": "61",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1148,7 +1148,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "62",
+            "id": "62",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "491574005"
@@ -1156,7 +1156,7 @@
         },
         {
             "step": "scCall",
-            "txId": "63",
+            "id": "63",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1170,7 +1170,7 @@
         },
         {
             "step": "scCall",
-            "txId": "64",
+            "id": "64",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1184,7 +1184,7 @@
         },
         {
             "step": "scCall",
-            "txId": "65",
+            "id": "65",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1207,7 +1207,7 @@
         },
         {
             "step": "scCall",
-            "txId": "66",
+            "id": "66",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1226,7 +1226,7 @@
         },
         {
             "step": "scCall",
-            "txId": "67",
+            "id": "67",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1249,7 +1249,7 @@
         },
         {
             "step": "scCall",
-            "txId": "68",
+            "id": "68",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -1272,7 +1272,7 @@
         },
         {
             "step": "scCall",
-            "txId": "69",
+            "id": "69",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -1291,7 +1291,7 @@
         },
         {
             "step": "scCall",
-            "txId": "70",
+            "id": "70",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -1314,7 +1314,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "71",
+            "id": "71",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "376309784"
@@ -1322,7 +1322,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "72",
+            "id": "72",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "471328750"
@@ -1330,7 +1330,7 @@
         },
         {
             "step": "scCall",
-            "txId": "73",
+            "id": "73",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -1344,7 +1344,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "74",
+            "id": "74",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "781329581"
@@ -1352,7 +1352,7 @@
         },
         {
             "step": "scCall",
-            "txId": "75",
+            "id": "75",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1366,7 +1366,7 @@
         },
         {
             "step": "scCall",
-            "txId": "76",
+            "id": "76",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1389,7 +1389,7 @@
         },
         {
             "step": "scCall",
-            "txId": "77",
+            "id": "77",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1408,7 +1408,7 @@
         },
         {
             "step": "scCall",
-            "txId": "78",
+            "id": "78",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1431,7 +1431,7 @@
         },
         {
             "step": "transfer",
-            "txId": "79",
+            "id": "79",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     3               s1",
@@ -1440,7 +1440,7 @@
         },
         {
             "step": "scCall",
-            "txId": "80",
+            "id": "80",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1460,7 +1460,7 @@
         },
         {
             "step": "scCall",
-            "txId": "81",
+            "id": "81",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1482,7 +1482,7 @@
         },
         {
             "step": "transfer",
-            "txId": "82",
+            "id": "82",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     2               s1",
@@ -1491,7 +1491,7 @@
         },
         {
             "step": "scCall",
-            "txId": "83",
+            "id": "83",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -1511,7 +1511,7 @@
         },
         {
             "step": "scCall",
-            "txId": "84",
+            "id": "84",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1525,7 +1525,7 @@
         },
         {
             "step": "scCall",
-            "txId": "85",
+            "id": "85",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1544,7 +1544,7 @@
         },
         {
             "step": "transfer",
-            "txId": "86",
+            "id": "86",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
@@ -1553,7 +1553,7 @@
         },
         {
             "step": "scCall",
-            "txId": "87",
+            "id": "87",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -1573,7 +1573,7 @@
         },
         {
             "step": "transfer",
-            "txId": "88",
+            "id": "88",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
@@ -1582,7 +1582,7 @@
         },
         {
             "step": "scCall",
-            "txId": "89",
+            "id": "89",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -1602,7 +1602,7 @@
         },
         {
             "step": "scCall",
-            "txId": "90",
+            "id": "90",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -1625,7 +1625,7 @@
         },
         {
             "step": "scCall",
-            "txId": "91",
+            "id": "91",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -1644,7 +1644,7 @@
         },
         {
             "step": "scCall",
-            "txId": "92",
+            "id": "92",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -1667,7 +1667,7 @@
         },
         {
             "step": "scCall",
-            "txId": "93",
+            "id": "93",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1681,7 +1681,7 @@
         },
         {
             "step": "transfer",
-            "txId": "94",
+            "id": "94",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     3               s1",
@@ -1690,7 +1690,7 @@
         },
         {
             "step": "scCall",
-            "txId": "95",
+            "id": "95",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -1710,7 +1710,7 @@
         },
         {
             "step": "scCall",
-            "txId": "96",
+            "id": "96",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1724,7 +1724,7 @@
         },
         {
             "step": "scCall",
-            "txId": "97",
+            "id": "97",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -1747,7 +1747,7 @@
         },
         {
             "step": "transfer",
-            "txId": "98",
+            "id": "98",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
@@ -1756,7 +1756,7 @@
         },
         {
             "step": "scCall",
-            "txId": "99",
+            "id": "99",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1776,7 +1776,7 @@
         },
         {
             "step": "scCall",
-            "txId": "100",
+            "id": "100",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1799,7 +1799,7 @@
         },
         {
             "step": "scCall",
-            "txId": "101",
+            "id": "101",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1818,7 +1818,7 @@
         },
         {
             "step": "scCall",
-            "txId": "102",
+            "id": "102",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1841,7 +1841,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "103",
+            "id": "103",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "474001198"
@@ -1849,7 +1849,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "104",
+            "id": "104",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "567220707"
@@ -1857,7 +1857,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "105",
+            "id": "105",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "612413903"
@@ -1865,7 +1865,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "106",
+            "id": "106",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "597557567"
@@ -1873,7 +1873,7 @@
         },
         {
             "step": "scCall",
-            "txId": "107",
+            "id": "107",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1887,7 +1887,7 @@
         },
         {
             "step": "scCall",
-            "txId": "108",
+            "id": "108",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1910,7 +1910,7 @@
         },
         {
             "step": "scCall",
-            "txId": "109",
+            "id": "109",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1929,7 +1929,7 @@
         },
         {
             "step": "scCall",
-            "txId": "110",
+            "id": "110",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -1952,7 +1952,7 @@
         },
         {
             "step": "transfer",
-            "txId": "111",
+            "id": "111",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
@@ -1961,7 +1961,7 @@
         },
         {
             "step": "scCall",
-            "txId": "112",
+            "id": "112",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -1981,7 +1981,7 @@
         },
         {
             "step": "scCall",
-            "txId": "113",
+            "id": "113",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2004,7 +2004,7 @@
         },
         {
             "step": "scCall",
-            "txId": "114",
+            "id": "114",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2023,7 +2023,7 @@
         },
         {
             "step": "scCall",
-            "txId": "115",
+            "id": "115",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2046,7 +2046,7 @@
         },
         {
             "step": "scCall",
-            "txId": "116",
+            "id": "116",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -2060,7 +2060,7 @@
         },
         {
             "step": "scCall",
-            "txId": "117",
+            "id": "117",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2074,7 +2074,7 @@
         },
         {
             "step": "scCall",
-            "txId": "118",
+            "id": "118",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2097,7 +2097,7 @@
         },
         {
             "step": "scCall",
-            "txId": "119",
+            "id": "119",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2116,7 +2116,7 @@
         },
         {
             "step": "scCall",
-            "txId": "120",
+            "id": "120",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2139,7 +2139,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "121",
+            "id": "121",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "275134738"
@@ -2147,7 +2147,7 @@
         },
         {
             "step": "scCall",
-            "txId": "122",
+            "id": "122",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2170,7 +2170,7 @@
         },
         {
             "step": "scCall",
-            "txId": "123",
+            "id": "123",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2189,7 +2189,7 @@
         },
         {
             "step": "scCall",
-            "txId": "124",
+            "id": "124",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2212,7 +2212,7 @@
         },
         {
             "step": "scCall",
-            "txId": "125",
+            "id": "125",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2226,7 +2226,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "126",
+            "id": "126",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "123486878"
@@ -2234,7 +2234,7 @@
         },
         {
             "step": "scCall",
-            "txId": "127",
+            "id": "127",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2248,7 +2248,7 @@
         },
         {
             "step": "scCall",
-            "txId": "128",
+            "id": "128",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2262,7 +2262,7 @@
         },
         {
             "step": "scCall",
-            "txId": "129",
+            "id": "129",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2285,7 +2285,7 @@
         },
         {
             "step": "scCall",
-            "txId": "130",
+            "id": "130",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2304,7 +2304,7 @@
         },
         {
             "step": "scCall",
-            "txId": "131",
+            "id": "131",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2327,7 +2327,7 @@
         },
         {
             "step": "transfer",
-            "txId": "132",
+            "id": "132",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
@@ -2336,7 +2336,7 @@
         },
         {
             "step": "scCall",
-            "txId": "133",
+            "id": "133",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2356,7 +2356,7 @@
         },
         {
             "step": "scCall",
-            "txId": "134",
+            "id": "134",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -2370,7 +2370,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "135",
+            "id": "135",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "364678386"
@@ -2378,7 +2378,7 @@
         },
         {
             "step": "scCall",
-            "txId": "136",
+            "id": "136",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -2392,7 +2392,7 @@
         },
         {
             "step": "scCall",
-            "txId": "137",
+            "id": "137",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2415,7 +2415,7 @@
         },
         {
             "step": "scCall",
-            "txId": "138",
+            "id": "138",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2434,7 +2434,7 @@
         },
         {
             "step": "scCall",
-            "txId": "139",
+            "id": "139",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2457,7 +2457,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "140",
+            "id": "140",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "235827408"
@@ -2465,7 +2465,7 @@
         },
         {
             "step": "transfer",
-            "txId": "141",
+            "id": "141",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
@@ -2474,7 +2474,7 @@
         },
         {
             "step": "scCall",
-            "txId": "142",
+            "id": "142",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2494,7 +2494,7 @@
         },
         {
             "step": "scCall",
-            "txId": "143",
+            "id": "143",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2518,7 +2518,7 @@
         },
         {
             "step": "transfer",
-            "txId": "144",
+            "id": "144",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
@@ -2527,7 +2527,7 @@
         },
         {
             "step": "scCall",
-            "txId": "145",
+            "id": "145",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2542,7 +2542,7 @@
         },
         {
             "step": "transfer",
-            "txId": "146",
+            "id": "146",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "''endless_sack_of_erd___________s1",
@@ -2551,7 +2551,7 @@
         },
         {
             "step": "transfer",
-            "txId": "147",
+            "id": "147",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     2               s1",
@@ -2560,7 +2560,7 @@
         },
         {
             "step": "scCall",
-            "txId": "148",
+            "id": "148",
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
@@ -2580,7 +2580,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "149",
+            "id": "149",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "312596408"
@@ -2588,7 +2588,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "150",
+            "id": "150",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "930538118"
@@ -2596,7 +2596,7 @@
         },
         {
             "step": "scCall",
-            "txId": "151",
+            "id": "151",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2610,7 +2610,7 @@
         },
         {
             "step": "scCall",
-            "txId": "152",
+            "id": "152",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2624,7 +2624,7 @@
         },
         {
             "step": "scCall",
-            "txId": "153",
+            "id": "153",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2638,7 +2638,7 @@
         },
         {
             "step": "transfer",
-            "txId": "154",
+            "id": "154",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
@@ -2647,7 +2647,7 @@
         },
         {
             "step": "scCall",
-            "txId": "155",
+            "id": "155",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2667,7 +2667,7 @@
         },
         {
             "step": "scCall",
-            "txId": "156",
+            "id": "156",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2689,7 +2689,7 @@
         },
         {
             "step": "scCall",
-            "txId": "157",
+            "id": "157",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2712,7 +2712,7 @@
         },
         {
             "step": "scCall",
-            "txId": "158",
+            "id": "158",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2731,7 +2731,7 @@
         },
         {
             "step": "scCall",
-            "txId": "159",
+            "id": "159",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2754,7 +2754,7 @@
         },
         {
             "step": "scCall",
-            "txId": "160",
+            "id": "160",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2776,7 +2776,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "161",
+            "id": "161",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "706675421"
@@ -2784,7 +2784,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "162",
+            "id": "162",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "262170966"
@@ -2792,7 +2792,7 @@
         },
         {
             "step": "scCall",
-            "txId": "163",
+            "id": "163",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2806,7 +2806,7 @@
         },
         {
             "step": "transfer",
-            "txId": "164",
+            "id": "164",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
@@ -2815,7 +2815,7 @@
         },
         {
             "step": "scCall",
-            "txId": "165",
+            "id": "165",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2830,7 +2830,7 @@
         },
         {
             "step": "transfer",
-            "txId": "166",
+            "id": "166",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "''endless_sack_of_erd___________s1",
@@ -2839,7 +2839,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "167",
+            "id": "167",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "114902944"
@@ -2847,7 +2847,7 @@
         },
         {
             "step": "transfer",
-            "txId": "168",
+            "id": "168",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
@@ -2856,7 +2856,7 @@
         },
         {
             "step": "scCall",
-            "txId": "169",
+            "id": "169",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2871,7 +2871,7 @@
         },
         {
             "step": "transfer",
-            "txId": "170",
+            "id": "170",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "''endless_sack_of_erd___________s1",
@@ -2880,7 +2880,7 @@
         },
         {
             "step": "scCall",
-            "txId": "171",
+            "id": "171",
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
@@ -2894,7 +2894,7 @@
         },
         {
             "step": "validatorReward",
-            "txId": "172",
+            "id": "172",
             "tx": {
                 "to": "sc:fuzz-delegation",
                 "egldValue": "237729454"
@@ -2902,7 +2902,7 @@
         },
         {
             "step": "scCall",
-            "txId": "173",
+            "id": "173",
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
@@ -2916,7 +2916,7 @@
         },
         {
             "step": "scCall",
-            "txId": "174",
+            "id": "174",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
@@ -2935,7 +2935,7 @@
         },
         {
             "step": "scCall",
-            "txId": "175",
+            "id": "175",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2958,7 +2958,7 @@
         },
         {
             "step": "scCall",
-            "txId": "176",
+            "id": "176",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -2977,7 +2977,7 @@
         },
         {
             "step": "scCall",
-            "txId": "177",
+            "id": "177",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
@@ -3000,7 +3000,7 @@
         },
         {
             "step": "transfer",
-            "txId": "178",
+            "id": "178",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
@@ -3009,7 +3009,7 @@
         },
         {
             "step": "scCall",
-            "txId": "179",
+            "id": "179",
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",

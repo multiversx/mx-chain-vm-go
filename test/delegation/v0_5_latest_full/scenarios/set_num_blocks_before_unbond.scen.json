@@ -12,7 +12,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-getNumBlocksBeforeUnBond-",
+            "id": "-getNumBlocksBeforeUnBond-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -33,7 +33,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-setNumBlocksBeforeUnBond-",
+            "id": "-setNumBlocksBeforeUnBond-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -54,7 +54,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-getNumBlocksBeforeUnBond-",
+            "id": "-getNumBlocksBeforeUnBond-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

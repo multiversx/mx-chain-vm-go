@@ -24,7 +24,7 @@
         },
         {
             "step": "scCall",
-            "txId": "isBootstrapMode?",
+            "id": "isBootstrapMode?",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -45,7 +45,7 @@
         },
         {
             "step": "scCall",
-            "txId": "continue global operation with no operation in progress",
+            "id": "continue global operation with no operation in progress",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -66,7 +66,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -87,7 +87,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-total-delegation-cap-",
+            "id": "-get-total-delegation-cap-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -108,7 +108,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-out-of-gas-1",
+            "id": "-set-service-fee-out-of-gas-1",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -131,7 +131,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-total-delegation-cap-",
+            "id": "-set-total-delegation-cap-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -153,7 +153,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-2",
+            "id": "-set-service-fee-2",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -175,7 +175,7 @@
         },
         {
             "step": "scCall",
-            "txId": "continue-out-of-gas",
+            "id": "continue-out-of-gas",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -200,7 +200,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -221,7 +221,7 @@
         },
         {
             "step": "scCall",
-            "txId": "continue",
+            "id": "continue",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -242,7 +242,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -263,7 +263,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-total-delegation-cap-",
+            "id": "-get-total-delegation-cap-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -284,7 +284,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-total-delegation-cap-",
+            "id": "-set-total-delegation-cap-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -307,7 +307,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-total-delegation-cap-",
+            "id": "-get-total-delegation-cap-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

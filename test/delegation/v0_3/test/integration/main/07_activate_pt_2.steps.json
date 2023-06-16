@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "setAnyoneCanActivate",
+            "id": "setAnyoneCanActivate",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setAnyoneCanActivate",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -23,11 +22,10 @@
         },
         {
             "step": "scCall",
-            "txId": "withdraw some stake to not affect the flow",
+            "id": "withdraw some stake to not affect the flow",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1,000,000,000"
@@ -65,12 +63,12 @@
         },
         {
             "step": "scCall",
-            "txId": "stake and activate",
+            "id": "stake and activate",
             "comment": "BUG WARNING! Not all events get saved, stake event missing!!!",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "2,000,000",
@@ -114,11 +112,10 @@
         },
         {
             "step": "scCall",
-            "txId": "activate-2-auto does nothing",
+            "id": "activate-2-auto does nothing",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "stakeAllAvailable",
                 "arguments": [],
                 "gasLimit": "100,000,000",

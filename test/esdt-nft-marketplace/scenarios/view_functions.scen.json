@@ -8,7 +8,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "doesAuctionExist",
+            "id": "doesAuctionExist",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "doesAuctionExist",
@@ -26,7 +26,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "doesAuctionExist",
+            "id": "doesAuctionExist",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "doesAuctionExist",
@@ -44,7 +44,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getAuctionedToken",
+            "id": "getAuctionedToken",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getAuctionedToken",
@@ -64,7 +64,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getAuctionType",
+            "id": "getAuctionType",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getAuctionType",
@@ -82,7 +82,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getPaymentTokenForAuction",
+            "id": "getPaymentTokenForAuction",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getPaymentTokenForAuction",
@@ -101,7 +101,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getMinMaxBid",
+            "id": "getMinMaxBid",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getMinMaxBid",
@@ -120,7 +120,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getDeadline",
+            "id": "getDeadline",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getDeadline",
@@ -138,7 +138,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getOriginalOwner",
+            "id": "getOriginalOwner",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getOriginalOwner",
@@ -156,7 +156,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getCurrentWinningBid",
+            "id": "getCurrentWinningBid",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getCurrentWinningBid",
@@ -174,7 +174,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getCurrentWinner",
+            "id": "getCurrentWinner",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getCurrentWinner",
@@ -192,7 +192,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "getFullAuctionData",
+            "id": "getFullAuctionData",
             "tx": {
                 "to": "sc:marketplace",
                 "function": "getFullAuctionData",

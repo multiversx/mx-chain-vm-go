@@ -3,12 +3,11 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "remove extra node, so genesis init can happen",
+            "id": "remove extra node, so genesis init can happen",
             "comment": "activate genesis always activates ALL nodes, so we make sure they are not too many",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "removeNodes",
                 "arguments": [
                     "''bls_key_5_______________________________________________________________________________________"
@@ -26,11 +25,10 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 2 unstake (adjust for genesis)",
+            "id": "delegator 2 unstake (adjust for genesis)",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1,000,000,000"

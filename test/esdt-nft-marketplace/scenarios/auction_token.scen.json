@@ -15,17 +15,18 @@
         },
         {
             "step": "scCall",
-            "txId": "auctionToken",
+            "id": "auctionToken",
             "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:NFT-123456",
-                    "nonce": "1",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:NFT-123456",
+                        "nonce": "1",
+                        "value": "1"
+                    }
+                ],
                 "function": "auctionToken",
                 "arguments": [
                     "100",
@@ -37,11 +38,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "status": "0",
-                "message": "*",
                 "out": [
                     "1"
                 ],
+                "status": "0",
+                "message": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -53,9 +54,7 @@
                     "nonce": "1",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-123456": {
-                            "instances": []
-                        },
+                        "str:NFT-123456": {},
                         "str:SFT-123456": {
                             "instances": [
                                 {
@@ -105,7 +104,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

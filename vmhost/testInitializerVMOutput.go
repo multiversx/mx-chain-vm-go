@@ -44,6 +44,7 @@ func AddNewOutputAccountWithSender(vmOutput *vmcommon.VMOutput, address []byte, 
 	if data != nil {
 		account.OutputTransfers = []vmcommon.OutputTransfer{
 			{
+				Index:         1,
 				Data:          data,
 				Value:         big.NewInt(balanceDelta),
 				SenderAddress: senderAddress,

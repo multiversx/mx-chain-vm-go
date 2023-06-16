@@ -349,6 +349,85 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGasUsed_ESDTTransfer_TwoChaninedCalls(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = 20000
+	testConfig.GasProvidedToChild = 5000
+	testConfig.ESDTTokensToTransfer = 5
+
+	firstExpectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	firstExpectedTransferFromParentToChild.
+		TransferESDT(
+			string(test.ESDTTestTokenName),
+			int64(testConfig.ESDTTokensToTransfer)).
+		Bytes([]byte("execESDTTransferAndCall")).
+		Bytes(test.NephewAddress).
+		Bytes([]byte("ESDTTransfer")).
+		Bytes([]byte("wasteGas"))
+
+	secondExpectedTransferFromParentToChild := txDataBuilder.NewBuilder()
+	secondExpectedTransferFromParentToChild.
+		TransferESDT(
+			string(test.ESDTTestTokenName),
+			int64(testConfig.ESDTTokensToTransfer)).
+		Bytes([]byte("wasteGas"))
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
+			test.CreateMockContract(test.NephewAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.WasteGasChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execESDTTransferAndCall").
+			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("execESDTTransferAndCall"),
+				test.NephewAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				Transfers(
+					test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
+						WithData(firstExpectedTransferFromParentToChild.ToBytes()).
+						WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ChildAddress, test.NephewAddress, 2).
+						WithData(secondExpectedTransferFromParentToChild.ToBytes()).
+						WithValue(big.NewInt(0)),
+				)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, uint64(0), childESDTBalance)
+
+			nephewAccount := world.AcctMap.GetAccount(test.NephewAddress)
+			nephewESDTBalance, _ := nephewAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, testConfig.ESDTTokensToTransfer, nephewESDTBalance)
+		})
+	assert.Nil(t, err)
+}
+
 func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
@@ -535,10 +614,10 @@ func testGasUsedAsyncCallCrossShardInitCall(t *testing.T, isLegacy bool) {
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 			WithData([]byte("hello")).
 			WithValue(big.NewInt(testConfig.TransferToThirdParty)),
-		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 2).
 			WithData(asyncChildArgs).
 			WithGasLimit(gasForAsyncCall).
 			WithGasLocked(gasLocked).
@@ -624,10 +703,10 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 				GasRemaining(gasForAsyncCall-testConfig.GasUsedByChild).
 				ReturnData(childAsyncReturnData...).
 				Transfers(
-					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte(contracts.AsyncChildData)).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
-					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress, 2).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
 				)
@@ -677,7 +756,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 				GasRemaining(gasForAsyncCall - testConfig.GasUsedByChild).
 				ReturnData().
 				Transfers(
-					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress, 1).
 						WithGasLimit(0).
 						WithCallType(vm.DirectCall).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
@@ -897,7 +976,7 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("sendMessage"), vmhost.One.Bytes()).
+			WithArguments(test.UserAddress, []byte("sendMessage"), []byte{2}, vmhost.One.Bytes()).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
@@ -911,9 +990,13 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 				GasRemaining(0).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.UserAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.UserAddress, 1).
 						WithData([]byte("message")).
 						WithGasLimit(480).
+						WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ParentAddress, test.UserAddress, 2).
+						WithData([]byte("message")).
+						WithGasLimit(0).
 						WithValue(big.NewInt(0)),
 				)
 		})
@@ -1023,10 +1106,10 @@ func testGasUsedAsyncCallChildFails(t *testing.T, isLegacy bool) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerCallback).WithValue(test.UserAddress),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.VaultAddress, 2).
 						WithData([]byte("child error")).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 				)
@@ -1105,13 +1188,13 @@ func testGasUsedAsyncCallCallBackFails(t *testing.T, isLegacy bool) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.OriginalCallerChild).WithValue(test.UserAddress),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
-					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress, 2).
 						WithData([]byte(" there")).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
-					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress, 3).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
 				)
@@ -1229,7 +1312,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallSuccess(t *testing.T, isLegacy b
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
@@ -1314,7 +1397,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallChildFails(t *testing.T, isLegac
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
@@ -1403,7 +1486,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallCallbackFails(t *testing.T, isLe
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
@@ -1482,7 +1565,7 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
@@ -1491,7 +1574,7 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 
 	for transfer := 0; transfer < numOfTransfersInChild; transfer++ {
 		expectedTransfers = append(expectedTransfers,
-			test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+			test.CreateTransferEntry(test.ChildAddress, test.ParentAddress, uint32(2+transfer)).
 				WithData(expectedTransferFromChildToParent.ToBytes()).
 				WithGasLimit(0).
 				WithGasLocked(0).
@@ -1764,7 +1847,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedLogs := make([]vmcommon.LogEntry, 0)
 	for transfer := 0; transfer < noOfTransfers; transfer++ {
-		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer)).
+		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer), uint32(transfer+1)).
 			WithData(big.NewInt(int64(transfer)).Bytes()).
 			WithGasLimit(testConfig.GasProvidedToChild).
 			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
@@ -1961,7 +2044,7 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("execOnDestCtx").
-			WithArguments(childAddress, []byte("wasteGas"), big.NewInt(1).Bytes()).
+			WithArguments(childAddress, []byte("wasteGas"), big.NewInt(2).Bytes()).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
@@ -1969,7 +2052,10 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 		AndAssertResultsWithWorld(world, true, nil, nil, func(startNode *testcommon.TestCallNode, world *worldmock.MockWorld, verify *testcommon.VMOutputVerifier, expectedErrorsForRound []string) {
 			verify.Ok().
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
+						WithData([]byte("test")).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 2).
 						WithData([]byte("test")).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 				)
@@ -2055,6 +2141,7 @@ func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldm
 			vmOutput := test.MakeEmptyVMOutput()
 			test.AddNewOutputTransfer(
 				vmOutput,
+				1,
 				nil,
 				acntSnd.AddressBytes(),
 				mockClaimBuiltin.AmountToGive,
@@ -2079,14 +2166,23 @@ func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldm
 				return vmOutput, nil
 			}
 
-			account := test.AddNewOutputTransfer(
-				vmOutput,
-				acntSnd.AddressBytes(),
-				vmInput.RecipientAddr,
-				0,
-				[]byte("message"),
-			)
-			account.OutputTransfers[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			numberOfTransfers := 1
+			args := vmInput.Arguments
+			if len(args) > 0 {
+				numberOfTransfers = int(big.NewInt(0).SetBytes(args[0]).Int64())
+			}
+
+			for transfer := 1; transfer <= numberOfTransfers; transfer++ {
+				account := test.AddNewOutputTransfer(
+					vmOutput,
+					uint32(transfer),
+					acntSnd.AddressBytes(),
+					vmInput.RecipientAddr,
+					0,
+					[]byte("message"),
+				)
+				account.OutputTransfers[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			}
 			vmOutput.GasRemaining = 0
 			return vmOutput, nil
 		},

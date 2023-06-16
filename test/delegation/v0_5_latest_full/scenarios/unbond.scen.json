@@ -28,7 +28,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond-before",
+            "id": "unBond-before",
             "comment": "unbond before unbonding period over should not unbond",
             "tx": {
                 "from": "address:delegator1",
@@ -50,7 +50,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-1",
+            "id": "check-stake-by-type-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -96,7 +96,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond-after",
+            "id": "unBond-after",
             "comment": "unbond after unbonding period over should work",
             "tx": {
                 "from": "address:delegator1",
@@ -118,7 +118,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-1",
+            "id": "check-stake-by-type-1",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
