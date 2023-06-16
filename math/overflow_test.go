@@ -20,7 +20,7 @@ func TestAddUint64WithErr(t *testing.T) {
 	c := uint64(3)
 	sum, err = AddUint64WithErr(b, c)
 	require.Equal(t, ErrAdditionOverflow, err)
-	require.Equal(t, b+c, sum)
+	require.Equal(t, uint64(math.MaxUint64), sum)
 
 	d := uint64(0)
 	sum, err = AddUint64WithErr(b, d)
@@ -53,7 +53,7 @@ func TestAddInt64WithErr(t *testing.T) {
 	c := int64(3)
 	sum, err = AddInt64WithErr(b, c)
 	require.Equal(t, ErrAdditionOverflow, err)
-	require.Equal(t, b+c, sum)
+	require.Equal(t, int64(math.MaxInt64), sum)
 
 	d := int64(0)
 	sum, err = AddInt64WithErr(b, d)
@@ -98,7 +98,7 @@ func TestAddInt32WithErr(t *testing.T) {
 	c := int32(3)
 	sum, err = AddInt32WithErr(b, c)
 	require.Equal(t, ErrAdditionOverflow, err)
-	require.Equal(t, b+c, sum)
+	require.Equal(t, int32(math.MaxInt32), sum)
 
 	d := int32(0)
 	sum, err = AddInt32WithErr(b, d)
@@ -179,7 +179,7 @@ func TestMulInt64WithErr(t *testing.T) {
 	b = int64(3)
 	product, err = MulInt64WithErr(a, b)
 	require.NotNil(t, err)
-	require.Equal(t, int64(0), product)
+	require.Equal(t, int64(math.MaxInt64), product)
 }
 
 func TestMulInt64(t *testing.T) {
@@ -216,7 +216,7 @@ func TestMulUint64WithErr(t *testing.T) {
 	b = uint64(3)
 	product, err = MulUint64WithErr(a, b)
 	require.NotNil(t, err)
-	require.Equal(t, uint64(0), product)
+	require.Equal(t, uint64(math.MaxUint64), product)
 }
 
 func TestMulUint64(t *testing.T) {
