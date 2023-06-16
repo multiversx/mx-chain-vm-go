@@ -532,6 +532,9 @@ func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients conf
 	quadraticTerm, err := math.MulInt64WithErr(
 		coefficients.Quadratic,
 		squaredTrieDepth)
+	if err != nil {
+		return 0, err
+	}
 
 	linearTerm, err := math.MulInt64WithErr(
 		coefficients.Linear,
