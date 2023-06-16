@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var MaxEvenInt64 = int64(math.MaxInt64 - 1)
-var MaxEvenUint64 = uint64(math.MaxUint64 - 1)
+var maxEvenInt64 = int64(math.MaxInt64 - 1)
+var maxEvenUint64 = uint64(math.MaxUint64 - 1)
 
 func TestAddUint64WithErr(t *testing.T) {
 	a := uint64(1)
@@ -163,19 +163,19 @@ func TestSubInt(t *testing.T) {
 }
 
 func TestMulInt64WithErr(t *testing.T) {
-	a := int64(MaxEvenInt64 / 2)
+	a := maxEvenInt64 / 2
 	b := int64(2)
 	product, err := MulInt64WithErr(a, b)
 	require.Nil(t, err)
-	require.Equal(t, MaxEvenInt64, product)
+	require.Equal(t, maxEvenInt64, product)
 
-	a = int64(MaxEvenInt64 / 2)
+	a = maxEvenInt64 / 2
 	b = int64(1)
 	product, err = MulInt64WithErr(a, b)
 	require.Nil(t, err)
 	require.Equal(t, a, product)
 
-	a = int64(MaxEvenInt64 / 2)
+	a = maxEvenInt64 / 2
 	b = int64(3)
 	product, err = MulInt64WithErr(a, b)
 	require.NotNil(t, err)
@@ -183,36 +183,36 @@ func TestMulInt64WithErr(t *testing.T) {
 }
 
 func TestMulInt64(t *testing.T) {
-	a := int64(MaxEvenInt64 / 2)
+	a := maxEvenInt64 / 2
 	b := int64(2)
 	product := MulInt64(a, b)
-	require.Equal(t, MaxEvenInt64, product)
+	require.Equal(t, maxEvenInt64, product)
 
-	a = int64(MaxEvenInt64 / 2)
+	a = maxEvenInt64 / 2
 	b = int64(1)
 	product = MulInt64(a, b)
 	require.Equal(t, a, product)
 
-	a = int64(MaxEvenInt64 / 2)
+	a = maxEvenInt64 / 2
 	b = int64(3)
 	product = MulInt64(a, b)
 	require.Equal(t, int64(math.MaxInt64), product)
 }
 
 func TestMulUint64WithErr(t *testing.T) {
-	a := uint64(MaxEvenUint64 / 2)
+	a := maxEvenUint64 / 2
 	b := uint64(2)
 	product, err := MulUint64WithErr(a, b)
 	require.Nil(t, err)
-	require.Equal(t, MaxEvenUint64, product)
+	require.Equal(t, maxEvenUint64, product)
 
-	a = uint64(MaxEvenUint64 / 2)
+	a = maxEvenUint64 / 2
 	b = uint64(1)
 	product, err = MulUint64WithErr(a, b)
 	require.Nil(t, err)
 	require.Equal(t, a, product)
 
-	a = uint64(MaxEvenUint64 / 2)
+	a = maxEvenUint64 / 2
 	b = uint64(3)
 	product, err = MulUint64WithErr(a, b)
 	require.NotNil(t, err)
@@ -220,17 +220,17 @@ func TestMulUint64WithErr(t *testing.T) {
 }
 
 func TestMulUint64(t *testing.T) {
-	a := uint64(MaxEvenUint64 / 2)
+	a := maxEvenUint64 / 2
 	b := uint64(2)
 	product := MulUint64(a, b)
-	require.Equal(t, MaxEvenUint64, product)
+	require.Equal(t, maxEvenUint64, product)
 
-	a = uint64(MaxEvenUint64 / 2)
+	a = maxEvenUint64 / 2
 	b = uint64(1)
 	product = MulUint64(a, b)
 	require.Equal(t, a, product)
 
-	a = uint64(MaxEvenUint64 / 2)
+	a = maxEvenUint64 / 2
 	b = uint64(3)
 	product = MulUint64(a, b)
 	require.Equal(t, uint64(math.MaxUint64), product)

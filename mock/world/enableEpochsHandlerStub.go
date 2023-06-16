@@ -273,6 +273,7 @@ func (stub *EnableEpochsHandlerStub) IsDynamicGasCostForDataTrieStorageLoadEnabl
 	return stub.IsDynamicGasCostForDataTrieStorageLoadEnabledField
 }
 
+// IsSetGuardianEnabled -
 func (stub *EnableEpochsHandlerStub) IsSetGuardianEnabled() bool {
 	return stub.IsSetGuardianEnabledField
 }
