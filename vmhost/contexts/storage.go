@@ -524,31 +524,16 @@ func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost
 }
 
 func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoadCostCoefficients, staticGasCost uint64) (uint64, error) {
-	squaredTrieDepth, err := math.MulInt64WithErr(trieDepth, trieDepth)
-	if err != nil {
-		return 0, err
-	}
+	overflowHandler := math.NewOverflowHandler()
 
-	quadraticTerm, err := math.MulInt64WithErr(
-		coefficients.Quadratic,
-		squaredTrieDepth)
-	if err != nil {
-		return 0, err
-	}
+	squaredTrieDepth := overflowHandler.MulInt64(trieDepth, trieDepth)                  // squaredTrieDepth = trieDepth * trieDepth
+	quadraticTerm := overflowHandler.MulInt64(coefficients.Quadratic, squaredTrieDepth) // quadraticTerm = coefficients.Quadratic * trieDepth * trieDepth
 
-	linearTerm, err := math.MulInt64WithErr(
-		coefficients.Linear,
-		trieDepth)
-	if err != nil {
-		return 0, err
-	}
+	linearTerm := overflowHandler.MulInt64(coefficients.Linear, trieDepth) // linearTerm = coefficients.Linear * trieDepth
 
-	firstSum, err := math.AddInt64WithErr(quadraticTerm, linearTerm)
-	if err != nil {
-		return 0, err
-	}
-
-	fx, err := math.AddInt64WithErr(firstSum, coefficients.Constant)
+	firstSum := overflowHandler.AddInt64(quadraticTerm, linearTerm) // firstSum = coefficients.Quadratic * trieDepth * trieDepth + coefficients.Linear * trieDepth
+	fx := overflowHandler.AddInt64(firstSum, coefficients.Constant) // fx = coefficients.Quadratic * trieDepth * trieDepth + coefficients.Linear * trieDepth + coefficients.Constant
+	err := overflowHandler.Error()
 	if err != nil {
 		return 0, err
 	}
