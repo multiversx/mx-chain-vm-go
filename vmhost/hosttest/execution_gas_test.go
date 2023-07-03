@@ -1464,7 +1464,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ThenExecuteOnDest(t *testing.
 
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
-		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
 			WithGasLimit(0).
 			WithGasLocked(0).
