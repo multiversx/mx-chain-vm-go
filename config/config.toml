@@ -55,6 +55,8 @@
     GetReturnDataSize = 10
     CleanReturnData = 10
     DeleteFromReturnData = 10
+    GetCodeMetadata = 10
+    IsBuiltinFunction = 10
 
 [EthAPICost]
     UseGas = 10

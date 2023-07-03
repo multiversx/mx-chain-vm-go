@@ -27,6 +27,7 @@ type OutputContextMock struct {
 	OutputAccountIsNew bool
 	Err                error
 	TransferResult     error
+	CrtTransferIndex   uint32
 }
 
 // AddToActiveState mocked method
@@ -205,4 +206,25 @@ func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOut
 // GetCurrentTotalUsedGas mocked method
 func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
 	return 0, false
+}
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextMock) NextOutputTransferIndex() uint32 {
+	o.CrtTransferIndex++
+	return o.CrtTransferIndex
+}
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextMock) GetCrtTransferIndex() uint32 {
+	return o.CrtTransferIndex
+}
+
+// NextOutputTransferIndex mocked method
+func (o *OutputContextMock) SetCrtTransferIndex(index uint32) {
+	o.CrtTransferIndex = index
+}
+
+// IsInterfaceNil mocked method
+func (o *OutputContextMock) IsInterfaceNil() bool {
+	return false
 }
