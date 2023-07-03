@@ -315,9 +315,9 @@ type TransferEntry struct {
 }
 
 // CreateTransferEntry creates the data for an output transfer assertion
-func CreateTransferEntry(senderAddress []byte, receiverAddress []byte) *TransferEntry {
+func CreateTransferEntry(senderAddress []byte, receiverAddress []byte, index uint32) *TransferEntry {
 	return &TransferEntry{
-		OutputTransfer: vmcommon.OutputTransfer{SenderAddress: senderAddress},
+		OutputTransfer: vmcommon.OutputTransfer{Index: index, SenderAddress: senderAddress},
 		address:        receiverAddress,
 	}
 }

@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"encoding/hex"
 	"math/big"
 
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
@@ -25,15 +26,19 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, config i
 		arguments := host.Runtime().Arguments()
 		destination := arguments[0]
 		function := arguments[1]
+		data := string(function)
+		if len(arguments) > 2 {
+			data += "@" + hex.EncodeToString(arguments[2])
+		}
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
 		if testConfig.IsLegacyAsync {
-			err = host.Async().RegisterLegacyAsyncCall(destination, function, value)
+			err = host.Async().RegisterLegacyAsyncCall(destination, []byte(data), value)
 		} else {
 			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
 				Status:          vmhost.AsyncCallPending,
 				Destination:     destination,
-				Data:            function,
+				Data:            []byte(data),
 				ValueBytes:      value,
 				SuccessCallback: "callBack",
 				ErrorCallback:   "callBack",

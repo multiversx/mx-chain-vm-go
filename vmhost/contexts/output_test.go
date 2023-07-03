@@ -224,7 +224,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		BytesConsumedByTxAsNetworking: uint64(2 * len(transfer1.Data)),
 	}
 
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 }
 
@@ -237,7 +237,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		BalanceDelta:   big.NewInt(0),
 	}
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
@@ -251,7 +251,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		BalanceDelta:    big.NewInt(42),
 		OutputTransfers: []vmcommon.OutputTransfer{{GasLimit: 92}},
 	}
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
@@ -262,7 +262,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		BalanceDelta:   big.NewInt(48),
 	}
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
@@ -278,7 +278,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		BalanceDelta:   big.NewInt(42),
 		Address:        left.Address,
 	}
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
@@ -291,7 +291,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		BalanceDelta:                  big.NewInt(0),
 		BytesConsumedByTxAsNetworking: uint64(len("left data")),
 	}
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
@@ -305,7 +305,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		BalanceDelta:   big.NewInt(0),
 	}
-	mergeOutputAccounts(left, right)
+	mergeOutputAccounts(left, right, false)
 	require.Equal(t, expected, left)
 }
 

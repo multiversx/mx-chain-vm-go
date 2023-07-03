@@ -1173,6 +1173,7 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 
 func TestExecution_Call_Breakpoints_UserError(t *testing.T) {
 	t.Parallel()
+
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -1216,7 +1217,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
 						WithData(test.ParentTransferData).
 						WithValue(big.NewInt(test.ParentTransferValue)),
 				)
@@ -1259,7 +1260,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 						test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 					).
 					Transfers(
-						test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+						test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 0).
 							WithData(test.ParentTransferData).
 							WithValue(big.NewInt(test.ParentTransferValue)),
 					)
@@ -1392,10 +1393,10 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
 						WithData(test.ParentTransferData).
 						WithValue(big.NewInt(test.ParentTransferValue)),
-					test.CreateTransferEntry(test.ParentAddress, test.ChildTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ChildTransferReceiver, 2).
 						WithData([]byte("qwerty")).
 						WithValue(big.NewInt(96)),
 				)
@@ -1762,7 +1763,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
 						WithData(test.ParentTransferData).
 						WithValue(big.NewInt(test.ParentTransferValue)),
 				)
@@ -1809,10 +1810,10 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 					).
 					Transfers(
-						test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver).
+						test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver, 0).
 							WithData([]byte("qwerty")).
 							WithValue(big.NewInt(96)),
-						test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+						test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
 							WithData(test.ParentTransferData).
 							WithValue(big.NewInt(test.ParentTransferValue)),
 					)
@@ -1934,10 +1935,10 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver).
+					test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver, 2).
 						WithData([]byte("Second sentence.")).
 						WithValue(big.NewInt(childTransferValue)),
-					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
 						WithData(test.ParentTransferData).
 						WithValue(big.NewInt(test.ParentTransferValue)),
 				)
@@ -1992,10 +1993,10 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver).
+					test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver, 2).
 						WithData([]byte("Second sentence.")).
 						WithValue(big.NewInt(childTransferValue)),
-					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
 						WithData(test.ParentTransferData).
 						WithValue(big.NewInt(test.ParentTransferValue)),
 				)
@@ -2610,13 +2611,13 @@ func TestExecution_AsyncCall(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress, 2).
 						WithData([]byte(" there")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress, 3).
 						WithData([]byte{}).
 						WithValue(big.NewInt(4)),
 				)
@@ -2697,13 +2698,13 @@ func TestExecution_AsyncCall_Promises(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress, 2).
 						WithData([]byte(" there")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress, 3).
 						WithData([]byte{}).
 						WithValue(big.NewInt(4)),
 				)
@@ -2793,13 +2794,13 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress, 2).
 						WithData([]byte(" there")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress, 3).
 						WithData([]byte{}).
 						WithValue(big.NewInt(4)),
 				)
@@ -2848,13 +2849,13 @@ func TestExecution_AsyncCall_Promises_CallBackFails(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress, 2).
 						WithData([]byte(" there")).
 						WithValue(big.NewInt(3)),
-					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress, 3).
 						WithData([]byte{}).
 						WithValue(big.NewInt(4)),
 				)

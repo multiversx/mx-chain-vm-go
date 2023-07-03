@@ -78,6 +78,8 @@ type BaseOpsAPICost struct {
 	GetReturnDataSize       uint64
 	CleanReturnData         uint64
 	DeleteFromReturnData    uint64
+	GetCodeMetadata         uint64
+	IsBuiltinFunction       uint64
 }
 
 // BigIntAPICost defines the big int operations gas cost config structure
