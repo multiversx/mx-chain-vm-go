@@ -17,12 +17,13 @@
             }
         },
         {
-            "step": "scUpgrade",
+            "step": "scCall",
             "id": "1",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "contractCode": "file:../vault/output/vault.wasm",
+                "function": "upgradeContract@ "
+                // "contractCode": "file:../vault/output/vault.wasm",
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             }
