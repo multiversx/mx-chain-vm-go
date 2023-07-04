@@ -41,7 +41,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply node address",
+            "id": "supply node address",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:node_address",
@@ -50,7 +50,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unJail inactive nodes",
+            "id": "unJail inactive nodes",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -74,7 +74,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unJail unknown nodes",
+            "id": "unJail unknown nodes",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -98,7 +98,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unJail nodes",
+            "id": "unJail nodes",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

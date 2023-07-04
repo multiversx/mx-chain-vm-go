@@ -68,7 +68,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1-offer",
+            "id": "1-offer",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
@@ -96,7 +96,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2-force-unstake!",
+            "id": "2-force-unstake!",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",

@@ -14,7 +14,7 @@
         },
         {
             "step": "scQuery",
-            "txId": "version",
+            "id": "version",
             "tx": {
                 "to": "sc:delegation",
                 "function": "version",

@@ -15,11 +15,10 @@
         },
         {
             "step": "scCall",
-            "txId": "try-end-auction",
+            "id": "try-end-auction",
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "endAuction",
                 "arguments": [
                     "1"
@@ -28,6 +27,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Cannot end this type of auction",
                 "gas": "*",
@@ -36,11 +36,11 @@
         },
         {
             "step": "scCall",
-            "txId": "try-buy-sft-after-deadline",
+            "id": "try-buy-sft-after-deadline",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "100",
+                "egldValue": "100",
                 "function": "buySft",
                 "arguments": [
                     "1",
@@ -51,6 +51,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Cannot buy SFT after deadline",
                 "gas": "*",

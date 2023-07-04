@@ -10,11 +10,10 @@
         },
         {
             "step": "scCall",
-            "txId": "offer-2",
+            "id": "offer-2",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "113,000,000,000,000"
@@ -32,11 +31,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-offer",
+            "id": "check-stake-offer",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getStakeForSale",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -45,7 +43,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "113,000,000,000,000" ],
+                "out": [
+                    "113,000,000,000,000"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -54,11 +54,10 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-offer-time",
+            "id": "check-stake-offer-time",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getStakeForSaleCreationNonces",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -67,7 +66,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "521000" ],
+                "out": [
+                    "521000"
+                ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -76,21 +77,21 @@
         },
         {
             "step": "transfer",
-            "txId": "supply owner, owner will buy some",
+            "id": "supply owner, owner will buy some",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''node_address__________________s1",
-                "value": "1,000,000,000,000"
+                "egldValue": "1,000,000,000,000"
             }
         },
         {
             "step": "scCall",
+            "id": "1",
             "comment": "owner buys some stake",
-            "txId": "1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "1,000,000,000,000",
+                "egldValue": "1,000,000,000,000",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator_1___________________s1"
@@ -117,6 +118,5 @@
                 "refund": "*"
             }
         }
-       
     ]
 }

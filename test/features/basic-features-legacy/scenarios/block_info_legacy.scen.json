@@ -25,7 +25,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_timestamp",
+            "id": "get_block_timestamp",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
@@ -46,7 +46,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_nonce",
+            "id": "get_block_nonce",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
@@ -67,7 +67,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_round",
+            "id": "get_block_round",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
@@ -88,7 +88,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_epoch",
+            "id": "get_block_epoch",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",

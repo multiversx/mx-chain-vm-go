@@ -3,29 +3,29 @@
     "steps": [
         {
             "step": "transfer",
-            "txId": "supply delegator 1 again",
+            "id": "supply delegator 1 again",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator_1___________________s1",
-                "value": "100,000,000,000,000"
+                "egldValue": "100,000,000,000,000"
             }
         },
         {
             "step": "transfer",
-            "txId": "supply owner for stake",
+            "id": "supply owner for stake",
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''node_address__________________s1",
-                "value": "011,000,000,000,000"
+                "egldValue": "011,000,000,000,000"
             }
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 stake 2",
+            "id": "delegator 1 stake 2",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "100,000,000,000,000",
+                "egldValue": "100,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -51,11 +51,11 @@
         },
         {
             "step": "scCall",
-            "txId": "owner also adds some stake",
+            "id": "owner also adds some stake",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "011,000,000,000,000",
+                "egldValue": "011,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "1,000,000",

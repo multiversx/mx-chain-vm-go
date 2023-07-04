@@ -38,7 +38,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",

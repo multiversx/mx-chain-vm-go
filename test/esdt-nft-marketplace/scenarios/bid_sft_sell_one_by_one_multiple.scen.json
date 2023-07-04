@@ -8,11 +8,11 @@
         },
         {
             "step": "scCall",
-            "txId": "buy-sft-multiple",
+            "id": "buy-sft-multiple",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "500",
+                "egldValue": "500",
                 "function": "buySft",
                 "arguments": [
                     "1",
@@ -24,6 +24,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -125,7 +126,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

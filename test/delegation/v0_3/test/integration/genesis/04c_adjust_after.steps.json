@@ -3,11 +3,10 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "add removed node back",
+            "id": "add removed node back",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls_key_5_______________________________________________________________________________________",
@@ -26,11 +25,11 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 2 re-stake (adjust after genesis)",
+            "id": "delegator 2 re-stake (adjust after genesis)",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -56,20 +55,20 @@
         },
         {
             "step": "transfer",
-            "txId": "simulate funds being set up correctly at genesis",
+            "id": "simulate funds being set up correctly at genesis",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:auction",
-                "value": "300,000,000,000,000"
+                "egldValue": "300,000,000,000,000"
             }
         },
         {
             "step": "transfer",
-            "txId": "simulate funds being set up correctly at genesis",
+            "id": "simulate funds being set up correctly at genesis",
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:auction",
-                "value": "033,000,000,000,000"
+                "egldValue": "033,000,000,000,000"
             }
         }
     ]

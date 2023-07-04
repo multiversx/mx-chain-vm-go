@@ -28,7 +28,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-stake",
+            "id": "get-user-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -51,7 +51,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-withdraw-only",
+            "id": "get-user-withdraw-only",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -74,7 +74,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-waiting-stake",
+            "id": "get-user-waiting-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -97,7 +97,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-active-stake",
+            "id": "get-user-active-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -120,7 +120,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-unstaked-stake",
+            "id": "get-user-unstaked-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
@@ -143,7 +143,7 @@
         },
         {
             "step": "scCall",
-            "txId": "get-user-deferred-stake",
+            "id": "get-user-deferred-stake",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",

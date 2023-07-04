@@ -18,7 +18,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "deploy-1",
+            "id": "deploy-1",
             "tx": {
                 "from": "address:node_address",
                 "contractCode": "file:../output/delegation_latest_full.wasm",
@@ -43,7 +43,7 @@
         },
         {
             "step": "transfer",
-            "txId": "supply delegator 1",
+            "id": "supply delegator 1",
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator1",
@@ -52,7 +52,7 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 stake",
+            "id": "delegator 1 stake",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
@@ -82,7 +82,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-total",
+            "id": "check-stake-by-type-total",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
@@ -107,7 +107,7 @@
         },
         {
             "step": "scCall",
-            "txId": "change-delegation-cap",
+            "id": "change-delegation-cap",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -130,7 +130,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-total-2",
+            "id": "check-stake-by-type-total-2",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",

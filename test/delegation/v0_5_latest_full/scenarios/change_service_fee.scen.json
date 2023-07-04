@@ -12,7 +12,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-bootstrap?-",
+            "id": "-set-service-fee-bootstrap?-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -33,7 +33,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-",
+            "id": "-set-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -56,7 +56,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -89,7 +89,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-bootstrap?-",
+            "id": "-set-service-fee-bootstrap?-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -110,7 +110,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-out-of-gas-",
+            "id": "-set-service-fee-out-of-gas-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -133,7 +133,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -154,7 +154,7 @@
         },
         {
             "step": "scCall",
-            "txId": "continue",
+            "id": "continue",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -175,7 +175,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -196,7 +196,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-set-service-fee-same-value-",
+            "id": "-set-service-fee-same-value-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -219,7 +219,7 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-service-fee-",
+            "id": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",

@@ -20,7 +20,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "contractCode": "file:../delegation.wasm",
@@ -67,7 +67,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2-nr-nodes",
+            "id": "2-nr-nodes",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -88,7 +88,7 @@
         },
         {
             "step": "scCall",
-            "txId": "3-stake-per-node",
+            "id": "3-stake-per-node",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
@@ -136,7 +136,7 @@
         },
         {
             "step": "scCall",
-            "txId": "4 - check time before force unstake",
+            "id": "4 - check time before force unstake",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",

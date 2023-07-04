@@ -8,11 +8,11 @@
         },
         {
             "step": "scCall",
-            "txId": "max bid",
+            "id": "max bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "1000",
+                "egldValue": "1000",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -23,6 +23,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -78,7 +79,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

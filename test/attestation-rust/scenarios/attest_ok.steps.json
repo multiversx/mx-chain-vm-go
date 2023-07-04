@@ -3,12 +3,11 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "attest-ok",
+            "id": "attest-ok",
             "comment": "args are keccak256(keccak256(str:0123 456 789)), str:secret_data respectively",
             "tx": {
                 "from": "address:acc1",
                 "to": "sc:contract",
-                "value": "0",
                 "function": "attest",
                 "arguments": [
                     "0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d",

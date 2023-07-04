@@ -307,6 +307,71 @@ func Test_BigIntToString(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// Real contracts always check first that the big int fits.
+// This special test case represents an intentionally badly written contract.
+func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, config interface{}) {
+	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
+
+		inputHandle := int32(0)
+		vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
+		result := vmHooksImpl.BigIntGetInt64(inputHandle)
+		vmHooksImpl.SmallIntFinishSigned(result)
+
+		return parentInstance
+	})
+}
+
+func Test_BigIntToInt64(t *testing.T) {
+	testConfig := baseTestConfig
+
+	bigIntArg := []byte{0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(bigIntToInt64MockContract),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithArguments(bigIntArg).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok()
+			assert.Equal(t, verify.VmOutput.ReturnData, [][]byte{bigIntArg})
+		})
+	assert.Nil(t, err)
+}
+
+func Test_BigIntToInt64_NotRepresentable(t *testing.T) {
+	testConfig := baseTestConfig
+
+	bigIntArg := []byte{0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(bigIntToInt64MockContract),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithArguments(bigIntArg).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed()
+			assert.Equal(t, verify.VmOutput.ReturnMessage, vmhost.ErrBigIntCannotBeRepresentedAsInt64.Error())
+		})
+	assert.Nil(t, err)
+}
+
 func Test_ManagedRipemd160(t *testing.T) {
 	testConfig := baseTestConfig
 
@@ -1229,6 +1294,104 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 			verify.
 				Ok().
 				ReturnData(big.NewInt(tokenValue).Bytes())
+		})
+	assert.Nil(t, err)
+}
+
+func Test_ManagedGetCodeMetadata(t *testing.T) {
+	testConfig := baseTestConfig
+
+	metadata := []byte{0, vmcommon.MetadataPayable}
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata(metadata).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						managedTypes := host.ManagedTypes()
+						addressHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
+						destHandle := managedTypes.NewManagedBuffer()
+
+						vmhooks.ManagedGetCodeMetadataWithHost(
+							host,
+							addressHandle,
+							destHandle)
+
+						bytesResult, _ := managedTypes.GetBytes(destHandle)
+						if !bytes.Equal(metadata, bytesResult) {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_ManagedIsBuiltinFunction(t *testing.T) {
+	testConfig := baseTestConfig
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						managedTypes := host.ManagedTypes()
+						functionNameHandle := managedTypes.NewManagedBufferFromBytes([]byte("ESDTTransfer"))
+
+						returnValue := vmhooks.ManagedIsBuiltinFunctionWithHost(
+							host,
+							functionNameHandle)
+						if returnValue != 1 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						functionNameHandle = managedTypes.NewManagedBufferFromBytes([]byte("NotABuiltInFunction"))
+
+						returnValue = vmhooks.ManagedIsBuiltinFunctionWithHost(
+							host,
+							functionNameHandle)
+						if returnValue != 0 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
 		})
 	assert.Nil(t, err)
 }
