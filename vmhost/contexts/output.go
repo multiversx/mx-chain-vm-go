@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -329,12 +330,34 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	return nil
 }
 
+func (context *outputContext) isBackTransferWithoutExecution(sender, destination []byte, input []byte) bool {
+	if len(input) != 0 {
+		return false
+	}
+	if !core.IsSmartContractAddress(destination) {
+		return false
+	}
+
+	vmInput := context.host.Runtime().GetVMInput()
+	currentExecutionCallerAddress := vmInput.CallerAddr
+	currentExecutionDestinationAddress := vmInput.RecipientAddr
+
+	if !bytes.Equal(currentExecutionCallerAddress, destination) ||
+		!bytes.Equal(currentExecutionDestinationAddress, sender) {
+		return false
+	}
+
+	return true
+}
+
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error {
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
-	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
+	isBackTransfer := context.isBackTransferWithoutExecution(sender, destination, input)
+	checkPayable := checkPayableIfNotCallback || !isBackTransfer
+	err := context.TransferValueOnly(destination, sender, value, checkPayable)
 	if err != nil {
 		return err
 	}
@@ -357,6 +380,11 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	logOutput.Trace("transfer value added")
+
+	if isBackTransfer {
+		context.host.ManagedTypes().AddValueOnlyBackTransfer(outputTransfer.Value)
+	}
+
 	return nil
 }
 
@@ -373,7 +401,9 @@ func (context *outputContext) TransferESDT(
 	sameShard := context.host.AreInSameShard(transfersArgs.Sender, transfersArgs.Destination)
 	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
-	if isExecution {
+	isBackTransfer := !isExecution && context.isBackTransferWithoutExecution(transfersArgs.Sender, transfersArgs.Destination, nil)
+
+	if isExecution || isBackTransfer {
 		callType = vm.ESDTTransferAndExecute
 	}
 
@@ -431,6 +461,11 @@ func (context *outputContext) TransferESDT(
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
+
+	if isBackTransfer {
+		context.host.ManagedTypes().AddBackTransfers(transfersArgs.Transfers)
+	}
+
 	return gasRemaining, nil
 }
 
@@ -646,7 +681,7 @@ func (context *outputContext) GetCrtTransferIndex() uint32 {
 	return context.crtTransferIndex
 }
 
-// SetOutputTransferIndex sets the current output transfer index
+// SetCrtTransferIndex sets the current output transfer index
 func (context *outputContext) SetCrtTransferIndex(index uint32) {
 	context.crtTransferIndex = index
 }

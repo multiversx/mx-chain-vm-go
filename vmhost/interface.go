@@ -213,6 +213,9 @@ type ManagedTypesContext interface {
 	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error
 	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error
 	ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error)
+	GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int)
+	AddValueOnlyBackTransfer(value *big.Int)
+	AddBackTransfers(transfers []*vmcommon.ESDTTransfer)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context

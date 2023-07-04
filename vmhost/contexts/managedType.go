@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"encoding/binary"
 	"errors"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"io"
 	basicMath "math"
 	"math/big"
@@ -58,12 +59,19 @@ type managedTypesContext struct {
 	randomnessGenerator math.RandomnessGenerator
 }
 
+// structure for transfers where scA call scB and scB makes transfers without execution to scA
+type backTransfers struct {
+	ESDTTransfers []*vmcommon.ESDTTransfer
+	CallValue     *big.Int
+}
+
 type managedTypesState struct {
 	bigIntValues   bigIntMap
 	bigFloatValues bigFloatMap
 	ecValues       ellipticCurveMap
 	mBufferValues  managedBufferMap
 	mMapValues     managedMapMap
+	backTransfers  backTransfers
 }
 
 // NewManagedTypesContext creates a new managedTypesContext
@@ -80,6 +88,10 @@ func NewManagedTypesContext(host vmhost.VMHost) (*managedTypesContext, error) {
 			ecValues:       make(ellipticCurveMap),
 			mBufferValues:  make(managedBufferMap),
 			mMapValues:     make(managedMapMap),
+			backTransfers: backTransfers{
+				ESDTTransfers: make([]*vmcommon.ESDTTransfer, 0),
+				CallValue:     big.NewInt(0),
+			},
 		},
 		managedTypesStack:   make([]managedTypesState, 0),
 		randomnessGenerator: nil,
@@ -760,4 +772,19 @@ func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, 
 	value, foundValue := mMap[string(key)]
 
 	return mMap, key, value, foundValue, nil
+}
+
+// AddBackTransfers add transfers to back transfers structure
+func (context *managedTypesContext) AddBackTransfers(transfers []*vmcommon.ESDTTransfer) {
+	context.managedTypesValues.backTransfers.ESDTTransfers = append(context.managedTypesValues.backTransfers.ESDTTransfers, transfers...)
+}
+
+// AddValueOnlyBackTransfer add to back transfer value
+func (context *managedTypesContext) AddValueOnlyBackTransfer(value *big.Int) {
+	context.managedTypesValues.backTransfers.CallValue.Add(context.managedTypesValues.backTransfers.CallValue, value)
+}
+
+// GetBackTransfers returns all ESDT transfers and accumulated value as well
+func (context *managedTypesContext) GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int) {
+	return context.managedTypesValues.backTransfers.ESDTTransfers, context.managedTypesValues.backTransfers.CallValue
 }
