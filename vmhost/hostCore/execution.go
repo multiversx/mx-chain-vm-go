@@ -337,6 +337,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	isChildComplete = true
 	if scExecutionInput != nil {
 		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		host.addNewBackTransfersFromVMOutput(vmOutput, scExecutionInput.CallerAddr, scExecutionInput.RecipientAddr)
 	}
 
 	if err != nil {
@@ -346,6 +347,44 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	return
+}
+
+func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput, parent, child []byte) {
+	callerOutAcc, ok := vmOutput.OutputAccounts[string(parent)]
+	if !ok {
+		return
+	}
+
+	for _, transfer := range callerOutAcc.OutputTransfers {
+		if !bytes.Equal(transfer.SenderAddress, child) {
+			continue
+		}
+		if transfer.CallType == vm.AsynchronousCallBack {
+			continue
+		}
+
+		if transfer.Value.Cmp(vmhost.Zero) > 0 {
+			if len(transfer.Data) == 0 {
+				host.managedTypesContext.AddValueOnlyBackTransfer(transfer.Value)
+			}
+			continue
+		}
+		function, args, err := host.callArgsParser.ParseData(string(transfer.Data))
+		if err != nil {
+			continue
+		}
+
+		esdtTransfers, err := host.esdtTransferParser.ParseESDTTransfers(child, parent, function, args)
+		if err != nil {
+			continue
+		}
+
+		if esdtTransfers.CallFunction != "" {
+			continue
+		}
+
+		host.managedTypesContext.AddBackTransfers(esdtTransfers.ESDTTransfers)
+	}
 }
 
 func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
