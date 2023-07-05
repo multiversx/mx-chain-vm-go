@@ -381,10 +381,6 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	logOutput.Trace("transfer value added")
 
-	if isBackTransfer {
-		context.host.ManagedTypes().AddValueOnlyBackTransfer(outputTransfer.Value)
-	}
-
 	return nil
 }
 
@@ -461,10 +457,6 @@ func (context *outputContext) TransferESDT(
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
-
-	if isBackTransfer {
-		context.host.ManagedTypes().AddBackTransfers(transfersArgs.Transfers)
-	}
 
 	return gasRemaining, nil
 }
