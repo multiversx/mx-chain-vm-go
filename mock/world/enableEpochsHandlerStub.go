@@ -53,6 +53,7 @@ type EnableEpochsHandlerStub struct {
 	IsChangeUsernameEnabledField                         bool
 	IsConsistentTokensValuesLengthCheckEnabledField      bool
 	IsAutoBalanceDataTriesEnabledField                   bool
+	ScToScLogEventEnabledField                           bool
 }
 
 // IsGuardAccountEnabled -
@@ -289,6 +290,11 @@ func (stub *EnableEpochsHandlerStub) IsAutoBalanceDataTriesEnabled() bool {
 	return stub.IsAutoBalanceDataTriesEnabledField
 }
 
+// IsScToScEventLogEnabled -
+func (stub *EnableEpochsHandlerStub) IsScToScEventLogEnabled() bool {
+	return stub.ScToScLogEventEnabledField
+}
+
 // IsInterfaceNil -
 func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
@@ -324,6 +330,7 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsAlwaysSaveTokenMetaDataEnabledField:                true,
 		IsRuntimeCodeSizeFixEnabledField:                     true,
 		IsSetGuardianEnabledField:                            true,
+		ScToScLogEventEnabledField:                           true,
 	}
 }
 
