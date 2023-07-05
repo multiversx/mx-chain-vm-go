@@ -350,6 +350,9 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 }
 
 func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput, parent, child []byte) {
+	if vmOutput == nil {
+		return
+	}
 	callerOutAcc, ok := vmOutput.OutputAccounts[string(parent)]
 	if !ok {
 		return
