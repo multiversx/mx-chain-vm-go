@@ -208,27 +208,27 @@ func tryCopyFilesToRustExecutorRepo() {
 	fmt.Printf("Copying generated Rust files to '%s':\n", rustExecutorPath)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks.rs"),
-		filepath.Join(rustExecutorPath, "exec-service/src/vm_hooks.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),
-		filepath.Join(rustExecutorPath, "exec-service/src/opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/opcode_cost.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook.rs"),
-		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hooks.rs"),
+		filepath.Join(rustExecutorPath, "c-api/src/capi_vm_hooks.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook_pointers.rs"),
-		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hook_pointers.rs"),
+		filepath.Join(rustExecutorPath, "c-api/src/capi_vm_hook_pointers.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_imports.rs"),
-		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_imports.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_imports.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_metering_helpers.rs"),
-		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_metering_helpers.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_metering_helpers.rs"),
 	)
 }
 
