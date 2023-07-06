@@ -349,6 +349,23 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
+func (host *vmHost) isESDTTransferWithoutExecution(transferData []byte, parent, child []byte) (*vmcommon.ParsedESDTTransfers, bool) {
+	function, args, err := host.callArgsParser.ParseData(string(transferData))
+	if err != nil {
+		return nil, false
+	}
+
+	esdtTransfers, err := host.esdtTransferParser.ParseESDTTransfers(child, parent, function, args)
+	if err != nil {
+		return nil, false
+	}
+	if esdtTransfers.CallFunction != "" {
+		return nil, false
+	}
+
+	return esdtTransfers, true
+}
+
 func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput, parent, child []byte) {
 	if vmOutput == nil || vmOutput.ReturnCode != vmcommon.Ok {
 		return
@@ -372,17 +389,9 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 			}
 			continue
 		}
-		function, args, err := host.callArgsParser.ParseData(string(transfer.Data))
-		if err != nil {
-			continue
-		}
 
-		esdtTransfers, err := host.esdtTransferParser.ParseESDTTransfers(child, parent, function, args)
-		if err != nil {
-			continue
-		}
-
-		if esdtTransfers.CallFunction != "" {
+		esdtTransfers, isWithoutExec := host.isESDTTransferWithoutExecution(transfer.Data, parent, child)
+		if !isWithoutExec {
 			continue
 		}
 
