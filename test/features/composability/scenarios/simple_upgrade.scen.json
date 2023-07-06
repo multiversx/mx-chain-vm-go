@@ -11,8 +11,7 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm",
-                    "codeMetadata": "0x0502"
+                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
         },
@@ -22,8 +21,11 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "upgradeContract@ "
-                // "contractCode": "file:../vault/output/vault.wasm",
+                "function": "upgradeContract",
+                "arguments": [
+                    "file:../vault/output/vault.wasm",
+                    "0x0502"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             }
@@ -38,8 +40,7 @@
                     "code": ""
                 },
                 "sc:forwarder": {
-                    "code": "file:../vault/output/vault.wasm",
-                    "codeMetadata": "0x0502"
+                    "code": "file:../vault/output/vault.wasm"
                 }
             }
         }
