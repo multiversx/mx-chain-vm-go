@@ -34,7 +34,7 @@ func (context *asyncContext) completeChild(callID []byte, gasToAccumulate uint64
 	return context.CompleteChildConditional(true, callID, gasToAccumulate)
 }
 
-// CompleteChildConditional complets a child and accumulates the provided gas to the async context
+// CompleteChildConditional completes a child and accumulates the provided gas to the async context
 func (context *asyncContext) CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error {
 	if !isChildComplete {
 		return nil

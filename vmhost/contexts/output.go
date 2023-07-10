@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"github.com/davecgh/go-spew/spew"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
@@ -339,12 +340,19 @@ func (context *outputContext) isBackTransferWithoutExecution(sender, destination
 	}
 
 	vmInput := context.host.Runtime().GetVMInput()
+
 	currentExecutionCallerAddress := vmInput.CallerAddr
 	currentExecutionDestinationAddress := vmInput.RecipientAddr
 
 	if vmInput.CallType == vm.AsynchronousCallBack {
+		logOutput.Error("I AM HERE")
 		currentExecutionCallerAddress = context.host.Async().GetParentAddress()
 	}
+
+	spew.Dump(vmInput)
+	logOutput.Error("parent address", "currentExecutionCallerAddress", currentExecutionCallerAddress,
+		"caller", vmInput.CallerAddr,
+		"recipient", vmInput.RecipientAddr)
 
 	if !bytes.Equal(currentExecutionCallerAddress, destination) ||
 		!bytes.Equal(currentExecutionDestinationAddress, sender) {

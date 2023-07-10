@@ -112,7 +112,7 @@ func (context *asyncContext) InitState() {
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
 // information provided by a ContractCallInput.
-func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) error {
+func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput, parentAddress []byte) error {
 	context.InitState()
 
 	context.originalCallerAddr = make([]byte, len(input.OriginalCallerAddr))

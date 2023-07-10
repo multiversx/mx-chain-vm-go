@@ -191,7 +191,7 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 	}
 
 	host.Runtime().InitStateFromContractCallInput(input)
-	err := async.InitStateFromInput(input)
+	err := async.InitStateFromInput(input, input.CallerAddr)
 
 	require.Nil(t, err)
 	require.Equal(t, input.CallerAddr, async.callerAddr)

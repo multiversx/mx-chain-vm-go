@@ -342,7 +342,7 @@ type AsyncCallInfoHandler interface {
 type AsyncContext interface {
 	StateStack
 
-	InitStateFromInput(input *vmcommon.ContractCallInput) error
+	InitStateFromInput(input *vmcommon.ContractCallInput, parentAddress []byte) error
 	HasPendingCallGroups() bool
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)

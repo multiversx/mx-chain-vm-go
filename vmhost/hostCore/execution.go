@@ -219,7 +219,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 
 	runtime.InitStateFromContractCallInput(input)
 
-	err := async.InitStateFromInput(input)
+	err := async.InitStateFromInput(input, input.CallerAddr)
 	if err != nil {
 		log.Trace("doRunSmartContractCall init async", "error", vmhost.ErrAsyncInit)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -450,12 +450,14 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	output.PushState()
 	output.CensorVMOutput()
 
+	parentCaller := runtime.GetVMInput().CallerAddr
+
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
 	async.PushState()
-	err = async.InitStateFromInput(input)
+	err = async.InitStateFromInput(input, parentCaller)
 	if err != nil {
 		runtime.AddError(err, input.Function)
 		return nil, true, err
