@@ -30,7 +30,7 @@ var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ vmhost.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = time.Second
+const minExecutionTimeout = 3600 * time.Second
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
