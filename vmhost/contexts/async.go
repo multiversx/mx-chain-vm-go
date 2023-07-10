@@ -24,6 +24,7 @@ type asyncContext struct {
 	marshalizer *marshal.GogoProtoMarshalizer
 
 	originalCallerAddr []byte
+	parentAddr         []byte
 	callerAddr         []byte
 	callback           string
 	callbackData       []byte
@@ -73,6 +74,7 @@ func NewAsyncContext(
 		stateStack:             nil,
 		originalCallerAddr:     nil,
 		callerAddr:             nil,
+		parentAddr:             nil,
 		callback:               "",
 		callbackData:           nil,
 		gasAccumulated:         0,
@@ -95,6 +97,7 @@ func (context *asyncContext) InitState() {
 	context.callID = nil
 	context.callerCallID = nil
 	context.callerAddr = make([]byte, 0)
+	context.parentAddr = make([]byte, 0)
 	context.gasAccumulated = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*vmhost.AsyncCallGroup, 0)
@@ -120,6 +123,9 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 
 	runtime := context.host.Runtime()
 	context.address = runtime.GetContextAddress()
+
+	context.parentAddr = make([]byte, len(runtime.GetVMInput().CallerAddr))
+	copy(context.parentAddr, runtime.GetVMInput().CallerAddr)
 
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
@@ -148,6 +154,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		logAsync.Trace("", "callerCallID", context.callerCallID)
 		logAsync.Trace("", "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
 		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
+		logAsync.Trace("", "parentAddress", string(context.parentAddr))
 	}
 
 	return nil
@@ -161,6 +168,7 @@ func (context *asyncContext) PushState() {
 		callID:             context.callID,
 		callerCallID:       context.callerCallID,
 		callerAddr:         context.callerAddr,
+		parentAddr:         context.parentAddr,
 		callback:           context.callback,
 		callbackData:       context.callbackData,
 		gasAccumulated:     context.gasAccumulated,
@@ -209,6 +217,7 @@ func (context *asyncContext) PopSetActiveState() {
 
 	context.originalCallerAddr = prevState.originalCallerAddr
 	context.callerAddr = prevState.callerAddr
+	context.parentAddr = prevState.parentAddr
 	context.callerCallID = prevState.callerCallID
 	context.callType = prevState.callType
 	context.callbackAsyncInitiatorCallID = prevState.callbackAsyncInitiatorCallID
@@ -227,6 +236,7 @@ func (context *asyncContext) Clone() vmhost.AsyncContext {
 	return &asyncContext{
 		address:                      context.address,
 		callerAddr:                   context.callerAddr,
+		parentAddr:                   context.parentAddr,
 		originalCallerAddr:           context.originalCallerAddr,
 		callerCallID:                 context.callerCallID,
 		callType:                     context.callType,
