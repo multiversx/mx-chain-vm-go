@@ -340,11 +340,11 @@ func (context *outputContext) isBackTransferWithoutExecution(sender, destination
 
 	vmInput := context.host.Runtime().GetVMInput()
 	currentExecutionCallerAddress := vmInput.CallerAddr
+	currentExecutionDestinationAddress := vmInput.RecipientAddr
+
 	if vmInput.CallType == vm.AsynchronousCallBack {
 		currentExecutionCallerAddress = context.host.Async().GetCallerAddress()
 	}
-
-	currentExecutionDestinationAddress := vmInput.RecipientAddr
 
 	if !bytes.Equal(currentExecutionCallerAddress, destination) ||
 		!bytes.Equal(currentExecutionDestinationAddress, sender) {
