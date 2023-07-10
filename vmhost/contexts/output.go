@@ -343,7 +343,7 @@ func (context *outputContext) isBackTransferWithoutExecution(sender, destination
 	currentExecutionDestinationAddress := vmInput.RecipientAddr
 
 	if vmInput.CallType == vm.AsynchronousCallBack {
-		currentExecutionCallerAddress = context.host.Async().GetCallerAddress()
+		currentExecutionCallerAddress = context.host.Async().GetParentAddress()
 	}
 
 	if !bytes.Equal(currentExecutionCallerAddress, destination) ||

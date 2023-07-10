@@ -272,6 +272,11 @@ func (context *asyncContext) GetCallerAddress() []byte {
 	return context.callerAddr
 }
 
+// GetParentAddress returns the address of the original caller.
+func (context *asyncContext) GetParentAddress() []byte {
+	return context.parentAddr
+}
+
 // GetCallerCallID returns the callID of the original caller.
 func (context *asyncContext) GetCallerCallID() []byte {
 	return context.callerCallID
@@ -927,7 +932,11 @@ func (context *asyncContext) determineExecutionMode(call *vmhost.AsyncCall) (vmh
 		return vmhost.AsyncUnknown, nil
 	}
 
-	actualDestination := context.determineDestinationForAsyncCall(destination, data)
+	actualDestination, err := context.determineDestinationForAsyncCall(destination, data)
+	if err != nil {
+		return vmhost.AsyncUnknown, err
+	}
+
 	sameShard := context.host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
@@ -944,26 +953,27 @@ func (context *asyncContext) determineExecutionMode(call *vmhost.AsyncCall) (vmh
 	return vmhost.AsyncUnknown, nil
 }
 
-func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) []byte {
+func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) ([]byte, error) {
 	if !bytes.Equal(context.host.Runtime().GetContextAddress(), destination) {
-		return destination
+		return destination, nil
 	}
 
 	argsParser := context.callArgsParser
 	functionName, args, err := argsParser.ParseData(string(data))
-	// TODO(check) what should do if we have a not nil err
-	_ = err
+	if err != nil {
+		return nil, err
+	}
 
 	if !context.host.IsBuiltinFunctionName(functionName) {
-		return destination
+		return destination, nil
 	}
 
 	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(destination, destination, functionName, args)
 	if err != nil {
-		return destination
+		return destination, nil
 	}
 
-	return parsedTransfer.RcvAddr
+	return parsedTransfer.RcvAddr, nil
 }
 
 func (context *asyncContext) findGroupByID(groupID string) (int, bool) {

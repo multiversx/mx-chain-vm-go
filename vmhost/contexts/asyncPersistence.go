@@ -85,6 +85,7 @@ func (context *asyncContext) loadSpecificContext(address []byte, callID []byte) 
 	context.address = loadedContext.address
 	context.callID = loadedContext.callID
 	context.callerAddr = loadedContext.callerAddr
+	context.parentAddr = loadedContext.parentAddr
 	context.callerCallID = loadedContext.callerCallID
 	context.callbackAsyncInitiatorCallID = loadedContext.callbackAsyncInitiatorCallID
 	context.callType = loadedContext.callType
@@ -129,6 +130,7 @@ func (context *asyncContext) toSerializable() *SerializableAsyncContext {
 		CallID:                       context.callID,
 		CallType:                     SerializableCallType(context.callType),
 		CallerAddr:                   context.callerAddr,
+		ParentAddr:                   context.parentAddr,
 		CallerCallID:                 context.callerCallID,
 		CallbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
 		Callback:                     context.callback,
@@ -151,6 +153,7 @@ func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext
 		callsCounter:                 serializedContext.CallsCounter,
 		totalCallsCounter:            serializedContext.TotalCallsCounter,
 		callerAddr:                   serializedContext.CallerAddr,
+		parentAddr:                   serializedContext.ParentAddr,
 		callerCallID:                 serializedContext.CallerCallID,
 		callType:                     vm.CallType(serializedContext.CallType),
 		callbackAsyncInitiatorCallID: serializedContext.CallbackAsyncInitiatorCallID,

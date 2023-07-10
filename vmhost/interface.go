@@ -349,6 +349,7 @@ type AsyncContext interface {
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
 	GetCallerAddress() []byte
+	GetParentAddress() []byte
 	GetCallerCallID() []byte
 	GetReturnData() []byte
 	SetReturnData(data []byte)
