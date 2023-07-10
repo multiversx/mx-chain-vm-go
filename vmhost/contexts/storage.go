@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -513,11 +514,21 @@ func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 // GetStorageLoadCost returns the gas cost for the storage load operation
 func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
 	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
-		return computeGasForStorageLoadBasedOnTrieDepth(
+		estimatedGasCost, err := computeGasForStorageLoadBasedOnTrieDepth(
 			trieDepth,
 			context.host.Metering().GasSchedule().DynamicStorageLoad,
 			staticGasCost,
 		)
+		if err != nil {
+			logStorage.Error(err.Error())
+		}
+		logStorage.Info("GetStorageLoadCost",
+			"estimated gas cost", estimatedGasCost,
+			"address", hex.EncodeToString(context.address),
+			"trieDepth", trieDepth,
+		)
+
+		return staticGasCost, nil
 	}
 
 	return staticGasCost, nil
