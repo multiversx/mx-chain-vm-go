@@ -1493,6 +1493,9 @@ func Test_Async_ManagedGetBackTransfers(t *testing.T) {
 	testConfig.SuccessCallback = "myCallback"
 	testConfig.ErrorCallback = "myCallback"
 	testConfig.TransferFromChildToParent = 2
+	testConfig.ParentAddress = test.ParentAddress
+	testConfig.ChildAddress = test.ChildAddress
+	testConfig.NephewAddress = test.NephewAddress
 
 	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1524,6 +1527,7 @@ func Test_Async_ManagedGetBackTransfers(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("callChild").
+			WithArguments([]byte{1}).
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.

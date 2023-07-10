@@ -25,33 +25,43 @@ func BackTransfer_ParentCallsChild(instanceMock *mock.InstanceMock, config inter
 		testConfig := config.(*test.TestConfig)
 		input := test.DefaultTestContractCallInput()
 		input.GasProvided = testConfig.GasProvidedToChild
-		input.CallerAddr = test.ParentAddress
-		input.RecipientAddr = test.ChildAddress
+		input.CallerAddr = testConfig.ParentAddress
+		input.RecipientAddr = testConfig.ChildAddress
 		input.Function = "childFunction"
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
 			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 		}
 		managedTypes := host.ManagedTypes()
-		esdtTransfers, egld := managedTypes.GetBackTransfers()
-		if len(esdtTransfers) != 1 {
-			host.Runtime().FailExecution(fmt.Errorf("found esdt transfers %d", len(esdtTransfers)))
-			storedResult = []byte("err")
-		}
-		if !bytes.Equal(test.ESDTTestTokenName, esdtTransfers[0].ESDTTokenName) {
-			host.Runtime().FailExecution(fmt.Errorf("invalid token name %s", string(esdtTransfers[0].ESDTTokenName)))
-			storedResult = []byte("err")
-		}
-		if big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer).Cmp(esdtTransfers[0].ESDTValue) != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("invalid token value %d", esdtTransfers[0].ESDTValue.Uint64()))
-			storedResult = []byte("err")
-		}
-		if egld.Cmp(big.NewInt(testConfig.TransferFromChildToParent)) != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("invalid egld value %d", egld))
-			storedResult = []byte("err")
+
+		arguments := host.Runtime().Arguments()
+		if len(arguments) > 0 {
+			checkBackTransfers := arguments[0]
+			if checkBackTransfers[0] == 1 {
+				esdtTransfers, egld := managedTypes.GetBackTransfers()
+				if len(esdtTransfers) != 1 {
+					host.Runtime().FailExecution(fmt.Errorf("found esdt transfers %d", len(esdtTransfers)))
+					storedResult = []byte("err")
+				}
+				if !bytes.Equal(test.ESDTTestTokenName, esdtTransfers[0].ESDTTokenName) {
+					host.Runtime().FailExecution(fmt.Errorf("invalid token name %s", string(esdtTransfers[0].ESDTTokenName)))
+					storedResult = []byte("err")
+				}
+				if big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer).Cmp(esdtTransfers[0].ESDTValue) != 0 {
+					host.Runtime().FailExecution(fmt.Errorf("invalid token value %d", esdtTransfers[0].ESDTValue.Uint64()))
+					storedResult = []byte("err")
+				}
+				if egld.Cmp(big.NewInt(testConfig.TransferFromChildToParent)) != 0 {
+					host.Runtime().FailExecution(fmt.Errorf("invalid egld value %d", egld))
+					storedResult = []byte("err")
+				}
+			}
 		}
 
-		host.Storage().SetStorage(test.ParentKeyA, storedResult)
+		_, err := host.Storage().SetStorage(test.ParentKeyA, storedResult)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
 
 		return instance
 	})
@@ -65,12 +75,12 @@ func BackTransfer_ChildMakesAsync(instanceMock *mock.InstanceMock, config interf
 		testConfig := config.(*test.TestConfig)
 
 		callData := txDataBuilder.NewBuilder()
-		callData.Func("calledByAsync")
+		callData.Func("wasteGas")
 		callData.Int64(0)
 
 		err := host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
 			Status:          vmhost.AsyncCallPending,
-			Destination:     test.NephewAddress,
+			Destination:     testConfig.NephewAddress,
 			Data:            callData.ToBytes(),
 			ValueBytes:      big.NewInt(0).Bytes(),
 			SuccessCallback: testConfig.SuccessCallback,
@@ -95,8 +105,8 @@ func BackTransfer_ChildCallback(instanceMock *mock.InstanceMock, config interfac
 
 		valueBytes := big.NewInt(testConfig.TransferFromChildToParent).Bytes()
 		err := host.Output().Transfer(
-			test.ParentAddress,
-			test.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
+			testConfig.ParentAddress,
+			testConfig.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
 		if err != nil {
 			host.Runtime().FailExecution(err)
 		}
@@ -110,7 +120,7 @@ func BackTransfer_ChildCallback(instanceMock *mock.InstanceMock, config interfac
 
 		ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
-			test.ParentAddress,
+			testConfig.ParentAddress,
 			[]*vmcommon.ESDTTransfer{transfer},
 			int64(testConfig.GasProvidedToChild),
 			nil,
