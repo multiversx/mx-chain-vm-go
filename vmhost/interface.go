@@ -39,7 +39,7 @@ type VMHost interface {
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
-	EnableEpochsHandler() vmcommon.EnableEpochsHandler
+	EnableEpochsHandler() EnableEpochsHandler
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -423,5 +423,21 @@ type GasTracing interface {
 type HashComputer interface {
 	Compute(string) []byte
 	Size() int
+	IsInterfaceNil() bool
+}
+
+// EnableEpochsHandler is used to verify which flags are set in a specific epoch based on EnableEpochs config
+type EnableEpochsHandler interface {
+	GetCurrentEpoch() uint32
+	IsStorageAPICostOptimizationFlagEnabledInEpoch(epoch uint32) bool
+	IsManagedCryptoAPIsFlagEnabledInEpoch(epoch uint32) bool
+	IsRemoveNonUpdatedStorageFlagEnabledInEpoch(epoch uint32) bool
+	IsRefactorContextFlagEnabledInEpoch(epoch uint32) bool
+	IsFailExecutionOnEveryAPIErrorFlagEnabledInEpoch(epoch uint32) bool
+	IsFixOOGReturnCodeFlagEnabledInEpoch(epoch uint32) bool
+	IsCreateNFTThroughExecByCallerFlagEnabledInEpoch(epoch uint32) bool
+	IsDisableExecByCallerFlagEnabledInEpoch(epoch uint32) bool
+	IsCheckExecuteOnReadOnlyFlagEnabledInEpoch(epoch uint32) bool
+
 	IsInterfaceNil() bool
 }

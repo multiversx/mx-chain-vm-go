@@ -54,7 +54,7 @@ type vmHost struct {
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       vmhost.CallArgsParser
-	enableEpochsHandler  vmcommon.EnableEpochsHandler
+	enableEpochsHandler  vmhost.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 }
 
@@ -234,7 +234,7 @@ func (host *vmHost) Storage() vmhost.StorageContext {
 }
 
 // EnableEpochsHandler returns the enableEpochsHandler instance of the host
-func (host *vmHost) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+func (host *vmHost) EnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return host.enableEpochsHandler
 }
 
@@ -529,27 +529,27 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabled()
+	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
 }
 
 // FixFailExecutionEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFailExecutionOnEveryAPIErrorFlagEnabled()
+	return host.enableEpochsHandler.IsFailExecutionOnEveryAPIErrorFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
 }
 
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsCreateNFTThroughExecByCallerFlagEnabled()
+	return host.enableEpochsHandler.IsCreateNFTThroughExecByCallerFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
 }
 
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabled()
+	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
 }
 
 // CheckExecuteReadOnly returns true if the corresponding flag is set
 func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabled()
+	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {

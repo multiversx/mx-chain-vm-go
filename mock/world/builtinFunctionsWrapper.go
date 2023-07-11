@@ -7,6 +7,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/mock"
 	"github.com/multiversx/mx-chain-vm-go/config"
 )
 
@@ -33,13 +34,27 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasMap:                           gasMap,
-		MapDNSAddresses:                  dnsMap,
-		MapDNSV2Addresses:                dnsMap,
-		Marshalizer:                      WorldMarshalizer,
-		Accounts:                         world.AccountsAdapter,
-		ShardCoordinator:                 world,
-		EnableEpochsHandler:              EnableEpochsHandlerStubAllFlags(),
+		GasMap:            gasMap,
+		MapDNSAddresses:   dnsMap,
+		MapDNSV2Addresses: dnsMap,
+		Marshalizer:       WorldMarshalizer,
+		Accounts:          world.AccountsAdapter,
+		ShardCoordinator:  world,
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsTransferToMetaFlagEnabledField:                     true,
+			IsCheckFrozenCollectionFlagEnabledField:              true,
+			IsFixAsyncCallbackCheckFlagEnabledField:              true,
+			IsESDTNFTImprovementV1FlagEnabledField:               true,
+			IsSaveToSystemAccountFlagEnabledField:                true,
+			IsValueLengthCheckFlagEnabledField:                   true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsFixOldTokenLiquidityEnabledField:                   true,
+			IsAlwaysSaveTokenMetaDataEnabledField:                true,
+			IsSetGuardianEnabledField:                            true,
+		},
 		GuardedAccountHandler:            world.GuardedAccountHandler,
 		MaxNumOfAddressesForTransferRole: 100,
 	}
