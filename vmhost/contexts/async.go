@@ -124,8 +124,19 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetContextAddress()
 
-	context.parentAddr = make([]byte, len(runtime.GetVMInput().CallerAddr))
-	copy(context.parentAddr, runtime.GetVMInput().CallerAddr)
+	context.parentAddr = make([]byte, len(parentAddress))
+	copy(context.parentAddr, parentAddress)
+
+	if input.CallType == vm.AsynchronousCallBack {
+		asyncParentAddr, err := context.getParentAddressFromStorage()
+		if err != nil {
+			logAsync.Error("init state from input", "err", err)
+			return err
+		}
+
+		context.parentAddr = make([]byte, len(asyncParentAddr))
+		copy(context.parentAddr, asyncParentAddr)
+	}
 
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
@@ -699,6 +710,19 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
+func (context *asyncContext) getParentAddressFromStorage() ([]byte, error) {
+	loadedContext, err := readAsyncContextFromStorage(
+		context.host.Storage(),
+		context.host.Runtime().GetContextAddress(),
+		context.callbackAsyncInitiatorCallID,
+		context.marshalizer)
+	if err != nil {
+		return nil, err
+	}
+
+	return loadedContext.parentAddr, nil
+}
+
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
 // extracts the ReturnCode from data provided by the destination call, and updates
 // the status of the AsyncCall with its value.
@@ -762,7 +786,7 @@ func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *vmhost.AsyncC
 	}
 }
 
-func (context *asyncContext) isMultiLevelAsync(call *vmhost.AsyncCall) bool {
+func (context *asyncContext) isMultiLevelAsync(_ *vmhost.AsyncCall) bool {
 	return context.isCallAsyncOnStack()
 }
 
