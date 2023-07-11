@@ -127,17 +127,6 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.parentAddr = make([]byte, len(parentAddress))
 	copy(context.parentAddr, parentAddress)
 
-	if input.CallType == vm.AsynchronousCallBack {
-		asyncParentAddr, err := context.getParentAddressFromStorage()
-		if err != nil {
-			logAsync.Error("init state from input", "err", err)
-			return err
-		}
-
-		context.parentAddr = make([]byte, len(asyncParentAddr))
-		copy(context.parentAddr, asyncParentAddr)
-	}
-
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
 		context.callID = input.CurrentTxHash
@@ -153,6 +142,17 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	if input.CallType == vm.AsynchronousCallBack {
 		context.callbackAsyncInitiatorCallID = input.AsyncArguments.CallbackAsyncInitiatorCallID
 		context.gasAccumulated = input.AsyncArguments.GasAccumulated
+	}
+
+	if input.CallType == vm.AsynchronousCallBack {
+		asyncParentAddr, err := context.getParentAddressFromStorage()
+		if err != nil {
+			logAsync.Error("init state from input", "err", err)
+			return err
+		}
+
+		context.parentAddr = make([]byte, len(asyncParentAddr))
+		copy(context.parentAddr, asyncParentAddr)
 	}
 
 	if logAsync.GetLevel() == logger.LogTrace {
@@ -711,16 +711,13 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) getParentAddressFromStorage() ([]byte, error) {
-	loadedContext, err := readAsyncContextFromStorage(
-		context.host.Storage(),
-		context.host.Runtime().GetContextAddress(),
-		context.callbackAsyncInitiatorCallID,
-		context.marshalizer)
+	stackContext := context.Clone()
+	stackContext, err := stackContext.LoadParentContextFromStackOrStorage()
 	if err != nil {
-		return nil, err
+		return nil, vmhost.ErrAsyncNoCallbackForClosure
 	}
 
-	return loadedContext.parentAddr, nil
+	return stackContext.GetParentAddress(), nil
 }
 
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
