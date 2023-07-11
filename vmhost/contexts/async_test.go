@@ -191,7 +191,7 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 	}
 
 	host.Runtime().InitStateFromContractCallInput(input)
-	err := async.InitStateFromInput(input, input.CallerAddr)
+	err := async.InitStateFromInput(input)
 
 	require.Nil(t, err)
 	require.Equal(t, input.CallerAddr, async.callerAddr)
@@ -835,7 +835,7 @@ func createCallbackInput(t *testing.T, lastTransfer *vmcommon.OutputTransfer) (*
 	return createCallbackInputWithVMOutput(t, vmOutput, lastTransfer)
 }
 
-func createCallbackInputWithVMOutput(t *testing.T, vmOutput *vmcommon.VMOutput, lastTransfer *vmcommon.OutputTransfer) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput, uint64) {
+func createCallbackInputWithVMOutput(t *testing.T, vmOutput *vmcommon.VMOutput, _ *vmcommon.OutputTransfer) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput, uint64) {
 	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBobWithBuiltIn(t, true)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, Alice)

@@ -310,7 +310,7 @@ func Test_BigIntToString(t *testing.T) {
 
 // Real contracts always check first that the big int fits.
 // This special test case represents an intentionally badly written contract.
-func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, config interface{}) {
+func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{}) {
 	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
 		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
 
@@ -1502,7 +1502,7 @@ func Test_Async_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithCodeMetadata([]byte{0, vmcommon.MetadataPayable}).
+				WithCodeMetadata([]byte{0, 0}).
 				WithMethods(contracts.BackTransfer_ParentCallsChild),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).

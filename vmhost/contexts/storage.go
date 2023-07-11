@@ -162,10 +162,16 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		}
 	}
 
-	return context.GetStorageFromAddressNoChecks(address, key)
+	value, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
+
+	context.useExtraGasForKeyIfNeeded(key, usedCache)
+	context.useGasForValueIfNeeded(value, usedCache)
+
+	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
+	return value, usedCache, err
 }
 
-// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by vm, so no permissions checks are necessary
+// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internally by vm, so no permissions checks are necessary
 func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool, error) {
 	// If the requested key is protected by the node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
@@ -173,10 +179,6 @@ func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
 	value, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
-
-	context.useExtraGasForKeyIfNeeded(key, usedCache)
-	context.useGasForValueIfNeeded(value, usedCache)
-
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, usedCache, err
 }

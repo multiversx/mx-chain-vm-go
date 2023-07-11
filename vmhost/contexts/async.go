@@ -112,7 +112,7 @@ func (context *asyncContext) InitState() {
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
 // information provided by a ContractCallInput.
-func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput, parentAddress []byte) error {
+func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) error {
 	context.InitState()
 
 	context.originalCallerAddr = make([]byte, len(input.OriginalCallerAddr))
@@ -124,8 +124,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetContextAddress()
 
-	context.parentAddr = make([]byte, len(parentAddress))
-	copy(context.parentAddr, parentAddress)
+	context.parentAddr = make([]byte, len(input.CallerAddr))
+	copy(context.parentAddr, input.CallerAddr)
 
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
@@ -147,7 +147,6 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	if input.CallType == vm.AsynchronousCallBack {
 		asyncParentAddr, err := context.getParentAddressFromStorage()
 		if err != nil {
-			logAsync.Error("init state from input", "err", err)
 			return err
 		}
 
@@ -711,13 +710,20 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) getParentAddressFromStorage() ([]byte, error) {
-	stackContext := context.Clone()
-	stackContext, err := stackContext.LoadParentContextFromStackOrStorage()
-	if err != nil {
-		return nil, vmhost.ErrAsyncNoCallbackForClosure
+	stackContext := context.getContextFromStack(context.address, context.callbackAsyncInitiatorCallID)
+	if stackContext != nil {
+		return stackContext.parentAddr, nil
 	}
 
-	return stackContext.GetParentAddress(), nil
+	loadedContext, err := readAsyncContextFromStorage(
+		context.host.Storage(),
+		context.address, context.callbackAsyncInitiatorCallID,
+		context.marshalizer)
+	if err != nil {
+		return nil, err
+	}
+
+	return loadedContext.parentAddr, nil
 }
 
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
