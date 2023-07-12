@@ -702,16 +702,12 @@ func (context *asyncContext) Execute() error {
 				}
 			}
 		}
-
-		context.deleteCallGroupByID(vmhost.LegacyAsyncCallGroupID)
 	}
 
 	return nil
 }
 
 func (context *asyncContext) getParentAddressFromStorage() ([]byte, error) {
-	logAsync.Error("getParentAddressFromStorage", "addr", context.address, "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
-
 	stackContext := context.getContextFromStack(context.address, context.callbackAsyncInitiatorCallID)
 	if stackContext != nil {
 		return stackContext.parentAddr, nil
@@ -744,52 +740,27 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		return nil, false, vmhost.ErrCannotInterpretCallbackArgs
 	}
 
-	logAsync.Error("UpdateCurrentAsyncCallStatus", "addr", address, "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
 	loadedContext, err := readAsyncContextFromStorage(
 		context.host.Storage(),
 		address,
 		context.callbackAsyncInitiatorCallID,
 		context.marshalizer)
 	if err != nil {
-		if err == vmhost.ErrNoStoredAsyncContextFound {
-			return getLegacyCallback(address, vmInput), true, nil
-		} else {
-			return nil, false, err
-		}
+		return nil, false, err
 	}
 
 	asyncCallInfo := loadedContext.GetAsyncCallByCallID(callID)
 	call := asyncCallInfo.GetAsyncCall()
 	err = asyncCallInfo.GetError()
 	if err != nil {
-		if err == vmhost.ErrAsyncCallNotFound {
-			return getLegacyCallback(address, vmInput), true, nil
-		} else {
-			return nil, false, err
-		}
+		return nil, false, err
 	}
 
 	// The first argument of the callback is the return code of the destination call
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
-	return call, false, nil
-}
-
-func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *vmhost.AsyncCall {
-	var valueBytes []byte = nil
-	if vmInput.CallValue != nil {
-		valueBytes = vmInput.CallValue.Bytes()
-	}
-	return &vmhost.AsyncCall{
-		Status:          vmhost.AsyncCallResolved,
-		Destination:     address,
-		ValueBytes:      valueBytes,
-		SuccessCallback: vmhost.CallbackFunctionName,
-		ErrorCallback:   vmhost.CallbackFunctionName,
-		GasLimit:        vmInput.GasProvided,
-		GasLocked:       vmInput.GasLocked,
-	}
+	return call, loadedContext.HasLegacyGroup(), nil
 }
 
 func (context *asyncContext) isMultiLevelAsync(_ *vmhost.AsyncCall) bool {
@@ -1035,7 +1006,7 @@ func (context *asyncContext) accumulateGas(gas uint64) {
 	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
 }
 
-// HasLegacyGroup checks if the a legacy async group was created
+// HasLegacyGroup checks if the legacy async group was created
 func (context *asyncContext) HasLegacyGroup() bool {
 	_, hasLegacyGroup := context.GetCallGroup(vmhost.LegacyAsyncCallGroupID)
 	return hasLegacyGroup

@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"errors"
-
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -46,11 +45,11 @@ func (context *asyncContext) LoadParentContext() error {
 	}
 }
 
-// DeleteFromAddress deletes the persisted state of the AsyncContext from the contract storage.
-func (context *asyncContext) DeleteFromAddress(address []byte) error {
+// DeleteFromCallID deletes the persisted state of the AsyncContext from the contract storage.
+func (context *asyncContext) DeleteFromCallID(callID []byte) error {
 	storage := context.host.Storage()
-	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, context.callID)
-	_, err := storage.SetProtectedStorageToAddressUnmetered(address, storageKey, nil)
+	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, callID)
+	_, err := storage.SetProtectedStorageToAddressUnmetered(context.address, storageKey, nil)
 	return err
 }
 

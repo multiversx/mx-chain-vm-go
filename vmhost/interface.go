@@ -360,7 +360,7 @@ type AsyncContext interface {
 
 	LoadParentContext() error
 	Save() error
-	DeleteFromAddress(address []byte) error
+	DeleteFromCallID(address []byte) error
 
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte

@@ -53,7 +53,7 @@ func (context *asyncContext) CompleteChildConditional(isChildComplete bool, call
 func (context *asyncContext) complete() error {
 	// There are no more callbacks to return from other shards. The context can
 	// be deleted from storage.
-	err := context.DeleteFromAddress(context.address)
+	err := context.DeleteFromCallID(context.callID)
 	if err != nil {
 		return err
 	}

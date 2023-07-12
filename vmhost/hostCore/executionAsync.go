@@ -20,10 +20,5 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		return vmhost.ErrLegacyAsyncCallInvalid
 	}
 
-	err := async.Save()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

@@ -499,7 +499,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	}
 
 	async.SetResults(vmOutput)
-	if !async.IsComplete() {
+	if !async.IsComplete() || async.HasLegacyGroup() {
 		saveErr := async.Save()
 		if saveErr != nil {
 			vmOutput = output.CreateVMOutputInCaseOfError(saveErr)
@@ -1166,8 +1166,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		runtime.GetContextAddress(),
 		callerCallID,
 		&runtime.GetVMInput().VMInput)
-	if err != nil && !isLegacy {
-		log.Trace("UpdateCurrentCallStatus failed", "error", err)
+	if err != nil {
 		return err
 	}
 
@@ -1199,7 +1198,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	}
 
 	if isLegacy {
-		return nil
+		return async.DeleteFromCallID(async.GetCallbackAsyncInitiatorCallID())
 	}
 
 	err = async.LoadParentContext()
@@ -1242,19 +1241,15 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return true, err
 		}
 
-		isLegacy := async.HasLegacyGroup()
 		err = async.Execute()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err, "src", "async execution")
 			return false, err
 		}
 
-		if !async.IsComplete() {
-			var err error = nil
-			if !isLegacy {
-				async.SetResults(host.Output().GetVMOutput())
-				err = async.Save()
-			}
+		if !async.IsComplete() || async.HasLegacyGroup() {
+			async.SetResults(host.Output().GetVMOutput())
+			err = async.Save()
 			return false, err
 		}
 	} else {
