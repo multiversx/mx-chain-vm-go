@@ -710,6 +710,8 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) getParentAddressFromStorage() ([]byte, error) {
+	logAsync.Error("getParentAddressFromStorage", "addr", context.address, "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
+
 	stackContext := context.getContextFromStack(context.address, context.callbackAsyncInitiatorCallID)
 	if stackContext != nil {
 		return stackContext.parentAddr, nil
@@ -742,6 +744,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		return nil, false, vmhost.ErrCannotInterpretCallbackArgs
 	}
 
+	logAsync.Error("UpdateCurrentAsyncCallStatus", "addr", address, "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
 	loadedContext, err := readAsyncContextFromStorage(
 		context.host.Storage(),
 		address,
