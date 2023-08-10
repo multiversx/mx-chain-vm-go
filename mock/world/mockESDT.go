@@ -1,7 +1,6 @@
 package worldmock
 
 import (
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -19,7 +18,7 @@ import (
 func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenIdentifier []byte, nonce uint64) (*big.Int, error) {
 	account := bf.World.AcctMap.GetAccount(address)
 	if check.IfNil(account) {
-		return nil, fmt.Errorf("account does not exist: %s", hex.EncodeToString(address))
+		return big.NewInt(0), nil
 	}
 	return esdtconvert.GetTokenBalance(tokenIdentifier, nonce, account.Storage)
 }
@@ -29,7 +28,9 @@ func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenIdentifi
 func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenIdentifier []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	account := bf.World.AcctMap.GetAccount(address)
 	if check.IfNil(account) {
-		return nil, fmt.Errorf("account does not exist: %s", hex.EncodeToString(address))
+		return &esdt.ESDigitalToken{
+			Value: big.NewInt(0),
+		}, nil
 	}
 	systemAccStorage := make(map[string][]byte)
 	systemAcc := bf.World.AcctMap.GetAccount(vmcommon.SystemAccountAddress)
@@ -44,7 +45,7 @@ func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenIdentifier 
 func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenIdentifier []byte, nonce uint64, tokenData *esdt.ESDigitalToken) error {
 	account := bf.World.AcctMap.GetAccount(address)
 	if check.IfNil(account) {
-		return fmt.Errorf("account does not exist: %s", hex.EncodeToString(address))
+		return nil
 	}
 	return account.SetTokenData(tokenIdentifier, nonce, tokenData)
 }
