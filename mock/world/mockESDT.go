@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
@@ -17,7 +18,7 @@ import (
 // key (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenIdentifier []byte, nonce uint64) (*big.Int, error) {
 	account := bf.World.AcctMap.GetAccount(address)
-	if account == nil {
+	if check.IfNil(account) {
 		return nil, fmt.Errorf("account does not exist: %s", hex.EncodeToString(address))
 	}
 	return esdtconvert.GetTokenBalance(tokenIdentifier, nonce, account.Storage)
@@ -27,7 +28,7 @@ func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenIdentifi
 // (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenIdentifier []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	account := bf.World.AcctMap.GetAccount(address)
-	if account == nil {
+	if check.IfNil(account) {
 		return nil, fmt.Errorf("account does not exist: %s", hex.EncodeToString(address))
 	}
 	systemAccStorage := make(map[string][]byte)
@@ -42,7 +43,7 @@ func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenIdentifier 
 // (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenIdentifier []byte, nonce uint64, tokenData *esdt.ESDigitalToken) error {
 	account := bf.World.AcctMap.GetAccount(address)
-	if account == nil {
+	if check.IfNil(account) {
 		return fmt.Errorf("account does not exist: %s", hex.EncodeToString(address))
 	}
 	return account.SetTokenData(tokenIdentifier, nonce, tokenData)
