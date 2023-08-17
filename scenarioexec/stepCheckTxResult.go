@@ -118,7 +118,7 @@ func (ae *VMTestExecutor) checkTxLog(
 			checkBytesListPretty(expectedLog.Topics),
 			ae.exprReconstructor.ReconstructList(actualLog.Topics, er.NoHint))
 	}
-	//TODO in this PR: fix this
+	//TODO fix this when integrating feat/logEvents
 	//if !expectedLog.Data.Check(actualLog.Data) {
 	//	return fmt.Errorf("bad log data. Tx '%s'. Log index: %d. Want:\n%s\nGot:\n%s",
 	//		txIndex,
