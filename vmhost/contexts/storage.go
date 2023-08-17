@@ -477,18 +477,24 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 
 // UseGasForStorageLoad - single spot of gas consumption for storage load
 func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, staticGasCost uint64, usedCache bool) error {
-	blockchainLoadCost, err := context.getBlockchainLoadCost(trieDepth, staticGasCost, usedCache)
+	blockchainLoadCost, blockchainEstGasCost, err := context.getBlockchainLoadCost(trieDepth, staticGasCost, usedCache)
 	if err != nil {
 		return err
 	}
+	logStorage.Warn("getBlockchainLoadCost",
+		"estimated gas cost", blockchainEstGasCost,
+		"static gas cost", blockchainLoadCost,
+		"tracedFunctionName", tracedFunctionName,
+		"trieDepth", trieDepth,
+	)
 
 	return context.host.Metering().UseGasBoundedAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
 }
 
-func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
+func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, uint64, error) {
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
-		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
+		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, 0, nil
 	}
 
 	return context.GetStorageLoadCost(trieDepth, staticGasCost)
@@ -511,16 +517,21 @@ func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 }
 
 // GetStorageLoadCost returns the gas cost for the storage load operation
-func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
+func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, uint64, error) {
 	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
-		return computeGasForStorageLoadBasedOnTrieDepth(
+		estimatedGasCost, err := computeGasForStorageLoadBasedOnTrieDepth(
 			trieDepth,
 			context.host.Metering().GasSchedule().DynamicStorageLoad,
 			staticGasCost,
 		)
+		if err != nil {
+			logStorage.Error(err.Error())
+		}
+
+		return staticGasCost, estimatedGasCost, nil
 	}
 
-	return staticGasCost, nil
+	return staticGasCost, 0, nil
 }
 
 func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoadCostCoefficients, staticGasCost uint64) (uint64, error) {
