@@ -3,6 +3,7 @@ package hostCore
 import (
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
@@ -68,6 +69,17 @@ func TestNewVMHost(t *testing.T) {
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
 		require.ErrorIs(t, err, vmhost.ErrNilEnableEpochsHandler)
+	})
+	t.Run("InvalidEnableEpochsHandler", func(t *testing.T) {
+		hostParameters := makeHostParameters()
+		hostParameters.EnableEpochsHandler = &worldmock.EnableEpochsHandlerStub{
+			IsFlagDefinedCalled: func(flag core.EnableEpochFlag) bool {
+				return false
+			},
+		}
+		host, err := NewVMHost(blockchainHook, hostParameters)
+		require.Nil(t, host)
+		require.ErrorIs(t, err, core.ErrInvalidEnableEpochsHandler)
 	})
 	t.Run("NilHasher", func(t *testing.T) {
 		hostParameters := makeHostParameters()

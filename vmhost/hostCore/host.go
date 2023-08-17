@@ -83,6 +83,10 @@ func NewVMHost(
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, vmhost.ErrNilEnableEpochsHandler
 	}
+	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler)
+	if err != nil {
+		return nil, err
+	}
 	if check.IfNil(hostParameters.Hasher) {
 		return nil, vmhost.ErrNilHasher
 	}
@@ -111,7 +115,6 @@ func NewVMHost(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	var err error
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err

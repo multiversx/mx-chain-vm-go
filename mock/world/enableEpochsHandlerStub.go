@@ -9,7 +9,16 @@ var _ vmhost.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
 
 // EnableEpochsHandlerStub -
 type EnableEpochsHandlerStub struct {
+	IsFlagDefinedCalled               func(flag core.EnableEpochFlag) bool
 	IsFlagEnabledInCurrentEpochCalled func(flag core.EnableEpochFlag) bool
+}
+
+// IsFlagDefined -
+func (stub *EnableEpochsHandlerStub) IsFlagDefined(flag core.EnableEpochFlag) bool {
+	if stub.IsFlagDefinedCalled != nil {
+		return stub.IsFlagDefinedCalled(flag)
+	}
+	return true
 }
 
 // IsFlagEnabledInCurrentEpoch -
