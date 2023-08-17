@@ -3,6 +3,7 @@ package worldmock
 import (
 	"bytes"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -41,19 +42,21 @@ func NewBuiltinFunctionsWrapper(
 		Accounts:          world.AccountsAdapter,
 		ShardCoordinator:  world,
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
-			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsGlobalMintBurnFlagEnabledField:                     true,
-			IsTransferToMetaFlagEnabledField:                     true,
-			IsCheckFrozenCollectionFlagEnabledField:              true,
-			IsFixAsyncCallbackCheckFlagEnabledField:              true,
-			IsESDTNFTImprovementV1FlagEnabledField:               true,
-			IsSaveToSystemAccountFlagEnabledField:                true,
-			IsValueLengthCheckFlagEnabledField:                   true,
-			IsCheckFunctionArgumentFlagEnabledField:              true,
-			IsFixOldTokenLiquidityEnabledField:                   true,
-			IsAlwaysSaveTokenMetaDataEnabledField:                true,
-			IsSetGuardianEnabledField:                            true,
+			IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == core.CheckCorrectTokenIDForTransferRoleFlag ||
+					flag == core.ESDTTransferRoleFlag ||
+					flag == core.GlobalMintBurnFlag ||
+					flag == core.TransferToMetaFlag ||
+					flag == core.CheckFrozenCollectionFlag ||
+					flag == core.FixAsyncCallbackCheckFlag ||
+					flag == core.ESDTNFTImprovementV1Flag ||
+					flag == core.SaveToSystemAccountFlag ||
+					flag == core.ValueLengthCheckFlag ||
+					flag == core.CheckFunctionArgumentFlag ||
+					flag == core.FixOldTokenLiquidityFlag ||
+					flag == core.AlwaysSaveTokenMetaDataFlag ||
+					flag == core.SetGuardianFlag
+			},
 		},
 		GuardedAccountHandler:            world.GuardedAccountHandler,
 		MaxNumOfAddressesForTransferRole: 100,

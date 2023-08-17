@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -52,7 +53,9 @@ func TestNewStorageContext(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField: true,
+			IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == core.StorageAPICostOptimizationFlag
+			},
 		}
 		host := &contextmock.VMHostMock{
 			EnableEpochsHandlerField: enableEpochsHandler,
@@ -101,7 +104,9 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	mockMetering.BlockGasLimitMock = uint64(15000)
 	mockMetering.GasLeftMock = 20000
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	host := &contextmock.VMHostMock{
@@ -161,7 +166,9 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	}
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	host := &contextmock.VMHostMock{
@@ -194,7 +201,9 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	mockMetering.GasLeftMock = 20000
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	host := &contextmock.VMHostMock{
@@ -345,7 +354,9 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 	host := &contextmock.VMHostMock{
 		OutputContext:            mockOutput,
@@ -413,7 +424,9 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	mockMetering.GasLeftMock = 20000
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	host := &contextmock.VMHostMock{
@@ -463,7 +476,9 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	nonreadable := []byte("nonreadable")
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	mockOutput := &contextmock.OutputContextMock{}
@@ -570,7 +585,9 @@ func TestStorageContext_StoreGasPerKey(t *testing.T) {
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	host := &contextmock.VMHostMock{
@@ -586,7 +603,9 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag
+		},
 	}
 
 	host := &contextmock.VMHostMock{

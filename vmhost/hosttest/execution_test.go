@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -1014,7 +1015,9 @@ func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcomm
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
 				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+				enableEpochsHandler.IsFlagEnabledInCurrentEpochCalled = func(flag core.EnableEpochFlag) bool {
+					return false
+				}
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1043,7 +1046,9 @@ func runTestMBufferSetByteSlice(
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
 				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+				enableEpochsHandler.IsFlagEnabledInCurrentEpochCalled = func(flag core.EnableEpochFlag) bool {
+					return false
+				}
 			}
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {

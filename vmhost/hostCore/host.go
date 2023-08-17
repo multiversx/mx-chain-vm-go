@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -529,27 +530,27 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
+	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.FixOOGReturnCodeFlag)
 }
 
 // FixFailExecutionEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFailExecutionOnEveryAPIErrorFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
+	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.FailExecutionOnEveryAPIErrorFlag)
 }
 
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsCreateNFTThroughExecByCallerFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
+	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.CreateNFTThroughExecByCallerFlag)
 }
 
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
+	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.DisableExecByCallerFlag)
 }
 
 // CheckExecuteReadOnly returns true if the corresponding flag is set
 func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabledInEpoch(host.enableEpochsHandler.GetCurrentEpoch())
+	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.CheckExecuteOnReadOnlyFlag)
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {

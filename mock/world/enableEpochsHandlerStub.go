@@ -1,6 +1,7 @@
 package worldmock
 
 import (
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -8,66 +9,15 @@ var _ vmhost.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
 
 // EnableEpochsHandlerStub -
 type EnableEpochsHandlerStub struct {
-	GetCurrentEpochField                           uint32
-	IsFixOOGReturnCodeFlagEnabledField             bool
-	IsRemoveNonUpdatedStorageFlagEnabledField      bool
-	IsCreateNFTThroughExecByCallerFlagEnabledField bool
-	IsStorageAPICostOptimizationFlagEnabledField   bool
-	IsFailExecutionOnEveryAPIErrorFlagEnabledField bool
-	IsManagedCryptoAPIsFlagEnabledField            bool
-	IsDisableExecByCallerFlagEnabledField          bool
-	IsRefactorContextFlagEnabledField              bool
-	IsCheckExecuteOnReadOnlyFlagEnabledField       bool
+	IsFlagEnabledInCurrentEpochCalled func(flag core.EnableEpochFlag) bool
 }
 
-// GetCurrentEpoch -
-func (stub *EnableEpochsHandlerStub) GetCurrentEpoch() uint32 {
-	return stub.GetCurrentEpochField
-}
-
-// IsStorageAPICostOptimizationFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsStorageAPICostOptimizationFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsStorageAPICostOptimizationFlagEnabledField
-}
-
-// IsManagedCryptoAPIsFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsManagedCryptoAPIsFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsManagedCryptoAPIsFlagEnabledField
-}
-
-// IsRemoveNonUpdatedStorageFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsRemoveNonUpdatedStorageFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsRemoveNonUpdatedStorageFlagEnabledField
-}
-
-// IsRefactorContextFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsRefactorContextFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsRefactorContextFlagEnabledField
-}
-
-// IsFailExecutionOnEveryAPIErrorFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsFailExecutionOnEveryAPIErrorFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsFailExecutionOnEveryAPIErrorFlagEnabledField
-}
-
-// IsFixOOGReturnCodeFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsFixOOGReturnCodeFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsFixOOGReturnCodeFlagEnabledField
-}
-
-// IsCreateNFTThroughExecByCallerFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsCreateNFTThroughExecByCallerFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsCreateNFTThroughExecByCallerFlagEnabledField
-}
-
-// IsDisableExecByCallerFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsDisableExecByCallerFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsDisableExecByCallerFlagEnabledField
-}
-
-// IsCheckExecuteOnReadOnlyFlagEnabledInEpoch -
-func (stub *EnableEpochsHandlerStub) IsCheckExecuteOnReadOnlyFlagEnabledInEpoch(_ uint32) bool {
-	return stub.IsCheckExecuteOnReadOnlyFlagEnabledField
+// IsFlagEnabledInCurrentEpoch -
+func (stub *EnableEpochsHandlerStub) IsFlagEnabledInCurrentEpoch(flag core.EnableEpochFlag) bool {
+	if stub.IsFlagEnabledInCurrentEpochCalled != nil {
+		return stub.IsFlagEnabledInCurrentEpochCalled(flag)
+	}
+	return false
 }
 
 // IsInterfaceNil -
@@ -78,15 +28,17 @@ func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 // EnableEpochsHandlerStubAllFlags creates a new EnableEpochsHandlerStub with all flags enabled
 func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 	return &EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField:   true,
-		IsFixOOGReturnCodeFlagEnabledField:             true,
-		IsRemoveNonUpdatedStorageFlagEnabledField:      true,
-		IsCreateNFTThroughExecByCallerFlagEnabledField: true,
-		IsManagedCryptoAPIsFlagEnabledField:            true,
-		IsFailExecutionOnEveryAPIErrorFlagEnabledField: true,
-		IsRefactorContextFlagEnabledField:              true,
-		IsDisableExecByCallerFlagEnabledField:          true,
-		IsCheckExecuteOnReadOnlyFlagEnabledField:       true,
+		IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
+			return flag == core.StorageAPICostOptimizationFlag ||
+				flag == core.FixOOGReturnCodeFlag ||
+				flag == core.RemoveNonUpdatedStorageFlag ||
+				flag == core.CreateNFTThroughExecByCallerFlag ||
+				flag == core.ManagedCryptoAPIsFlag ||
+				flag == core.FailExecutionOnEveryAPIErrorFlag ||
+				flag == core.RefactorContextFlag ||
+				flag == core.DisableExecByCallerFlag ||
+				flag == core.CheckExecuteOnReadOnlyFlag
+		},
 	}
 }
 

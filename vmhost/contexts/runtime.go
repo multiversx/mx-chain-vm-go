@@ -7,6 +7,7 @@ import (
 	builtinMath "math"
 	"math/big"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -653,8 +654,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	currentEpoch := enableEpochsHandler.GetCurrentEpoch()
-	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabledInEpoch(currentEpoch) {
+	if enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.ManagedCryptoAPIsFlag) {
 		err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
