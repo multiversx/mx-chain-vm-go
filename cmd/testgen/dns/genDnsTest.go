@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -128,7 +127,7 @@ func main() {
 
 	// save
 	serialized := mjwrite.ScenarioToJSONString(tg.generatedScenario)
-	err := ioutil.WriteFile(
+	err := os.WriteFile(
 		filepath.Join(getTestRoot(), "dns/dns_init.steps.json"),
 		[]byte(serialized), 0644)
 	if err != nil {

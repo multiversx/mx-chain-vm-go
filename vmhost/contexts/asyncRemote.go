@@ -8,8 +8,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-const callbackNamePlaceholder = "<callback>"
-
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *vmhost.AsyncCall) error {
 	host := context.host
 	runtime := host.Runtime()
