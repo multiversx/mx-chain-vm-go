@@ -1,6 +1,7 @@
 package main
 
 import (
+	cryptoRand "crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -162,7 +163,7 @@ func generateBigFloatsSetBigInt() {
 		_, _ = file.WriteString("BigFloatSetBigIntTest@")
 		numberOfBytes := rand.Intn(200)
 		bigIntBytes := make([]byte, numberOfBytes)
-		rand.Read(bigIntBytes)
+		_, _ = cryptoRand.Read(bigIntBytes)
 
 		hexEncodedBytes := hex.EncodeToString(bigIntBytes)
 		_, _ = file.WriteString(hexEncodedBytes + ":4000000" + "\n")
@@ -206,7 +207,7 @@ func generateDataForBigFloatPow() {
 
 		//exponent
 		exponentBytes := make([]byte, 1)
-		rand.Read(exponentBytes)
+		_, _ = cryptoRand.Read(exponentBytes)
 		bigExponent := big.NewInt(0).SetBytes(exponentBytes)
 		if rand.Intn(2) == 1 {
 			bigExponent.Neg(bigExponent)
@@ -255,7 +256,7 @@ func generateHexEncodedBigFloat() string {
 		encodedBigFloat = append(encodedBigFloat, negativeEncodedBigFloatPrefix[:]...)
 	}
 	randomExponentAndMantissa := make([]byte, 12)
-	rand.Read(randomExponentAndMantissa)
+	_, _ = cryptoRand.Read(randomExponentAndMantissa)
 	encodedBigFloat = append(encodedBigFloat, randomExponentAndMantissa...)
 	hexEncodedBigFloat := hex.EncodeToString(encodedBigFloat)
 	return hexEncodedBigFloat
@@ -269,7 +270,7 @@ func generateHexEncodedBigFloatForPow() string {
 		encodedBigFloat = append(encodedBigFloat, negativeEncodedBigFloatForPowPrefix[:]...)
 	}
 	randomExponentAndMantissa := make([]byte, 9)
-	rand.Read(randomExponentAndMantissa)
+	_, _ = cryptoRand.Read(randomExponentAndMantissa)
 	encodedBigFloat = append(encodedBigFloat, randomExponentAndMantissa...)
 	hexEncodedBigFloat := hex.EncodeToString(encodedBigFloat)
 	return hexEncodedBigFloat

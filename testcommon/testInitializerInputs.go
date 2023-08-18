@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -80,7 +80,7 @@ func MakeTestSCAddressWithVMType(identifier string, vmType []byte) []byte {
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
-	code, err := ioutil.ReadFile(filepath.Clean(fileName))
+	code, err := os.ReadFile(filepath.Clean(fileName))
 	if err != nil {
 		panic(fmt.Sprintf("GetSCCode(): %s", fileName))
 	}
@@ -94,7 +94,7 @@ func GetTestSCCode(scName string, prefixToTestSCs ...string) []byte {
 	for _, prefixToTestSC := range prefixToTestSCs {
 		pathToSC := prefixToTestSC + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 		searchedPaths = append(searchedPaths, pathToSC)
-		code, err := ioutil.ReadFile(filepath.Clean(pathToSC))
+		code, err := os.ReadFile(filepath.Clean(pathToSC))
 		if err == nil {
 			return code
 		}

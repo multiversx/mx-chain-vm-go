@@ -2,8 +2,8 @@ package vmhost
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"path/filepath"
 
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -80,7 +80,7 @@ func InverseBytes(data []byte) []byte {
 
 // GetSCCode retrieves the bytecode of a WASM module from a file.
 func GetSCCode(fileName string) []byte {
-	code, err := ioutil.ReadFile(filepath.Clean(fileName))
+	code, err := os.ReadFile(filepath.Clean(fileName))
 	if err != nil {
 		panic(fmt.Sprintf("GetSCCode(): %s", fileName))
 	}
