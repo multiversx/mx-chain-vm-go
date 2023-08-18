@@ -2,8 +2,8 @@ package featuresintegrationtest
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"strings"
 	"testing"
 
@@ -76,7 +76,7 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 	pfe.contractAddress = []byte("contract_addr_________________s1")
 	pfe.userAddress = []byte("user_addr_____________________s1")
 
-	scCode, err := ioutil.ReadFile(contractPath)
+	scCode, err := os.ReadFile(contractPath)
 	if err != nil {
 		panic(err)
 	}

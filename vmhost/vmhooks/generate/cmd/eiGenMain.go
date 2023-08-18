@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go/token"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -197,7 +196,7 @@ func writeRustWasmerMeteringHelpers() {
 
 func tryCopyFilesToRustExecutorRepo() {
 	fullPathToRustRepoConfigFile := filepath.Join(pathToApiPackage, "generate/cmd/", pathToRustRepoConfigFile)
-	contentBytes, err := ioutil.ReadFile(fullPathToRustRepoConfigFile)
+	contentBytes, err := os.ReadFile(fullPathToRustRepoConfigFile)
 	if err != nil {
 		// this feature is optional
 		fmt.Println("Rust files not copied to wasm-vm-executor-rs. Add a wasm-vm-executor-rs-path.txt with the path to enable feature.")
