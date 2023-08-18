@@ -121,31 +121,6 @@ func createWasmInputsFromArguments(
 	return wasmInputs, nil
 }
 
-func convertWasmOutputToValue(
-	wasmFunctionOutputsArity cUint32T,
-	wasmOutputs []cWasmerValueT,
-	exportedFunctionName string,
-) (Value, error) {
-	if wasmFunctionOutputsArity > 0 {
-		var result = wasmOutputs[0]
-
-		switch result.tag {
-		case cWasmI32:
-			pointer := (*int32)(unsafe.Pointer(&result.value))
-
-			return I32(*pointer), nil
-		case cWasmI64:
-			pointer := (*int64)(unsafe.Pointer(&result.value))
-
-			return I64(*pointer), nil
-		default:
-			return Void(), NewExportedFunctionError(exportedFunctionName, "Invalid output type retrieved from function `%s`.")
-		}
-	}
-
-	return Void(), nil
-}
-
 func writeInt32ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interface{}, exportedFunctionName string) error {
 	wasmInputs[index].tag = cWasmI32
 	var pointer = (*int32)(unsafe.Pointer(&wasmInputs[index].value))
