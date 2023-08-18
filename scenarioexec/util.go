@@ -149,7 +149,8 @@ func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),
-		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
+		//TODO fix this when integrating feat/logEvents
+		//Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
 		Topics: topics,
 	}
 
