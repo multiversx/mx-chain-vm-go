@@ -42,20 +42,20 @@ func NewBuiltinFunctionsWrapper(
 		Accounts:          world.AccountsAdapter,
 		ShardCoordinator:  world,
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
-			IsFlagEnabledInCurrentEpochCalled: func(flag core.EnableEpochFlag) bool {
-				return flag == core.CheckCorrectTokenIDForTransferRoleFlag ||
-					flag == core.ESDTTransferRoleFlag ||
-					flag == core.GlobalMintBurnFlag ||
-					flag == core.TransferToMetaFlag ||
-					flag == core.CheckFrozenCollectionFlag ||
-					flag == core.FixAsyncCallbackCheckFlag ||
-					flag == core.ESDTNFTImprovementV1Flag ||
-					flag == core.SaveToSystemAccountFlag ||
-					flag == core.ValueLengthCheckFlag ||
-					flag == core.CheckFunctionArgumentFlag ||
-					flag == core.FixOldTokenLiquidityFlag ||
-					flag == core.AlwaysSaveTokenMetaDataFlag ||
-					flag == core.SetGuardianFlag
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == builtInFunctions.CheckCorrectTokenIDForTransferRoleFlag ||
+					flag == builtInFunctions.ESDTTransferRoleFlag ||
+					flag == builtInFunctions.GlobalMintBurnFlag ||
+					flag == builtInFunctions.TransferToMetaFlag ||
+					flag == builtInFunctions.CheckFrozenCollectionFlag ||
+					flag == builtInFunctions.FixAsyncCallbackCheckFlag ||
+					flag == builtInFunctions.ESDTNFTImprovementV1Flag ||
+					flag == builtInFunctions.SaveToSystemAccountFlag ||
+					flag == builtInFunctions.ValueLengthCheckFlag ||
+					flag == builtInFunctions.CheckFunctionArgumentFlag ||
+					flag == builtInFunctions.FixOldTokenLiquidityFlag ||
+					flag == builtInFunctions.AlwaysSaveTokenMetaDataFlag ||
+					flag == builtInFunctions.SetGuardianFlag
 			},
 		},
 		GuardedAccountHandler:            world.GuardedAccountHandler,

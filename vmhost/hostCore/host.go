@@ -34,6 +34,22 @@ var _ vmhost.VMHost = (*vmHost)(nil)
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
+// allFlags must have all flags used by mx-chain-vm-go in the current version
+var allFlags = []core.EnableEpochFlag{
+	vmhost.MultiESDTTransferFixOnCallBackFlag,
+	vmhost.RemoveNonUpdatedStorageFlag,
+	vmhost.CreateNFTThroughExecByCallerFlag,
+	vmhost.StorageAPICostOptimizationFlag,
+	vmhost.CheckExecuteOnReadOnlyFlag,
+	vmhost.FailExecutionOnEveryAPIErrorFlag,
+	vmhost.ManagedCryptoAPIsFlag,
+	vmhost.DisableExecByCallerFlag,
+	vmhost.RefactorContextFlag,
+	vmhost.RuntimeMemStoreLimitFlag,
+	vmhost.RuntimeCodeSizeFixFlag,
+	vmhost.FixOOGReturnCodeFlag,
+}
+
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook       crypto.VMCrypto
@@ -83,7 +99,7 @@ func NewVMHost(
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, vmhost.ErrNilEnableEpochsHandler
 	}
-	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler)
+	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler, allFlags)
 	if err != nil {
 		return nil, err
 	}
@@ -533,27 +549,27 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.FixOOGReturnCodeFlag)
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FixOOGReturnCodeFlag)
 }
 
 // FixFailExecutionEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.FailExecutionOnEveryAPIErrorFlag)
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FailExecutionOnEveryAPIErrorFlag)
 }
 
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.CreateNFTThroughExecByCallerFlag)
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CreateNFTThroughExecByCallerFlag)
 }
 
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.DisableExecByCallerFlag)
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.DisableExecByCallerFlag)
 }
 
 // CheckExecuteReadOnly returns true if the corresponding flag is set
 func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.CheckExecuteOnReadOnlyFlag)
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CheckExecuteOnReadOnlyFlag)
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {

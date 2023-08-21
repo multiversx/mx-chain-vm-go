@@ -430,6 +430,8 @@ type HashComputer interface {
 // EnableEpochsHandler is used to verify which flags are set in a specific epoch based on EnableEpochs config
 type EnableEpochsHandler interface {
 	IsFlagDefined(flag core.EnableEpochFlag) bool
-	IsFlagEnabledInCurrentEpoch(flag core.EnableEpochFlag) bool
+	IsFlagEnabled(flag core.EnableEpochFlag) bool
+	IsFlagEnabledInEpoch(flag core.EnableEpochFlag, epoch uint32) bool
+	GetActivationEpoch(flag core.EnableEpochFlag) uint32
 	IsInterfaceNil() bool
 }

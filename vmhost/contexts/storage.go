@@ -3,7 +3,6 @@ package contexts
 import (
 	"bytes"
 
-	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -123,7 +122,7 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, bool, error) {
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
 	metering := context.host.Metering()
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	gasFlagSet := enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag)
+	gasFlagSet := enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 	if !usedCache || !gasFlagSet {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
@@ -139,7 +138,7 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 		return
 	}
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	gasFlagSet := enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag)
+	gasFlagSet := enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 	if !gasFlagSet || !usedCache {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		// TODO replace UseGas with UseGasBounded
@@ -187,7 +186,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	var err error
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if context.isProtocolProtectedKey(key) && enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag) {
+	if context.isProtocolProtectedKey(key) && enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) {
 		value, err = context.readFromBlockchain(address, key)
 		return value, false, err
 	}
@@ -430,7 +429,7 @@ func (context *storageContext) computeGasForUnchangedValue(length int, usedCache
 	metering := context.host.Metering()
 	useGas := uint64(0)
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if !usedCache || !enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag) {
+	if !usedCache || !enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) {
 		useGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	}
 	return useGas
@@ -465,7 +464,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 	extraKeyLenGas := uint64(0)
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if extraBytes > 0 &&
-		(!usedCache || !enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag)) {
+		(!usedCache || !enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)) {
 		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 	}
 	return extraKeyLenGas
@@ -475,7 +474,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, usedCache bool) {
 	metering := context.host.Metering()
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag) && usedCache {
+	if enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) && usedCache {
 		loadCost = metering.GasSchedule().BaseOpsAPICost.CachedStorageLoad
 	}
 
@@ -485,7 +484,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, l
 // IsUseDifferentGasCostFlagSet - getter for flag
 func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	return enableEpochsHandler.IsFlagEnabledInCurrentEpoch(core.StorageAPICostOptimizationFlag)
+	return enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
