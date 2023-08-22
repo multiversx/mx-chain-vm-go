@@ -105,7 +105,7 @@ func readAsyncContextFromStorage(
 	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	storageKey := getAsyncContextStorageKey(storage.GetVmProtectedPrefix(vmhost.AsyncDataPrefix), callID)
-	data, _, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
+	data, _, _, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
 		return nil, vmhost.ErrNoStoredAsyncContextFound
 	}

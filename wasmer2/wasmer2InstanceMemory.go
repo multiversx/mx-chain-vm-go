@@ -22,6 +22,7 @@ func (memory *Wasmer2Memory) Length() uint32 {
 }
 
 // Data returns a slice of bytes over the WebAssembly memory.
+// nolint
 func (memory *Wasmer2Memory) Data() []byte {
 	var length = memory.Length()
 	var data = (*uint8)(cWasmerMemoryData(memory.cgoInstance))
