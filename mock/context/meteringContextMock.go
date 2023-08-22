@@ -65,6 +65,11 @@ func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {}
 // UseGasAndAddTracedGas mocked method
 func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {}
 
+// UseGasBoundedAndAddTracedGas -
+func (m *MeteringContextMock) UseGasBoundedAndAddTracedGas(_ string, _ uint64) error {
+	return nil
+}
+
 // FreeGas mocked method
 func (m *MeteringContextMock) FreeGas(gas uint64) {
 	m.GasFreedMock += gas
@@ -91,7 +96,7 @@ func (m *MeteringContextMock) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {}
 // InitStateFromContractCallInput mocked method
 func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput) {}
 
-// TrackGasUsedByBuiltinFunction mocked method
+// TrackGasUsedByOutOfVMFunction mocked method
 func (m *MeteringContextMock) TrackGasUsedByOutOfVMFunction(_ *vmcommon.ContractCallInput, _ *vmcommon.VMOutput, _ *vmcommon.ContractCallInput) {
 }
 
