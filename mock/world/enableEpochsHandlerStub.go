@@ -331,6 +331,10 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsAlwaysSaveTokenMetaDataEnabledField:                true,
 		IsRuntimeCodeSizeFixEnabledField:                     true,
 		IsSetGuardianEnabledField:                            true,
+		IsGuardAccountEnabledField:                           true,
+		IsChangeUsernameEnabledField:                         true,
+		IsConsistentTokensValuesLengthCheckEnabledField:      true,
+		IsAutoBalanceDataTriesEnabledField:                   true,
 	}
 }
 
