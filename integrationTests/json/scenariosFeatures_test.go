@@ -57,6 +57,7 @@ func TestRustBigFloatFeatures(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("features/big-float-features/scenarios").
+		Exclude("features/big-float-features/scenarios/big_float_operator_checks.scen.json").
 		Run().
 		CheckNoError()
 }

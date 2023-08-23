@@ -39,7 +39,7 @@ func NewBuiltinFunctionsWrapper(
 		Marshalizer:                      WorldMarshalizer,
 		Accounts:                         world.AccountsAdapter,
 		ShardCoordinator:                 world,
-		EnableEpochsHandler:              EnableEpochsHandlerStubAllFlags(),
+		EnableEpochsHandler:              world.EnableEpochsHandler,
 		GuardedAccountHandler:            world.GuardedAccountHandler,
 		MaxNumOfAddressesForTransferRole: 100,
 	}
