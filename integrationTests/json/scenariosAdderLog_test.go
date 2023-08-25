@@ -74,6 +74,7 @@ VM hook begin: MBufferStorageLoad(-101, -102)
 GetPointsUsed: 5291
 SetPointsUsed: 6291
 GetPointsUsed: 6291
+GetPointsUsed: 6291
 SetPointsUsed: 56291
 VM hook end:   MBufferStorageLoad(-101, -102)
 VM hook begin: MBufferToBigIntUnsigned(-102, -103)
@@ -121,6 +122,7 @@ VM hook end:   MBufferSetBytes(-102, 1048601, 3)
 VM hook begin: MBufferStorageLoad(-102, -103)
 GetPointsUsed: 6333
 SetPointsUsed: 7333
+GetPointsUsed: 7333
 GetPointsUsed: 7333
 SetPointsUsed: 57333
 VM hook end:   MBufferStorageLoad(-102, -103)
