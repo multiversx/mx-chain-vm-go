@@ -7,7 +7,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
 // ExecutorMockFactory is the factory for the ExecutorRecorderMock.

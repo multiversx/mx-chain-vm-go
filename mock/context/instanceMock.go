@@ -7,7 +7,6 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
 var _ executor.Instance = (*InstanceMock)(nil)

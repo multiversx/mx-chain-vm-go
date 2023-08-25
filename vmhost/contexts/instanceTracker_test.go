@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
 

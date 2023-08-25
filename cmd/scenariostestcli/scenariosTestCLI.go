@@ -9,7 +9,6 @@ import (
 
 	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 

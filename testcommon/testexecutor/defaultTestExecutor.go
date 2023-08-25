@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
