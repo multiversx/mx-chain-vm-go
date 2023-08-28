@@ -2,15 +2,21 @@ package contexts
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
+// TODO audit and verify consistency of all GetStorage*() methods
+
 var logStorage = logger.GetOrCreate("vm/storage")
+
+var _ vmhost.StorageContext = (*storageContext)(nil)
 
 // VMStoragePrefix defines the VM prefix
 const VMStoragePrefix = "VM@"
@@ -107,16 +113,16 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 // GetStorage returns the storage data mapped to the given key.
-func (context *storageContext) GetStorage(key []byte) ([]byte, bool, error) {
-	value, usedCache, err := context.GetStorageUnmetered(key)
+func (context *storageContext) GetStorage(key []byte) ([]byte, uint32, bool, error) {
+	value, trieDepth, usedCache, err := context.GetStorageUnmetered(key)
 	if err != nil {
-		return nil, false, err
+		return nil, trieDepth, false, err
 	}
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 	logStorage.Trace("get", "key", key, "value", value)
 
-	return value, usedCache, nil
+	return value, trieDepth, usedCache, nil
 }
 
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
@@ -147,18 +153,18 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 }
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
-func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool, error) {
+func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, uint32, bool, error) {
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false, nil
+			return nil, 0, false, nil
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false, nil
+			return nil, 0, false, nil
 		}
 	}
 
@@ -166,29 +172,30 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 }
 
 // GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by vm, so no permissions checks are necessary
-func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool, error) {
+func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, uint32, bool, error) {
 	// If the requested key is protected by the node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
 	// contracts themselves cannot change protected values. Values stored under
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
-	value, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
+	value, trieDepth, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
 
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
-	return value, usedCache, err
+	return value, trieDepth, usedCache, err
 }
 
-func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool, error) {
+func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, uint32, bool, error) {
 	var value []byte
 	var err error
+	var trieDepth uint32
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if context.isProtocolProtectedKey(key) && enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) {
-		value, err = context.readFromBlockchain(address, key)
-		return value, false, err
+		value, trieDepth, err = context.readFromBlockchain(address, key)
+		return value, trieDepth, false, err
 	}
 
 	storageUpdates := context.GetStorageUpdates(address)
@@ -196,9 +203,9 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		value = storageUpdate.Data
 	} else {
-		value, err = context.readFromBlockchain(address, key)
+		value, trieDepth, err = context.readFromBlockchain(address, key)
 		if err != nil {
-			return nil, false, err
+			return nil, trieDepth, false, err
 		}
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
@@ -207,17 +214,15 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 		usedCache = false
 	}
 
-	return value, usedCache, nil
+	return value, trieDepth, usedCache, nil
 }
 
-func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, error) {
-	value, _, err := context.blockChainHook.GetStorageData(address, key)
-
-	return value, err
+func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, uint32, error) {
+	return context.blockChainHook.GetStorageData(address, key)
 }
 
 // GetStorageUnmetered returns the data under the given key.
-func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool, error) {
+func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, uint32, bool, error) {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
@@ -443,7 +448,7 @@ func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.S
 	strKey := string(key)
 	if update, ok := storageUpdates[strKey]; !ok {
 		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
-		oldValue, _, err = context.GetStorageUnmetered(key)
+		oldValue, _, _, err = context.GetStorageUnmetered(key)
 		if err != nil {
 			return nil, false, err
 		}
@@ -471,14 +476,22 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 }
 
 // UseGasForStorageLoad - single spot of gas consumption for storage load
-func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, usedCache bool) {
-	metering := context.host.Metering()
-	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) && usedCache {
-		loadCost = metering.GasSchedule().BaseOpsAPICost.CachedStorageLoad
+func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, staticGasCost uint64, usedCache bool) error {
+	blockchainLoadCost, err := context.getBlockchainLoadCost(trieDepth, staticGasCost, usedCache)
+	if err != nil {
+		return err
 	}
 
-	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)
+	return context.host.Metering().UseGasBoundedAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
+}
+
+func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	if enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) && usedCache {
+		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
+	}
+
+	return context.GetStorageLoadCost(trieDepth, staticGasCost)
 }
 
 // IsUseDifferentGasCostFlagSet - getter for flag
@@ -495,4 +508,50 @@ func (context *storageContext) IsInterfaceNil() bool {
 // GetVmProtectedPrefix returns the VM protected prefix as byte slice
 func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
+}
+
+// GetStorageLoadCost returns the gas cost for the storage load operation
+func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
+	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
+		return computeGasForStorageLoadBasedOnTrieDepth(
+			trieDepth,
+			context.host.Metering().GasSchedule().DynamicStorageLoad,
+			staticGasCost,
+		)
+	}
+
+	return staticGasCost, nil
+}
+
+func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoadCostCoefficients, staticGasCost uint64) (uint64, error) {
+	overflowHandler := math.NewOverflowHandler()
+
+	squaredTrieDepth := overflowHandler.MulInt64(trieDepth, trieDepth)                  // squaredTrieDepth = trieDepth * trieDepth
+	quadraticTerm := overflowHandler.MulInt64(coefficients.Quadratic, squaredTrieDepth) // quadraticTerm = coefficients.Quadratic * trieDepth * trieDepth
+
+	linearTerm := overflowHandler.MulInt64(coefficients.Linear, trieDepth) // linearTerm = coefficients.Linear * trieDepth
+
+	firstSum := overflowHandler.AddInt64(quadraticTerm, linearTerm) // firstSum = coefficients.Quadratic * trieDepth * trieDepth + coefficients.Linear * trieDepth
+	fx := overflowHandler.AddInt64(firstSum, coefficients.Constant) // fx = coefficients.Quadratic * trieDepth * trieDepth + coefficients.Linear * trieDepth + coefficients.Constant
+	err := overflowHandler.Error()
+	if err != nil {
+		return 0, err
+	}
+	if fx < 0 {
+		return 0, fmt.Errorf("invalid value for gas cost, quadratic coefficient = %v, linear coefficient = %v, constant coefficient = %v, trie depth = %v",
+			coefficients.Quadratic, coefficients.Linear, coefficients.Constant, trieDepth)
+	}
+
+	if fx < int64(coefficients.MinGasCost) {
+		logStorage.Error("invalid value for gas cost",
+			"quadratic coefficient", coefficients.Quadratic,
+			"linear coefficient", coefficients.Linear,
+			"constant coefficient", coefficients.Constant,
+			"trie depth", trieDepth,
+			"min gas cost", coefficients.MinGasCost,
+		)
+		return staticGasCost, nil
+	}
+
+	return uint64(fx), nil
 }

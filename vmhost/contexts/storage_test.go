@@ -128,7 +128,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	require.Equal(t, vmhost.StorageAdded, storageStatus)
 	require.Equal(t, uint64(len(valueA)), accountA.BytesAddedToStorage)
 	require.Equal(t, uint64(0), accountA.BytesDeletedFromStorage)
-	foundValueA, _, err := storageCtx.GetStorage(keyA)
+	foundValueA, _, _, err := storageCtx.GetStorage(keyA)
 	require.Nil(t, err)
 	require.Equal(t, valueA, foundValueA)
 	require.Len(t, storageCtx.GetStorageUpdates(addressA), 1)
@@ -142,12 +142,12 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	require.Equal(t, uint64(0), accountB.BytesDeletedFromStorage)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageAdded, storageStatus)
-	foundValueB, _, err := storageCtx.GetStorage(keyB)
+	foundValueB, _, _, err := storageCtx.GetStorage(keyB)
 	require.Nil(t, err)
 	require.Equal(t, valueB, foundValueB)
 	require.Len(t, storageCtx.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageCtx.GetStorageUpdates(addressB), 1)
-	foundValueA, _, err = storageCtx.GetStorage(keyA)
+	foundValueA, _, _, err = storageCtx.GetStorage(keyA)
 	require.Nil(t, err)
 	require.Equal(t, []byte(nil), foundValueA)
 }
@@ -229,7 +229,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, vmhost.StorageAdded, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _, err := storageCtx.GetStorage(key)
+	foundValue, _, _, err := storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -242,7 +242,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, vmhost.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -254,7 +254,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -267,7 +267,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, vmhost.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -280,7 +280,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, vmhost.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -293,7 +293,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, vmhost.StorageDeleted, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -303,7 +303,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, err, vmhost.ErrCannotWriteOnReadOnly)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
@@ -314,7 +314,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageAdded, storageStatus)
-	foundValue, _, err = storageCtx.GetStorage(key)
+	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageCtx.GetStorageUpdates(address), 2)
@@ -377,7 +377,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	value := []byte("value")
 	storageStatus, _ := storageCtx.SetStorage(key, value)
 	gasLeft := gasProvided - storeCost*len(value)
-	storedValue, _, err := storageCtx.GetStorage(key)
+	storedValue, _, _, err := storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageAdded, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
@@ -388,7 +388,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	mockMetering.GasLeftMock = uint64(gasProvided)
 	storageStatus, err = storageCtx.SetStorage(key, value2)
 	require.Nil(t, err)
-	storedValue, _, err = storageCtx.GetStorage(key)
+	storedValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	gasLeft = gasProvided - persistCost*len(value) - storeCost*(len(value2)-len(value))
 	require.Nil(t, err)
@@ -402,7 +402,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	require.Nil(t, err)
 	gasLeft = gasProvided - persistCost*len(value)
 	gasFreed := releaseCost * (len(value2) - len(value))
-	storedValue, _, err = storageCtx.GetStorage(key)
+	storedValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageModified, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
@@ -511,15 +511,15 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		storageCtx.SetAddress(scAddress)
 
 		key := []byte("key")
-		data, _, err := storageCtx.GetStorageFromAddress(scAddress, key)
+		data, _, _, err := storageCtx.GetStorageFromAddress(scAddress, key)
 		require.Nil(t, data)
 		require.Equal(t, errTooManyRequests, err)
 
-		data, _, _ = storageCtx.GetStorageFromAddress(readable, key)
+		data, _, _, _ = storageCtx.GetStorageFromAddress(readable, key)
 		require.Nil(t, data)
 		require.Equal(t, errTooManyRequests, err)
 
-		data, _, _ = storageCtx.GetStorageFromAddress(nonreadable, key)
+		data, _, _, _ = storageCtx.GetStorageFromAddress(nonreadable, key)
 		require.Nil(t, data)
 		require.Equal(t, errTooManyRequests, err)
 	})
@@ -537,15 +537,15 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		storageCtx.SetAddress(scAddress)
 
 		key := []byte("key")
-		data, _, err := storageCtx.GetStorageFromAddress(scAddress, key)
+		data, _, _, err := storageCtx.GetStorageFromAddress(scAddress, key)
 		require.Nil(t, err)
 		require.Equal(t, data, internalData)
 
-		data, _, err = storageCtx.GetStorageFromAddress(readable, key)
+		data, _, _, err = storageCtx.GetStorageFromAddress(readable, key)
 		require.Nil(t, err)
 		require.Equal(t, data, internalData)
 
-		data, _, err = storageCtx.GetStorageFromAddress(nonreadable, key)
+		data, _, _, err = storageCtx.GetStorageFromAddress(nonreadable, key)
 		require.Nil(t, err)
 		require.Nil(t, data)
 	})
@@ -616,4 +616,146 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	storageCtx.PopDiscard()
 
 	require.Equal(t, 0, len(storageCtx.stateStack))
+}
+
+func TestStorageContext_GetStorageLoadCost(t *testing.T) {
+	t.Parallel()
+
+	t.Run("disabled DynamicGasCostForDataTrieStorageLoad returns static cost", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(7)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, staticCost, cost)
+	})
+
+	t.Run("trie depth 0", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    3,
+					Constant:  5,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(0)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, uint64(5), cost)
+	})
+
+	t.Run("fx < 0", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    3,
+					Constant:  -500,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.NotNil(t, err)
+		require.Equal(t, uint64(0), cost)
+	})
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 688,
+					Linear:    31858,
+					Constant:  15287,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, uint64(191777), cost)
+	})
+
+	t.Run("less than minimum gas cost returns static gas cost", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic:  2,
+					Linear:     5,
+					Constant:   6,
+					MinGasCost: 100,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, staticCost, cost)
+	})
 }
