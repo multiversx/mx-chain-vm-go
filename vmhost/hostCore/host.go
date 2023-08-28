@@ -48,6 +48,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.RuntimeMemStoreLimitFlag,
 	vmhost.RuntimeCodeSizeFixFlag,
 	vmhost.FixOOGReturnCodeFlag,
+	vmhost.DynamicGasCostForDataTrieStorageLoadFlag,
 }
 
 // vmHost implements HostContext interface.

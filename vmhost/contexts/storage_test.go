@@ -642,7 +642,9 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == vmhost.DynamicGasCostForDataTrieStorageLoadFlag
+			},
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
@@ -672,7 +674,9 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == vmhost.DynamicGasCostForDataTrieStorageLoadFlag
+			},
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
@@ -702,7 +706,9 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == vmhost.DynamicGasCostForDataTrieStorageLoadFlag
+			},
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
@@ -732,7 +738,9 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
-			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == vmhost.DynamicGasCostForDataTrieStorageLoadFlag
+			},
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{

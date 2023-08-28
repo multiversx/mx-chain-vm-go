@@ -512,7 +512,7 @@ func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 
 // GetStorageLoadCost returns the gas cost for the storage load operation
 func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
-	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
+	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.DynamicGasCostForDataTrieStorageLoadFlag) {
 		return computeGasForStorageLoadBasedOnTrieDepth(
 			trieDepth,
 			context.host.Metering().GasSchedule().DynamicStorageLoad,
