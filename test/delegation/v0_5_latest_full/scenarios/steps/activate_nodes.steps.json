@@ -22,14 +22,36 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "*",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "sc:auction",
-                            "300,000,000,000,000"
+                        "topics": [                            
+                            "300,000,000,000,000",
+                            "sc:auction"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCall",
+                            "str:stake",
+                            "3",
+                            "str:bls_key_2_______________________________________________________________________________________",
+                            "str:signature_2_____________________________________",
+                            "str:bls_key_3_______________________________________________________________________________________",
+                            "str:signature_3_____________________________________",
+                            "str:bls_key_6_______________________________________________________________________________________",
+                            "str:signature_6_____________________________________"
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "",
+                            "sc:delegation"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -37,7 +59,9 @@
                         "topics": [
                             "str:nodeStakeOk"
                         ],
-                        "data": "0x"
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

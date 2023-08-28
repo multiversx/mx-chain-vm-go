@@ -73,14 +73,34 @@
                 "status": "",
                 "logs": [
                     {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "789,000,000,000",
+                            "sc:auction"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:stake",
+                            "2",
+                            "str:bls_key_1_______________________________________________________________________________________",
+                            "str:signature_1_____________________",
+                            "str:bls_key_2_______________________________________________________________________________________",
+                            "str:signature_2_____________________"
+                        ]
+                    },
+                    {
                         "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "sc:delegation",
-                            "sc:auction",
-                            "789,000,000,000"
+                            "",
+                            "sc:delegation"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -88,7 +108,9 @@
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000003"
                         ],
-                        "data": "0x"
+                        "data": [
+                            "0x"
+                        ]
                     }
                 ],
                 "gas": "*",

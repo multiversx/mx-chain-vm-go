@@ -251,7 +251,7 @@ func (context *outputContext) DeleteFirstReturnData() {
 }
 
 // WriteLogWithIdentifier creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data []byte, identifier []byte) {
+func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte) {
 	if context.host.Runtime().ReadOnly() {
 		logOutput.Trace("log entry", "error", "cannot write logs in readonly mode")
 		return
@@ -276,7 +276,7 @@ func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]
 }
 
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+func (context *outputContext) WriteLog(address []byte, topics [][]byte, data [][]byte) {
 	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().FunctionName()))
 }
 
@@ -317,14 +317,15 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		if context.host.Runtime().ReadOnly() {
 			return vmhost.ErrInvalidCallOnReadOnlyMode
 		}
-
-		context.WriteLogWithIdentifier(
-			context.host.Runtime().GetContextAddress(),
-			[][]byte{sender, destination, value.Bytes()},
-			[]byte{},
-			[]byte("transferValueOnly"),
-		)
 	}
+
+	vmInput := context.host.Runtime().GetVMInput()
+	context.WriteLogWithIdentifier(
+		sender,
+		[][]byte{value.Bytes(), destination},
+		vmcommon.FormatLogDataForCall("", vmInput.Function, vmInput.Arguments),
+		[]byte("transferValueOnly"),
+	)
 
 	return nil
 }
