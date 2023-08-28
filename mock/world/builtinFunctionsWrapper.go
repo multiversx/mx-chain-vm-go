@@ -55,7 +55,8 @@ func NewBuiltinFunctionsWrapper(
 					flag == builtInFunctions.CheckFunctionArgumentFlag ||
 					flag == builtInFunctions.FixOldTokenLiquidityFlag ||
 					flag == builtInFunctions.AlwaysSaveTokenMetaDataFlag ||
-					flag == builtInFunctions.SetGuardianFlag
+					flag == builtInFunctions.SetGuardianFlag ||
+					flag == builtInFunctions.ScToScLogEventFlag
 			},
 		},
 		GuardedAccountHandler:            world.GuardedAccountHandler,
