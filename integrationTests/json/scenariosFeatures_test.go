@@ -84,14 +84,8 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 }
 
 func TestRustComposability(t *testing.T) {
-	// TODO The two excluded tests perform async calls from within async calls,
-	// which are unsupported by the legacy async calls on which the forwarder is
-	// currently based. The new AsyncContext will block multi-level async calls
-	// anyway in its first release.
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
-		Exclude("features/composability/scenarios/forwarder_send_twice_egld.scen.json").
-		Exclude("features/composability/scenarios/forwarder_send_twice_esdt.scen.json").
 		Run().
 		CheckNoError()
 }
@@ -114,19 +108,6 @@ func TestRustPromisesFeaturesDebug(t *testing.T) {
 func TestRustFormattedMessageFeatures(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/formatted-message-features/scenarios").
-		Run().
-		CheckNoError()
-}
-
-// New contracts no longer contain the older, unmanaged hooks.
-// We have older contracts that just do regression checking.
-func TestRustLegacyComposability(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability-legacy/scenarios-legacy").
-		Exclude("features/composability-legacy/scenarios-legacy/l_forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
-		Exclude("features/composability-legacy/scenarios-legacy/l_forw_raw_call_async_retrieve_multi_transfer.scen.json").
-		Exclude("features/composability-legacy/scenarios-legacy/l_forwarder_call_async_retrieve_esdt.scen.json").
-		Exclude("features/composability-legacy/scenarios-legacy/l_forwarder_call_async_retrieve_nft.scen.json").
 		Run().
 		CheckNoError()
 }
