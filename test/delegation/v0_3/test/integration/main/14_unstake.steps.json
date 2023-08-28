@@ -82,11 +82,40 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "",
+                            "sc:auction"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unStake",
+                            "str:bls_key_6_______________________________________________________________________________________",
+                            "str:bls_key_2_______________________________________________________________________________________"
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "",
+                            "sc:delegation"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
                         "endpoint": "str:callBack",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000005"
                         ],
-                        "data": "0x"
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

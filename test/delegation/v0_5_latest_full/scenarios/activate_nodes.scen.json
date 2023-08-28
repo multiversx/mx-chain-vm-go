@@ -253,14 +253,30 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "*",
+                        "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:auction",
-                            "sc:delegation",
-                            "100,000,000,000,000"
+                        "topics": [                            
+                            "",
+                            "*"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unBondNodes",
+                            "str:bls_key_6_______________________________________________________________________________________"
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "100,000,000,000,000",
+                            "sc:delegation"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unBondNodes",
+                            "str:bls_key_6_______________________________________________________________________________________"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -268,7 +284,9 @@
                         "topics": [
                             "str:nodeUnbondOk"
                         ],
-                        "data": ""
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

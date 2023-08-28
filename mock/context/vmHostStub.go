@@ -30,18 +30,19 @@ type VMHostStub struct {
 	ManagedTypesCalled        func() vmhost.ManagedTypesContext
 
 	ExecuteESDTTransferCalled   func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
+	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	IsBuiltinFunctionNameCalled func(functionName string) bool
 	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
 
-	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
-	RunSmartContractCreateCalled func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
-	GetGasScheduleMapCalled      func() config.GasScheduleMap
-	GasScheduleChangeCalled      func(newGasSchedule config.GasScheduleMap)
-	IsInterfaceNilCalled         func() bool
+	RunSmartContractCallCalled           func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
+	RunSmartContractCreateCalled         func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
+	GetGasScheduleMapCalled              func() config.GasScheduleMap
+	GasScheduleChangeCalled              func(newGasSchedule config.GasScheduleMap)
+	IsInterfaceNilCalled                 func() bool
+	CompleteLogEntriesWithCallTypeCalled func(vmOutput *vmcommon.VMOutput, callType string)
 
 	SetRuntimeContextCalled func(runtime vmhost.RuntimeContext)
 
@@ -183,9 +184,9 @@ func (vhs *VMHostStub) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersAr
 }
 
 // CreateNewContract mocked method
-func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error) {
 	if vhs.CreateNewContractCalled != nil {
-		return vhs.CreateNewContractCalled(input)
+		return vhs.CreateNewContractCalled(input, createContractCallType)
 	}
 	return nil, nil
 }
@@ -296,6 +297,13 @@ func (vhs *VMHostStub) GetContexts() (
 func (vhs *VMHostStub) SetRuntimeContext(runtime vmhost.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
+	}
+}
+
+// CompleteLogEntriesWithCallType mocked method
+func (vhs *VMHostStub) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
+	if vhs.CompleteLogEntriesWithCallTypeCalled != nil {
+		vhs.CompleteLogEntriesWithCallTypeCalled(vmOutput, callType)
 	}
 }
 
