@@ -3,6 +3,7 @@ package vmjsonintegrationtest
 import (
 	"testing"
 
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
@@ -223,6 +224,7 @@ func TestDnsContractLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("dns").
+		WithEnableEpochsHandler(worldhook.EnableEpochsHandlerStubNoFlags()).
 		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
@@ -231,6 +233,7 @@ func TestDnsContractLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("dns").
+		WithEnableEpochsHandler(worldhook.EnableEpochsHandlerStubNoFlags()).
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
