@@ -118,15 +118,36 @@ func (callerTest *MockInstancesTestTemplate) andAssertResultsWithWorld(
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}
-	return callerTest.runTest(startNode, world, createAccount, testType, expectedErrorsForRound)
+	return callerTest.runTestAndVerify(startNode, world, createAccount, testType, expectedErrorsForRound)
 }
 
-func (callerTest *MockInstancesTestTemplate) runTest(
+func (callerTest *MockInstancesTestTemplate) runTestAndVerify(
 	startNode *TestCallNode,
 	world *worldmock.MockWorld,
 	createContractAccounts bool,
 	testType TestType,
-	expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
+	expectedErrorsForRound []string,
+) (*vmcommon.VMOutput, error) {
+	host, vmOutput, err := callerTest.RunTest(
+		world,
+		createContractAccounts,
+		testType)
+
+	allErrors := host.Runtime().GetAllErrors()
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
+	if callerTest.assertResults != nil {
+		callerTest.assertResults(startNode, world, verify, expectedErrorsForRound)
+	}
+
+	return vmOutput, err
+}
+
+// RunTest executes the built test directly, without any assertions.
+func (callerTest *MockInstancesTestTemplate) RunTest(
+	world *worldmock.MockWorld,
+	createContractAccounts bool,
+	testType TestType,
+) (vmhost.VMHost, *vmcommon.VMOutput, error) {
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}
@@ -162,13 +183,7 @@ func (callerTest *MockInstancesTestTemplate) runTest(
 		})
 	}
 
-	allErrors := host.Runtime().GetAllErrors()
-	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
-	if callerTest.assertResults != nil {
-		callerTest.assertResults(startNode, world, verify, expectedErrorsForRound)
-	}
-
-	return vmOutput, err
+	return host, vmOutput, err
 }
 
 // SimpleWasteGasMockMethod is a simple waste gas mock method

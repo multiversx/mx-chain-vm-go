@@ -1,8 +1,10 @@
 package hostCore
 
 import (
+	"math"
 	"testing"
 
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
@@ -83,4 +85,21 @@ func TestNewVMHost(t *testing.T) {
 		require.Nil(t, host)
 		require.ErrorIs(t, err, vmhost.ErrNilVMType)
 	})
+}
+
+func TestValidateVMInput(t *testing.T) {
+	vmInput := &vmcommon.VMInput{
+		GasProvided: 0,
+	}
+
+	err := validateVMInput(vmInput)
+	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
+
+	vmInput.GasProvided = math.MaxUint64
+	err = validateVMInput(vmInput)
+	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
+
+	vmInput.GasProvided = math.MaxInt64
+	err = validateVMInput(vmInput)
+	require.Nil(t, err)
 }
