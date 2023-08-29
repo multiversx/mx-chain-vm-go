@@ -8,17 +8,17 @@ import (
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/testcommon"
+
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var sc1Address = testcommon.MakeTestSCAddress("sc1")
-var sc2Address = testcommon.MakeTestSCAddress("sc2")
+var sc1Address = test.MakeTestSCAddress("sc1")
+var sc2Address = test.MakeTestSCAddress("sc2")
 
-func getDeployFromSourceTestConfig() testcommon.TestConfig {
+func getDeployFromSourceTestConfig() test.TestConfig {
 	return test.TestConfig{
 		DeployedContractAddress: sc1Address,
 		GasUsedByInit:           uint64(200),
@@ -30,7 +30,7 @@ func getDeployFromSourceTestConfig() testcommon.TestConfig {
 	}
 }
 
-func getUpdateFromSourceTestConfig() testcommon.TestConfig {
+func getUpdateFromSourceTestConfig() test.TestConfig {
 	config := getDeployFromSourceTestConfig()
 	config.ContractToBeUpdatedAddress = sc2Address
 	config.Owner = test.ParentAddress
@@ -94,7 +94,7 @@ func TestDeployFromSource_NoContract(t *testing.T) {
 	})
 }
 
-func runDeployFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, asserts func(world *worldmock.MockWorld, verify *test.VMOutputVerifier)) {
+func runDeployFromSourceTest(t *testing.T, testConfig *test.TestConfig, asserts func(world *worldmock.MockWorld, verify *test.VMOutputVerifier)) {
 	var deployedContract test.MockTestSmartContract
 	if testConfig.DeployedContractAddress != nil {
 		deployedContract = test.CreateMockContract(testConfig.DeployedContractAddress).
@@ -382,7 +382,7 @@ func TestUpdateFromSource_NoGasForCompile_NoEpochFlag_NoCallback(t *testing.T) {
 	})
 }
 
-func runUpdateFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, asserts func(world *worldmock.MockWorld, verify *test.VMOutputVerifier)) {
+func runUpdateFromSourceTest(t *testing.T, testConfig *test.TestConfig, asserts func(world *worldmock.MockWorld, verify *test.VMOutputVerifier)) {
 	var deployedContract test.MockTestSmartContract
 	var contractToUpdate test.MockTestSmartContract
 	if testConfig.DeployedContractAddress != nil {

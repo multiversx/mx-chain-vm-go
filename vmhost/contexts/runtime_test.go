@@ -30,8 +30,6 @@ var vmType = []byte("type")
 
 func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
-	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
-	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 
@@ -275,7 +273,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	instance := runtimeCtx.iTracker.instance
 
 	runtimeCtx.pushInstance()
-	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtimeCtx.iTracker.codeSize = newCodeSize
 	require.Equal(t, newCodeSize, runtimeCtx.GetSCCodeSize())
 	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
@@ -314,7 +312,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	}
 	runtimeCtx.InitStateFromContractCallInput(input)
 
-	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
@@ -336,11 +334,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeCtx.ReadOnly())
 	require.Nil(t, runtimeCtx.Arguments())
 
-	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
-	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtimeCtx.PushState()
 	require.Equal(t, 2, len(runtimeCtx.stateStack))
 
@@ -388,7 +386,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.iTracker.instance = &wasmer.WasmerInstance{}
+	runtime.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtime.PushState()
 	input.RecipientAddr = beta
 	runtime.InitStateFromContractCallInput(input)
@@ -396,7 +394,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.iTracker.instance = &wasmer.WasmerInstance{}
+	runtime.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtime.PushState()
 	input.RecipientAddr = gamma
 	runtime.InitStateFromContractCallInput(input)
@@ -404,7 +402,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.iTracker.instance = &wasmer.WasmerInstance{}
+	runtime.iTracker.instance = contextmock.NewInstanceMock(nil)
 	runtime.PushState()
 	input.RecipientAddr = alpha
 	runtime.InitStateFromContractCallInput(input)

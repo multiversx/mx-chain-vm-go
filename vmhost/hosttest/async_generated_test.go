@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 )
 
@@ -204,13 +203,13 @@ func createGraphFromScenario(
 	usedGasMap map[string]map[int]int,
 	_ int,
 	_ int,
-) *testcommon.TestCallGraph {
+) *test.TestCallGraph {
 
-	callGraph := testcommon.CreateTestCallGraph()
+	callGraph := test.CreateTestCallGraph()
 
-	callIdToNode := make(map[int]*testcommon.TestCallNode)
-	asyncCallIdToCallbackNode := make(map[int]*testcommon.TestCallNode)
-	asyncCallIdToEdge := make(map[int]*testcommon.TestCallEdge)
+	callIdToNode := make(map[int]*test.TestCallNode)
+	asyncCallIdToCallbackNode := make(map[int]*test.TestCallNode)
+	asyncCallIdToEdge := make(map[int]*test.TestCallEdge)
 
 	rootStep := traceStepsMap[0][0]
 	traceStepsMap[0] = traceStepsMap[0][1:]
@@ -252,7 +251,7 @@ func createGraphFromScenario(
 					newCallbackCounter := getUpdatedCounter(contractToCallbackCounter, traceStepsIndex[parentId].acc)
 					callbackFunction := fmt.Sprintf("cb%d", newCallbackCounter)
 
-					var edge *testcommon.TestCallEdge
+					var edge *test.TestCallEdge
 					if childStep.callType == "AsyncLocal" {
 						edge = callGraph.AddAsyncEdge(parentNode, childNode, callbackFunction, "")
 					} else {

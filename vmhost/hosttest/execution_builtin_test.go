@@ -16,7 +16,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
@@ -65,7 +64,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	expectedTransfer := txDataBuilder.NewBuilder()
 	expectedTransfer.TransferESDT(string(test.ESDTTestTokenName), esdtTokensToTransfer)
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ParentAddress, 1).
 			WithData(expectedTransfer.ToBytes()).
@@ -272,7 +271,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	expectedTransfer := txDataBuilder.NewBuilder()
 	expectedTransfer.TransferESDT(string(test.ESDTTestTokenName), esdtValue)
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, exchangeAddress, 1).
 			WithData(expectedTransfer.ToBytes()).

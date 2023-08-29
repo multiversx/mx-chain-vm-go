@@ -12,9 +12,8 @@ func TestInstanceTracker_TrackInstance(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	newInstance := &wasmer.WasmerInstance{
-		AlreadyClean: false,
-	}
+	newInstance := mock.NewInstanceMock(nil)
+	newInstance.AlreadyClean = false
 
 	iTracker.SetNewInstance(newInstance, Bytecode)
 	iTracker.codeHash = []byte("testinst")
@@ -337,9 +336,10 @@ func TestInstanceTracker_UnsetInstance_Ok(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	iTracker.instance = &wasmer.WasmerInstance{
-		AlreadyClean: true,
-	}
+	instance := mock.NewInstanceMock((nil))
+	instance.AlreadyClean = true
+	iTracker.instance = instance
+	
 	iTracker.UnsetInstance()
 	require.Nil(t, iTracker.instance)
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
@@ -316,7 +315,7 @@ func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
 		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
 			checkThatStoreIsEmpty(t, world)
-			require.Equal(t, testcommon.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
+			require.Equal(t, test.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
 		},
 	})
 }
@@ -328,7 +327,7 @@ func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
 		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
 			checkThatStoreIsEmpty(t, world)
-			require.Equal(t, testcommon.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
+			require.Equal(t, test.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
 		},
 	})
 }
@@ -1081,7 +1080,7 @@ func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
 func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*test.TestCallEdge, crossShardCallsQueue *test.CrossShardCallsQueue, callbackCallerID []byte) {
 	for _, crossShardEdge := range crossShardEdges {
 		edgeToAddress := string(crossShardEdge.To.Call.ContractAddress)
-		if crossShardEdge.Type == testcommon.CallbackCrossShard {
+		if crossShardEdge.Type == test.CallbackCrossShard {
 			asyncData := txDataBuilder.NewBuilder()
 			asyncData.Func("")
 			asyncData.Bytes(crossShardEdge.To.Call.CallID)

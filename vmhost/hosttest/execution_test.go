@@ -138,10 +138,6 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 		})
 }
 
-func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
-	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
-}
-
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
 	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
 }

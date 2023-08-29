@@ -15,7 +15,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
-	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/assert"
@@ -606,13 +605,13 @@ func testGasUsedAsyncCallCrossShardInitCall(t *testing.T, isLegacy bool) {
 		WithConfig(testConfig).
 		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
 
-	expectedStorages := make([]testcommon.StoreEntry, 0)
+	expectedStorages := make([]test.StoreEntry, 0)
 	expectedStorages = append(expectedStorages,
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.OriginalCallerParent).WithValue(test.UserAddress))
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
 			WithData([]byte("hello")).
@@ -1310,7 +1309,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallSuccess(t *testing.T, isLegacy b
 	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
 	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
@@ -1395,7 +1394,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallChildFails(t *testing.T, isLegac
 	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
 	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
@@ -1484,7 +1483,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallCallbackFails(t *testing.T, isLe
 	expectedTransferFromParentToChild := txDataBuilder.NewBuilder()
 	expectedTransferFromParentToChild.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.ESDTTokensToTransfer))
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
@@ -1563,7 +1562,7 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 	expectedTransferFromChildToParent := txDataBuilder.NewBuilder()
 	expectedTransferFromChildToParent.TransferESDT(string(test.ESDTTestTokenName), int64(testConfig.CallbackESDTTokensToTransfer))
 
-	expectedTransfers := make([]testcommon.TransferEntry, 0)
+	expectedTransfers := make([]test.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress, 1).
 			WithData(expectedTransferFromParentToChild.ToBytes()).
@@ -2049,7 +2048,7 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
-		AndAssertResultsWithWorld(world, true, nil, nil, func(startNode *testcommon.TestCallNode, world *worldmock.MockWorld, verify *testcommon.VMOutputVerifier, expectedErrorsForRound []string) {
+		AndAssertResultsWithWorld(world, true, nil, nil, func(startNode *test.TestCallNode, world *worldmock.MockWorld, verify *test.VMOutputVerifier, expectedErrorsForRound []string) {
 			verify.Ok().
 				Transfers(
 					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress, 1).
@@ -2215,27 +2214,4 @@ func setAsyncCosts(host vmhost.VMHost, gasLockCost uint64) {
 	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep = 0
 	host.Metering().GasSchedule().BaseOpsAPICost.GetCallbackClosure = 0
 	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = gasLockCost
-}
-
-func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	builtReturnData := txDataBuilder.NewBuilder()
-	builtReturnData.Func("<callback>")
-	builtReturnData.Bytes([]byte{})
-	builtReturnData.Bytes([]byte{})
-	builtReturnData.Bytes([]byte{})
-	builtReturnData.Bytes([]byte{})
-	builtReturnData.Int(int(returnCode))
-	for _, data := range returnData {
-		builtReturnData.Bytes(data)
-	}
-	return builtReturnData.ToBytes()
-	// TODO(check) commented code
-
-	// retCode := string(big.NewInt(int64(returnCode)).Bytes())
-	// retData := []byte("@" + hex.EncodeToString(prevTxHash))
-	// retData = append(retData, []byte("@"+retCode)...)
-	// for _, data := range returnData {
-	// 	retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
-	// }
-	// return retData
 }

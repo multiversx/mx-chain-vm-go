@@ -57,7 +57,6 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
-	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 
