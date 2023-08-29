@@ -192,6 +192,34 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 	})
 }
 
+// LocalCallAnotherContract is an exposed mock contract method
+func LocalCallAnotherContract(exposedFunctionName string, recipientAddress []byte, functionToCall string) func(instanceMock *mock.InstanceMock, config interface{}) {
+	return func(instanceMock *mock.InstanceMock, config interface{}) {
+		instanceMock.AddMockMethod(exposedFunctionName, func() *mock.InstanceMock {
+			testConfig := config.(*test.TestConfig)
+			host := instanceMock.Host
+			instance := mock.GetMockInstance(host)
+
+			input := test.DefaultTestContractCallInput()
+			input.GasProvided = testConfig.GasProvidedToChild
+			input.CallerAddr = instance.Address
+
+			input.RecipientAddr = recipientAddress
+			input.Function = functionToCall
+
+			returnValue := ExecuteOnDestContextInMockContracts(host, input)
+			if returnValue != 0 {
+				host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+			}
+
+			originalCaller := host.Runtime().GetOriginalCallerAddress()
+			host.Output().Finish(originalCaller)
+
+			return instance
+		})
+	}
+}
+
 // WasteGasParentMock is an exposed mock contract method
 func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*test.TestConfig)

@@ -22,11 +22,14 @@
                         "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "sc:delegation",
-                            "''delegator_1___________________s1",
-                            "1,000,000,000,000"
+                            "1,000,000,000,000",
+                            "address:delegator_1___________________s#31"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "1,000,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -35,7 +38,9 @@
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
                             "''delegator_1___________________s1"
                         ],
-                        "data": "1,000,000,000,000"
+                        "data": [
+                            "1,000,000,000,000"
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -94,12 +99,15 @@
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "''delegator_1___________________s1",
-                            "113,000,000,000,000"
+                        "topics": [                            
+                            "113,000,000,000,000",
+                            "address:delegator_1___________________s#31"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "113,000,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -108,7 +116,9 @@
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
                             "''delegator_1___________________s1"
                         ],
-                        "data": "113,000,000,000,000"
+                        "data": [
+                            "113,000,000,000,000"
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -167,12 +177,15 @@
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "''delegator_1___________________s1",
-                            "284,000,000,000,000"
+                        "topics": [                            
+                            "284,000,000,000,000",
+                            "address:delegator_1___________________s#31"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:withdrawInactiveStake",
+                            "284,000,000,000,000"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -181,7 +194,9 @@
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
                             "''delegator_1___________________s1"
                         ],
-                        "data": "284,000,000,000,000"
+                        "data": [
+                            "284,000,000,000,000"
+                        ]
                     }
                 ],
                 "gas": "*",

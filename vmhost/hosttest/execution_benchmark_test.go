@@ -378,7 +378,7 @@ func verifyTransfers(tb testing.TB, mockWorld *worldmock.MockWorld, totalTokenSu
 
 func checkLogsHaveDefinedString(logs []*vmcommon.LogEntry, str string) bool {
 	for _, log := range logs {
-		if strings.Contains(string(log.Data), str) {
+		if strings.Contains(string(log.Data[0]), str) {
 			return true
 		}
 	}
