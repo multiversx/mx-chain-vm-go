@@ -337,6 +337,11 @@ func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 
 // RunSmartContractCreate executes the deployment of a new contract
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	err = validateVMInput(&input.VMInput)
+	if err != nil {
+		return nil, err
+	}
+
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 

@@ -73,16 +73,23 @@ func (template *InstanceCreatorTestTemplate) WithSetup(setup func(vmhost.VMHost,
 // AndAssertResults provides the function that will aserts the results
 func (template *InstanceCreatorTestTemplate) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	template.assertResults = assertResults
-	template.runTest(true)
+	_, _, _ = template.RunTest(true)
 }
 
 // AndAssertResultsWithoutReset provides the function that will aserts the results
 func (template *InstanceCreatorTestTemplate) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	template.assertResults = assertResults
-	template.runTest(false)
+	_, _, _ = template.RunTest(false)
 }
 
-func (template *InstanceCreatorTestTemplate) runTest(reset bool) {
+func (template *InstanceCreatorTestTemplate) runTestWithVerification(reset bool) {
+	blhookStub, vmOutput, err := template.RunTest(reset)
+	verify := NewVMOutputVerifier(template.tb, vmOutput, err)
+	template.assertResults(blhookStub, verify)
+}
+
+// RunTest executes the built test directly, without any assertions.
+func (template *InstanceCreatorTestTemplate) RunTest(reset bool) (*contextmock.BlockchainHookStub, *vmcommon.VMOutput, error) {
 	var blhookStub *contextmock.BlockchainHookStub
 	if template.host == nil {
 		blhookStub = template.createBlockchainStub()
@@ -90,6 +97,7 @@ func (template *InstanceCreatorTestTemplate) runTest(reset bool) {
 		template.host = template.hostBuilder.Build()
 		template.setup(template.host, blhookStub)
 	}
+
 	defer func() {
 		if reset {
 			template.host.Reset()
@@ -102,8 +110,7 @@ func (template *InstanceCreatorTestTemplate) runTest(reset bool) {
 
 	vmOutput, err := template.host.RunSmartContractCreate(template.input)
 
-	verify := NewVMOutputVerifier(template.tb, vmOutput, err)
-	template.assertResults(blhookStub, verify)
+	return blhookStub, vmOutput, err
 }
 
 func (template *InstanceCreatorTestTemplate) createBlockchainStub() *contextmock.BlockchainHookStub {

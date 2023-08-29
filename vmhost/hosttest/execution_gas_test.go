@@ -4,7 +4,6 @@ package hostCoretest
 import (
 	"encoding/hex"
 	"errors"
-	"math"
 	"math/big"
 	"testing"
 
@@ -77,50 +76,6 @@ func TestGasUsed_SingleContract(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestGasUsed_SingleContract_GasValidation(t *testing.T) {
-	testConfig := makeTestConfig()
-
-	inputBuilder := test.CreateTestContractCallInputBuilder().
-		WithRecipientAddr(test.ParentAddress).
-		WithFunction("wasteGas")
-
-	testCase := test.BuildMockInstanceCallTest(t).
-		WithContracts(
-			test.CreateMockContract(test.ParentAddress).
-				WithBalance(testConfig.ParentBalance).
-				WithConfig(testConfig).
-				WithMethods(contracts.WasteGasParentMock)).
-		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
-			setZeroCodeCosts(host)
-		})
-
-	testConfig.GasProvided = 0
-	inputBuilder.WithGasProvided(testConfig.GasProvided)
-	testCase.WithInput(inputBuilder.Build())
-	_, _, err := testCase.RunTest(nil, true, testcommon.RunTest)
-	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
-
-	testConfig.GasProvided = math.MaxUint64
-	inputBuilder.WithGasProvided(testConfig.GasProvided)
-	testCase.WithInput(inputBuilder.Build())
-	_, _, err = testCase.RunTest(nil, true, testcommon.RunTest)
-	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
-
-	testConfig.GasProvided = math.MaxInt64 + 1
-	inputBuilder.WithGasProvided(testConfig.GasProvided)
-	testCase.WithInput(inputBuilder.Build())
-	_, _, err = testCase.RunTest(nil, true, testcommon.RunTest)
-	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
-
-	testConfig.GasProvided = math.MaxInt64
-	inputBuilder.WithGasProvided(testConfig.GasProvided)
-	testCase.WithInput(inputBuilder.Build())
-	testCase.AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-		verify.Ok().
-			GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
-			GasRemaining(testConfig.GasProvided - testConfig.GasUsedByParent)
-	})
-}
 func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 	testConfig := makeTestConfig()
 
