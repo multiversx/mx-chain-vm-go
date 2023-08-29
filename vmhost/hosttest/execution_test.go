@@ -528,7 +528,7 @@ func TestExecution_SingleContract_GasValidation(t *testing.T) {
 	testConfig.GasProvided = math.MaxInt64
 	inputBuilder.WithGasProvided(testConfig.GasProvided)
 	testCase.WithInput(inputBuilder.Build())
-	testCase.AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+	_, _ = testCase.AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.Ok().
 			GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
 			GasRemaining(testConfig.GasProvided - testConfig.GasUsedByParent)

@@ -73,13 +73,13 @@ func (template *InstanceCreatorTestTemplate) WithSetup(setup func(vmhost.VMHost,
 // AndAssertResults provides the function that will aserts the results
 func (template *InstanceCreatorTestTemplate) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	template.assertResults = assertResults
-	_, _, _ = template.RunTest(true)
+	template.runTestWithVerification(true)
 }
 
 // AndAssertResultsWithoutReset provides the function that will aserts the results
 func (template *InstanceCreatorTestTemplate) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	template.assertResults = assertResults
-	_, _, _ = template.RunTest(false)
+	template.runTestWithVerification(false)
 }
 
 func (template *InstanceCreatorTestTemplate) runTestWithVerification(reset bool) {
