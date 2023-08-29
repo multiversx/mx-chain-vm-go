@@ -92,11 +92,8 @@ func TestValidateVMInput(t *testing.T) {
 		GasProvided: 0,
 	}
 
-	err := validateVMInput(vmInput)
-	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
-
 	vmInput.GasProvided = math.MaxUint64
-	err = validateVMInput(vmInput)
+	err := validateVMInput(vmInput)
 	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
 
 	vmInput.GasProvided = math.MaxInt64

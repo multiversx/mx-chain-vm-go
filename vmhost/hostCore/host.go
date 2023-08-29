@@ -563,10 +563,6 @@ func (host *vmHost) CheckExecuteReadOnly() bool {
 }
 
 func validateVMInput(vmInput *vmcommon.VMInput) error {
-	if vmInput.GasProvided == 0 {
-		return vmhost.ErrInvalidGasProvided
-	}
-
 	if vmInput.GasProvided > math.MaxInt64 {
 		return vmhost.ErrInvalidGasProvided
 	}

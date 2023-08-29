@@ -459,26 +459,20 @@ func TestExecution_DeployWASM_GasValidation(t *testing.T) {
 	testCase := test.BuildInstanceCreatorTest(t).
 		WithAddress(newAddress)
 
-	gasProvided = 0
-	input := inputBuilder.WithGasProvided(gasProvided).Build()
-	testCase.WithInput(input)
+	gasProvided = math.MaxUint64
+	inputBuilder.WithGasProvided(gasProvided)
+	testCase.WithInput(inputBuilder.Build())
 	_, _, err := testCase.RunTest(true)
 	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
 
-	gasProvided = math.MaxUint64
-	input = inputBuilder.WithGasProvided(gasProvided).Build()
-	testCase.WithInput(input)
-	_, _, err = testCase.RunTest(true)
-	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
-
 	gasProvided = math.MaxInt64 + 1
-	input = inputBuilder.WithGasProvided(gasProvided).Build()
-	testCase.WithInput(input)
+	inputBuilder.WithGasProvided(gasProvided)
+	testCase.WithInput(inputBuilder.Build())
 	_, _, err = testCase.RunTest(true)
 	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
 
 	gasProvided = math.MaxInt64
-	input = inputBuilder.WithGasProvided(gasProvided).Build()
+	input := inputBuilder.WithGasProvided(gasProvided).Build()
 	testCase.WithInput(input)
 	testCase.AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().
@@ -519,16 +513,10 @@ func TestExecution_SingleContract_GasValidation(t *testing.T) {
 			setZeroCodeCosts(host)
 		})
 
-	testConfig.GasProvided = 0
-	inputBuilder.WithGasProvided(testConfig.GasProvided)
-	testCase.WithInput(inputBuilder.Build())
-	_, _, err := testCase.RunTest(nil, true, test.RunTest)
-	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
-
 	testConfig.GasProvided = math.MaxUint64
 	inputBuilder.WithGasProvided(testConfig.GasProvided)
 	testCase.WithInput(inputBuilder.Build())
-	_, _, err = testCase.RunTest(nil, true, test.RunTest)
+	_, _, err := testCase.RunTest(nil, true, test.RunTest)
 	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
 
 	testConfig.GasProvided = math.MaxInt64 + 1

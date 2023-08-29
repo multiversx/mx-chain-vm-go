@@ -1,6 +1,7 @@
 package hostCoretest
 
 import (
+	"math"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -283,7 +284,7 @@ func deploy(
 			CallValue:   big.NewInt(0),
 			CallType:    vm.DirectCall,
 			GasPrice:    0,
-			GasProvided: 0xFFFFFFFFFFFFFFFF,
+			GasProvided: math.MaxInt64,
 		},
 		ContractCode: code,
 	}
