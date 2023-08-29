@@ -16,9 +16,6 @@ import (
 const pathToApiPackage = "./"
 const pathToRustRepoConfigFile = "wasm-vm-executor-rs-path.txt"
 
-// Until we merge the `feat/wasmer2`, there are some files that are not supposed to be generated.
-const wasmer2Branch = true
-
 func initEIMetadata() *eapigen.EIMetadata {
 	return &eapigen.EIMetadata{
 		Groups: []*eapigen.EIGroup{
@@ -48,15 +45,14 @@ func main() {
 	writeVMHooks(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer1ImportsCgo(eiMetadata)
-	if wasmer2Branch {
-		writeWasmer2ImportsCgo(eiMetadata)
-		writeWasmer2Names(eiMetadata)
-	}
+	writeWasmer2ImportsCgo(eiMetadata)
+	writeWasmer2Names(eiMetadata)
 
 	writeNamesForMockExecutor(eiMetadata)
 
 	tryCreateRustOutputDirectory()
 
+	writeRustVMHooksNames(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
@@ -64,10 +60,8 @@ func main() {
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
-	if wasmer2Branch {
-		writeExecutorOpcodeCosts()
-		writeWasmer2OpcodeCost()
-	}
+	writeExecutorOpcodeCosts()
+	writeWasmer2OpcodeCost()
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeOpcodeCostFuncHelpers()
@@ -126,6 +120,12 @@ func tryCreateRustOutputDirectory() {
 		return
 	}
 	fmt.Println("Output directory already exists.")
+}
+
+func writeRustVMHooksNames(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/ei_1_5.rs")
+	defer out.Close()
+	eapigen.WriteRustHookNames(out, eiMetadata)
 }
 
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
