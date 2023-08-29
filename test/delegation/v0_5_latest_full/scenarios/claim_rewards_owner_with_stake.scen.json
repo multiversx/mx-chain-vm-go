@@ -76,7 +76,9 @@
                             "str:userStake",
                             "address:node_address"
                         ],
-                        "data": "100,000,000,000,000"
+                        "data": [
+                            "100,000,000,000,000"
+                        ]
                     }
                 ],
                 "gas": "*",

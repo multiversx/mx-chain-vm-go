@@ -62,12 +62,15 @@
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "''delegator_1___________________s1",
-                            "40,000,000,002"
+                        "topics": [                            
+                            "40,000,000,002",
+                            "address:delegator_1___________________s#31"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:purchaseStake",
+                            "str:delegator_1___________________s1"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -77,7 +80,9 @@
                             "''delegator_1___________________s1",
                             "''delegator_2___________________s1"
                         ],
-                        "data": "40,000,000,002"
+                        "data": [
+                            "40,000,000,002"
+                        ]
                     }
                 ],
                 "gas": "*",
@@ -105,12 +110,15 @@
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:delegation",
-                            "''delegator_1___________________s1",
-                            "30,000,000,003"
+                        "topics": [                            
+                            "30,000,000,003",
+                            "address:delegator_1___________________s#31"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:purchaseStake",
+                            "str:delegator_1___________________s1"
+                        ]
                     },
                     {
                         "address": "sc:delegation",
@@ -120,7 +128,9 @@
                             "''delegator_1___________________s1",
                             "''delegator_2___________________s1"
                         ],
-                        "data": "30,000,000,003"
+                        "data": [
+                            "30,000,000,003"
+                        ]
                     }
                 ],
                 "gas": "*",

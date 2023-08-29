@@ -2,6 +2,8 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
+
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
 func TestRustAdder(t *testing.T) {
@@ -69,6 +71,7 @@ func TestDnsContract(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("dns").
+		WithEnableEpochsHandler(worldhook.EnableEpochsHandlerStubNoFlags()).
 		Run().
 		CheckNoError()
 }

@@ -85,7 +85,7 @@ func (ae *VMTestExecutor) InitVM(scenGasSchedule mj.GasSchedule) error {
 			ProtectedKeyPrefix:       []byte(core.ProtectedKeyPrefix),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),
+			EnableEpochsHandler:      ae.World.EnableEpochsHandler,
 			WasmerSIGSEGVPassthrough: false,
 			Hasher:                   worldhook.DefaultHasher,
 		})

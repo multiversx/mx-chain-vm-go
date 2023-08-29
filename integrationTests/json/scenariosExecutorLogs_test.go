@@ -201,6 +201,7 @@ func TestDnsContractLog(t *testing.T) {
 
 	// expected := ScenariosTest(t).
 	// 	Folder("dns").
+	// 	WithEnableEpochsHandler(worldhook.EnableEpochsHandlerStubNoFlags()).
 	// 	WithExecutorFactory(wasmer.ExecutorFactory()).
 	// 	WithExecutorLogs().
 	// 	Run().
@@ -209,6 +210,7 @@ func TestDnsContractLog(t *testing.T) {
 
 	// ScenariosTest(t).
 	// 	Folder("dns").
+	// 	WithEnableEpochsHandler(worldhook.EnableEpochsHandlerStubNoFlags()).
 	// 	WithExecutorFactory(wasmer2.ExecutorFactory()).
 	// 	WithExecutorLogs().
 	// 	Run().
