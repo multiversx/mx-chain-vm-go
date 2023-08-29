@@ -19,12 +19,14 @@
                     {
                         "address": "sc:dns#87",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "sc:dns#87",
-                            "address:dns_owner",
-                            "123,000"
+                        "topics": [                            
+                            "123,000",
+                            "address:dns_owner"
                         ],
-                        "data": ""
+                        "data": [
+                            "str:DirectCall",
+                            "str:claim"
+                        ]
                     }
                 ],
                 "gas": "*",

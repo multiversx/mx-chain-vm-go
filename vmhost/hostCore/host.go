@@ -57,6 +57,8 @@ type vmHost struct {
 	callArgsParser       vmhost.CallArgsParser
 	enableEpochsHandler  vmcommon.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
+
+	transferLogIdentifiers map[string]bool
 }
 
 // NewVMHost creates a new VM vmHost
@@ -165,6 +167,12 @@ func NewVMHost(
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
+
+	host.transferLogIdentifiers = make(map[string]bool)
+	host.transferLogIdentifiers["transferValueOnly"] = true
+	host.transferLogIdentifiers["ESDTTransfer"] = true
+	host.transferLogIdentifiers["ESDTNFTTransfer"] = true
+	host.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 
 	return host, nil
 }
@@ -375,6 +383,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
+		host.CompleteLogEntriesWithCallType(vmOutput, "DeploySmartContract")
+
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
@@ -487,7 +497,7 @@ func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, func
 		Identifier: []byte(internalVMErrors),
 		Address:    sndAddress,
 		Topics:     [][]byte{rcvAddress, []byte(function)},
-		Data:       []byte(formattedErrors.Error()),
+		Data:       [][]byte{[]byte(formattedErrors.Error())},
 	}
 
 	return logFromError
@@ -592,6 +602,16 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 				totalGasUsedByAPIs += int(totalGasUsed)
 			}
 			logGasTrace.Trace("Gas Trace for", "TotalGasUsedByAPIs", totalGasUsedByAPIs)
+		}
+	}
+}
+
+// CompleteLogEntriesWithCallType sets the call type on a logn entry if it's not already filled
+func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
+	for _, logEntry := range vmOutput.Logs {
+		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]
+		if containsId && len(logEntry.Data[0]) == 0 {
+			logEntry.Data[0] = []byte(callType)
 		}
 	}
 }

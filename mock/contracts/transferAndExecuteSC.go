@@ -44,6 +44,26 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 	})
 }
 
+func TransferEGLDToParent(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("transferEGLDToParent", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		host.Metering().UseGas(testConfig.GasUsedByChild)
+
+		vmhooks.TransferValueExecuteWithTypedArgs(host,
+			test.ParentAddress,
+			big.NewInt(testConfig.ChildBalance/2),
+			0,
+			[]byte{}, // transfer data
+			[][]byte{},
+		)
+
+		return instance
+	})
+}
+
 // GetChildAddressForTransfer -
 func GetChildAddressForTransfer(transfer int) []byte {
 	return testcommon.MakeTestSCAddress(fmt.Sprintf("childSC-%d", transfer))

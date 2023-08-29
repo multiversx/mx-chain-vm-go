@@ -108,7 +108,7 @@ func (host *VMHostMock) ExecuteESDTTransfer(_ *vmhost.ESDTTransfersArgs, _ vm.Ca
 }
 
 // CreateNewContract mocked method
-func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
+func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput, _ int) ([]byte, error) {
 	return nil, nil
 }
 
@@ -237,6 +237,10 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	vmOutput := host.VMOutputQueue[host.VMOutputToReturn]
 	host.VMOutputToReturn += 1
 	return vmOutput
+}
+
+// CompleteLogEntriesWithCallType mocked method
+func (host *VMHostMock) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
 }
 
 // Close -
