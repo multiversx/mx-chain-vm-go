@@ -140,6 +140,16 @@ func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *
 			ae.exprReconstructor.Reconstruct(topic,
 				er.NoHint))
 	}
+
+	dataField := mj.JSONCheckValueList{
+		Values: make([]mj.JSONCheckBytes, len(outputLog.Data)),
+	}
+	for i, data := range outputLog.Data {
+		dataField.Values[i] = mj.JSONCheckBytesReconstructed(
+			data,
+			ae.exprReconstructor.Reconstruct(data,
+				er.NoHint))
+	}
 	testLog := mj.LogEntry{
 		Address: mj.JSONCheckBytesReconstructed(
 			outputLog.Address,
@@ -149,7 +159,8 @@ func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),
-		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
+		//TODO fix this when integrating feat/logEvents
+		// Data:   dataField,
 		Topics: topics,
 	}
 

@@ -153,7 +153,7 @@ func (context *VMHooksImpl) ManagedWriteLog(
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseAndTraceGas(gasToUse)
 
-	output.WriteLog(runtime.GetContextAddress(), topics, dataBytes)
+	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{dataBytes})
 }
 
 // ManagedGetOriginalTxHash VMHooks implementation.
@@ -749,7 +749,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	newAddress, err := createContract(sender, data, value, gas, code, codeMetadata, host)
+	newAddress, err := createContract(sender, data, value, gas, code, codeMetadata, host, CreateContract)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}

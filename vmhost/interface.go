@@ -42,7 +42,7 @@ type VMHost interface {
 	EnableEpochsHandler() vmcommon.EnableEpochsHandler
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
+	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	IsBuiltinFunctionName(functionName string) bool
@@ -55,6 +55,8 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string)
 
 	Reset()
 }
@@ -228,7 +230,7 @@ type OutputContext interface {
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	DeleteOutputAccount(address []byte)
-	WriteLog(address []byte, topics [][]byte, data []byte)
+	WriteLog(address []byte, topics [][]byte, data [][]byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
 	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error)
@@ -266,6 +268,7 @@ type MeteringContext interface {
 	UseGas(gas uint64)
 	UseAndTraceGas(gas uint64)
 	UseGasAndAddTracedGas(functionName string, gas uint64)
+	UseGasBoundedAndAddTracedGas(functionName string, gas uint64) error
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
@@ -316,15 +319,15 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool, error)
-	GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool, error)
-	GetStorage(key []byte) ([]byte, bool, error)
-	GetStorageUnmetered(key []byte) ([]byte, bool, error)
+	GetStorageFromAddress(address []byte, key []byte) ([]byte, uint32, bool, error)
+	GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, uint32, bool, error)
+	GetStorage(key []byte) ([]byte, uint32, bool, error)
+	GetStorageUnmetered(key []byte) ([]byte, uint32, bool, error)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (StorageStatus, error)
-	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
+	UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, blockchainLoadCost uint64, usedCache bool) error
 	IsUseDifferentGasCostFlagSet() bool
 	GetVmProtectedPrefix(prefix string) []byte
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // UpdateBalance sets a new balance to an account
