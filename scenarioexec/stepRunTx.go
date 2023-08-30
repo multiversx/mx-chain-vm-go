@@ -74,8 +74,8 @@ func (ae *VMTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcomm
 			// the sender is the contract itself during SC queries
 			tx.From = tx.To
 			// gas restrictions waived during SC queries
-			tx.GasLimit.Value = math.MaxUint64
-			gasForExecution = math.MaxUint64
+			tx.GasLimit.Value = math.MaxInt64
+			gasForExecution = math.MaxInt64
 			fallthrough
 		case mj.ScCall:
 			output, err = ae.scCall(txIndex, tx, gasForExecution)
