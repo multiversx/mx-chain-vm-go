@@ -186,9 +186,6 @@ func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key
 	// StorageUpdates.
 	value, trieDepth, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
 
-	context.useExtraGasForKeyIfNeeded(key, usedCache)
-	context.useGasForValueIfNeeded(value, usedCache)
-
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, trieDepth, usedCache, err
 }
