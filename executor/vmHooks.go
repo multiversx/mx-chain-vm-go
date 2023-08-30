@@ -113,6 +113,7 @@ type ManagedVMHooks interface {
 	ManagedGetPrevBlockRandomSeed(resultHandle int32)
 	ManagedGetReturnData(resultID int32, resultHandle int32)
 	ManagedGetMultiESDTCallValue(multiCallValueHandle int32)
+	ManagedGetBackTransfers(esdtTransfersValueHandle int32, callValueHandle int32)
 	ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32)
 	ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32)
 	ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32)

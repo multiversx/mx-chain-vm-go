@@ -168,10 +168,16 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		}
 	}
 
-	return context.GetStorageFromAddressNoChecks(address, key)
+	value, trieDepth, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
+
+	context.useExtraGasForKeyIfNeeded(key, usedCache)
+	context.useGasForValueIfNeeded(value, usedCache)
+
+	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
+	return value, trieDepth, usedCache, err
 }
 
-// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by vm, so no permissions checks are necessary
+// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internally by vm, so no permissions checks are necessary
 func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, uint32, bool, error) {
 	// If the requested key is protected by the node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
@@ -179,9 +185,6 @@ func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
 	value, trieDepth, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
-
-	context.useExtraGasForKeyIfNeeded(key, usedCache)
-	context.useGasForValueIfNeeded(value, usedCache)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, trieDepth, usedCache, err
@@ -256,14 +259,14 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (vmhost.Stor
 	return context.setStorageToAddress(context.address, key, value)
 }
 
-// SetProtectedStorageToAddress sets the given value at the given key, for the specified address. This is only used internaly by vm!
+// SetProtectedStorageToAddress sets the given value at the given key, for the specified address. This is only used internally by vm!
 func (context *storageContext) SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (vmhost.StorageStatus, error) {
 	context.disableStorageProtection()
 	defer context.enableStorageProtection()
 	return context.setStorageToAddress(address, key, value)
 }
 
-// SetProtectedStorageToAddressUnmetered sets the given value at the given key, for the specified address. This is only used internaly by vm!
+// SetProtectedStorageToAddressUnmetered sets the given value at the given key, for the specified address. This is only used internally by vm!
 // No gas cost involved, e.g. called by async.Save()
 func (context *storageContext) SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (vmhost.StorageStatus, error) {
 	context.disableStorageProtection()

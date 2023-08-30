@@ -273,7 +273,10 @@ func (context *asyncContext) createCallbackInput(
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := context.host.Runtime()
 
-	actualCallbackInitiator := context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
+	actualCallbackInitiator, err := context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
+	if err != nil {
+		return nil, err
+	}
 
 	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
 

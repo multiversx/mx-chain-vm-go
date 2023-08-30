@@ -710,11 +710,9 @@ func testGasUsedAsyncCallCrossShardInitCall(t *testing.T, isLegacy bool) {
 			world.CurrentBlockInfo.BlockRound = 0
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
-			if !isLegacy {
-				expectedStorages = append(expectedStorages,
-					test.CreateStoreEntry(test.ParentAddress).WithKey(
-						host.Storage().GetVmProtectedPrefix(vmhost.AsyncDataPrefix)).IgnoreValue())
-			}
+			expectedStorages = append(expectedStorages,
+				test.CreateStoreEntry(test.ParentAddress).WithKey(
+					host.Storage().GetVmProtectedPrefix(vmhost.AsyncDataPrefix)).IgnoreValue())
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().

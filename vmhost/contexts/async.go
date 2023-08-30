@@ -24,6 +24,7 @@ type asyncContext struct {
 	marshalizer *marshal.GogoProtoMarshalizer
 
 	originalCallerAddr []byte
+	parentAddr         []byte
 	callerAddr         []byte
 	callback           string
 	callbackData       []byte
@@ -73,6 +74,7 @@ func NewAsyncContext(
 		stateStack:             nil,
 		originalCallerAddr:     nil,
 		callerAddr:             nil,
+		parentAddr:             nil,
 		callback:               "",
 		callbackData:           nil,
 		gasAccumulated:         0,
@@ -95,6 +97,7 @@ func (context *asyncContext) InitState() {
 	context.callID = nil
 	context.callerCallID = nil
 	context.callerAddr = make([]byte, 0)
+	context.parentAddr = make([]byte, 0)
 	context.gasAccumulated = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*vmhost.AsyncCallGroup, 0)
@@ -121,6 +124,9 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetContextAddress()
 
+	context.parentAddr = make([]byte, len(input.CallerAddr))
+	copy(context.parentAddr, input.CallerAddr)
+
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
 		context.callID = input.CurrentTxHash
@@ -138,6 +144,16 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		context.gasAccumulated = input.AsyncArguments.GasAccumulated
 	}
 
+	if input.CallType == vm.AsynchronousCallBack {
+		asyncParentAddr, err := context.getParentAddressFromStorage()
+		if err != nil {
+			return err
+		}
+
+		context.parentAddr = make([]byte, len(asyncParentAddr))
+		copy(context.parentAddr, asyncParentAddr)
+	}
+
 	if logAsync.GetLevel() == logger.LogTrace {
 		logAsync.Trace("Calling", "function", input.Function)
 		logAsync.Trace("", "address", string(context.address))
@@ -148,6 +164,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		logAsync.Trace("", "callerCallID", context.callerCallID)
 		logAsync.Trace("", "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
 		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
+		logAsync.Trace("", "parentAddress", string(context.parentAddr))
 	}
 
 	return nil
@@ -161,6 +178,7 @@ func (context *asyncContext) PushState() {
 		callID:             context.callID,
 		callerCallID:       context.callerCallID,
 		callerAddr:         context.callerAddr,
+		parentAddr:         context.parentAddr,
 		callback:           context.callback,
 		callbackData:       context.callbackData,
 		gasAccumulated:     context.gasAccumulated,
@@ -209,6 +227,7 @@ func (context *asyncContext) PopSetActiveState() {
 
 	context.originalCallerAddr = prevState.originalCallerAddr
 	context.callerAddr = prevState.callerAddr
+	context.parentAddr = prevState.parentAddr
 	context.callerCallID = prevState.callerCallID
 	context.callType = prevState.callType
 	context.callbackAsyncInitiatorCallID = prevState.callbackAsyncInitiatorCallID
@@ -227,6 +246,7 @@ func (context *asyncContext) Clone() vmhost.AsyncContext {
 	return &asyncContext{
 		address:                      context.address,
 		callerAddr:                   context.callerAddr,
+		parentAddr:                   context.parentAddr,
 		originalCallerAddr:           context.originalCallerAddr,
 		callerCallID:                 context.callerCallID,
 		callType:                     context.callType,
@@ -260,6 +280,11 @@ func (context *asyncContext) ClearStateStack() {
 // GetCallerAddress returns the address of the original caller.
 func (context *asyncContext) GetCallerAddress() []byte {
 	return context.callerAddr
+}
+
+// GetParentAddress returns the address of the original caller.
+func (context *asyncContext) GetParentAddress() []byte {
+	return context.parentAddr
 }
 
 // GetCallerCallID returns the callID of the original caller.
@@ -677,11 +702,26 @@ func (context *asyncContext) Execute() error {
 				}
 			}
 		}
-
-		context.deleteCallGroupByID(vmhost.LegacyAsyncCallGroupID)
 	}
 
 	return nil
+}
+
+func (context *asyncContext) getParentAddressFromStorage() ([]byte, error) {
+	stackContext := context.getContextFromStack(context.address, context.callbackAsyncInitiatorCallID)
+	if stackContext != nil {
+		return stackContext.parentAddr, nil
+	}
+
+	loadedContext, err := readAsyncContextFromStorage(
+		context.host.Storage(),
+		context.address, context.callbackAsyncInitiatorCallID,
+		context.marshalizer)
+	if err != nil {
+		return nil, err
+	}
+
+	return loadedContext.parentAddr, nil
 }
 
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
@@ -706,48 +746,24 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		context.callbackAsyncInitiatorCallID,
 		context.marshalizer)
 	if err != nil {
-		if err == vmhost.ErrNoStoredAsyncContextFound {
-			return getLegacyCallback(address, vmInput), true, nil
-		} else {
-			return nil, false, err
-		}
+		return nil, false, err
 	}
 
 	asyncCallInfo := loadedContext.GetAsyncCallByCallID(callID)
 	call := asyncCallInfo.GetAsyncCall()
 	err = asyncCallInfo.GetError()
 	if err != nil {
-		if err == vmhost.ErrAsyncCallNotFound {
-			return getLegacyCallback(address, vmInput), true, nil
-		} else {
-			return nil, false, err
-		}
+		return nil, false, err
 	}
 
 	// The first argument of the callback is the return code of the destination call
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
-	return call, false, nil
+	return call, loadedContext.HasLegacyGroup(), nil
 }
 
-func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *vmhost.AsyncCall {
-	var valueBytes []byte = nil
-	if vmInput.CallValue != nil {
-		valueBytes = vmInput.CallValue.Bytes()
-	}
-	return &vmhost.AsyncCall{
-		Status:          vmhost.AsyncCallResolved,
-		Destination:     address,
-		ValueBytes:      valueBytes,
-		SuccessCallback: vmhost.CallbackFunctionName,
-		ErrorCallback:   vmhost.CallbackFunctionName,
-		GasLimit:        vmInput.GasProvided,
-		GasLocked:       vmInput.GasLocked,
-	}
-}
-
-func (context *asyncContext) isMultiLevelAsync(call *vmhost.AsyncCall) bool {
+func (context *asyncContext) isMultiLevelAsync(_ *vmhost.AsyncCall) bool {
 	return context.isCallAsyncOnStack()
 }
 
@@ -917,7 +933,11 @@ func (context *asyncContext) determineExecutionMode(call *vmhost.AsyncCall) (vmh
 		return vmhost.AsyncUnknown, nil
 	}
 
-	actualDestination := context.determineDestinationForAsyncCall(destination, data)
+	actualDestination, err := context.determineDestinationForAsyncCall(destination, data)
+	if err != nil {
+		return vmhost.AsyncUnknown, err
+	}
+
 	sameShard := context.host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
@@ -934,26 +954,27 @@ func (context *asyncContext) determineExecutionMode(call *vmhost.AsyncCall) (vmh
 	return vmhost.AsyncUnknown, nil
 }
 
-func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) []byte {
+func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) ([]byte, error) {
 	if !bytes.Equal(context.host.Runtime().GetContextAddress(), destination) {
-		return destination
+		return destination, nil
 	}
 
 	argsParser := context.callArgsParser
 	functionName, args, err := argsParser.ParseData(string(data))
-	// TODO(check) what should do if we have a not nil err
-	_ = err
+	if err != nil {
+		return nil, err
+	}
 
 	if !context.host.IsBuiltinFunctionName(functionName) {
-		return destination
+		return destination, nil
 	}
 
 	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(destination, destination, functionName, args)
 	if err != nil {
-		return destination
+		return destination, nil
 	}
 
-	return parsedTransfer.RcvAddr
+	return parsedTransfer.RcvAddr, nil
 }
 
 func (context *asyncContext) findGroupByID(groupID string) (int, bool) {
@@ -985,7 +1006,7 @@ func (context *asyncContext) accumulateGas(gas uint64) {
 	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
 }
 
-// HasLegacyGroup checks if the a legacy async group was created
+// HasLegacyGroup checks if the legacy async group was created
 func (context *asyncContext) HasLegacyGroup() bool {
 	_, hasLegacyGroup := context.GetCallGroup(vmhost.LegacyAsyncCallGroupID)
 	return hasLegacyGroup
