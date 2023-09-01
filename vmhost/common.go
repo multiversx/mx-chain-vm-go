@@ -173,7 +173,7 @@ type VMHostParameters struct {
 	ProtectedKeyPrefix                  []byte
 	WasmerSIGSEGVPassthrough            bool
 	EpochNotifier                       vmcommon.EpochNotifier
-	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
+	EnableEpochsHandler                 EnableEpochsHandler
 	Hasher                              HashComputer
 	TimeOutForSCExecutionInMilliseconds uint32
 }
