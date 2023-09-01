@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -251,7 +252,7 @@ func (context *outputContext) DeleteFirstReturnData() {
 }
 
 // WriteLogWithIdentifier creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data []byte, identifier []byte) {
+func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte) {
 	if context.host.Runtime().ReadOnly() {
 		logOutput.Trace("log entry", "error", "cannot write logs in readonly mode")
 		return
@@ -276,7 +277,7 @@ func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]
 }
 
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+func (context *outputContext) WriteLog(address []byte, topics [][]byte, data [][]byte) {
 	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().FunctionName()))
 }
 
@@ -317,16 +318,42 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		if context.host.Runtime().ReadOnly() {
 			return vmhost.ErrInvalidCallOnReadOnlyMode
 		}
-
-		context.WriteLogWithIdentifier(
-			context.host.Runtime().GetContextAddress(),
-			[][]byte{sender, destination, value.Bytes()},
-			[]byte{},
-			[]byte("transferValueOnly"),
-		)
 	}
 
+	vmInput := context.host.Runtime().GetVMInput()
+	context.WriteLogWithIdentifier(
+		sender,
+		[][]byte{value.Bytes(), destination},
+		vmcommon.FormatLogDataForCall("", vmInput.Function, vmInput.Arguments),
+		[]byte("transferValueOnly"),
+	)
+
 	return nil
+}
+
+func (context *outputContext) isBackTransferWithoutExecution(sender, destination []byte, input []byte) bool {
+	if len(input) != 0 {
+		return false
+	}
+	if !core.IsSmartContractAddress(destination) {
+		return false
+	}
+
+	vmInput := context.host.Runtime().GetVMInput()
+
+	currentExecutionCallerAddress := vmInput.CallerAddr
+	currentExecutionDestinationAddress := vmInput.RecipientAddr
+
+	if vmInput.CallType == vm.AsynchronousCallBack {
+		currentExecutionCallerAddress = context.host.Async().GetParentAddress()
+	}
+
+	if !bytes.Equal(currentExecutionCallerAddress, destination) ||
+		!bytes.Equal(currentExecutionDestinationAddress, sender) {
+		return false
+	}
+
+	return true
 }
 
 // Transfer handles any necessary value transfer required and takes
@@ -334,7 +361,9 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error {
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
-	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
+	isBackTransfer := context.isBackTransferWithoutExecution(sender, destination, input)
+	checkPayable := checkPayableIfNotCallback || !isBackTransfer
+	err := context.TransferValueOnly(destination, sender, value, checkPayable)
 	if err != nil {
 		return err
 	}
@@ -357,6 +386,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	logOutput.Trace("transfer value added")
+
 	return nil
 }
 
@@ -373,7 +403,9 @@ func (context *outputContext) TransferESDT(
 	sameShard := context.host.AreInSameShard(transfersArgs.Sender, transfersArgs.Destination)
 	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
-	if isExecution {
+	isBackTransfer := !isExecution && context.isBackTransferWithoutExecution(transfersArgs.Sender, transfersArgs.Destination, nil)
+
+	if isExecution || isBackTransfer {
 		callType = vm.ESDTTransferAndExecute
 	}
 
@@ -431,6 +463,7 @@ func (context *outputContext) TransferESDT(
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
+
 	return gasRemaining, nil
 }
 
@@ -646,7 +679,7 @@ func (context *outputContext) GetCrtTransferIndex() uint32 {
 	return context.crtTransferIndex
 }
 
-// SetOutputTransferIndex sets the current output transfer index
+// SetCrtTransferIndex sets the current output transfer index
 func (context *outputContext) SetCrtTransferIndex(index uint32) {
 	context.crtTransferIndex = index
 }

@@ -35,7 +35,7 @@
         },
         {
             "step": "scCall",
-            "id": "resolve-coolname0001-again",
+            "id": "resolve-coolname0001-#2",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:dns#87",

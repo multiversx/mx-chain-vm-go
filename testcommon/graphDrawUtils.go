@@ -2,7 +2,6 @@ package testcommon
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -33,7 +32,7 @@ func CreateSvgWithLocation(folder string, file string, graphviz *gographviz.Grap
 	destDot := folder + file + ".dot"
 
 	output := graphviz.String()
-	err := ioutil.WriteFile(destDot, []byte(output), 0644)
+	err := os.WriteFile(destDot, []byte(output), 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +42,7 @@ func CreateSvgWithLocation(folder string, file string, graphviz *gographviz.Grap
 		panic(err)
 	}
 
-	err = ioutil.WriteFile(folder+file+".svg", out, 0644)
+	err = os.WriteFile(folder+file+".svg", out, 0644)
 	if err != nil {
 		panic(err)
 	}

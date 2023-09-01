@@ -15,6 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -93,12 +94,6 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunc
 		log.Trace("performCodeDeployment/StartWasmerInstance", "err", err)
 		return nil, vmhost.ErrContractInvalid
 	}
-
-	defer func() {
-		if !contexts.WarmInstancesEnabled {
-			runtime.CleanInstance()
-		}
-	}()
 
 	err = initFunction()
 	if err != nil {
@@ -256,12 +251,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		return vmOutput
 	}
 
-	defer func() {
-		if !contexts.WarmInstancesEnabled {
-			runtime.CleanInstance()
-		}
-	}()
-
 	err = host.callSCMethod()
 	if err != nil {
 		log.Trace("doRunSmartContractCall", "error", err)
@@ -273,6 +262,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		output.RemoveNonUpdatedStorage()
 	}
 	vmOutput = output.GetVMOutput()
+	host.CompleteLogEntriesWithCallType(vmOutput, "DirectCall")
 
 	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
@@ -332,11 +322,13 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			isChildComplete = true
 			return
 		}
+		host.completeLogEntriesAfterBuiltinCall(input, vmOutput)
 	}
 
 	isChildComplete = true
 	if scExecutionInput != nil {
 		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		host.addNewBackTransfersFromVMOutput(vmOutput, scExecutionInput.CallerAddr, scExecutionInput.RecipientAddr)
 	}
 
 	if err != nil {
@@ -346,6 +338,67 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	return
+}
+
+func (host *vmHost) isESDTTransferWithoutExecution(transferData []byte, parent, child []byte) (*vmcommon.ParsedESDTTransfers, bool) {
+	function, args, err := host.callArgsParser.ParseData(string(transferData))
+	if err != nil {
+		return nil, false
+	}
+
+	esdtTransfers, err := host.esdtTransferParser.ParseESDTTransfers(child, parent, function, args)
+	if err != nil {
+		return nil, false
+	}
+	if esdtTransfers.CallFunction != "" {
+		return nil, false
+	}
+
+	return esdtTransfers, true
+}
+
+func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput, parent, child []byte) {
+	if vmOutput == nil || vmOutput.ReturnCode != vmcommon.Ok {
+		return
+	}
+	callerOutAcc, ok := vmOutput.OutputAccounts[string(parent)]
+	if !ok {
+		return
+	}
+
+	for _, transfer := range callerOutAcc.OutputTransfers {
+		if !bytes.Equal(transfer.SenderAddress, child) {
+			continue
+		}
+		if transfer.CallType == vm.AsynchronousCallBack {
+			continue
+		}
+
+		if transfer.Value.Cmp(vmhost.Zero) > 0 {
+			if len(transfer.Data) == 0 {
+				host.managedTypesContext.AddValueOnlyBackTransfer(transfer.Value)
+			}
+			continue
+		}
+
+		esdtTransfers, isWithoutExec := host.isESDTTransferWithoutExecution(transfer.Data, parent, child)
+		if !isWithoutExec {
+			continue
+		}
+
+		host.managedTypesContext.AddBackTransfers(esdtTransfers.ESDTTransfers)
+	}
+}
+
+func (host *vmHost) completeLogEntriesAfterBuiltinCall(input *vmcommon.ContractCallInput, vmOutput *vmcommon.VMOutput) {
+	switch input.CallType {
+	case vm.AsynchronousCall:
+		host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+	case vm.AsynchronousCallBack:
+		host.CompleteLogEntriesWithCallType(vmOutput, "AyncCallback")
+	default:
+		host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+	}
 }
 
 func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -426,7 +479,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	if input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0 {
+	if len(input.ESDTTransfers) == 0 && (input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0) {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
@@ -460,7 +513,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	}
 
 	async.SetResults(vmOutput)
-	if !async.IsComplete() {
+	if !async.IsComplete() || async.HasLegacyGroup() {
 		saveErr := async.Save()
 		if saveErr != nil {
 			vmOutput = output.CreateVMOutputInCaseOfError(saveErr)
@@ -569,6 +622,8 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// GasUsed for all accounts.
 	vmOutput := output.GetVMOutput()
 
+	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnSameContext")
+
 	metering.PopMergeActiveState()
 	output.PopDiscard()
 	blockchain.PopDiscard()
@@ -615,7 +670,7 @@ func (host *vmHost) IsBuiltinFunctionCall(data []byte) bool {
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
-func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
+func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) (newContractAddress []byte, err error) {
 	newContractAddress = nil
 	err = nil
 
@@ -673,10 +728,17 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 
 	var isChildComplete bool
 	host.Async().SetAsyncArgumentsForCall(initCallInput)
-	_, isChildComplete, err = host.ExecuteOnDestContext(initCallInput)
+	initVmOutput, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
+
+	if createContractCallType == vmhooks.DeployContract {
+		host.CompleteLogEntriesWithCallType(initVmOutput, "DeployFromSource")
+	} else {
+		host.CompleteLogEntriesWithCallType(initVmOutput, "CreateSmartContract")
+	}
+
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
 		return
@@ -1127,8 +1189,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		runtime.GetContextAddress(),
 		callerCallID,
 		&runtime.GetVMInput().VMInput)
-	if err != nil && !isLegacy {
-		log.Trace("UpdateCurrentCallStatus failed", "error", err)
+	if err != nil {
 		return err
 	}
 
@@ -1160,7 +1221,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	}
 
 	if isLegacy {
-		return nil
+		return async.DeleteFromCallID(async.GetCallbackAsyncInitiatorCallID())
 	}
 
 	err = async.LoadParentContext()
@@ -1203,19 +1264,15 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return true, err
 		}
 
-		isLegacy := async.HasLegacyGroup()
 		err = async.Execute()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err, "src", "async execution")
 			return false, err
 		}
 
-		if !async.IsComplete() {
-			var err error = nil
-			if !isLegacy {
-				async.SetResults(host.Output().GetVMOutput())
-				err = async.Save()
-			}
+		if !async.IsComplete() || async.HasLegacyGroup() {
+			async.SetResults(host.Output().GetVMOutput())
+			err = async.Save()
 			return false, err
 		}
 	} else {

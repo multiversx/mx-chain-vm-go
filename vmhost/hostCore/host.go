@@ -2,6 +2,7 @@ package hostCore
 
 import (
 	"context"
+	"math"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -56,6 +57,8 @@ type vmHost struct {
 	callArgsParser       vmhost.CallArgsParser
 	enableEpochsHandler  vmcommon.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
+
+	transferLogIdentifiers map[string]bool
 }
 
 // NewVMHost creates a new VM vmHost
@@ -63,7 +66,6 @@ func NewVMHost(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *vmhost.VMHostParameters,
 ) (vmhost.VMHost, error) {
-
 	if check.IfNil(blockChainHook) {
 		return nil, vmhost.ErrNilBlockChainHook
 	}
@@ -165,6 +167,12 @@ func NewVMHost(
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
+
+	host.transferLogIdentifiers = make(map[string]bool)
+	host.transferLogIdentifiers["transferValueOnly"] = true
+	host.transferLogIdentifiers["ESDTTransfer"] = true
+	host.transferLogIdentifiers["ESDTNFTTransfer"] = true
+	host.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 
 	return host, nil
 }
@@ -337,6 +345,11 @@ func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 
 // RunSmartContractCreate executes the deployment of a new contract
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	err = validateVMInput(&input.VMInput)
+	if err != nil {
+		return nil, err
+	}
+
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
@@ -370,6 +383,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
+		host.CompleteLogEntriesWithCallType(vmOutput, "DeploySmartContract")
+
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
@@ -396,6 +411,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 
 // RunSmartContractCall executes the call of an existing contract
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	err = validateVMInput(&input.VMInput)
+	if err != nil {
+		return nil, err
+	}
+
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
@@ -477,7 +497,7 @@ func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, func
 		Identifier: []byte(internalVMErrors),
 		Address:    sndAddress,
 		Topics:     [][]byte{rcvAddress, []byte(function)},
-		Data:       []byte(formattedErrors.Error()),
+		Data:       [][]byte{[]byte(formattedErrors.Error())},
 	}
 
 	return logFromError
@@ -552,6 +572,14 @@ func (host *vmHost) CheckExecuteReadOnly() bool {
 	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabled()
 }
 
+func validateVMInput(vmInput *vmcommon.VMInput) error {
+	if vmInput.GasProvided > math.MaxInt64 {
+		return vmhost.ErrInvalidGasProvided
+	}
+
+	return nil
+}
+
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {
 	host.Metering().SetGasTracing(false)
 	if logGasTrace.GetLevel() == logger.LogTrace {
@@ -574,6 +602,16 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 				totalGasUsedByAPIs += int(totalGasUsed)
 			}
 			logGasTrace.Trace("Gas Trace for", "TotalGasUsedByAPIs", totalGasUsedByAPIs)
+		}
+	}
+}
+
+// CompleteLogEntriesWithCallType sets the call type on a logn entry if it's not already filled
+func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
+	for _, logEntry := range vmOutput.Logs {
+		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]
+		if containsId && len(logEntry.Data[0]) == 0 {
+			logEntry.Data[0] = []byte(callType)
 		}
 	}
 }

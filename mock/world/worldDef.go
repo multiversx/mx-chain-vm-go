@@ -50,6 +50,7 @@ type MockWorld struct {
 	IsLimitedTransferValue     bool
 	GuardedAccountHandler      vmcommon.GuardedAccountHandler
 	ProvidedBlockchainHook     vmcommon.BlockchainHook
+	EnableEpochsHandler        vmcommon.EnableEpochsHandler
 	OtherVMOutputMap           map[string]*vmcommon.VMOutput
 }
 
@@ -57,16 +58,17 @@ type MockWorld struct {
 func NewMockWorld() *MockWorld {
 	accountMap := NewAccountMap()
 	world := &MockWorld{
-		SelfShardID:       0,
-		AcctMap:           accountMap,
-		AccountsAdapter:   nil,
-		PreviousBlockInfo: nil,
-		CurrentBlockInfo:  nil,
-		Blockhashes:       nil,
-		NewAddressMocks:   nil,
-		CompiledCode:      make(map[string][]byte),
-		BuiltinFuncs:      nil,
-		OtherVMOutputMap:  make(map[string]*vmcommon.VMOutput),
+		SelfShardID:         0,
+		AcctMap:             accountMap,
+		AccountsAdapter:     nil,
+		PreviousBlockInfo:   nil,
+		CurrentBlockInfo:    nil,
+		Blockhashes:         nil,
+		NewAddressMocks:     nil,
+		CompiledCode:        make(map[string][]byte),
+		BuiltinFuncs:        nil,
+		EnableEpochsHandler: EnableEpochsHandlerStubAllFlags(),
+		OtherVMOutputMap:    make(map[string]*vmcommon.VMOutput),
 	}
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
 	world.GuardedAccountHandler = NewMockGuardedAccountHandler()

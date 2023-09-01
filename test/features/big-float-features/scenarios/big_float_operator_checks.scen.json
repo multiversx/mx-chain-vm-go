@@ -17,7 +17,7 @@
         },
         {
             "step": "scCall",
-            "id": "BigFloatAdd - 3",
+            "id": "BigFloatAdd - 1",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
@@ -37,7 +37,7 @@
         },
         {
             "step": "scCall",
-            "id": "BigFloatAdd - 4",
+            "id": "BigFloatAdd - 2",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",

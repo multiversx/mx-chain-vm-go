@@ -1,6 +1,7 @@
 package hostCoretest
 
 import (
+	"math"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -283,7 +284,7 @@ func deploy(
 			CallValue:   big.NewInt(0),
 			CallType:    vm.DirectCall,
 			GasPrice:    0,
-			GasProvided: 0xFFFFFFFFFFFFFFFF,
+			GasProvided: math.MaxInt64,
 		},
 		ContractCode: code,
 	}
@@ -378,7 +379,7 @@ func verifyTransfers(tb testing.TB, mockWorld *worldmock.MockWorld, totalTokenSu
 
 func checkLogsHaveDefinedString(logs []*vmcommon.LogEntry, str string) bool {
 	for _, log := range logs {
-		if strings.Contains(string(log.Data), str) {
+		if strings.Contains(string(log.Data[0]), str) {
 			return true
 		}
 	}

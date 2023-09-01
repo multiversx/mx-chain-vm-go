@@ -1,6 +1,7 @@
 package hostCoretest
 
 import (
+	"math"
 	"math/big"
 	"testing"
 	"time"
@@ -135,7 +136,7 @@ func (mex *MEXSetup) Deploy() {
 			big.NewInt(int64(mex.TotalFeePercent)).Bytes(),
 			big.NewInt(int64(mex.SpecialFeePercent)).Bytes(),
 		).
-		WithGasProvided(0xFFFFFFFFFFFFFFFF).
+		WithGasProvided(math.MaxInt64).
 		Build()
 
 	world.NewAddressMocks = append(world.NewAddressMocks, &worldmock.NewAddressMock{
@@ -171,7 +172,7 @@ func (mex *MEXSetup) setLPToken() {
 		WithRecipientAddr(mex.PairAddress).
 		WithFunction("setLpTokenIdentifier").
 		WithArguments(mex.LPToken).
-		WithGasProvided(0xFFFFFFFFFFFFFFFF).
+		WithGasProvided(math.MaxInt64).
 		Build()
 
 	vmOutput, err := host.RunSmartContractCall(vmInput)
@@ -191,7 +192,7 @@ func (mex *MEXSetup) setActiveState() {
 		WithCallerAddr(mex.OwnerAddress).
 		WithRecipientAddr(mex.PairAddress).
 		WithFunction("resume").
-		WithGasProvided(0xFFFFFFFFFFFFFFFF).
+		WithGasProvided(math.MaxInt64).
 		Build()
 
 	vmOutput, err := host.RunSmartContractCall(vmInput)
@@ -212,7 +213,7 @@ func (mex *MEXSetup) setMaxObservationsPerRecord() {
 		WithRecipientAddr(mex.PairAddress).
 		WithFunction("setMaxObservationsPerRecord").
 		WithArguments(big.NewInt(int64(mex.MaxObservationsPerRecord)).Bytes()).
-		WithGasProvided(0xFFFFFFFFFFFFFFFF).
+		WithGasProvided(math.MaxInt64).
 		Build()
 
 	vmOutput, err := host.RunSmartContractCall(vmInput)
@@ -255,7 +256,7 @@ func (mex *MEXSetup) AddLiquidity(
 			big.NewInt(int64(minWEGLDAmount)).Bytes(),
 			big.NewInt(int64(minMEXAmount)).Bytes(),
 		).
-		WithGasProvided(0xFFFFFFFFFFFFFFFF)
+		WithGasProvided(math.MaxInt64)
 
 	vmInputBuiler.
 		WithESDTTokenName(mex.WEGLDToken).
@@ -300,7 +301,7 @@ func (mex *MEXSetup) CreateSwapVMInputs(
 			rightToken,
 			big.NewInt(int64(rightAmount)).Bytes(),
 		).
-		WithGasProvided(0xFFFFFFFFFFF)
+		WithGasProvided(math.MaxInt64)
 
 	vmInput := vmInputBuiler.Build()
 
@@ -350,7 +351,7 @@ func (mex *MEXSetup) createMultiESDTTransferVMInput(
 			CallValue:   big.NewInt(0),
 			CallType:    vm.DirectCall,
 			GasPrice:    1,
-			GasProvided: 0xFFFFFFFF,
+			GasProvided: math.MaxInt64,
 			GasLocked:   0,
 		},
 		RecipientAddr:     sender,

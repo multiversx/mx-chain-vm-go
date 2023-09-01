@@ -75,3 +75,100 @@ func TestDecode_ZeroGasCostError(t *testing.T) {
 	err = checkForZeroUint64Fields(*wasmCosts)
 	assert.Error(t, err)
 }
+
+func Test_getSignedCoefficient(t *testing.T) {
+	gasScheduleMap := MakeGasMap(1, 1)
+
+	A := uint64(688)
+	B := uint64(31858)
+	C := uint64(15287)
+
+	gasMap := make(map[string]uint64)
+	gasMap["QuadraticCoefficient"] = A
+	gasMap["SignOfQuadratic"] = 0
+	gasMap["LinearCoefficient"] = B
+	gasMap["SignOfLinear"] = 0
+	gasMap["ConstantCoefficient"] = C
+	gasMap["SignOfConstant"] = 0
+	gasScheduleMap["DynamicStorageLoad"] = gasMap
+
+	gasCost, err := CreateGasConfig(gasScheduleMap)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(A), gasCost.DynamicStorageLoad.Quadratic)
+	assert.Equal(t, int64(B), gasCost.DynamicStorageLoad.Linear)
+	assert.Equal(t, int64(C), gasCost.DynamicStorageLoad.Constant)
+}
+
+func Test_isDynamicGasComputationFuncCorrectlyDefined(t *testing.T) {
+	t.Parallel()
+
+	t.Run("invalid stationary point", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  5,
+			Linear:     -5,
+			Constant:   1,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.False(t, ok)
+	})
+
+	t.Run("concave func", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  -5,
+			Linear:     -5,
+			Constant:   1,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.False(t, ok)
+	})
+
+	t.Run("constant parameter is negative", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  5,
+			Linear:     5,
+			Constant:   -1,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.False(t, ok)
+	})
+
+	t.Run("ok params", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  5,
+			Linear:     5,
+			Constant:   1,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.True(t, ok)
+	})
+
+	t.Run("benchmarked params", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  688,
+			Linear:     31858,
+			Constant:   15287,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.True(t, ok)
+	})
+}
