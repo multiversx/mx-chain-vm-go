@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -436,31 +435,10 @@ func (context *outputContext) TransferESDT(
 	}
 
 	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
-	outputTransfer := vmcommon.OutputTransfer{
-		Index:         context.NextOutputTransferIndex(),
-		Value:         big.NewInt(0),
-		GasLimit:      gasRemaining,
-		GasLocked:     0,
-		Data:          []byte{},
-		CallType:      vm.DirectCall,
-		SenderAddress: transfersArgs.Sender,
+	outputAcc, ok := vmOutput.OutputAccounts[string(transfersArgs.Destination)]
+	if ok && len(outputAcc.OutputTransfers) == 1 {
+		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputAcc.OutputTransfers[0])
 	}
-
-	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfersArgs.Transfers, vmOutput, sameShard, transfersArgs.Destination)
-
-	if sameShard {
-		outputTransfer.GasLimit = 0
-	}
-
-	if callInput != nil {
-		scCallData := "@" + hex.EncodeToString([]byte(callInput.Function))
-		for _, arg := range callInput.Arguments {
-			scCallData += "@" + hex.EncodeToString(arg)
-		}
-		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
-	}
-
-	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 
@@ -473,41 +451,6 @@ func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []
 		account.BytesConsumedByTxAsNetworking =
 			math.AddUint64(account.BytesConsumedByTxAsNetworking, uint64(len(transfer.Data)))
 	}
-}
-
-func (context *outputContext) getOutputTransferDataFromESDTTransfer(
-	transfers []*vmcommon.ESDTTransfer,
-	vmOutput *vmcommon.VMOutput,
-	sameShard bool,
-	destination []byte,
-) []byte {
-
-	if len(transfers) == 1 && transfers[0].ESDTTokenNonce == 0 {
-		return []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
-	}
-
-	if !sameShard {
-		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
-		if ok && len(outTransfer.OutputTransfers) == 1 {
-			return outTransfer.OutputTransfers[0].Data
-		}
-	}
-
-	if len(transfers) == 1 {
-		data := []byte(core.BuiltInFunctionESDTNFTTransfer + "@" +
-			hex.EncodeToString(transfers[0].ESDTTokenName) + "@" +
-			hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" +
-			hex.EncodeToString(transfers[0].ESDTValue.Bytes()) + "@" +
-			hex.EncodeToString(destination))
-		return data
-	}
-
-	data := core.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())
-	for _, transfer := range transfers {
-		data += "@" + hex.EncodeToString(transfer.ESDTTokenName) + "@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfer.ESDTValue.Bytes())
-	}
-
-	return []byte(data)
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {

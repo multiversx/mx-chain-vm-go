@@ -225,7 +225,8 @@ type AsyncGeneratedCall struct {
 }
 
 // OldAsyncContext is a structure containing a group of async calls and a callback
-//  that should be called when all these async calls are resolved
+//
+//	that should be called when all these async calls are resolved
 type OldAsyncContext struct {
 	Callback   string
 	AsyncCalls []*AsyncGeneratedCall
@@ -261,9 +262,12 @@ func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 	return ac == nil
 }
 
+// ESDTTransfersArgs defines the structure for ESDTTransferArgs, used in TransferAndExecute
 type ESDTTransfersArgs struct {
 	Destination    []byte
 	OriginalCaller []byte
 	Sender         []byte
 	Transfers      []*vmcommon.ESDTTransfer
+	Function       string
+	Arguments      [][]byte
 }

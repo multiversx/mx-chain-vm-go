@@ -3225,7 +3225,6 @@ func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCal
 	if err != nil {
 		return nil, err
 	}
-	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
 
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
