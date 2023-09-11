@@ -486,6 +486,14 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 			return vmOutput, true, err
 		}
 	}
+	if len(input.ESDTTransfers) == 0 {
+		output.WriteLogWithIdentifier(
+			input.CallerAddr,
+			[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
+			vmcommon.FormatLogDataForCall("", input.Function, input.Arguments),
+			[]byte("transferValueOnly"),
+		)
+	}
 
 	err = host.execute(input)
 	if err != nil {
@@ -598,6 +606,12 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		runtime.AddError(err, input.Function)
 		return err
 	}
+	output.WriteLogWithIdentifier(
+		input.CallerAddr,
+		[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
+		vmcommon.FormatLogDataForCall("ExecuteOnSameContext", input.Function, input.Arguments),
+		[]byte("transferValueOnly"),
+	)
 
 	err = host.execute(input)
 	runtime.AddError(err, input.Function)

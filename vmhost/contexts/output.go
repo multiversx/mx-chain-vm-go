@@ -3,6 +3,7 @@ package contexts
 import (
 	"bytes"
 	"errors"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
@@ -25,6 +26,7 @@ type outputContext struct {
 	stateStack       []*vmcommon.VMOutput
 	codeUpdates      map[string]struct{}
 	crtTransferIndex uint32
+	callArgsParser   vmcommon.CallArgsParser
 }
 
 // NewOutputContext creates a new outputContext
@@ -37,6 +39,7 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 		host:             host,
 		stateStack:       make([]*vmcommon.VMOutput, 0),
 		crtTransferIndex: 1,
+		callArgsParser:   parsers.NewCallArgsParser(),
 	}
 
 	context.InitState()
@@ -319,14 +322,6 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		}
 	}
 
-	vmInput := context.host.Runtime().GetVMInput()
-	context.WriteLogWithIdentifier(
-		sender,
-		[][]byte{value.Bytes(), destination},
-		vmcommon.FormatLogDataForCall("", vmInput.Function, vmInput.Arguments),
-		[]byte("transferValueOnly"),
-	)
-
 	return nil
 }
 
@@ -358,7 +353,16 @@ func (context *outputContext) isBackTransferWithoutExecution(sender, destination
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error {
+func (context *outputContext) Transfer(
+	destination []byte,
+	sender []byte,
+	gasLimit uint64,
+	gasLocked uint64,
+	value *big.Int,
+	asyncData []byte,
+	input []byte,
+	callType vm.CallType,
+) error {
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	isBackTransfer := context.isBackTransferWithoutExecution(sender, destination, input)
 	checkPayable := checkPayableIfNotCallback || !isBackTransfer
@@ -369,6 +373,9 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) && len(asyncData) == 0 {
 		return vmcommon.ErrAsyncParams
+	}
+	if callType == vm.DirectCall && isBackTransfer {
+		callType = vm.ESDTTransferAndExecute
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
@@ -386,7 +393,44 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	logOutput.Trace("transfer value added")
 
+	function, args, errNotCritical := context.callArgsParser.ParseData(string(input))
+	logOutput.Error("logs", "err", errNotCritical, "isSC", core.IsSmartContractAddress(destination), "data", input, "gasLimit", gasLimit)
+
+	if !isBackTransfer && (errNotCritical != nil || !core.IsSmartContractAddress(destination) || gasLimit == 0) {
+		context.WriteLogWithIdentifier(
+			sender,
+			[][]byte{value.Bytes(), destination},
+			[][]byte{[]byte(""), input},
+			[]byte("transferValueOnly"),
+		)
+		return nil
+	}
+
+	context.WriteLogWithIdentifier(
+		sender,
+		[][]byte{value.Bytes(), destination},
+		vmcommon.FormatLogDataForCall(getExecutionType(callType, isBackTransfer), function, args),
+		[]byte("transferValueOnly"),
+	)
+
 	return nil
+}
+
+func getExecutionType(callType vm.CallType, isBackTransfer bool) string {
+	if isBackTransfer {
+		return "BackTransfer"
+	}
+
+	switch callType {
+	case vm.ESDTTransferAndExecute:
+		return "TransferAndExecute"
+	case vm.AsynchronousCall:
+		return "AsyncCall"
+	case vm.AsynchronousCallBack:
+		return "AsyncCallBack"
+	}
+
+	return ""
 }
 
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
@@ -404,7 +448,10 @@ func (context *outputContext) TransferESDT(
 	isExecution := isSmartContract && callInput != nil
 	isBackTransfer := !isExecution && context.isBackTransferWithoutExecution(transfersArgs.Sender, transfersArgs.Destination, nil)
 
-	if isExecution || isBackTransfer {
+	if callInput != nil {
+		callType = callInput.CallType
+	}
+	if callType == vm.DirectCall && (isExecution || isBackTransfer) {
 		callType = vm.ESDTTransferAndExecute
 	}
 
@@ -440,6 +487,7 @@ func (context *outputContext) TransferESDT(
 		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputAcc.OutputTransfers[0])
 	}
 
+	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionType(callType, isBackTransfer))
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 
 	return gasRemaining, nil

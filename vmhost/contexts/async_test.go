@@ -891,7 +891,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
-	async.finishAsyncLocalCallbackExecution(nil, nil, 0)
+	async.finishAsyncLocalCallbackExecution()
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -910,8 +910,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 
-	syncExecErr := vmhost.ErrNotEnoughGas
-	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0)
+	async.finishAsyncLocalCallbackExecution()
 
 	expectedOutput := vmhost.MakeEmptyVMOutput()
 	expectedOutput.GasRemaining = host.Metering().GasLeft()
@@ -938,8 +937,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput := vmhost.MakeEmptyVMOutput()
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
-	syncExecErr := vmhost.ErrSignalError
-	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0)
+	async.finishAsyncLocalCallbackExecution()
 
 	expectedOutput := vmhost.MakeEmptyVMOutput()
 	expectedOutput.GasRemaining = host.Metering().GasLeft()

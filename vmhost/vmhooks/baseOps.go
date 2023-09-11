@@ -819,7 +819,7 @@ func TransferValueExecuteWithTypedArgs(
 	}
 
 	metering.UseAndTraceGas(uint64(gasLimit))
-	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, nil, []byte(data), vm.DirectCall)
+	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, nil, []byte(data), vm.ESDTTransferAndExecute)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
@@ -3179,7 +3179,7 @@ func prepareIndirectContractCallInput(
 }
 
 func (context *VMHooksImpl) getArgumentsFromMemory(
-	host vmhost.VMHost,
+	_ vmhost.VMHost,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
