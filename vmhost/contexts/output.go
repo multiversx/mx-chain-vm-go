@@ -394,8 +394,6 @@ func (context *outputContext) Transfer(
 	logOutput.Trace("transfer value added")
 
 	function, args, errNotCritical := context.callArgsParser.ParseData(string(input))
-	logOutput.Error("logs", "err", errNotCritical, "isSC", core.IsSmartContractAddress(destination), "data", input, "gasLimit", gasLimit)
-
 	if !isBackTransfer && (errNotCritical != nil || !core.IsSmartContractAddress(destination) || gasLimit == 0) {
 		context.WriteLogWithIdentifier(
 			sender,

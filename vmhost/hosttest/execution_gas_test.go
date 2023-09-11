@@ -2073,17 +2073,27 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 			WithCallType(vm.ESDTTransferAndExecute).
 			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
 		expectedTransfers = append(expectedTransfers, expectedTransfer)
-		expectedLogs = append(expectedLogs, vmcommon.LogEntry{
-			Address: test.ParentAddress,
-			Topics: [][]byte{
-				big.NewInt(testConfig.TransferFromParentToChild).Bytes(),
-				contracts.GetChildAddressForTransfer(transfer)},
-			Data: vmcommon.FormatLogDataForCall(
-				"DirectCall",
-				contracts.TransferAndExecuteFuncName,
-				[][]byte{{byte(noOfTransfers)}}),
-			Identifier: []byte("transferValueOnly"),
-		})
+		if transfer == 0 {
+			expectedLog := vmcommon.LogEntry{
+				Address: test.ParentAddress,
+				Topics: [][]byte{
+					big.NewInt(testConfig.TransferFromParentToChild).Bytes(),
+					contracts.GetChildAddressForTransfer(transfer)},
+				Data:       [][]byte{[]byte("DirectCall"), []byte("")},
+				Identifier: []byte("transferValueOnly"),
+			}
+			expectedLogs = append(expectedLogs, expectedLog)
+		} else {
+			expectedLog := vmcommon.LogEntry{
+				Address: test.ParentAddress,
+				Topics: [][]byte{
+					big.NewInt(testConfig.TransferFromParentToChild).Bytes(),
+					contracts.GetChildAddressForTransfer(transfer)},
+				Data:       [][]byte{[]byte("TransferAndExecute"), big.NewInt(int64(transfer)).Bytes()},
+				Identifier: []byte("transferValueOnly"),
+			}
+			expectedLogs = append(expectedLogs, expectedLog)
+		}
 	}
 
 	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasProvidedToChild
