@@ -59,7 +59,8 @@
                             "str:TransferAndExecute",
                             "str:ESDTTransfer",
                             "str:TEST-TOKENA",
-                            "1000"
+                            "1000",
+                            "str:accept_funds"
                         ]
                     },
                     {
@@ -89,7 +90,8 @@
                             "str:TransferAndExecute",
                             "str:ESDTTransfer",
                             "str:TEST-TOKENA",
-                            "1000"
+                            "1000",
+                            "str:accept_funds"
                         ]
                     },
                     {

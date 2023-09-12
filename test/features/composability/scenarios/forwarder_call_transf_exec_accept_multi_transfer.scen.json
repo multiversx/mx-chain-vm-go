@@ -86,7 +86,8 @@
                             "100",
                             "str:FWD-TOKEN",
                             "0",
-                            "200"
+                            "200",
+                            "str:accept_funds"
                         ]
                     },
                     {
