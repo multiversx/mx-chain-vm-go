@@ -58,7 +58,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:DirectCall",
                             "str:retrieve_funds",
                             "str:NFT-000001",
                             "5",
@@ -88,7 +88,7 @@
                             "sc:forwarder"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:BackTransfer",
                             "str:ESDTNFTTransfer",
                             "str:NFT-000001",
                             "5",
