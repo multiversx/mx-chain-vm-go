@@ -824,7 +824,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress, 1).
 						WithGasLimit(0).
-						WithCallType(vm.ESDTTransferAndExecute).
+						WithCallType(vm.DirectCall).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 				)
 		})

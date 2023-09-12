@@ -374,8 +374,9 @@ func (context *outputContext) Transfer(
 	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) && len(asyncData) == 0 {
 		return vmcommon.ErrAsyncParams
 	}
+	executionType := callType
 	if callType == vm.DirectCall && isBackTransfer {
-		callType = vm.ESDTTransferAndExecute
+		executionType = vm.ESDTTransferAndExecute
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
@@ -409,7 +410,7 @@ func (context *outputContext) Transfer(
 	context.WriteLogWithIdentifier(
 		sender,
 		[][]byte{value.Bytes(), destination},
-		vmcommon.FormatLogDataForCall(getExecutionType(callType, isBackTransfer), function, args),
+		vmcommon.FormatLogDataForCall(getExecutionType(executionType, isBackTransfer), function, args),
 		[]byte("transferValueOnly"),
 	)
 
@@ -451,11 +452,12 @@ func (context *outputContext) TransferESDT(
 	if callInput != nil {
 		callType = callInput.CallType
 	}
+	executionType := callType
 	if callType == vm.DirectCall && (isExecution || isBackTransfer) {
-		callType = vm.ESDTTransferAndExecute
+		executionType = vm.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, executionType)
 	if err != nil {
 		return 0, err
 	}
@@ -483,16 +485,18 @@ func (context *outputContext) TransferESDT(
 
 	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputAcc, ok := vmOutput.OutputAccounts[string(transfersArgs.Destination)]
+
 	if ok && len(outputAcc.OutputTransfers) == 1 {
 		esdtOutTransfer := outputAcc.OutputTransfers[0]
 		esdtOutTransfer.GasLimit = gasRemaining
 		if sameShard {
 			esdtOutTransfer.GasLimit = 0
 		}
+
 		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, esdtOutTransfer)
 	}
 
-	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionType(callType, isBackTransfer))
+	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionType(executionType, isBackTransfer))
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 
 	return gasRemaining, nil
