@@ -3,7 +3,6 @@ package contexts
 import (
 	"bytes"
 	"errors"
-	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
@@ -11,6 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -394,7 +394,9 @@ func (context *outputContext) Transfer(
 	logOutput.Trace("transfer value added")
 
 	function, args, errNotCritical := context.callArgsParser.ParseData(string(input))
-	if !isBackTransfer && (errNotCritical != nil || !core.IsSmartContractAddress(destination) || gasLimit == 0) {
+
+	isSimpleTransfer := errNotCritical != nil || !core.IsSmartContractAddress(destination) || gasLimit == 0
+	if !isBackTransfer && isSimpleTransfer {
 		context.WriteLogWithIdentifier(
 			sender,
 			[][]byte{value.Bytes(), destination},
@@ -482,6 +484,11 @@ func (context *outputContext) TransferESDT(
 	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputAcc, ok := vmOutput.OutputAccounts[string(transfersArgs.Destination)]
 	if ok && len(outputAcc.OutputTransfers) == 1 {
+		esdtOutTransfer := outputAcc.OutputTransfers[0]
+		esdtOutTransfer.GasLimit = gasRemaining
+		if sameShard {
+			esdtOutTransfer.GasLimit = 0
+		}
 		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputAcc.OutputTransfers[0])
 	}
 
