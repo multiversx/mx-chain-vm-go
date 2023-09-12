@@ -451,6 +451,8 @@ func (context *outputContext) TransferESDT(
 
 	if callInput != nil {
 		callType = callInput.CallType
+		transfersArgs.Function = callInput.Function
+		transfersArgs.Arguments = callInput.Arguments
 	}
 	executionType := callType
 	if callType == vm.DirectCall && (isExecution || isBackTransfer) {
