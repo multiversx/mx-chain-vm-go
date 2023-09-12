@@ -489,7 +489,7 @@ func (context *outputContext) TransferESDT(
 		if sameShard {
 			esdtOutTransfer.GasLimit = 0
 		}
-		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputAcc.OutputTransfers[0])
+		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, esdtOutTransfer)
 	}
 
 	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionType(callType, isBackTransfer))
