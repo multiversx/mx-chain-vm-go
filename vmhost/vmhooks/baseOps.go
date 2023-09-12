@@ -819,7 +819,7 @@ func TransferValueExecuteWithTypedArgs(
 	}
 
 	metering.UseAndTraceGas(uint64(gasLimit))
-	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, nil, []byte(data), vm.ESDTTransferAndExecute)
+	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, nil, []byte(data), vm.DirectCall)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}

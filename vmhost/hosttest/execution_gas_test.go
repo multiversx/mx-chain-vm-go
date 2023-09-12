@@ -1785,7 +1785,7 @@ func testGasUsedESDTTransferInCallback(t *testing.T, isLegacy bool, numOfTransfe
 				WithData(expectedTransferFromChildToParent.ToBytes()).
 				WithGasLimit(0).
 				WithGasLocked(0).
-				WithCallType(vm.ESDTTransferAndExecute).
+				WithCallType(vm.DirectCall).
 				WithValue(big.NewInt(0)))
 		expectedLogs = append(expectedLogs,
 			vmcommon.LogEntry{
@@ -2070,7 +2070,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer), uint32(transfer+1)).
 			WithData(big.NewInt(int64(transfer)).Bytes()).
 			WithGasLimit(testConfig.GasProvidedToChild).
-			WithCallType(vm.ESDTTransferAndExecute).
+			WithCallType(vm.DirectCall).
 			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
 		expectedTransfers = append(expectedTransfers, expectedTransfer)
 		if transfer == 0 {
@@ -2089,7 +2089,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 				Topics: [][]byte{
 					big.NewInt(testConfig.TransferFromParentToChild).Bytes(),
 					contracts.GetChildAddressForTransfer(transfer)},
-				Data:       [][]byte{[]byte("TransferAndExecute"), big.NewInt(int64(transfer)).Bytes()},
+				Data:       [][]byte{[]byte("DirectCall"), big.NewInt(int64(transfer)).Bytes()},
 				Identifier: []byte("transferValueOnly"),
 			}
 			expectedLogs = append(expectedLogs, expectedLog)
