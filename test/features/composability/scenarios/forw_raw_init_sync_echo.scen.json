@@ -51,7 +51,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:DeploySmartContract",
                             "str:echo_arguments",
                             "1",
                             "2"
