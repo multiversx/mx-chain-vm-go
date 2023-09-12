@@ -159,8 +159,7 @@ func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),
-		//TODO fix this when integrating feat/logEvents
-		// Data:   dataField,
+		Data:   dataField,
 		Topics: topics,
 	}
 
