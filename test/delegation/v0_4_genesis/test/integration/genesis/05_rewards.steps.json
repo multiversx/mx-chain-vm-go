@@ -135,7 +135,7 @@
                         ],
                         "data": [
                             "str:DirectCall",
-                            "str:claimRewards"
+                            "str:delegation rewards claim"
                         ]
                     }
                 ],

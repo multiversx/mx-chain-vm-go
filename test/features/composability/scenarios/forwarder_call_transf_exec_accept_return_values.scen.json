@@ -51,7 +51,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:DirectCall",
                             "str:accept_funds"
                         ]
                     },

@@ -606,7 +606,7 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 	}
 }
 
-// CompleteLogEntriesWithCallType sets the call type on a logn entry if it's not already filled
+// CompleteLogEntriesWithCallType sets the call type on a log entry if it's not already filled
 func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
 	for _, logEntry := range vmOutput.Logs {
 		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]

@@ -46,8 +46,7 @@
                         ],
                         "data": [
                             "str:DirectCall",
-                            "str:withdrawInactiveStake",
-                            "1,000,000,000"
+                            "str:delegation withdraw inactive stake"
                         ]
                     },
                     {

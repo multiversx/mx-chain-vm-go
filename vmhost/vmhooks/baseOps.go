@@ -3179,7 +3179,7 @@ func prepareIndirectContractCallInput(
 }
 
 func (context *VMHooksImpl) getArgumentsFromMemory(
-	host vmhost.VMHost,
+	_ vmhost.VMHost,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -3225,7 +3225,6 @@ func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCal
 	if err != nil {
 		return nil, err
 	}
-	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
 
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {

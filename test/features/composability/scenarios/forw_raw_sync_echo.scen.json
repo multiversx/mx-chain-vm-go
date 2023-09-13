@@ -51,7 +51,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:DirectCall",
                             "str:echo_arguments",
                             "1",
                             "2"
@@ -110,7 +110,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:DirectCall",
                             "str:echo_arguments",
                             "1",
                             "2"
@@ -139,7 +139,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:DirectCall",
                             "str:echo_arguments",
                             "1",
                             "2"

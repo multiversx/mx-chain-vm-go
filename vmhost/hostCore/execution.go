@@ -486,6 +486,14 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 			return vmOutput, true, err
 		}
 	}
+	if len(input.ESDTTransfers) == 0 {
+		output.WriteLogWithIdentifier(
+			input.CallerAddr,
+			[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
+			vmcommon.FormatLogDataForCall("", input.Function, input.Arguments),
+			[]byte("transferValueOnly"),
+		)
+	}
 
 	err = host.execute(input)
 	if err != nil {
@@ -598,6 +606,12 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		runtime.AddError(err, input.Function)
 		return err
 	}
+	output.WriteLogWithIdentifier(
+		input.CallerAddr,
+		[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
+		vmcommon.FormatLogDataForCall("ExecuteOnSameContext", input.Function, input.Arguments),
+		[]byte("transferValueOnly"),
+	)
 
 	err = host.execute(input)
 	runtime.AddError(err, input.Function)
@@ -957,6 +971,13 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 		}
 	}
 
+	if len(transfersArgs.Function) > 0 {
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, []byte(transfersArgs.Function))
+	}
+	if len(transfersArgs.Arguments) > 0 {
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfersArgs.Arguments...)
+	}
+
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", transfersArgs.Sender, "dest", transfersArgs.Destination)
 	for _, transfer := range transfers {
@@ -975,6 +996,8 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	if err != nil {
 		return nil, 0, err
 	}
+
+	host.addESDTTransferToVMOutputSCIntraShardCall(esdtTransferInput, vmOutput)
 
 	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
