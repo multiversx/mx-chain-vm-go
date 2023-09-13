@@ -47,7 +47,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:accept_funds"
                         ]
                     },
@@ -104,7 +104,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:accept_funds"
                         ]
                     },
@@ -137,7 +137,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:accept_funds"
                         ]
                     },

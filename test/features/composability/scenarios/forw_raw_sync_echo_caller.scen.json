@@ -48,7 +48,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:echo_caller"
                         ]
                     },
@@ -96,7 +96,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:echo_caller"
                         ]
                     },
@@ -118,7 +118,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:echo_caller"
                         ]
                     },

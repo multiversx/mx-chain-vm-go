@@ -101,7 +101,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:call_counts",
                             "str:accept_funds"
                         ]

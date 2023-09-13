@@ -374,10 +374,6 @@ func (context *outputContext) Transfer(
 	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) && len(asyncData) == 0 {
 		return vmcommon.ErrAsyncParams
 	}
-	executionType := callType
-	if callType == vm.DirectCall && isBackTransfer {
-		executionType = vm.ESDTTransferAndExecute
-	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
@@ -401,10 +397,15 @@ func (context *outputContext) Transfer(
 		context.WriteLogWithIdentifier(
 			sender,
 			[][]byte{value.Bytes(), destination},
-			[][]byte{[]byte(""), input},
+			[][]byte{[]byte("DirectCall"), input},
 			[]byte("transferValueOnly"),
 		)
 		return nil
+	}
+
+	executionType := callType
+	if executionType == vm.DirectCall {
+		executionType = vm.ESDTTransferAndExecute
 	}
 
 	context.WriteLogWithIdentifier(
@@ -431,7 +432,7 @@ func getExecutionType(callType vm.CallType, isBackTransfer bool) string {
 		return "AsyncCallBack"
 	}
 
-	return ""
+	return "DirectCall"
 }
 
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
