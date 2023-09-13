@@ -383,7 +383,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
-		host.CompleteLogEntriesWithCallType(vmOutput, "DeploySmartContract")
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DeploySmartContractString)
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {

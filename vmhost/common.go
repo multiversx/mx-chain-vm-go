@@ -59,6 +59,39 @@ const (
 
 	// UnknownBreakpointString is the human-readable label for an unknown breakpoint value
 	UnknownBreakpointString = "unknown breakpoint"
+
+	// BackTransferString is the human-readable label for execution type
+	BackTransferString = "BackTransfer"
+
+	// DirectCallString is the human-readable label for execution type
+	DirectCallString = "DirectCall"
+
+	// ExecuteOnDestContextString is the human-readable label for execution type
+	ExecuteOnDestContextString = "ExecuteOnDestContext"
+
+	// ExecuteOnSameContextString is the human-readable label for execution type
+	ExecuteOnSameContextString = "ExecuteOnSameContext"
+
+	// AsyncCallString is the human-readable label for execution type
+	AsyncCallString = "AsyncCall"
+
+	// AsyncCallbackString is the human-readable label for execution type
+	AsyncCallbackString = "AsyncCallback"
+
+	// TransferAndExecuteString is the human-readable label for execution type
+	TransferAndExecuteString = "TransferAndExecute"
+
+	// UpgradeFromSourceString is the human-readable label for execution type
+	UpgradeFromSourceString = "UpgradeFromSource"
+
+	// TransferValueOnlyString is the human-readable label for transfer type
+	TransferValueOnlyString = "transferValueOnly"
+
+	// DeploySmartContractString is the human-readable label for transfer type
+	DeploySmartContractString = "DeploySmartContract"
+
+	// DeployFromSourceString is the human-readable label for transfer type
+	DeployFromSourceString = "DeployFromSource"
 )
 
 // String returns the human-readable name of a BreakpointValue

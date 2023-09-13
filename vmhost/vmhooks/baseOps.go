@@ -809,7 +809,7 @@ func TransferValueExecuteWithTypedArgs(
 			WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 			return 1
 		}
-		host.CompleteLogEntriesWithCallType(vmOutput, "TransferAndExecute")
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.TransferAndExecuteString)
 
 		return 0
 	}
@@ -2681,7 +2681,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.ExecuteOnDestContextString)
 
 	return 0
 }

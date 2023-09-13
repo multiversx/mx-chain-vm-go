@@ -397,8 +397,8 @@ func (context *outputContext) Transfer(
 		context.WriteLogWithIdentifier(
 			sender,
 			[][]byte{value.Bytes(), destination},
-			[][]byte{[]byte("DirectCall"), input},
-			[]byte("transferValueOnly"),
+			[][]byte{[]byte(vmhost.DirectCallString), input},
+			[]byte(vmhost.TransferValueOnlyString),
 		)
 		return nil
 	}
@@ -411,28 +411,28 @@ func (context *outputContext) Transfer(
 	context.WriteLogWithIdentifier(
 		sender,
 		[][]byte{value.Bytes(), destination},
-		vmcommon.FormatLogDataForCall(getExecutionType(executionType, isBackTransfer), function, args),
-		[]byte("transferValueOnly"),
+		vmcommon.FormatLogDataForCall(getExecutionTypeString(executionType, isBackTransfer), function, args),
+		[]byte(vmhost.TransferValueOnlyString),
 	)
 
 	return nil
 }
 
-func getExecutionType(callType vm.CallType, isBackTransfer bool) string {
+func getExecutionTypeString(callType vm.CallType, isBackTransfer bool) string {
 	if isBackTransfer {
-		return "BackTransfer"
+		return vmhost.BackTransferString
 	}
 
 	switch callType {
 	case vm.ESDTTransferAndExecute:
-		return "TransferAndExecute"
+		return vmhost.TransferAndExecuteString
 	case vm.AsynchronousCall:
-		return "AsyncCall"
+		return vmhost.AsyncCallString
 	case vm.AsynchronousCallBack:
-		return "AsyncCallBack"
+		return vmhost.AsyncCallbackString
 	}
 
-	return "DirectCall"
+	return vmhost.DirectCallString
 }
 
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
@@ -500,7 +500,7 @@ func (context *outputContext) TransferESDT(
 		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, esdtOutTransfer)
 	}
 
-	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionType(executionType, isBackTransfer))
+	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionTypeString(executionType, isBackTransfer))
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 
 	return gasRemaining, nil
