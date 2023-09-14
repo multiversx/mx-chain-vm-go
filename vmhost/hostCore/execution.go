@@ -262,7 +262,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		output.RemoveNonUpdatedStorage()
 	}
 	vmOutput = output.GetVMOutput()
-	host.CompleteLogEntriesWithCallType(vmOutput, "DirectCall")
+	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DirectCallString)
 
 	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
@@ -393,11 +393,11 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 func (host *vmHost) completeLogEntriesAfterBuiltinCall(input *vmcommon.ContractCallInput, vmOutput *vmcommon.VMOutput) {
 	switch input.CallType {
 	case vm.AsynchronousCall:
-		host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.AsyncCallString)
 	case vm.AsynchronousCallBack:
-		host.CompleteLogEntriesWithCallType(vmOutput, "AyncCallback")
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.AsyncCallbackString)
 	default:
-		host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnDestContext")
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.ExecuteOnDestContextString)
 	}
 }
 
@@ -491,7 +491,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 			input.CallerAddr,
 			[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
 			vmcommon.FormatLogDataForCall("", input.Function, input.Arguments),
-			[]byte("transferValueOnly"),
+			[]byte(vmhost.TransferValueOnlyString),
 		)
 	}
 
@@ -609,8 +609,8 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	output.WriteLogWithIdentifier(
 		input.CallerAddr,
 		[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
-		vmcommon.FormatLogDataForCall("ExecuteOnSameContext", input.Function, input.Arguments),
-		[]byte("transferValueOnly"),
+		vmcommon.FormatLogDataForCall(vmhost.ExecuteOnSameContextString, input.Function, input.Arguments),
+		[]byte(vmhost.TransferValueOnlyString),
 	)
 
 	err = host.execute(input)
@@ -635,8 +635,6 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// state and the previous instance, to ensure accurate GasRemaining and
 	// GasUsed for all accounts.
 	vmOutput := output.GetVMOutput()
-
-	host.CompleteLogEntriesWithCallType(vmOutput, "ExecuteOnSameContext")
 
 	metering.PopMergeActiveState()
 	output.PopDiscard()
@@ -748,9 +746,9 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	}
 
 	if createContractCallType == vmhooks.DeployContract {
-		host.CompleteLogEntriesWithCallType(initVmOutput, "DeployFromSource")
+		host.CompleteLogEntriesWithCallType(initVmOutput, vmhost.DeployFromSourceString)
 	} else {
-		host.CompleteLogEntriesWithCallType(initVmOutput, "CreateSmartContract")
+		host.CompleteLogEntriesWithCallType(initVmOutput, vmhost.DeploySmartContractString)
 	}
 
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)

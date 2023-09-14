@@ -51,7 +51,7 @@
                             "sc:vault"
                         ],
                         "data": [
-                            "str:DirectCall",
+                            "str:ExecuteOnDestContext",
                             "str:retrieve_funds",
                             "str:TEST-TOKENA",
                             "0",

@@ -162,7 +162,7 @@ func TestGasUsed_SingleContract_TransferFromChild(t *testing.T) {
 					Identifier: []byte("transferValueOnly"),
 					Address:    test.ParentAddress,
 					Topics:     [][]byte{big.NewInt(0).Bytes(), test.ChildAddress},
-					Data:       vmcommon.FormatLogDataForCall("DirectCall", "transferEGLDToParent", [][]byte{}),
+					Data:       vmcommon.FormatLogDataForCall("ExecuteOnDestContext", "transferEGLDToParent", [][]byte{}),
 				},
 					vmcommon.LogEntry{
 						Identifier: []byte("transferValueOnly"),
@@ -1523,7 +1523,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ThenExecuteOnDest(t *testing.
 						Identifier: []byte("transferValueOnly"),
 						Address:    test.ChildAddress,
 						Topics:     [][]byte{{}, test.NephewAddress},
-						Data:       vmcommon.FormatLogDataForCall("AsyncCall", "wasteGas", [][]byte{}),
+						Data:       vmcommon.FormatLogDataForCall("ExecuteOnDestContext", "wasteGas", [][]byte{}),
 					},
 					vmcommon.LogEntry{
 						Identifier: []byte("transferValueOnly"),
@@ -1535,7 +1535,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ThenExecuteOnDest(t *testing.
 						Identifier: []byte("transferValueOnly"),
 						Address:    test.ParentAddress,
 						Topics:     [][]byte{{}, test.ChildAddress},
-						Data:       vmcommon.FormatLogDataForCall("AsyncCallback", "wasteGas", [][]byte{}),
+						Data:       vmcommon.FormatLogDataForCall("ExecuteOnDestContext", "wasteGas", [][]byte{}),
 					})
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
@@ -2089,7 +2089,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 				Topics: [][]byte{
 					big.NewInt(testConfig.TransferFromParentToChild).Bytes(),
 					contracts.GetChildAddressForTransfer(transfer)},
-				Data:       [][]byte{[]byte("DirectCall"), big.NewInt(int64(transfer)).Bytes()},
+				Data:       [][]byte{[]byte("TransferAndExecute"), big.NewInt(int64(transfer)).Bytes()},
 				Identifier: []byte("transferValueOnly"),
 			}
 			expectedLogs = append(expectedLogs, expectedLog)

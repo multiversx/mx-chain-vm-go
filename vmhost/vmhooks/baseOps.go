@@ -803,12 +803,13 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, err = executeOnDestContextFromAPI(host, contractCallInput)
+		vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 			return 1
 		}
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.TransferAndExecuteString)
 
 		return 0
 	}
@@ -2675,10 +2676,12 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	_, err = executeOnDestContextFromAPI(host, contractCallInput)
+	vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
+
+	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.ExecuteOnDestContextString)
 
 	return 0
 }
@@ -3219,7 +3222,7 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 	return integers
 }
 
-func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.Async().SetAsyncArgumentsForCall(input)
 	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
 	if err != nil {
