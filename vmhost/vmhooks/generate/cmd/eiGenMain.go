@@ -16,9 +16,6 @@ import (
 const pathToApiPackage = "./"
 const pathToRustRepoConfigFile = "wasm-vm-executor-rs-path.txt"
 
-// Until we merge the `feat/wasmer2`, there are some files that are not supposed to be generated.
-const wasmer2Branch = true
-
 func initEIMetadata() *eapigen.EIMetadata {
 	return &eapigen.EIMetadata{
 		Groups: []*eapigen.EIGroup{
@@ -48,15 +45,14 @@ func main() {
 	writeVMHooks(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer1ImportsCgo(eiMetadata)
-	if wasmer2Branch {
-		writeWasmer2ImportsCgo(eiMetadata)
-		writeWasmer2Names(eiMetadata)
-	}
+	writeWasmer2ImportsCgo(eiMetadata)
+	writeWasmer2Names(eiMetadata)
 
 	writeNamesForMockExecutor(eiMetadata)
 
 	tryCreateRustOutputDirectory()
 
+	writeRustVMHooksNames(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
@@ -64,10 +60,8 @@ func main() {
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
-	if wasmer2Branch {
-		writeExecutorOpcodeCosts()
-		writeWasmer2OpcodeCost()
-	}
+	writeExecutorOpcodeCosts()
+	writeWasmer2OpcodeCost()
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeOpcodeCostFuncHelpers()
@@ -126,6 +120,12 @@ func tryCreateRustOutputDirectory() {
 		return
 	}
 	fmt.Println("Output directory already exists.")
+}
+
+func writeRustVMHooksNames(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/ei_1_5.rs")
+	defer out.Close()
+	eapigen.WriteRustHookNames(out, eiMetadata)
 }
 
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
@@ -207,27 +207,27 @@ func tryCopyFilesToRustExecutorRepo() {
 	fmt.Printf("Copying generated Rust files to '%s':\n", rustExecutorPath)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks.rs"),
-		filepath.Join(rustExecutorPath, "exec-service/src/vm_hooks.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),
-		filepath.Join(rustExecutorPath, "exec-service/src/opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/opcode_cost.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook.rs"),
-		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hooks.rs"),
+		filepath.Join(rustExecutorPath, "c-api/src/capi_vm_hooks.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook_pointers.rs"),
-		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hook_pointers.rs"),
+		filepath.Join(rustExecutorPath, "c-api/src/capi_vm_hook_pointers.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_imports.rs"),
-		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_imports.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_imports.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_metering_helpers.rs"),
-		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_metering_helpers.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_metering_helpers.rs"),
 	)
 }
 

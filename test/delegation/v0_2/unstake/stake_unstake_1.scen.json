@@ -94,8 +94,7 @@
                         ],
                         "data": [
                             "str:DirectCall",
-                            "str:unstake",
-                            "567,000,000,000"
+                            "str:delegation unstake"
                         ]
                     },
                     {

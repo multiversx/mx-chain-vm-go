@@ -2,6 +2,7 @@ package worldmock
 
 import (
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -64,7 +65,26 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 				flag == vmhost.FailExecutionOnEveryAPIErrorFlag ||
 				flag == vmhost.RefactorContextFlag ||
 				flag == vmhost.DisableExecByCallerFlag ||
-				flag == vmhost.CheckExecuteOnReadOnlyFlag
+				flag == vmhost.CheckExecuteOnReadOnlyFlag ||
+				flag == builtInFunctions.CheckCorrectTokenIDForTransferRoleFlag ||
+				flag == builtInFunctions.ESDTTransferRoleFlag ||
+				flag == builtInFunctions.GlobalMintBurnFlag ||
+				flag == builtInFunctions.TransferToMetaFlag ||
+				flag == builtInFunctions.CheckFrozenCollectionFlag ||
+				flag == builtInFunctions.FixAsyncCallbackCheckFlag ||
+				flag == builtInFunctions.ESDTNFTImprovementV1Flag ||
+				flag == builtInFunctions.SaveToSystemAccountFlag ||
+				flag == builtInFunctions.ValueLengthCheckFlag ||
+				flag == builtInFunctions.CheckTransferFlag ||
+				flag == builtInFunctions.CheckFunctionArgumentFlag ||
+				flag == builtInFunctions.FixOldTokenLiquidityFlag ||
+				flag == builtInFunctions.AlwaysSaveTokenMetaDataFlag ||
+				flag == builtInFunctions.SetGuardianFlag ||
+				flag == builtInFunctions.WipeSingleNFTLiquidityDecreaseFlag ||
+				flag == builtInFunctions.ConsistentTokensValuesLengthCheckFlag ||
+				flag == builtInFunctions.ChangeUsernameFlag ||
+				flag == builtInFunctions.AutoBalanceDataTriesFlag ||
+				flag == builtInFunctions.ScToScLogEventFlag
 		},
 	}
 }

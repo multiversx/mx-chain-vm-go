@@ -2,6 +2,7 @@ package hostCore
 
 import (
 	"context"
+	"math"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -83,7 +84,6 @@ func NewVMHost(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *vmhost.VMHostParameters,
 ) (vmhost.VMHost, error) {
-
 	if check.IfNil(blockChainHook) {
 		return nil, vmhost.ErrNilBlockChainHook
 	}
@@ -366,6 +366,11 @@ func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 
 // RunSmartContractCreate executes the deployment of a new contract
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	err = validateVMInput(&input.VMInput)
+	if err != nil {
+		return nil, err
+	}
+
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
@@ -399,7 +404,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
-		host.CompleteLogEntriesWithCallType(vmOutput, "DeploySmartContract")
+		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DeploySmartContractString)
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
@@ -427,6 +432,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 
 // RunSmartContractCall executes the call of an existing contract
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	err = validateVMInput(&input.VMInput)
+	if err != nil {
+		return nil, err
+	}
+
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
@@ -583,6 +593,14 @@ func (host *vmHost) CheckExecuteReadOnly() bool {
 	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CheckExecuteOnReadOnlyFlag)
 }
 
+func validateVMInput(vmInput *vmcommon.VMInput) error {
+	if vmInput.GasProvided > math.MaxInt64 {
+		return vmhost.ErrInvalidGasProvided
+	}
+
+	return nil
+}
+
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {
 	host.Metering().SetGasTracing(false)
 	if logGasTrace.GetLevel() == logger.LogTrace {
@@ -609,7 +627,7 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 	}
 }
 
-// CompleteLogEntriesWithCallType sets the call type on a logn entry if it's not already filled
+// CompleteLogEntriesWithCallType sets the call type on a log entry if it's not already filled
 func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
 	for _, logEntry := range vmOutput.Logs {
 		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]

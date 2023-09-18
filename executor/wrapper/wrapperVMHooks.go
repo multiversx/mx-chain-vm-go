@@ -805,6 +805,14 @@ func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetBackTransfers VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, callValueHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, callValueHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedGetESDTBalance VM hook wrapper
 func (w *WrapperVMHooks) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
 	callInfo := fmt.Sprintf("ManagedGetESDTBalance(%d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, valueHandle)

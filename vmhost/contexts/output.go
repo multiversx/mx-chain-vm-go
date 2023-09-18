@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"encoding/hex"
+	"bytes"
 	"errors"
 	"math/big"
 
@@ -10,6 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -25,6 +26,7 @@ type outputContext struct {
 	stateStack       []*vmcommon.VMOutput
 	codeUpdates      map[string]struct{}
 	crtTransferIndex uint32
+	callArgsParser   vmcommon.CallArgsParser
 }
 
 // NewOutputContext creates a new outputContext
@@ -37,6 +39,7 @@ func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 		host:             host,
 		stateStack:       make([]*vmcommon.VMOutput, 0),
 		crtTransferIndex: 1,
+		callArgsParser:   parsers.NewCallArgsParser(),
 	}
 
 	context.InitState()
@@ -319,23 +322,51 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		}
 	}
 
-	vmInput := context.host.Runtime().GetVMInput()
-	context.WriteLogWithIdentifier(
-		sender,
-		[][]byte{value.Bytes(), destination},
-		vmcommon.FormatLogDataForCall("", vmInput.Function, vmInput.Arguments),
-		[]byte("transferValueOnly"),
-	)
-
 	return nil
+}
+
+func (context *outputContext) isBackTransferWithoutExecution(sender, destination []byte, input []byte) bool {
+	if len(input) != 0 {
+		return false
+	}
+	if !core.IsSmartContractAddress(destination) {
+		return false
+	}
+
+	vmInput := context.host.Runtime().GetVMInput()
+
+	currentExecutionCallerAddress := vmInput.CallerAddr
+	currentExecutionDestinationAddress := vmInput.RecipientAddr
+
+	if vmInput.CallType == vm.AsynchronousCallBack {
+		currentExecutionCallerAddress = context.host.Async().GetParentAddress()
+	}
+
+	if !bytes.Equal(currentExecutionCallerAddress, destination) ||
+		!bytes.Equal(currentExecutionDestinationAddress, sender) {
+		return false
+	}
+
+	return true
 }
 
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error {
+func (context *outputContext) Transfer(
+	destination []byte,
+	sender []byte,
+	gasLimit uint64,
+	gasLocked uint64,
+	value *big.Int,
+	asyncData []byte,
+	input []byte,
+	callType vm.CallType,
+) error {
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
-	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
+	isBackTransfer := context.isBackTransferWithoutExecution(sender, destination, input)
+	checkPayable := checkPayableIfNotCallback || !isBackTransfer
+	err := context.TransferValueOnly(destination, sender, value, checkPayable)
 	if err != nil {
 		return err
 	}
@@ -358,7 +389,50 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	logOutput.Trace("transfer value added")
+
+	function, args, errNotCritical := context.callArgsParser.ParseData(string(input))
+
+	isSimpleTransfer := errNotCritical != nil || !core.IsSmartContractAddress(destination) || gasLimit == 0
+	if !isBackTransfer && isSimpleTransfer {
+		context.WriteLogWithIdentifier(
+			sender,
+			[][]byte{value.Bytes(), destination},
+			[][]byte{[]byte(vmhost.DirectCallString), input},
+			[]byte(vmhost.TransferValueOnlyString),
+		)
+		return nil
+	}
+
+	executionType := callType
+	if executionType == vm.DirectCall {
+		executionType = vm.ESDTTransferAndExecute
+	}
+
+	context.WriteLogWithIdentifier(
+		sender,
+		[][]byte{value.Bytes(), destination},
+		vmcommon.FormatLogDataForCall(getExecutionTypeString(executionType, isBackTransfer), function, args),
+		[]byte(vmhost.TransferValueOnlyString),
+	)
+
 	return nil
+}
+
+func getExecutionTypeString(callType vm.CallType, isBackTransfer bool) string {
+	if isBackTransfer {
+		return vmhost.BackTransferString
+	}
+
+	switch callType {
+	case vm.ESDTTransferAndExecute:
+		return vmhost.TransferAndExecuteString
+	case vm.AsynchronousCall:
+		return vmhost.AsyncCallString
+	case vm.AsynchronousCallBack:
+		return vmhost.AsyncCallbackString
+	}
+
+	return vmhost.DirectCallString
 }
 
 // TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
@@ -374,11 +448,19 @@ func (context *outputContext) TransferESDT(
 	sameShard := context.host.AreInSameShard(transfersArgs.Sender, transfersArgs.Destination)
 	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
-	if isExecution {
-		callType = vm.ESDTTransferAndExecute
+	isBackTransfer := !isExecution && context.isBackTransferWithoutExecution(transfersArgs.Sender, transfersArgs.Destination, nil)
+
+	if callInput != nil {
+		callType = callInput.CallType
+		transfersArgs.Function = callInput.Function
+		transfersArgs.Arguments = callInput.Arguments
+	}
+	executionType := callType
+	if callType == vm.DirectCall && (isExecution || isBackTransfer) {
+		executionType = vm.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, executionType)
 	if err != nil {
 		return 0, err
 	}
@@ -405,33 +487,22 @@ func (context *outputContext) TransferESDT(
 	}
 
 	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
-	outputTransfer := vmcommon.OutputTransfer{
-		Index:         context.NextOutputTransferIndex(),
-		Value:         big.NewInt(0),
-		GasLimit:      gasRemaining,
-		GasLocked:     0,
-		Data:          []byte{},
-		CallType:      vm.DirectCall,
-		SenderAddress: transfersArgs.Sender,
-	}
+	outputAcc, ok := vmOutput.OutputAccounts[string(transfersArgs.Destination)]
 
-	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfersArgs.Transfers, vmOutput, sameShard, transfersArgs.Destination)
-
-	if sameShard {
-		outputTransfer.GasLimit = 0
-	}
-
-	if callInput != nil {
-		scCallData := "@" + hex.EncodeToString([]byte(callInput.Function))
-		for _, arg := range callInput.Arguments {
-			scCallData += "@" + hex.EncodeToString(arg)
+	if ok && len(outputAcc.OutputTransfers) == 1 {
+		esdtOutTransfer := outputAcc.OutputTransfers[0]
+		esdtOutTransfer.GasLimit = gasRemaining
+		esdtOutTransfer.CallType = callType
+		if sameShard {
+			esdtOutTransfer.GasLimit = 0
 		}
-		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
+
+		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, esdtOutTransfer)
 	}
 
-	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
-
+	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionTypeString(executionType, isBackTransfer))
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
+
 	return gasRemaining, nil
 }
 
@@ -441,41 +512,6 @@ func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []
 		account.BytesConsumedByTxAsNetworking =
 			math.AddUint64(account.BytesConsumedByTxAsNetworking, uint64(len(transfer.Data)))
 	}
-}
-
-func (context *outputContext) getOutputTransferDataFromESDTTransfer(
-	transfers []*vmcommon.ESDTTransfer,
-	vmOutput *vmcommon.VMOutput,
-	sameShard bool,
-	destination []byte,
-) []byte {
-
-	if len(transfers) == 1 && transfers[0].ESDTTokenNonce == 0 {
-		return []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
-	}
-
-	if !sameShard {
-		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
-		if ok && len(outTransfer.OutputTransfers) == 1 {
-			return outTransfer.OutputTransfers[0].Data
-		}
-	}
-
-	if len(transfers) == 1 {
-		data := []byte(core.BuiltInFunctionESDTNFTTransfer + "@" +
-			hex.EncodeToString(transfers[0].ESDTTokenName) + "@" +
-			hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" +
-			hex.EncodeToString(transfers[0].ESDTValue.Bytes()) + "@" +
-			hex.EncodeToString(destination))
-		return data
-	}
-
-	data := core.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())
-	for _, transfer := range transfers {
-		data += "@" + hex.EncodeToString(transfer.ESDTTokenName) + "@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfer.ESDTValue.Bytes())
-	}
-
-	return []byte(data)
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
@@ -647,7 +683,7 @@ func (context *outputContext) GetCrtTransferIndex() uint32 {
 	return context.crtTransferIndex
 }
 
-// SetOutputTransferIndex sets the current output transfer index
+// SetCrtTransferIndex sets the current output transfer index
 func (context *outputContext) SetCrtTransferIndex(index uint32) {
 	context.crtTransferIndex = index
 }

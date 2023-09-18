@@ -59,6 +59,39 @@ const (
 
 	// UnknownBreakpointString is the human-readable label for an unknown breakpoint value
 	UnknownBreakpointString = "unknown breakpoint"
+
+	// BackTransferString is the human-readable label for execution type
+	BackTransferString = "BackTransfer"
+
+	// DirectCallString is the human-readable label for execution type
+	DirectCallString = "DirectCall"
+
+	// ExecuteOnDestContextString is the human-readable label for execution type
+	ExecuteOnDestContextString = "ExecuteOnDestContext"
+
+	// ExecuteOnSameContextString is the human-readable label for execution type
+	ExecuteOnSameContextString = "ExecuteOnSameContext"
+
+	// AsyncCallString is the human-readable label for execution type
+	AsyncCallString = "AsyncCall"
+
+	// AsyncCallbackString is the human-readable label for execution type
+	AsyncCallbackString = "AsyncCallback"
+
+	// TransferAndExecuteString is the human-readable label for execution type
+	TransferAndExecuteString = "TransferAndExecute"
+
+	// UpgradeFromSourceString is the human-readable label for execution type
+	UpgradeFromSourceString = "UpgradeFromSource"
+
+	// TransferValueOnlyString is the human-readable label for transfer type
+	TransferValueOnlyString = "transferValueOnly"
+
+	// DeploySmartContractString is the human-readable label for transfer type
+	DeploySmartContractString = "DeploySmartContract"
+
+	// DeployFromSourceString is the human-readable label for transfer type
+	DeployFromSourceString = "DeployFromSource"
 )
 
 // String returns the human-readable name of a BreakpointValue
@@ -225,7 +258,8 @@ type AsyncGeneratedCall struct {
 }
 
 // OldAsyncContext is a structure containing a group of async calls and a callback
-//  that should be called when all these async calls are resolved
+//
+//	that should be called when all these async calls are resolved
 type OldAsyncContext struct {
 	Callback   string
 	AsyncCalls []*AsyncGeneratedCall
@@ -261,9 +295,12 @@ func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 	return ac == nil
 }
 
+// ESDTTransfersArgs defines the structure for ESDTTransferArgs, used in TransferAndExecute
 type ESDTTransfersArgs struct {
 	Destination    []byte
 	OriginalCaller []byte
 	Sender         []byte
 	Transfers      []*vmcommon.ESDTTransfer
+	Function       string
+	Arguments      [][]byte
 }

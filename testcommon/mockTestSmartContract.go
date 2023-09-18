@@ -11,7 +11,9 @@ var WasmVirtualMachine = []byte{5, 0}
 
 // TestConfig is configuration for async call tests
 type TestConfig struct {
+	ParentAddress     []byte
 	ChildAddress      []byte
+	NephewAddress     []byte
 	ThirdPartyAddress []byte
 	VaultAddress      []byte
 

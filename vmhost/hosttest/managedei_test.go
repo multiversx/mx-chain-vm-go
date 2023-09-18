@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"strings"
 	"testing"
@@ -309,7 +310,7 @@ func Test_BigIntToString(t *testing.T) {
 
 // Real contracts always check first that the big int fits.
 // This special test case represents an intentionally badly written contract.
-func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, config interface{}) {
+func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{}) {
 	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
 		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
 
@@ -1389,6 +1390,145 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			createMockBuiltinFunctions(t, host, world)
 		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
+	testConfig := makeTestConfig()
+	egldTransfer := big.NewInt(2)
+	initialESDTTokenBalance := uint64(100)
+	testConfig.ESDTTokensToTransfer = 5
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						input := test.DefaultTestContractCallInput()
+						input.GasProvided = testConfig.GasProvidedToChild
+						input.CallerAddr = test.ParentAddress
+						input.RecipientAddr = test.ChildAddress
+						input.Function = "childFunction"
+						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, input)
+						if returnValue != 0 {
+							host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+						}
+						managedTypes := host.ManagedTypes()
+						esdtTransfers, egld := managedTypes.GetBackTransfers()
+						assert.Equal(t, 1, len(esdtTransfers))
+						assert.Equal(t, test.ESDTTestTokenName, esdtTransfers[0].ESDTTokenName)
+						assert.Equal(t, big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer), esdtTransfers[0].ESDTValue)
+						assert.Equal(t, egld, egldTransfer)
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						valueBytes := egldTransfer.Bytes()
+						err := host.Output().Transfer(
+							test.ParentAddress,
+							test.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
+						if err != nil {
+							host.Runtime().FailExecution(err)
+						}
+
+						transfer := &vmcommon.ESDTTransfer{
+							ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+							ESDTTokenName:  test.ESDTTestTokenName,
+							ESDTTokenType:  0,
+							ESDTTokenNonce: 0,
+						}
+
+						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+							host,
+							test.ParentAddress,
+							[]*vmcommon.ESDTTransfer{transfer},
+							int64(testConfig.GasProvidedToChild),
+							nil,
+							nil)
+						if ret != 0 {
+							host.Runtime().FailExecution(fmt.Errorf("Transfer ESDT failed"))
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_Async_ManagedGetBackTransfers(t *testing.T) {
+	testConfig := makeTestConfig()
+	initialESDTTokenBalance := uint64(100)
+	testConfig.GasProvided = 10_000
+	testConfig.GasProvidedToChild = 1000
+	testConfig.ESDTTokensToTransfer = 5
+	testConfig.SuccessCallback = "myCallback"
+	testConfig.ErrorCallback = "myCallback"
+	testConfig.TransferFromChildToParent = 2
+	testConfig.ParentAddress = test.ParentAddress
+	testConfig.ChildAddress = test.ChildAddress
+	testConfig.NephewAddress = test.NephewAddress
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{0, 0}).
+				WithMethods(contracts.BackTransfer_ParentCallsChild),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(
+					contracts.BackTransfer_ChildMakesAsync,
+					contracts.BackTransfer_ChildCallback,
+				),
+			test.CreateMockContract(test.NephewAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.WasteGasChildMock),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = 0
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			WithArguments([]byte{1}).
+			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok()

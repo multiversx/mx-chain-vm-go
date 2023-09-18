@@ -67,14 +67,15 @@ message SerializableAsyncContext {
     bytes                   CallID = 2;
     SerializableCallType    CallType = 3;
     bytes                   CallerAddr = 4;
-    bytes                   CallerCallID = 5;
-    bytes                   CallbackAsyncInitiatorCallID = 6;
-    string                  Callback = 7;
-    bytes                   CallbackData = 8;
-    uint64                  GasAccumulated = 9;
-    bytes                   ReturnData = 10;
-    repeated vmhost.SerializableAsyncCallGroup asyncCallGroups = 11;
-    uint64                  CallsCounter = 12;
-    uint64                  TotalCallsCounter = 13;
-    SerializableVMOutput    ChildResults = 14;
+    bytes                   ParentAddr = 5;
+    bytes                   CallerCallID = 6;
+    bytes                   CallbackAsyncInitiatorCallID = 7;
+    string                  Callback = 8;
+    bytes                   CallbackData = 9;
+    uint64                  GasAccumulated = 10;
+    bytes                   ReturnData = 11;
+    repeated vmhost.SerializableAsyncCallGroup asyncCallGroups = 12;
+    uint64                  CallsCounter = 13;
+    uint64                  TotalCallsCounter = 14;
+    SerializableVMOutput    ChildResults = 15;
 }

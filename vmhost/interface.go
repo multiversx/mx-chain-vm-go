@@ -216,6 +216,9 @@ type ManagedTypesContext interface {
 	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error
 	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error
 	ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error)
+	GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int)
+	AddValueOnlyBackTransfer(value *big.Int)
+	AddBackTransfers(transfers []*vmcommon.ESDTTransfer)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
@@ -229,6 +232,7 @@ type OutputContext interface {
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data [][]byte)
+	WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
 	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error)
@@ -350,6 +354,7 @@ type AsyncContext interface {
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
 	GetCallerAddress() []byte
+	GetParentAddress() []byte
 	GetCallerCallID() []byte
 	GetReturnData() []byte
 	SetReturnData(data []byte)
@@ -360,7 +365,7 @@ type AsyncContext interface {
 
 	LoadParentContext() error
 	Save() error
-	DeleteFromAddress(address []byte) error
+	DeleteFromCallID(address []byte) error
 
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte

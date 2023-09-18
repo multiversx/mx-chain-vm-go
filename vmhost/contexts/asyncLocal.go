@@ -64,9 +64,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 	}
 
 	if destinationCallInput.Function == vmhost.UpgradeFunctionName {
-		context.host.CompleteLogEntriesWithCallType(vmOutput, "UpgradeFromSource")
+		context.host.CompleteLogEntriesWithCallType(vmOutput, vmhost.UpgradeFromSourceString)
 	} else {
-		context.host.CompleteLogEntriesWithCallType(vmOutput, "AsyncCall")
+		context.host.CompleteLogEntriesWithCallType(vmOutput, vmhost.AsyncCallString)
 	}
 
 	logAsync.Trace("executeAsyncLocalCall",
@@ -87,7 +87,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 				return vmhost.ErrAsyncNoOutputFromCallback
 			}
 
-			context.host.CompleteLogEntriesWithCallType(callbackVMOutput, "AsyncCallback")
+			context.host.CompleteLogEntriesWithCallType(callbackVMOutput, vmhost.AsyncCallbackString)
 
 			if isCallbackComplete {
 				callbackGasRemaining := callbackVMOutput.GasRemaining
@@ -103,15 +103,15 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 }
 
 // ExecuteSyncCallbackAndFinishOutput executes the callback and finishes the output
-//TODO rename to executeLocalCallbackAndFinishOutput
+// TODO rename to executeLocalCallbackAndFinishOutput
 func (context *asyncContext) ExecuteSyncCallbackAndFinishOutput(
 	asyncCall *vmhost.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
 	_ *vmcommon.ContractCallInput,
 	gasAccumulated uint64,
 	err error) (bool, *vmcommon.VMOutput) {
-	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
-	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode)
+	callbackVMOutput, isComplete, _ := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
+	context.finishAsyncLocalCallbackExecution()
 	return isComplete, callbackVMOutput
 }
 
@@ -183,8 +183,8 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *vmhost.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
 		if asyncCall.HasCallback() {
-			callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
-			context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, 0)
+			_, _, _ = context.executeSyncCallback(asyncCall, vmOutput, 0, err)
+			context.finishAsyncLocalCallbackExecution()
 		}
 	}
 
@@ -195,33 +195,9 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *vmhost.
 	return nil
 }
 
-// TODO(fix) this function
-//nolint:all
-func (context *asyncContext) finishAsyncLocalCallbackExecution(
-	vmOutput *vmcommon.VMOutput,
-	err error,
-	destinationReturnCode vmcommon.ReturnCode,
-) {
-
+func (context *asyncContext) finishAsyncLocalCallbackExecution() {
 	runtime := context.host.Runtime()
-
 	runtime.GetVMInput().GasProvided = 0
-
-	// if vmOutput == nil {
-	// 	vmOutput = output.CreateVMOutputInCaseOfError(err)
-	// }
-
-	// if setReturnCode {
-	// 	if vmOutput.ReturnCode != vmcommon.Ok {
-	// 		output.SetReturnCode(vmOutput.ReturnCode)
-	// 	} else {
-	// 		output.SetReturnCode(destinationReturnCode)
-	// 	}
-	// }
-
-	// output.SetReturnMessage(vmOutput.ReturnMessage)
-	// output.Finish([]byte(vmOutput.ReturnCode.String()))
-	// output.Finish(runtime.GetCurrentTxHash())
 }
 
 func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall) (*vmcommon.ContractCallInput, error) {
@@ -273,7 +249,10 @@ func (context *asyncContext) createCallbackInput(
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := context.host.Runtime()
 
-	actualCallbackInitiator := context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
+	actualCallbackInitiator, err := context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
+	if err != nil {
+		return nil, err
+	}
 
 	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
 
