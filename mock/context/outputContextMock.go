@@ -166,6 +166,10 @@ func (o *OutputContextMock) DeleteFirstReturnData() {
 // WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ [][]byte) {}
 
+// WriteLogWithIdentifier mocked method
+func (o *OutputContextMock) WriteLogWithIdentifier(_ []byte, _ [][]byte, _ [][]byte, _ []byte) {
+}
+
 // TransferValueOnly mocked method
 func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ bool) error {
 	return o.TransferResult
@@ -177,7 +181,7 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs, _ *vmcommon.ContractCallInput) (uint64, error) {
+func (o *OutputContextMock) TransferESDT(_ *vmhost.ESDTTransfersArgs, _ *vmcommon.ContractCallInput) (uint64, error) {
 	return 0, nil
 }
 

@@ -3,12 +3,10 @@ package worldmock
 import (
 	"bytes"
 
-	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	"github.com/multiversx/mx-chain-vm-common-go/mock"
 	"github.com/multiversx/mx-chain-vm-go/config"
 )
 
@@ -35,30 +33,13 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasMap:            gasMap,
-		MapDNSAddresses:   dnsMap,
-		MapDNSV2Addresses: dnsMap,
-		Marshalizer:       WorldMarshalizer,
-		Accounts:          world.AccountsAdapter,
-		ShardCoordinator:  world,
-		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
-			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
-				return flag == builtInFunctions.CheckCorrectTokenIDForTransferRoleFlag ||
-					flag == builtInFunctions.ESDTTransferRoleFlag ||
-					flag == builtInFunctions.GlobalMintBurnFlag ||
-					flag == builtInFunctions.TransferToMetaFlag ||
-					flag == builtInFunctions.CheckFrozenCollectionFlag ||
-					flag == builtInFunctions.FixAsyncCallbackCheckFlag ||
-					flag == builtInFunctions.ESDTNFTImprovementV1Flag ||
-					flag == builtInFunctions.SaveToSystemAccountFlag ||
-					flag == builtInFunctions.ValueLengthCheckFlag ||
-					flag == builtInFunctions.CheckFunctionArgumentFlag ||
-					flag == builtInFunctions.FixOldTokenLiquidityFlag ||
-					flag == builtInFunctions.AlwaysSaveTokenMetaDataFlag ||
-					flag == builtInFunctions.SetGuardianFlag ||
-					flag == builtInFunctions.ScToScLogEventFlag
-			},
-		},
+		GasMap:                           gasMap,
+		MapDNSAddresses:                  dnsMap,
+		MapDNSV2Addresses:                dnsMap,
+		Marshalizer:                      WorldMarshalizer,
+		Accounts:                         world.AccountsAdapter,
+		ShardCoordinator:                 world,
+		EnableEpochsHandler:              world.EnableEpochsHandler,
 		GuardedAccountHandler:            world.GuardedAccountHandler,
 		MaxNumOfAddressesForTransferRole: 100,
 	}

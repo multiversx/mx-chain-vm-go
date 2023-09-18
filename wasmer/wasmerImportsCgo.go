@@ -102,6 +102,7 @@ package wasmer
 // extern void      v1_5_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      v1_5_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      v1_5_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
+// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t callValueHandle);
 // extern void      v1_5_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      v1_5_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 // extern void      v1_5_managedAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
@@ -727,6 +728,11 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("managedGetMultiESDTCallValue", v1_5_managedGetMultiESDTCallValue, C.v1_5_managedGetMultiESDTCallValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedGetBackTransfers", v1_5_managedGetBackTransfers, C.v1_5_managedGetBackTransfers)
 	if err != nil {
 		return err
 	}
@@ -2093,6 +2099,12 @@ func v1_5_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 func v1_5_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
+}
+
+//export v1_5_managedGetBackTransfers
+func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, callValueHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
 }
 
 //export v1_5_managedGetESDTBalance

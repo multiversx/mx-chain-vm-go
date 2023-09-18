@@ -118,7 +118,7 @@ var ErrStorageValueOutOfRange = errors.New("storage value out of range")
 // ErrDivZero signals that an attempt to divide by 0 has been made
 var ErrDivZero = errors.New("division by 0")
 
-// ErrBitwiseNegative signals that an attempt to apply a bitwise operation on negative numbers has been made
+// ErrBigIntCannotBeRepresentedAsInt64 signals that an attempt to apply a bitwise operation on negative numbers has been made
 var ErrBigIntCannotBeRepresentedAsInt64 = errors.New("big int cannot be represented as int64")
 
 // ErrBitwiseNegative signals that an attempt to apply a bitwise operation on negative numbers has been made
@@ -292,3 +292,6 @@ var ErrCannotWriteOnReadOnly = errors.New("cannot write on read only mode")
 
 // ErrEmptyProtectedKeyPrefix signals that the protected key prefix is empty or nil
 var ErrEmptyProtectedKeyPrefix = errors.New("protectedKeyPrefix is empty or nil")
+
+// ErrInvalidGasProvided signals that an unacceptable GasProvided value was specified
+var ErrInvalidGasProvided = errors.New("invalid gas provided")

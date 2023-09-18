@@ -448,6 +448,94 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 		})
 }
 
+func TestExecution_DeployWASM_GasValidation(t *testing.T) {
+	var gasProvided uint64
+	gasUsedByDeployment := uint64(570)
+
+	inputBuilder := test.CreateTestContractCreateInputBuilder().
+		WithContractCode(test.GetTestSCCode("init-correct", "../../")).
+		WithCallValue(88).
+		WithArguments([]byte{0})
+
+	testCase := test.BuildInstanceCreatorTest(t).
+		WithAddress(newAddress)
+
+	gasProvided = math.MaxUint64
+	inputBuilder.WithGasProvided(gasProvided)
+	testCase.WithInput(inputBuilder.Build())
+	_, _, err := testCase.RunTest(true)
+	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
+
+	gasProvided = math.MaxInt64 + 1
+	inputBuilder.WithGasProvided(gasProvided)
+	testCase.WithInput(inputBuilder.Build())
+	_, _, err = testCase.RunTest(true)
+	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
+
+	gasProvided = math.MaxInt64
+	input := inputBuilder.WithGasProvided(gasProvided).Build()
+	testCase.WithInput(input)
+	testCase.AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.Ok().
+			ReturnData([]byte("init successful")).
+			GasRemaining(gasProvided-gasUsedByDeployment).
+			Nonce([]byte("caller"), 24).
+			Code(newAddress, input.ContractCode).
+			BalanceDelta(newAddress, 88)
+	})
+
+	gasProvided = uint64(1000)
+	input = inputBuilder.WithGasProvided(gasProvided).Build()
+	testCase.WithInput(input)
+	testCase.AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.Ok().
+			ReturnData([]byte("init successful")).
+			GasRemaining(gasProvided-gasUsedByDeployment).
+			Nonce([]byte("caller"), 24).
+			Code(newAddress, input.ContractCode).
+			BalanceDelta(newAddress, 88)
+	})
+}
+
+func TestExecution_SingleContract_GasValidation(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	inputBuilder := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(test.ParentAddress).
+		WithFunction("wasteGas")
+
+	testCase := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.WasteGasParentMock)).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		})
+
+	testConfig.GasProvided = math.MaxUint64
+	inputBuilder.WithGasProvided(testConfig.GasProvided)
+	testCase.WithInput(inputBuilder.Build())
+	_, _, err := testCase.RunTest(nil, true, test.RunTest)
+	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
+
+	testConfig.GasProvided = math.MaxInt64 + 1
+	inputBuilder.WithGasProvided(testConfig.GasProvided)
+	testCase.WithInput(inputBuilder.Build())
+	_, _, err = testCase.RunTest(nil, true, test.RunTest)
+	require.ErrorIs(t, err, vmhost.ErrInvalidGasProvided)
+
+	testConfig.GasProvided = math.MaxInt64
+	inputBuilder.WithGasProvided(testConfig.GasProvided)
+	testCase.WithInput(inputBuilder.Build())
+	_, _ = testCase.AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+		verify.Ok().
+			GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
+			GasRemaining(testConfig.GasProvided - testConfig.GasUsedByParent)
+	})
+}
+
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	errGetAccount := errors.New("get code error")
 	test.BuildInstanceCallTest(t).
@@ -2781,6 +2869,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				Ok().
 				// TODO matei-p enable this for R2
 				//UserError().
+
 				//ReturnMessage("callBack error").
 				GasUsed(test.ParentAddress, 198656).
 				GasUsed(test.ChildAddress, 1297).
@@ -2912,7 +3001,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 					Identifier: []byte("transferValueOnly"),
 					Address:    test.ParentAddress,
 					Topics:     [][]byte{{42}, childAddress},
-					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{{0}}),
+					Data:       vmcommon.FormatLogDataForCall("DeploySmartContract", "init", [][]byte{{0}}),
 				})
 		})
 }
@@ -3072,7 +3161,7 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 					Identifier: []byte("transferValueOnly"),
 					Address:    createdNewAddr[0],
 					Topics:     [][]byte{{42}, createdNewAddr[1]},
-					Data:       vmcommon.FormatLogDataForCall("CreateSmartContract", "init", [][]byte{createdNewAddr[0]}),
+					Data:       vmcommon.FormatLogDataForCall("DeploySmartContract", "init", [][]byte{createdNewAddr[0]}),
 				})
 		})
 }

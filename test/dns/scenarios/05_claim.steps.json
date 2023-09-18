@@ -25,7 +25,7 @@
                         ],
                         "data": [
                             "str:DirectCall",
-                            "str:claim"
+                            "str:dns claim"
                         ]
                     }
                 ],

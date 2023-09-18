@@ -11,8 +11,10 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/stretchr/testify/require"
@@ -33,23 +35,25 @@ func getTestRoot() string {
 
 // ScenariosTestBuilder defines the Scenarios builder component
 type ScenariosTestBuilder struct {
-	t               *testing.T
-	folder          string
-	singleFile      string
-	exclusions      []string
-	executorLogger  executorwrapper.ExecutorLogger
-	executorFactory executor.ExecutorAbstractFactory
-	currentError    error
+	t                   *testing.T
+	folder              string
+	singleFile          string
+	exclusions          []string
+	executorLogger      executorwrapper.ExecutorLogger
+	executorFactory     executor.ExecutorAbstractFactory
+	enableEpochsHandler vmi.EnableEpochsHandler
+	currentError        error
 }
 
 // ScenariosTest will create a new ScenariosTestBuilder instance
 func ScenariosTest(t *testing.T) *ScenariosTestBuilder {
 	return &ScenariosTestBuilder{
-		t:               t,
-		folder:          "",
-		singleFile:      "",
-		executorLogger:  nil,
-		executorFactory: nil,
+		t:                   t,
+		folder:              "",
+		singleFile:          "",
+		executorLogger:      nil,
+		executorFactory:     nil,
+		enableEpochsHandler: worldhook.EnableEpochsHandlerStubAllFlags(),
 	}
 }
 
@@ -89,6 +93,12 @@ func (mtb *ScenariosTestBuilder) WithExecutorFactory(executorFactory executor.Ex
 	return mtb
 }
 
+// WithEnableEpochsHandler overrides the epoch flags
+func (mtb *ScenariosTestBuilder) WithEnableEpochsHandler(enableEpochsHandler vmi.EnableEpochsHandler) *ScenariosTestBuilder {
+	mtb.enableEpochsHandler = enableEpochsHandler
+	return mtb
+}
+
 // Run will start the testing process
 func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	executor, err := am.NewVMTestExecutor()
@@ -98,7 +108,7 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	if check.IfNil(mtb.executorFactory) {
 		mtb.executorFactory = testexecutor.NewDefaultTestExecutorFactory(mtb.t)
 	}
-
+	executor.World.EnableEpochsHandler = mtb.enableEpochsHandler
 	executor.OverrideVMExecutor = mtb.executorFactory
 	if mtb.executorLogger != nil {
 		executor.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(

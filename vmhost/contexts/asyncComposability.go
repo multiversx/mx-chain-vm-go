@@ -12,6 +12,7 @@ func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulat
 		logAsync.Trace("", "address", string(context.address))
 		logAsync.Trace("", "callID", context.callID) // DebugCallIDAsString
 		logAsync.Trace("", "callerAddr", string(context.callerAddr))
+		logAsync.Trace("", "parentAddr", string(context.parentAddr))
 		logAsync.Trace("", "callerCallID", context.callerCallID)
 		logAsync.Trace("", "notifier callID", callID)
 		logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
@@ -33,7 +34,7 @@ func (context *asyncContext) completeChild(callID []byte, gasToAccumulate uint64
 	return context.CompleteChildConditional(true, callID, gasToAccumulate)
 }
 
-// CompleteChildConditional complets a child and accumulates the provided gas to the async context
+// CompleteChildConditional completes a child and accumulates the provided gas to the async context
 func (context *asyncContext) CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error {
 	if !isChildComplete {
 		return nil
@@ -52,7 +53,7 @@ func (context *asyncContext) CompleteChildConditional(isChildComplete bool, call
 func (context *asyncContext) complete() error {
 	// There are no more callbacks to return from other shards. The context can
 	// be deleted from storage.
-	err := context.DeleteFromAddress(context.address)
+	err := context.DeleteFromCallID(context.callID)
 	if err != nil {
 		return err
 	}

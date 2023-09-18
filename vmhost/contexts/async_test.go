@@ -431,16 +431,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
-	require.Equal(t, asyncCall, &vmhost.AsyncCall{
-		Status:          vmhost.AsyncCallResolved,
-		Destination:     contract,
-		SuccessCallback: vmhost.CallbackFunctionName,
-		ErrorCallback:   vmhost.CallbackFunctionName,
-		GasLimit:        vmInput.GasProvided,
-		GasLocked:       vmInput.GasLocked,
-	})
-	require.True(t, isLegacy)
-	require.Nil(t, err)
+	require.NotNil(t, err)
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
 	// but it's not the expected one.
@@ -457,16 +448,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
-	require.Equal(t, asyncCall, &vmhost.AsyncCall{
-		Status:          vmhost.AsyncCallResolved,
-		Destination:     contract,
-		SuccessCallback: vmhost.CallbackFunctionName,
-		ErrorCallback:   vmhost.CallbackFunctionName,
-		GasLimit:        vmInput.GasProvided,
-		GasLocked:       vmInput.GasLocked,
-	})
-	require.True(t, isLegacy)
-	require.Nil(t, err)
+	require.NotNil(t, err)
 
 	// CallType == AsynchronousCallback, but this time there is a corresponding AsyncCall
 	// registered, causing async.UpdateCurrentCallStatus() to find and update the AsyncCall
@@ -835,7 +817,7 @@ func createCallbackInput(t *testing.T, lastTransfer *vmcommon.OutputTransfer) (*
 	return createCallbackInputWithVMOutput(t, vmOutput, lastTransfer)
 }
 
-func createCallbackInputWithVMOutput(t *testing.T, vmOutput *vmcommon.VMOutput, lastTransfer *vmcommon.OutputTransfer) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput, uint64) {
+func createCallbackInputWithVMOutput(t *testing.T, vmOutput *vmcommon.VMOutput, _ *vmcommon.OutputTransfer) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput, uint64) {
 	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBobWithBuiltIn(t, true)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, Alice)
@@ -909,7 +891,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob(t)
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
-	async.finishAsyncLocalCallbackExecution(nil, nil, 0)
+	async.finishAsyncLocalCallbackExecution()
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -928,8 +910,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
 
-	syncExecErr := vmhost.ErrNotEnoughGas
-	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0)
+	async.finishAsyncLocalCallbackExecution()
 
 	expectedOutput := vmhost.MakeEmptyVMOutput()
 	expectedOutput.GasRemaining = host.Metering().GasLeft()
@@ -956,8 +937,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput := vmhost.MakeEmptyVMOutput()
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
-	syncExecErr := vmhost.ErrSignalError
-	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0)
+	async.finishAsyncLocalCallbackExecution()
 
 	expectedOutput := vmhost.MakeEmptyVMOutput()
 	expectedOutput.GasRemaining = host.Metering().GasLeft()
