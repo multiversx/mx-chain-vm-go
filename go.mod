@@ -8,11 +8,12 @@ require (
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/multiversx/mx-chain-core-go v1.2.13
+	github.com/multiversx/mx-chain-core-go v1.2.17-0.20230919104727-566f55d213ab
 	github.com/multiversx/mx-chain-crypto-go v1.2.8
 	github.com/multiversx/mx-chain-logger-go v1.0.13
 	github.com/multiversx/mx-chain-scenario-go v1.2.1
-	github.com/multiversx/mx-chain-vm-common-go v1.5.5
+	github.com/multiversx/mx-chain-storage-go v1.0.14-0.20230927065701-c36344b3d1f6
+	github.com/multiversx/mx-chain-vm-common-go v1.5.6-0.20230927070234-b9b10860e77c
 	github.com/multiversx/mx-components-big-int v1.0.0
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.8.1
