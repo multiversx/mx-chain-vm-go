@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/big"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -39,7 +40,7 @@ type VMHost interface {
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
-	EnableEpochsHandler() vmcommon.EnableEpochsHandler
+	EnableEpochsHandler() EnableEpochsHandler
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
@@ -431,5 +432,14 @@ type GasTracing interface {
 type HashComputer interface {
 	Compute(string) []byte
 	Size() int
+	IsInterfaceNil() bool
+}
+
+// EnableEpochsHandler is used to verify which flags are set in a specific epoch based on EnableEpochs config
+type EnableEpochsHandler interface {
+	IsFlagDefined(flag core.EnableEpochFlag) bool
+	IsFlagEnabled(flag core.EnableEpochFlag) bool
+	IsFlagEnabledInEpoch(flag core.EnableEpochFlag, epoch uint32) bool
+	GetActivationEpoch(flag core.EnableEpochFlag) uint32
 	IsInterfaceNil() bool
 }
