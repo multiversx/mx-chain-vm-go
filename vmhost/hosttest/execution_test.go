@@ -210,7 +210,7 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
 	test.BuildInstanceCreatorTest(t).
 		WithInput(test.CreateTestContractCreateInputBuilder().
-			WithGasProvided(1000).
+			WithGasProvided(100000).
 			WithCallValue(88).
 			WithContractCode(makeBytecodeWithLocals(WASMLocalsLimit)).
 			Build()).
@@ -3687,8 +3687,8 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 // number of i64 locals it instantiates
 func makeBytecodeWithLocals(numLocals uint64) []byte {
 	originalCode := test.GetTestSCCode("answer-locals", "../../")
-	firstSlice := originalCode[:0x5B]
-	secondSlice := originalCode[0x5C:]
+	firstSlice := originalCode[:0x59]
+	secondSlice := originalCode[0x5A:]
 
 	encodedNumLocals := vmhost.U64ToLEB128(numLocals)
 	extraBytes := len(encodedNumLocals) - 1
@@ -3698,8 +3698,8 @@ func makeBytecodeWithLocals(numLocals uint64) []byte {
 	result = append(result, encodedNumLocals...)
 	result = append(result, secondSlice...)
 
+	result[0x55] = byte(int(result[0x55]) + extraBytes)
 	result[0x57] = byte(int(result[0x57]) + extraBytes)
-	result[0x59] = byte(int(result[0x59]) + extraBytes)
 
 	return result
 }
