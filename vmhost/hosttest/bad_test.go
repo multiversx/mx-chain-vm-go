@@ -295,3 +295,34 @@ func testBadContractExtraLongIntLoop(t *testing.T, executorFactory executor.Exec
 		require.FailNow(t, "test timed out")
 	}
 }
+
+func TestBadContractExtra_NoPanic_BadRecursive(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	testCase := test.BuildInstanceCallTest(t).
+		WithWasmerSIGSEGVPassthrough(false).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("bad-recursive", "../../")).
+				WithBalance(1000)).
+		WithExecutorFactory(wasmer2.ExecutorFactory())
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(test.ParentAddress).
+		WithGasProvided(10000000).
+		WithFunction("badRecursive").
+		Build()
+
+	repetitions := 25_000
+
+	for i := 0; i < repetitions; i++ {
+		testCase.
+			WithInput(input).
+			AndAssertResultsWithoutReset(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+				verify.ReturnMessage("execution failed")
+				verify.ExecutionFailed()
+			})
+	}
+}
