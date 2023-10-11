@@ -1150,7 +1150,7 @@ func (host *vmHost) callUpgradeFunction() error {
 func (host *vmHost) callSCFunction(functionName string) error {
 	runtime := host.Runtime()
 	if !runtime.HasFunction(functionName) {
-		return nil
+		return executor.ErrFuncNotFound
 	}
 
 	err := runtime.CallSCFunction(functionName)
