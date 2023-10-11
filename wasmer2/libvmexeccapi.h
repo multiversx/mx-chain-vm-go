@@ -317,7 +317,7 @@ vm_exec_result_t vm_check_signatures(vm_exec_instance_t *instance_ptr);
  *
  * C API function, works with raw object pointers.
  */
-void vm_exec_executor_destroy(vm_exec_executor_t *executor);
+void vm_exec_executor_destroy(vm_exec_executor_t *executor_ptr);
 
 /**
  * Sets the data that can be hold by an instance context.
@@ -380,7 +380,7 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const c
  *
  * C API function, works with raw object pointers.
  */
-void vm_exec_instance_destroy(vm_exec_instance_t *instance);
+void vm_exec_instance_destroy(vm_exec_instance_t *instance_ptr);
 
 /**
  * Creates a new VM executor instance from cache.
