@@ -55,6 +55,12 @@ type EnableEpochsHandlerStub struct {
 	IsConsistentTokensValuesLengthCheckEnabledField      bool
 	IsAutoBalanceDataTriesEnabledField                   bool
 	ScToScLogEventEnabledField                           bool
+	IsChangeOwnerAddressCrossShardThroughSCField         bool
+}
+
+// IsChangeOwnerAddressCrossShardThroughSCEnabled -
+func (stub *EnableEpochsHandlerStub) IsChangeOwnerAddressCrossShardThroughSCEnabled() bool {
+	return stub.IsChangeOwnerAddressCrossShardThroughSCField
 }
 
 // IsGuardAccountEnabled -
