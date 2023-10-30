@@ -79,6 +79,17 @@
                             "str:BackTransfer",
                             "0"
                         ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:forward_sync_retrieve_funds",
+                        "topics": [
+                            "str:back_tranfers",
+                            "1000"
+                        ],
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

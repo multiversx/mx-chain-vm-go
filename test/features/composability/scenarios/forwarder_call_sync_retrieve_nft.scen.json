@@ -95,6 +95,20 @@
                             "01",
                             "sc:forwarder"
                         ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:forward_sync_retrieve_funds",
+                        "topics": [
+                            "str:back_tranfers",
+                            "0",
+                            "str:NFT-000001",
+                            "5",
+                            "1"
+                        ],
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",

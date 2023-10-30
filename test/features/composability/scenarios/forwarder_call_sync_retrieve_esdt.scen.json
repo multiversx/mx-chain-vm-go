@@ -86,6 +86,20 @@
                             "str:TEST-TOKENA",
                             "1000"
                         ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:forward_sync_retrieve_funds",
+                        "topics": [
+                            "str:back_tranfers",
+                            "0",
+                            "str:TEST-TOKENA",
+                            "0",
+                            "1000"
+                        ],
+                        "data": [
+                            ""
+                        ]
                     }
                 ],
                 "gas": "*",
