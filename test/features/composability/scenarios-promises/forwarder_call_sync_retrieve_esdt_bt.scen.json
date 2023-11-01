@@ -11,21 +11,14 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-000001": {
-                            "instances": [
-                                {
-                                    "nonce": "5",
-                                    "balance": "1"
-                                }
-                            ]
-                        }
+                        "str:TEST-TOKENA": "1000"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder/output/forwarder.wasm"
+                    "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }
         },
@@ -35,12 +28,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_sync_retrieve_funds",
+                "function": "forward_sync_retrieve_funds_bt",
                 "arguments": [
                     "sc:vault",
-                    "str:NFT-000001",
-                    "5",
-                    "1"
+                    "str:TEST-TOKENA",
+                    "0",
+                    "1000"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -59,9 +52,9 @@
                         "data": [
                             "str:ExecuteOnDestContext",
                             "str:retrieve_funds",
-                            "str:NFT-000001",
-                            "5",
-                            "01"
+                            "str:TEST-TOKENA",
+                            "0",
+                            "1000"
                         ]
                     },
                     {
@@ -69,9 +62,9 @@
                         "endpoint": "str:retrieve_funds",
                         "topics": [
                             "str:retrieve_funds",
-                            "str:NFT-000001",
-                            "5",
-                            "1"
+                            "str:TEST-TOKENA",
+                            "0",
+                            "1000"
                         ],
                         "data": [
                             ""
@@ -79,20 +72,32 @@
                     },
                     {
                         "address": "sc:vault",
-                        "endpoint": "str:ESDTNFTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [                            
-                            "str:NFT-000001",
-                            "5",
-                            "01",
+                            "str:TEST-TOKENA",
+                            "0",
+                            "1000",
                             "sc:forwarder"
                         ],
                         "data": [
                             "str:BackTransfer",
-                            "str:ESDTNFTTransfer",
-                            "str:NFT-000001",
-                            "5",
-                            "01",
-                            "sc:forwarder"
+                            "str:ESDTTransfer",
+                            "str:TEST-TOKENA",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:forward_sync_retrieve_funds_bt",
+                        "topics": [
+                            "str:back_tranfers",
+                            "0",
+                            "str:TEST-TOKENA",
+                            "0",
+                            "1000"
+                        ],
+                        "data": [
+                            ""
                         ]
                     }
                 ],
@@ -119,17 +124,10 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-000001": {
-                            "instances": [
-                                {
-                                    "nonce": "5",
-                                    "balance": "1"
-                                }
-                            ]
-                        }
+                        "str:TEST-TOKENA": "1000"
                     },
                     "storage": "*",
-                    "code": "file:../forwarder/output/forwarder.wasm"
+                    "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }
         }
