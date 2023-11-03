@@ -51,13 +51,47 @@
                 "function": "upgradeVault",
                 "arguments": [
                     "sc:child",
-                    "file:../vault/output/vault.wasm"
+                    "file:../vault/output/vault.wasm",
+                    "str:arg"
                 ],
                 "gasLimit": "500,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": []
+                "out": [
+                    "str:arg"
+                ],
+                "logs": [
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "",
+                            "sc:child"
+                        ],
+                        "data": [
+                            "str:UpgradeFromSource",
+                            "str:upgradeContract",
+                            "*",
+                            "0x0100",
+                            "str:arg"
+                        ]
+                    },
+                    {
+                        "address": "sc:child",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "",
+                            "sc:forwarder"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00",
+                            "str:arg"
+                        ]
+                    }
+                ]
             }
         },
         {
