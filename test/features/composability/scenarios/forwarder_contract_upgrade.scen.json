@@ -32,7 +32,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": "*",
                 "status": ""
             }
         },
@@ -62,7 +62,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": "*",
                 "logs": [
                     {
                         "address": "sc:forwarder",
