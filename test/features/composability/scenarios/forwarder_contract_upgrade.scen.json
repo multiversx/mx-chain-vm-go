@@ -23,20 +23,21 @@
                 "function": "upgrade_vault_from_source",
                 "arguments": [
                     "sc:child",
-                    "sc:forwarder"
+                    "sc:child"
                 ],
                 "gasLimit": "500,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": []
+                "out": [],
+                "status": ""
             }
         },
         {
             "step": "checkState",
             "accounts": {
                 "sc:child": {
-                    "code": "file:../forwarder/output/forwarder.wasm"
+                    "code": "file:../vault/output/vault.wasm"
                 },
                 "+": ""
             }
@@ -58,9 +59,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "str:arg"
-                ],
+                "out": [],
                 "logs": [
                     {
                         "address": "sc:forwarder",
@@ -79,6 +78,16 @@
                     },
                     {
                         "address": "sc:child",
+                        "endpoint": "str:upgradeContract",
+                        "topics": [
+                            "str:upgraded"
+                        ],
+                        "data": [
+                            ""
+                        ]
+                    },
+                    {
+                        "address": "sc:child",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "",
@@ -88,6 +97,7 @@
                             "str:AsyncCallback",
                             "str:callBack",
                             "0x00",
+                            "str:upgraded",
                             "str:arg"
                         ]
                     }
