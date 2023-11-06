@@ -50,10 +50,12 @@ func MemLoadFromMemory(memory Memory, memPtr MemPtr, length MemLength) ([]byte, 
 		return nil, fmt.Errorf("mem load: %w", ErrMemoryNegativeLength)
 	}
 
-	result := make([]byte, length)
+	var result []byte
 	if isRequestedEndTooLarge {
+		result = make([]byte, memoryLength-uint32(memPtr))
 		copy(result, memoryView[memPtr:])
 	} else {
+		result = make([]byte, requestedEnd-memPtr)
 		copy(result, memoryView[memPtr:requestedEnd])
 	}
 
