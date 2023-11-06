@@ -97,14 +97,6 @@ func TestRustPromisesFeatures(t *testing.T) {
 		CheckNoError()
 }
 
-// TODO: debug, then delete
-func TestRustPromisesFeaturesDebug(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios-promises/promises_call_async_retrieve_egld.scen.json").
-		Run().
-		CheckNoError()
-}
-
 func TestRustFormattedMessageFeatures(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/formatted-message-features/scenarios").
