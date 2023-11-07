@@ -57,6 +57,12 @@ func InitMockMethod(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("init", testcommon.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByInit))
 }
 
+// UpgradeMockMethod -
+func UpgradeMockMethod(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*testcommon.TestConfig)
+	instanceMock.AddMockMethod("upgrade", testcommon.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByInit))
+}
+
 // CallbackTestConfig -
 type CallbackTestConfig interface {
 	CallbackFails() bool

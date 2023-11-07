@@ -819,7 +819,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 		return vmhost.ErrContractInvalid
 	}
 
-	err = host.callInitFunction()
+	err = host.callUpgradeFunction()
 	if err != nil {
 		return err
 	}
