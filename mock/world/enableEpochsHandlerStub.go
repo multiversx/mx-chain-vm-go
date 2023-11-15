@@ -6,56 +6,57 @@ var _ vmcommon.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
 
 // EnableEpochsHandlerStub -
 type EnableEpochsHandlerStub struct {
-	CheckExecuteReadOnlyEnableEpochField                 uint32
-	CreateNFTThroughExecByCallerEnableEpochField         uint32
-	DisableExecByCallerEnableEpochField                  uint32
-	FixFailExecutionOnErrorEnableEpochField              uint32
-	FixOOGReturnCodeEnableEpochField                     uint32
-	IsAheadOfTimeGasUsageFlagEnabledField                bool
-	IsBuiltInFunctionsFlagEnabledField                   bool
-	IsCheckCorrectTokenIDForTransferRoleFlagEnabledField bool
-	IsCheckExecuteOnReadOnlyFlagEnabledField             bool
-	IsCheckFrozenCollectionFlagEnabledField              bool
-	IsCheckFunctionArgumentFlagEnabledField              bool
-	IsCheckTransferFlagEnabledField                      bool
-	IsCreateNFTThroughExecByCallerFlagEnabledField       bool
-	IsDisableExecByCallerFlagEnabledField                bool
-	IsESDTNFTImprovementV1FlagEnabledField               bool
-	IsESDTTransferRoleFlagEnabledField                   bool
-	IsFailExecutionOnEveryAPIErrorFlagEnabledField       bool
-	IsFixAsyncCallbackCheckFlagEnabledField              bool
-	IsFixOOGReturnCodeFlagEnabledField                   bool
-	IsFixOldTokenLiquidityEnabledField                   bool
-	IsGlobalMintBurnFlagEnabledField                     bool
-	IsManagedCryptoAPIsFlagEnabledField                  bool
-	IsMultiESDTTransferFixOnCallBackFlagEnabledField     bool
-	IsRefactorContextFlagEnabledField                    bool
-	IsRemoveNonUpdatedStorageFlagEnabledField            bool
-	IsRepairCallbackFlagEnabledField                     bool
-	IsSCDeployFlagEnabledField                           bool
-	IsSaveToSystemAccountFlagEnabledField                bool
-	IsSendAlwaysFlagEnabledField                         bool
-	IsStorageAPICostOptimizationFlagEnabledField         bool
-	IsTransferToMetaFlagEnabledField                     bool
-	IsValueLengthCheckFlagEnabledField                   bool
-	ManagedCryptoAPIEnableEpochField                     uint32
-	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
-	RefactorContextEnableEpochField                      uint32
-	RemoveNonUpdatedStorageEnableEpochField              uint32
-	StorageAPICostOptimizationEnableEpochField           uint32
-	IsRuntimeMemStoreLimitEnabledField                   bool
-	IsMaxBlockchainHookCountersFlagEnabledField          bool
-	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
-	IsAlwaysSaveTokenMetaDataEnabledField                bool
-	IsDynamicGasCostForDataTrieStorageLoadEnabledField   bool
-	IsRuntimeCodeSizeFixEnabledField                     bool
-	IsSetGuardianEnabledField                            bool
-	IsGuardAccountEnabledField                           bool
-	IsChangeUsernameEnabledField                         bool
-	IsConsistentTokensValuesLengthCheckEnabledField      bool
-	IsAutoBalanceDataTriesEnabledField                   bool
-	ScToScLogEventEnabledField                           bool
-	IsChangeOwnerAddressCrossShardThroughSCField         bool
+	CheckExecuteReadOnlyEnableEpochField                      uint32
+	CreateNFTThroughExecByCallerEnableEpochField              uint32
+	DisableExecByCallerEnableEpochField                       uint32
+	FixFailExecutionOnErrorEnableEpochField                   uint32
+	FixOOGReturnCodeEnableEpochField                          uint32
+	IsAheadOfTimeGasUsageFlagEnabledField                     bool
+	IsBuiltInFunctionsFlagEnabledField                        bool
+	IsCheckCorrectTokenIDForTransferRoleFlagEnabledField      bool
+	IsCheckExecuteOnReadOnlyFlagEnabledField                  bool
+	IsCheckFrozenCollectionFlagEnabledField                   bool
+	IsCheckFunctionArgumentFlagEnabledField                   bool
+	IsCheckTransferFlagEnabledField                           bool
+	IsCreateNFTThroughExecByCallerFlagEnabledField            bool
+	IsDisableExecByCallerFlagEnabledField                     bool
+	IsESDTNFTImprovementV1FlagEnabledField                    bool
+	IsESDTTransferRoleFlagEnabledField                        bool
+	IsFailExecutionOnEveryAPIErrorFlagEnabledField            bool
+	IsFixAsyncCallbackCheckFlagEnabledField                   bool
+	IsFixOOGReturnCodeFlagEnabledField                        bool
+	IsFixOldTokenLiquidityEnabledField                        bool
+	IsGlobalMintBurnFlagEnabledField                          bool
+	IsManagedCryptoAPIsFlagEnabledField                       bool
+	IsMultiESDTTransferFixOnCallBackFlagEnabledField          bool
+	IsRefactorContextFlagEnabledField                         bool
+	IsRemoveNonUpdatedStorageFlagEnabledField                 bool
+	IsRepairCallbackFlagEnabledField                          bool
+	IsSCDeployFlagEnabledField                                bool
+	IsSaveToSystemAccountFlagEnabledField                     bool
+	IsSendAlwaysFlagEnabledField                              bool
+	IsStorageAPICostOptimizationFlagEnabledField              bool
+	IsTransferToMetaFlagEnabledField                          bool
+	IsValueLengthCheckFlagEnabledField                        bool
+	ManagedCryptoAPIEnableEpochField                          uint32
+	MultiESDTTransferAsyncCallBackEnableEpochField            uint32
+	RefactorContextEnableEpochField                           uint32
+	RemoveNonUpdatedStorageEnableEpochField                   uint32
+	StorageAPICostOptimizationEnableEpochField                uint32
+	IsRuntimeMemStoreLimitEnabledField                        bool
+	IsMaxBlockchainHookCountersFlagEnabledField               bool
+	IsWipeSingleNFTLiquidityDecreaseEnabledField              bool
+	IsAlwaysSaveTokenMetaDataEnabledField                     bool
+	IsDynamicGasCostForDataTrieStorageLoadEnabledField        bool
+	IsRuntimeCodeSizeFixEnabledField                          bool
+	IsSetGuardianEnabledField                                 bool
+	IsGuardAccountEnabledField                                bool
+	IsChangeUsernameEnabledField                              bool
+	IsConsistentTokensValuesLengthCheckEnabledField           bool
+	IsAutoBalanceDataTriesEnabledField                        bool
+	ScToScLogEventEnabledField                                bool
+	IsChangeOwnerAddressCrossShardThroughSCField              bool
+	FixGasRemainingForSaveKeyValueBuiltinFunctionEnabledField bool
 }
 
 // IsChangeOwnerAddressCrossShardThroughSCEnabled -
@@ -306,6 +307,11 @@ func (stub *EnableEpochsHandlerStub) IsAutoBalanceDataTriesEnabled() bool {
 // IsScToScEventLogEnabled -
 func (stub *EnableEpochsHandlerStub) IsScToScEventLogEnabled() bool {
 	return stub.ScToScLogEventEnabledField
+}
+
+// FixGasRemainingForSaveKeyValueBuiltinFunctionEnabled -
+func (stub *EnableEpochsHandlerStub) FixGasRemainingForSaveKeyValueBuiltinFunctionEnabled() bool {
+	return stub.FixGasRemainingForSaveKeyValueBuiltinFunctionEnabledField
 }
 
 // IsInterfaceNil -
