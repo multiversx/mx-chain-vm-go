@@ -198,6 +198,7 @@ func TestMultisigLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("multisig/scenarios").
+		Exclude("multisig/scenarios/interactor*").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
@@ -206,6 +207,7 @@ func TestMultisigLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("multisig/scenarios").
+		Exclude("multisig/scenarios/interactor*").
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
