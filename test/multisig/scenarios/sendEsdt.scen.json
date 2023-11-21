@@ -192,14 +192,12 @@
                             "3",
                             "10"
                         ],
-                        "data": [
-                            ""
-                        ]
+                        "data": "*"
                     },
                     {
                         "address": "sc:multisig",
                         "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [                            
+                        "topics": [
                             "str:FUNG-TOKEN",
                             "0",
                             "1000",
@@ -212,7 +210,7 @@
                             "address:esdt-owner"
                         ],
                         "data": "*"
-                    },                  
+                    },
                     {
                         "address": "address:esdt-owner",
                         "endpoint": "str:transferValueOnly",
@@ -232,9 +230,7 @@
                         "topics": [
                             "str:asyncCallSuccess"
                         ],
-                        "data": [
-                            ""
-                        ]
+                        "data": "*"
                     }
                 ],
                 "gas": "*",

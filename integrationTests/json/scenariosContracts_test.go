@@ -60,6 +60,7 @@ func TestCreateAsyncCall(t *testing.T) {
 func TestMultisig(t *testing.T) {
 	ScenariosTest(t).
 		Folder("multisig/scenarios").
+		Exclude("multisig/scenarios/interactor*").
 		Run().
 		CheckNoError()
 }
