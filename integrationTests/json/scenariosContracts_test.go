@@ -119,3 +119,10 @@ func TestCAttestation(t *testing.T) {
 		Run().
 		CheckNoError()
 }
+
+func TestRustPaymaster(t *testing.T) {
+	ScenariosTest(t).
+		Folder("paymaster/scenarios").
+		Run().
+		CheckNoError()
+}

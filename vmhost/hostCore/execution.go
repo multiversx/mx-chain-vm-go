@@ -448,6 +448,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
+	managedTypes.PopBackTransferIfAsyncCallBack(input)
 
 	output.PushState()
 	output.CensorVMOutput()
