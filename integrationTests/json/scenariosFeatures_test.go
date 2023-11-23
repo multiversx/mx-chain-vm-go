@@ -91,13 +91,6 @@ func TestRustComposability(t *testing.T) {
 		CheckNoError()
 }
 
-func TestRustPromisesFeatures(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios-promises").
-		Run().
-		CheckNoError()
-}
-
 func TestRustFormattedMessageFeatures(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/formatted-message-features/scenarios").

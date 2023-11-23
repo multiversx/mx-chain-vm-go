@@ -51,7 +51,7 @@ func TestESDTMultiTransferOnCallback(t *testing.T) {
 
 func TestCreateAsyncCall(t *testing.T) {
 	ScenariosTest(t).
-		Folder("features/composability/scenarios-promises").
+		Folder("features/composability/scenarios").
 		File("promises_single_transfer.scen.json").
 		Run().
 		CheckNoError()
