@@ -1,15 +1,16 @@
 {
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "1000"
+                    "balance": "0"
                 },
                 "sc:vault": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "1000",
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
@@ -25,12 +26,14 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "egldValue": "1000",
-                "function": "forward_promise_accept_funds",
+                "function": "forward_sync_retrieve_funds_bt",
                 "arguments": [
-                    "sc:vault"
+                    "sc:vault",
+                    "str:EGLD",
+                    "0",
+                    "1000"
                 ],
-                "gasLimit": "60,000,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -40,20 +43,48 @@
                     {
                         "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [                            
-                            "1000",
+                        "topics": [
+                            "0",
                             "sc:vault"
                         ],
                         "data": [
-                            "str:AsyncCall",
-                            "str:accept_funds"
+                            "str:ExecuteOnDestContext",
+                            "str:retrieve_funds",
+                            "str:EGLD",
+                            "0",
+                            "1000"
                         ]
                     },
                     {
                         "address": "sc:vault",
-                        "endpoint": "str:accept_funds",
+                        "endpoint": "str:retrieve_funds",
                         "topics": [
-                            "str:accept_funds",
+                            "str:retrieve_funds",
+                            "str:EGLD",
+                            "0",
+                            "1000"
+                        ],
+                        "data": [
+                            ""
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "1000",
+                            "sc:forwarder"
+                        ],
+                        "data": [
+                            "str:BackTransfer",
+                            "0"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:forward_sync_retrieve_funds_bt",
+                        "topics": [
+                            "str:back_tranfers",
                             "1000"
                         ],
                         "data": [
@@ -76,16 +107,14 @@
                 },
                 "sc:vault": {
                     "nonce": "0",
-                    "balance": "1000",
-                    "storage": {
-                        "str:call_counts|nested:str:accept_funds": "1"
-                    },
+                    "balance": "0",
+                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
+                    "balance": "1000",
+                    "storage": "*",
                     "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }

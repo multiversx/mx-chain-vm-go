@@ -9,10 +9,7 @@
                 },
                 "sc:vault": {
                     "nonce": "0",
-                    "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKENA": "1000"
-                    },
+                    "balance": "1000",
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
@@ -28,14 +25,14 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_sync_retrieve_funds_bt",
+                "function": "forward_promise_retrieve_funds",
                 "arguments": [
                     "sc:vault",
-                    "str:TEST-TOKENA",
+                    "str:EGLD",
                     "0",
                     "1000"
                 ],
-                "gasLimit": "50,000,000",
+                "gasLimit": "60,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -45,14 +42,14 @@
                     {
                         "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
-                        "topics": [                            
-                            "",
+                        "topics": [
+                            "0",
                             "sc:vault"
                         ],
                         "data": [
-                            "str:ExecuteOnDestContext",
+                            "str:AsyncCall",
                             "str:retrieve_funds",
-                            "str:TEST-TOKENA",
+                            "str:EGLD",
                             "0",
                             "1000"
                         ]
@@ -62,7 +59,7 @@
                         "endpoint": "str:retrieve_funds",
                         "topics": [
                             "str:retrieve_funds",
-                            "str:TEST-TOKENA",
+                            "str:EGLD",
                             "0",
                             "1000"
                         ],
@@ -72,27 +69,35 @@
                     },
                     {
                         "address": "sc:vault",
-                        "endpoint": "str:ESDTTransfer",
-                        "topics": [                            
-                            "str:TEST-TOKENA",
-                            "0",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
                             "1000",
                             "sc:forwarder"
                         ],
                         "data": [
                             "str:BackTransfer",
-                            "str:ESDTTransfer",
-                            "str:TEST-TOKENA",
-                            "1000"
+                            ""
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "1000",
+                            "sc:forwarder"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:retrieve_funds_callback",
+                            "0x00"
                         ]
                     },
                     {
                         "address": "sc:forwarder",
-                        "endpoint": "str:forward_sync_retrieve_funds_bt",
+                        "endpoint": "str:retrieve_funds_callback",
                         "topics": [
-                            "str:back_tranfers",
-                            "0",
-                            "str:TEST-TOKENA",
+                            "str:retrieve_funds_callback",
+                            "str:EGLD",
                             "0",
                             "1000"
                         ],
@@ -122,10 +127,7 @@
                 },
                 "sc:forwarder": {
                     "nonce": "0",
-                    "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKENA": "1000"
-                    },
+                    "balance": "1000",
                     "storage": "*",
                     "code": "file:../promises-features/output/promises-features.wasm"
                 }

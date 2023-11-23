@@ -161,7 +161,7 @@ Clean: true
 
 func TestRustAdderLog(t *testing.T) {
 	ScenariosTest(t).
-		Folder("adder/scenarios").
+		Folder("adder/scenarios/adder.scen.json").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().

@@ -1,14 +1,14 @@
 {
-    "name": "crypto",
+    "name": "get caller",
     "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
-                "sc:alloc-features": {
+                "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/alloc-features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -18,20 +18,20 @@
         },
         {
             "step": "scCall",
-            "id": "1",
+            "id": "get_shard_of_address",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:alloc-features",
-                "function": "compute_sha256_legacy_alloc",
+                "to": "sc:basic-features",
+                "function": "get_shard_of_address",
                 "arguments": [
-                    "0x010203"
+                    "sc:basic-features"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81"
+                    "2"
                 ],
                 "status": "",
                 "logs": "*",
@@ -40,21 +40,18 @@
             }
         },
         {
-            "step": "scCall",
-            "id": "2",
+            "step": "scQuery",
+            "id": "get_shard_of_address_query",
             "tx": {
-                "from": "address:an_account",
-                "to": "sc:alloc-features",
-                "function": "compute_sha256_legacy_alloc",
+                "to": "sc:basic-features",
+                "function": "get_shard_of_address",
                 "arguments": [
-                    "0x0102030405060708"
-                ],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
+                    "sc:basic-features"
+                ]
             },
             "expect": {
                 "out": [
-                    "0x66840dda154e8a113c31dd0ad32f7f3a366a80e8136979d8f5a101d3d29d6f72"
+                    "2"
                 ],
                 "status": "",
                 "logs": "*",
