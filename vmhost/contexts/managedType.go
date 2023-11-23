@@ -5,13 +5,13 @@ import (
 	"crypto/elliptic"
 	"encoding/binary"
 	"errors"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"io"
 	basicMath "math"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -552,7 +552,7 @@ func (context *managedTypesContext) NewManagedBufferFromBytes(bytes []byte) int3
 	return mBufferHandle
 }
 
-// SetBytes sets the bytes given as value for the managed buffer
+// SetBytes sets the bytes given as value for the managed buffer. Will create managed buffer if it doesn't exist.
 func (context *managedTypesContext) SetBytes(mBufferHandle int32, bytes []byte) {
 	_, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {

@@ -27,3 +27,7 @@ void init() {
 		}
 	}
 }
+
+void upgrade() {
+	init();
+}

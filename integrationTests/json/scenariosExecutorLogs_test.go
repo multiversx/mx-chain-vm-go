@@ -149,7 +149,7 @@ func TestCreateAsyncCallLog(t *testing.T) {
 	}
 
 	expected := ScenariosTest(t).
-		Folder("features/composability/scenarios-promises").
+		Folder("features/composability/scenarios").
 		File("promises_single_transfer.scen.json").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
@@ -158,7 +158,7 @@ func TestCreateAsyncCallLog(t *testing.T) {
 		ExtractLog()
 
 	ScenariosTest(t).
-		Folder("features/composability/scenarios-promises").
+		Folder("features/composability/scenarios").
 		File("promises_single_transfer.scen.json").
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithExecutorLogs().
@@ -198,6 +198,7 @@ func TestMultisigLog(t *testing.T) {
 
 	expected := ScenariosTest(t).
 		Folder("multisig/scenarios").
+		Exclude("multisig/scenarios/interactor*").
 		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().
@@ -206,6 +207,7 @@ func TestMultisigLog(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("multisig/scenarios").
+		Exclude("multisig/scenarios/interactor*").
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithExecutorLogs().
 		Run().

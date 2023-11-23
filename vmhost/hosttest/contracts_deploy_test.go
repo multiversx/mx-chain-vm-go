@@ -386,9 +386,14 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 	var deployedContract test.MockTestSmartContract
 	var contractToUpdate test.MockTestSmartContract
 	if testConfig.DeployedContractAddress != nil {
+		// The DeployedContract will be the source of the code to be written in
+		// ContractToBeUpdated. Therefore it is the DeployedContract which must
+		// initially have UpgradeMockMethod. After the code update, the
+		// ContractToBeUpdated will also have the UpgradeMockMethod and it will be
+		// called by the VM.
 		deployedContract = test.CreateMockContract(testConfig.DeployedContractAddress).
 			WithConfig(testConfig).
-			WithMethods(contracts.InitMockMethod)
+			WithMethods(contracts.InitMockMethod, contracts.UpgradeMockMethod)
 	}
 	if testConfig.ContractToBeUpdatedAddress != nil {
 		contractToUpdate = test.CreateMockContract(testConfig.ContractToBeUpdatedAddress).
