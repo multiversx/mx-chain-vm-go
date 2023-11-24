@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -14,6 +15,8 @@ import (
 var _ vmhost.InstanceTracker = (*instanceTracker)(nil)
 
 type instanceCacheLevel int
+
+var errTooManyInstances = errors.New("too many instances")
 
 const (
 	// Warm indicates that the instance to track is a warm instance
@@ -178,27 +181,27 @@ func (tracker *instanceTracker) TrackedInstances() map[string]executor.Instance 
 
 // UseWarmInstance attempts to retrieve a warm instance for the given codeHash
 // and to set it as active; returns false if not possible
-func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) bool {
+func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) (bool, error) {
 	instance, ok := tracker.GetWarmInstance(codeHash)
 	if !ok {
-		return false
+		return false, nil
 	}
 
 	ok = instance.Reset()
 	if !ok {
 		tracker.warmInstanceCache.Remove(codeHash)
-		return false
+		return false, nil
 	}
 
 	if newCode {
 		// A warm instance was found, but newCode == true, meaning this is an
 		// upgrade; the old warm instance must be cleaned
 		tracker.ForceCleanInstance(false)
-		return false
+		return false, nil
 	}
 
-	tracker.SetNewInstance(instance, Warm)
-	return true
+	err := tracker.SetNewInstance(instance, Warm)
+	return true, err
 }
 
 // ForceCleanInstance cleans the active instance and evicts it from the
@@ -237,7 +240,6 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 // SaveAsWarmInstance saves the active instance into the internal warm instance cache
 func (tracker *instanceTracker) SaveAsWarmInstance() {
 	lenCacheBeforeSaving := tracker.warmInstanceCache.Len()
-
 	codeHashInWarmCache := tracker.warmInstanceCache.Has(tracker.codeHash)
 
 	if codeHashInWarmCache {
@@ -289,13 +291,18 @@ func (tracker *instanceTracker) GetCodeSize() uint64 {
 }
 
 // SetNewInstance sets the given instance as active and tracks its creation
-func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) {
+func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) error {
 	tracker.ReplaceInstance(instance)
 	tracker.cacheLevel = cacheLevel
 	if cacheLevel != Warm {
 		tracker.updateNumRunningInstances(+1)
 	}
 	tracker.instances[instance.ID()] = instance
+
+	if len(tracker.instances) >= tracker.warmInstanceCache.MaxSize()-1 {
+		return errTooManyInstances
+	}
+	return nil
 }
 
 // ReplaceInstance replaces the currently active instance with the given one
