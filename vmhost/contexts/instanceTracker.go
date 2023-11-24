@@ -299,7 +299,7 @@ func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cache
 	}
 	tracker.instances[instance.ID()] = instance
 
-	if len(tracker.instances) >= tracker.warmInstanceCache.MaxSize()-1 {
+	if len(tracker.instances) >= warmCacheSize-1 {
 		return errTooManyInstances
 	}
 	return nil
