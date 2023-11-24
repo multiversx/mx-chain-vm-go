@@ -5,10 +5,10 @@ import (
 )
 
 const expectedAdderLog = `starting log:
-GetFunctionNames: [add callBack getSum init]
+GetFunctionNames: [add callBack getSum init upgrade]
 ValidateFunctionArities: true
-GetFunctionNames: [add callBack getSum init]
-GetFunctionNames: [add callBack getSum init]
+GetFunctionNames: [add callBack getSum init upgrade]
+GetFunctionNames: [add callBack getSum init upgrade]
 HasFunction(init): true
 CallFunction(init):
 VM hook begin: CheckNoPayment()
@@ -23,12 +23,12 @@ VM hook begin: BigIntGetUnsignedArgument(0, -101)
 GetPointsUsed: 249
 SetPointsUsed: 1249
 VM hook end:   BigIntGetUnsignedArgument(0, -101)
-VM hook begin: MBufferSetBytes(-102, 1048601, 3)
+VM hook begin: MBufferSetBytes(-102, 131097, 3)
 GetPointsUsed: 1289
 SetPointsUsed: 3289
 GetPointsUsed: 3289
 SetPointsUsed: 6289
-VM hook end:   MBufferSetBytes(-102, 1048601, 3)
+VM hook end:   MBufferSetBytes(-102, 131097, 3)
 VM hook begin: MBufferFromBigIntUnsigned(-103, -101)
 GetPointsUsed: 6333
 SetPointsUsed: 10333
@@ -52,7 +52,7 @@ GetPointsUsed: 135352
 GetPointsUsed: 135352
 Reset: true
 SetPointsUsed: 0
-SetGasLimit: 9223372036853567307
+SetGasLimit: 9223372036853566707
 SetBreakpointValue: 0
 HasFunction(getSum): true
 CallFunction(getSum):
@@ -64,12 +64,12 @@ VM hook begin: GetNumArguments()
 GetPointsUsed: 110
 SetPointsUsed: 210
 VM hook end:   GetNumArguments()
-VM hook begin: MBufferSetBytes(-101, 1048601, 3)
+VM hook begin: MBufferSetBytes(-101, 131097, 3)
 GetPointsUsed: 250
 SetPointsUsed: 2250
 GetPointsUsed: 2250
 SetPointsUsed: 5250
-VM hook end:   MBufferSetBytes(-101, 1048601, 3)
+VM hook end:   MBufferSetBytes(-101, 131097, 3)
 VM hook begin: MBufferStorageLoad(-101, -102)
 GetPointsUsed: 5291
 SetPointsUsed: 6291
@@ -97,7 +97,7 @@ GetPointsUsed: 71337
 GetPointsUsed: 71337
 Reset: true
 SetPointsUsed: 0
-SetGasLimit: 3791500
+SetGasLimit: 3790900
 SetBreakpointValue: 0
 HasFunction(add): true
 CallFunction(add):
@@ -113,12 +113,12 @@ VM hook begin: BigIntGetUnsignedArgument(0, -101)
 GetPointsUsed: 249
 SetPointsUsed: 1249
 VM hook end:   BigIntGetUnsignedArgument(0, -101)
-VM hook begin: MBufferSetBytes(-102, 1048601, 3)
+VM hook begin: MBufferSetBytes(-102, 131097, 3)
 GetPointsUsed: 1289
 SetPointsUsed: 3289
 GetPointsUsed: 3289
 SetPointsUsed: 6289
-VM hook end:   MBufferSetBytes(-102, 1048601, 3)
+VM hook end:   MBufferSetBytes(-102, 131097, 3)
 VM hook begin: MBufferStorageLoad(-102, -103)
 GetPointsUsed: 6333
 SetPointsUsed: 7333
@@ -161,7 +161,7 @@ Clean: true
 
 func TestRustAdderLog(t *testing.T) {
 	ScenariosTest(t).
-		Folder("adder/scenarios").
+		Folder("adder/scenarios/adder.scen.json").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
