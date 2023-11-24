@@ -5,12 +5,12 @@ import (
 	"crypto/elliptic"
 	"encoding/binary"
 	"errors"
-	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"io"
 	basicMath "math"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/math"
