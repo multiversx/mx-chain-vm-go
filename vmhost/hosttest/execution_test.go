@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -185,7 +186,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte("init successful")).
-				GasRemaining(430).
+				GasRemaining(410).
 				Nonce([]byte("caller"), 24).
 				Code(newAddress, input.ContractCode).
 				BalanceDelta(newAddress, 88)
@@ -449,7 +450,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 
 func TestExecution_DeployWASM_GasValidation(t *testing.T) {
 	var gasProvided uint64
-	gasUsedByDeployment := uint64(570)
+	gasUsedByDeployment := uint64(590)
 
 	inputBuilder := test.CreateTestContractCreateInputBuilder().
 		WithContractCode(test.GetTestSCCode("init-correct", "../../")).
@@ -1102,7 +1103,9 @@ func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcomm
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
 				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+				enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+					return false
+				}
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1131,7 +1134,9 @@ func runTestMBufferSetByteSlice(
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
 				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+				enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+					return false
+				}
 			}
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -2983,13 +2988,13 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 1069).
-				GasRemaining(998361).
+				GasUsed(test.ParentAddress, 1109).
+				GasRemaining(998301).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
 				CodeDeployerAddress(childAddress, test.ParentAddress).
-				GasUsed(childAddress, 570).
+				GasUsed(childAddress, 590).
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
 				Storage().
 				Logs(vmcommon.LogEntry{

@@ -247,7 +247,7 @@ func (context *VMHooksImpl) ManagedGetMultiESDTCallValue(multiCallValueHandle in
 
 // ManagedGetBackTransfers VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) ManagedGetBackTransfers(esdtTransfersValueHandle int32, callValueHandle int32) {
+func (context *VMHooksImpl) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
 	metering := context.GetMeteringContext()
 	managedType := context.GetManagedTypesContext()
 
@@ -259,7 +259,8 @@ func (context *VMHooksImpl) ManagedGetBackTransfers(esdtTransfersValueHandle int
 	managedType.ConsumeGasForBytes(multiCallBytes)
 
 	managedType.SetBytes(esdtTransfersValueHandle, multiCallBytes)
-	managedType.SetBytes(callValueHandle, transferValue.Bytes())
+	egldValue := managedType.GetBigIntOrCreate(egldValueHandle)
+	egldValue.SetBytes(transferValue.Bytes())
 }
 
 // ManagedGetESDTBalance VMHooks implementation.

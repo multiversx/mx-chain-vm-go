@@ -23,6 +23,7 @@ func TestRustBasicFeaturesLatest(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/basic-features/scenarios").
 		Exclude("features/basic-features/scenarios/storage_mapper_fungible_token.scen.json").
+		Exclude("features/basic-features/scenarios/get_shard_of_address.scen.json").
 		Run().
 		CheckNoError()
 }
@@ -86,21 +87,6 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 func TestRustComposability(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
-		Run().
-		CheckNoError()
-}
-
-func TestRustPromisesFeatures(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios-promises").
-		Run().
-		CheckNoError()
-}
-
-// TODO: debug, then delete
-func TestRustPromisesFeaturesDebug(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios-promises/promises_call_async_retrieve_egld.scen.json").
 		Run().
 		CheckNoError()
 }

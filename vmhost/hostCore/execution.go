@@ -101,7 +101,7 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunc
 	}
 
 	output.DeployCode(input)
-	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
+	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RemoveNonUpdatedStorageFlag) {
 		output.RemoveNonUpdatedStorage()
 	}
 
@@ -258,7 +258,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		return vmOutput
 	}
 
-	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
+	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RemoveNonUpdatedStorageFlag) {
 		output.RemoveNonUpdatedStorage()
 	}
 	vmOutput = output.GetVMOutput()
@@ -581,7 +581,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	if host.enableEpochsHandler.IsRefactorContextFlagEnabled() {
+	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RefactorContextFlag) {
 		input.RecipientAddr = input.CallerAddr
 	}
 
@@ -819,7 +819,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 		return vmhost.ErrContractInvalid
 	}
 
-	err = host.callInitFunction()
+	err = host.callUpgradeFunction()
 	if err != nil {
 		return err
 	}
