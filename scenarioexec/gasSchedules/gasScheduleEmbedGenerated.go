@@ -32,6 +32,7 @@ const (
     UnGuardAccount           = 250000
     TrieLoadPerNode          = 20000
     TrieStorePerNode         = 50000
+    MigrateCodeLeaf          = 100000
 
 [MetaChainSystemSCsCost]
     Stake = 5000000
@@ -852,6 +853,7 @@ const (
     UnGuardAccount           = 250000
     TrieLoadPerNode          = 20000
     TrieStorePerNode         = 50000
+    MigrateCodeLeaf          = 100000
 
 [MetaChainSystemSCsCost]
     Stake = 5000000
