@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type operations struct {
@@ -171,4 +172,11 @@ func Test_isDynamicGasComputationFuncCorrectlyDefined(t *testing.T) {
 		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
 		assert.True(t, ok)
 	})
+}
+
+func TestMakeGasMap(t *testing.T) {
+	t.Parallel()
+
+	gasMap := MakeGasMapForTests()
+	require.NotNil(t, gasMap)
 }

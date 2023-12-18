@@ -145,6 +145,11 @@ func (m *MockAccountsAdapter) IsPruningEnabled() bool {
 	return false
 }
 
+// MigrateCodeLeaf -
+func (m *MockAccountsAdapter) MigrateCodeLeaf(_ vmcommon.AccountHandler) error {
+	return nil
+}
+
 // IsInterfaceNil -
 func (m *MockAccountsAdapter) IsInterfaceNil() bool {
 	return m == nil
