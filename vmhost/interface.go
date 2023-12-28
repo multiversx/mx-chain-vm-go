@@ -219,6 +219,7 @@ type ManagedTypesContext interface {
 	GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int)
 	AddValueOnlyBackTransfer(value *big.Int)
 	AddBackTransfers(transfers []*vmcommon.ESDTTransfer)
+	PopBackTransferIfAsyncCallBack(vmInput *vmcommon.ContractCallInput)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context

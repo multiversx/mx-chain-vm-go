@@ -152,12 +152,18 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		logRuntime.Trace("code was new", "new", newCode)
 	}()
 
-	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
+	warmInstanceUsed, err := context.useWarmInstanceIfExists(gasLimit, newCode)
+	if err != nil {
+		return err
+	}
 	if warmInstanceUsed {
 		return nil
 	}
 
-	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
+	compiledCodeUsed, err := context.makeInstanceFromCompiledCode(gasLimit, newCode)
+	if err != nil {
+		return err
+	}
 	if compiledCodeUsed {
 		return nil
 	}
@@ -165,17 +171,17 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
 }
 
-func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) bool {
+func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) (bool, error) {
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
-		return false
+		return false, nil
 	}
 
 	blockchain := context.host.Blockchain()
 	found, compiledCode := blockchain.GetCompiledCode(codeHash)
 	if !found {
 		logRuntime.Trace("instance creation", "code", "cached compilation", "error", "compiled code was not found")
-		return false
+		return false, nil
 	}
 
 	gasSchedule := context.host.Metering().GasSchedule()
@@ -191,10 +197,13 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	newInstance, err := context.vmExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
 		logRuntime.Error("instance creation", "from", "cached compilation", "error", err)
-		return false
+		return false, nil
 	}
 
-	context.iTracker.SetNewInstance(newInstance, Precompiled)
+	err = context.iTracker.SetNewInstance(newInstance, Precompiled)
+	if err != nil {
+		return false, err
+	}
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -202,7 +211,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 		"id", context.iTracker.Instance().ID(),
 		"codeHash", context.iTracker.codeHash,
 	)
-	return true
+	return true, nil
 }
 
 func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
@@ -223,7 +232,10 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		return err
 	}
 
-	context.iTracker.SetNewInstance(newInstance, Bytecode)
+	err = context.iTracker.SetNewInstance(newInstance, Bytecode)
+	if err != nil {
+		return err
+	}
 
 	if newCode || len(context.iTracker.CodeHash()) == 0 {
 		codeHash := context.hasher.Compute(string(contract))
@@ -249,23 +261,26 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	return nil
 }
 
-func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
+func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) (bool, error) {
 	if !WarmInstancesEnabled {
-		return false
+		return false, nil
 	}
 
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
-		return false
+		return false, nil
 	}
 
 	if context.isContractOrCodeHashOnTheStack() {
-		return false
+		return false, nil
 	}
 
-	ok := context.iTracker.UseWarmInstance(codeHash, newCode)
+	ok, err := context.iTracker.UseWarmInstance(codeHash, newCode)
+	if err != nil {
+		return false, err
+	}
 	if !ok {
-		return false
+		return false, nil
 	}
 
 	context.SetPointsUsed(0)
@@ -273,7 +288,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 	context.verifyCode = false
 	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance().ID())
-	return true
+	return true, nil
 }
 
 // GetSCCode returns the SC code of the current SC.
