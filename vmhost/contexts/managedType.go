@@ -10,6 +10,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -139,7 +140,7 @@ func (context *managedTypesContext) InitState() {
 // PushState appends the values map to the state stack
 func (context *managedTypesContext) PushState() {
 	newBigIntState, newBigFloatState, newEcState, newmBufferState, newmMapState := context.clone()
-	newTransfers := context.cloneBackTransfers()
+	newTransfers := cloneBackTransfers(context.managedTypesValues.backTransfers)
 	context.managedTypesStack = append(context.managedTypesStack, managedTypesState{
 		bigIntValues:   newBigIntState,
 		bigFloatValues: newBigFloatState,
@@ -148,6 +149,21 @@ func (context *managedTypesContext) PushState() {
 		mMapValues:     newmMapState,
 		backTransfers:  newTransfers,
 	})
+}
+
+// PopBackTransferIfAsyncCallBack copies the back transfer from the top of the stack in case of callbacks
+func (context *managedTypesContext) PopBackTransferIfAsyncCallBack(vmInput *vmcommon.ContractCallInput) {
+	if vmInput.CallType != vm.AsynchronousCallBack {
+		return
+	}
+
+	managedTypesStackLen := len(context.managedTypesStack)
+	if managedTypesStackLen == 0 {
+		return
+	}
+
+	prevState := context.managedTypesStack[managedTypesStackLen-1]
+	context.managedTypesValues.backTransfers = cloneBackTransfers(prevState.backTransfers)
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current values map
@@ -797,7 +813,7 @@ func (context *managedTypesContext) AddValueOnlyBackTransfer(value *big.Int) {
 
 // GetBackTransfers returns all ESDT transfers and accumulated value as well, will clean accumulated values
 func (context *managedTypesContext) GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int) {
-	clonedTransfers := context.cloneBackTransfers()
+	clonedTransfers := cloneBackTransfers(context.managedTypesValues.backTransfers)
 	context.managedTypesValues.backTransfers = backTransfers{
 		ESDTTransfers: make([]*vmcommon.ESDTTransfer, 0),
 		CallValue:     big.NewInt(0),
@@ -806,9 +822,7 @@ func (context *managedTypesContext) GetBackTransfers() ([]*vmcommon.ESDTTransfer
 	return clonedTransfers.ESDTTransfers, clonedTransfers.CallValue
 }
 
-func (context *managedTypesContext) cloneBackTransfers() backTransfers {
-	currentBackTransfers := context.managedTypesValues.backTransfers
-
+func cloneBackTransfers(currentBackTransfers backTransfers) backTransfers {
 	newBackTransfers := backTransfers{
 		ESDTTransfers: make([]*vmcommon.ESDTTransfer, len(currentBackTransfers.ESDTTransfers)),
 		CallValue:     big.NewInt(0).Set(currentBackTransfers.CallValue),
