@@ -251,3 +251,12 @@ func (host *VMHostMock) Close() error {
 // Reset -
 func (host *VMHostMock) Reset() {
 }
+
+// SetGasTracing -
+func (host *VMHostMock) SetGasTracing(enableGasTracing bool) {
+}
+
+// GetGasTrace -
+func (host *VMHostMock) GetGasTrace() map[string]map[string][]uint64 {
+	return make(map[string]map[string][]uint64)
+}

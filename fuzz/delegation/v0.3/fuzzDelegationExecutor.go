@@ -4,24 +4,25 @@ package delegation
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"strings"
 
+	scenexec "github.com/multiversx/mx-chain-scenario-go/executor"
 	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
 	mjparse "github.com/multiversx/mx-chain-scenario-go/json/parse"
 	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
 	mj "github.com/multiversx/mx-chain-scenario-go/model"
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
-	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 type fuzzDelegationExecutor struct {
-	vmTestExecutor *am.VMTestExecutor
-	world          *worldhook.MockWorld
-	vm             vmi.VMExecutionHandler
+	vmTestExecutor *scenexec.ScenarioExecutor
+	world          *worldmock.MockWorld
+	vm             vmcommon.VMExecutionHandler
 	parser         mjparse.Parser
 	txIndex        int
 
@@ -44,10 +45,7 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	vmTestExecutor, err := am.NewVMTestExecutor()
-	if err != nil {
-		return nil, err
-	}
+	vmTestExecutor := vmscenario.DefaultScenarioExecutor()
 	parser := mjparse.NewParser(fileResolver)
 	return &fuzzDelegationExecutor{
 		vmTestExecutor:      vmTestExecutor,
@@ -87,7 +85,7 @@ func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
 	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
-	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
+	err := os.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -137,7 +135,7 @@ func (pfe *fuzzDelegationExecutor) executeStep(stepSnippet string) error {
 	return pfe.vmTestExecutor.ExecuteStep(step)
 }
 
-func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
+func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error) {
 	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err

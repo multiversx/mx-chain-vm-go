@@ -4,15 +4,16 @@ package dex
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
+	scenexec "github.com/multiversx/mx-chain-scenario-go/executor"
 	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
 	mjparse "github.com/multiversx/mx-chain-scenario-go/json/parse"
 	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
 	mj "github.com/multiversx/mx-chain-scenario-go/model"
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
-	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -71,9 +72,9 @@ type FarmerInfo struct {
 }
 
 type fuzzDexExecutor struct {
-	vmTestExecutor *am.VMTestExecutor
-	world          *worldhook.MockWorld
-	vm             vmi.VMExecutionHandler
+	vmTestExecutor *scenexec.ScenarioExecutor
+	world          *worldmock.MockWorld
+	vm             vmcommon.VMExecutionHandler
 	parser         mjparse.Parser
 	txIndex        int
 
@@ -154,13 +155,10 @@ type eventsStatistics struct {
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
-	vmTestExecutor, err := am.NewVMTestExecutor()
-	if err != nil {
-		return nil, err
-	}
+	vmTestExecutor := vmscenario.DefaultScenarioExecutor()
 
 	scenGasSchedule := mj.GasScheduleDummy
-	err = vmTestExecutor.InitVM(scenGasSchedule)
+	err := vmTestExecutor.InitVM(scenGasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +184,7 @@ func (pfe *fuzzDexExecutor) saveGeneratedScenario() {
 
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
-	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
+	err := os.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -206,7 +204,7 @@ func (pfe *fuzzDexExecutor) addStep(step mj.Step) {
 	pfe.generatedScenario.Steps = append(pfe.generatedScenario.Steps, step)
 }
 
-func (pfe *fuzzDexExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
+func (pfe *fuzzDexExecutor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error) {
 	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err

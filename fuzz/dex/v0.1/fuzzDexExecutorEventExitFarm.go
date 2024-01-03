@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics) error {
@@ -71,7 +71,7 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		statistics.exitFarmHits += 1
 
 		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)
