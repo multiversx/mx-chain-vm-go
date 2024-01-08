@@ -1,7 +1,7 @@
 package scenclivms
 
 import (
-	scencli "github.com/multiversx/mx-chain-scenario-go/cli"
+	scenclibase "github.com/multiversx/mx-chain-scenario-go/clibase"
 	mc "github.com/multiversx/mx-chain-scenario-go/controller"
 
 	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
@@ -10,7 +10,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-var _ scencli.CLIRunConfig = (*vm15Flags)(nil)
+var _ scenclibase.CLIRunConfig = (*vm15Flags)(nil)
 
 type vm15Flags struct{}
 
@@ -32,7 +32,7 @@ func (*vm15Flags) GetFlags() []cli.Flag {
 	}
 }
 
-func (*vm15Flags) ParseFlags(cCtx *cli.Context) scencli.CLIRunOptions {
+func (*vm15Flags) ParseFlags(cCtx *cli.Context) scenclibase.CLIRunOptions {
 	runOptions := &mc.RunScenarioOptions{
 		ForceTraceGas: cCtx.Bool("force-trace-gas"),
 	}
@@ -45,12 +45,12 @@ func (*vm15Flags) ParseFlags(cCtx *cli.Context) scencli.CLIRunOptions {
 		vmBuilder.OverrideVMExecutor = wasmer2.ExecutorFactory()
 	}
 
-	return scencli.CLIRunOptions{
+	return scenclibase.CLIRunOptions{
 		RunOptions: runOptions,
 		VMBuilder:  vmBuilder,
 	}
 }
 
-func ScenariosTestCLI() {
-	scencli.ScenariosCLI("VM 1.5 internal", &vm15Flags{})
+func ScenariosCLI() {
+	scenclibase.ScenariosCLI("VM 1.5 internal", &vm15Flags{})
 }
