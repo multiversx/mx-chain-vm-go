@@ -16,7 +16,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 )
 
-var _ scenexec.ScenarioVMBuilder = (*ScenarioVMHostBuilder)(nil)
+var _ scenexec.VMBuilder = (*ScenarioVMHostBuilder)(nil)
 
 // TestVMType is the VM type argument we use in tests.
 var TestVMType = []byte{0, 0}

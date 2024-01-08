@@ -1,109 +1,56 @@
-package scenariostestcli
+package scenclivms
 
 import (
-	"flag"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
+	scencli "github.com/multiversx/mx-chain-scenario-go/cli"
 	mc "github.com/multiversx/mx-chain-scenario-go/controller"
-	scenexec "github.com/multiversx/mx-chain-scenario-go/executor"
+
 	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	cli "github.com/urfave/cli/v2"
 )
 
-func resolveArgument(exeDir string, arg string) (string, bool, error) {
-	fi, err := os.Stat(arg)
-	if os.IsNotExist(err) {
-		arg = filepath.Join(exeDir, arg)
-		fmt.Println(arg)
-		fi, err = os.Stat(arg)
-	}
-	if err != nil {
-		return "", false, err
-	}
-	return arg, fi.IsDir(), nil
-}
+var _ scencli.CLIRunConfig = (*vm15Flags)(nil)
 
-func parseOptionFlags() *mc.RunScenarioOptions {
-	forceTraceGas := flag.Bool("force-trace-gas", false, "overrides the traceGas option in the scenarios")
-	useWasmer1 := flag.Bool("wasmer1", false, "use the wasmer1 executor")
-	useWasmer2 := flag.Bool("wasmer2", false, "use the wasmer2 executor")
-	flag.Parse()
+type vm15Flags struct{}
 
-	return &mc.RunScenarioOptions{
-		ForceTraceGas: *forceTraceGas,
-		UseWasmer1:    *useWasmer1,
-		UseWasmer2:    *useWasmer2,
+func (*vm15Flags) GetFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "force-trace-gas",
+			Aliases: []string{"g"},
+			Usage:   "overrides the traceGas option in the scenarios`",
+		},
+		&cli.BoolFlag{
+			Name:  "wasmer1",
+			Usage: "use the wasmer1 executor`",
+		},
+		&cli.BoolFlag{
+			Name:  "wasmer2",
+			Usage: "use the wasmer2 executor`",
+		},
 	}
 }
 
-// ScenariosTestCLI provides the functionality for any scenarios test executor.
-func ScenariosTestCLI() {
-	options := parseOptionFlags()
-
-	// directory of this executable
-	exeDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+func (*vm15Flags) ParseFlags(cCtx *cli.Context) scencli.CLIRunOptions {
+	runOptions := &mc.RunScenarioOptions{
+		ForceTraceGas: cCtx.Bool("force-trace-gas"),
 	}
 
-	// argument
-	args := flag.Args()
-	if len(args) < 1 {
-		panic("One argument expected - the path to the json test or directory.")
-	}
-	jsonFilePath, isDir, err := resolveArgument(exeDir, args[0])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// init
 	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
-	if options.UseWasmer1 {
+	if cCtx.Bool("wasmer1") {
 		vmBuilder.OverrideVMExecutor = wasmer.ExecutorFactory()
 	}
-	if options.UseWasmer2 {
+	if cCtx.Bool("wasmer2") {
 		vmBuilder.OverrideVMExecutor = wasmer2.ExecutorFactory()
 	}
-	executor := scenexec.NewScenarioExecutor(vmBuilder)
 
-	// execute
-	switch {
-	case isDir:
-		runner := mc.NewScenarioController(
-			executor,
-			mc.NewDefaultFileResolver(),
-		)
-		err = runner.RunAllJSONScenariosInDirectory(
-			jsonFilePath,
-			"",
-			".scen.json",
-			[]string{},
-			options)
-	case strings.HasSuffix(jsonFilePath, ".scen.json"):
-		runner := mc.NewScenarioController(
-			executor,
-			mc.NewDefaultFileResolver(),
-		)
-		err = runner.RunSingleJSONScenario(jsonFilePath, options)
-	default:
-		runner := mc.NewTestRunner(
-			executor,
-			mc.NewDefaultFileResolver(),
-		)
-		err = runner.RunSingleJSONTest(jsonFilePath)
+	return scencli.CLIRunOptions{
+		RunOptions: runOptions,
+		VMBuilder:  vmBuilder,
 	}
+}
 
-	// print result
-	if err == nil {
-		fmt.Println("SUCCESS")
-	} else {
-		fmt.Printf("ERROR: %s\n", err.Error())
-		os.Exit(1)
-	}
+func ScenariosTestCLI() {
+	scencli.ScenariosCLI("VM 1.5 internal", &vm15Flags{})
 }
