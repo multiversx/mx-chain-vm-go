@@ -69,7 +69,6 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 				flag == builtInFunctions.CheckCorrectTokenIDForTransferRoleFlag ||
 				flag == builtInFunctions.ESDTTransferRoleFlag ||
 				flag == builtInFunctions.GlobalMintBurnFlag ||
-				flag == builtInFunctions.TransferToMetaFlag ||
 				flag == builtInFunctions.CheckFrozenCollectionFlag ||
 				flag == builtInFunctions.FixAsyncCallbackCheckFlag ||
 				flag == builtInFunctions.ESDTNFTImprovementV1Flag ||
