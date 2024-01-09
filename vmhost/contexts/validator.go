@@ -67,7 +67,7 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 		return err
 	}
 
-	errInvalidName := fmt.Errorf("%w: %s", vmhost.ErrInvalidFunctionName, functionName)
+	errInvalidName := fmt.Errorf("%w: %x", vmhost.ErrInvalidFunctionName, functionName)
 	if validator.reserved.IsReserved(functionName) {
 		return errInvalidName
 	}
