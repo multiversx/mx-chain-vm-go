@@ -789,6 +789,10 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	functionName := context.FunctionName()
+	err := verifyCallFunction(functionName)
+	if err != nil {
+		return "", executor.ErrFuncNotFound
+	}
 	if context.HasFunction(functionName) {
 		return functionName, nil
 	}

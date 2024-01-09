@@ -62,6 +62,20 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Insta
 }
 
 func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {
+	err := verifyCallFunction(functionName)
+	if err != nil {
+		return err
+	}
+
+	errInvalidName := fmt.Errorf("%w: %s", vmhost.ErrInvalidFunctionName, functionName)
+	if validator.reserved.IsReserved(functionName) {
+		return errInvalidName
+	}
+
+	return nil
+}
+
+func verifyCallFunction(functionName string) error {
 	const maxLengthOfFunctionName = 256
 
 	errInvalidName := fmt.Errorf("%w: %s", vmhost.ErrInvalidFunctionName, functionName)
@@ -76,9 +90,6 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 		return errInvalidName
 	}
 	if !validCharactersOnly(functionName) {
-		return errInvalidName
-	}
-	if validator.reserved.IsReserved(functionName) {
 		return errInvalidName
 	}
 
