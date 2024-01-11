@@ -33,6 +33,11 @@ func NewScenarioVMHostBuilder() *ScenarioVMHostBuilder {
 	}
 }
 
+// NewMockWorld defines how the MockWorld is initialized.
+func (*ScenarioVMHostBuilder) NewMockWorld() *worldmock.MockWorld {
+	return worldmock.NewMockWorld()
+}
+
 // GasScheduleMapFromScenarios provides the correct gas schedule for the gas schedule named specified in a scenario.
 func (svb *ScenarioVMHostBuilder) GasScheduleMapFromScenarios(scenGasSchedule mj.GasSchedule) (worldmock.GasScheduleMap, error) {
 	switch scenGasSchedule {

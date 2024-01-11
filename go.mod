@@ -11,7 +11,7 @@ require (
 	github.com/multiversx/mx-chain-core-go v1.2.13
 	github.com/multiversx/mx-chain-crypto-go v1.2.8
 	github.com/multiversx/mx-chain-logger-go v1.0.13
-	github.com/multiversx/mx-chain-scenario-go v1.2.2-0.20240108093039-bf78bdfe32ae
+	github.com/multiversx/mx-chain-scenario-go v1.2.2-0.20240111035159-6f630626b903
 	github.com/multiversx/mx-chain-vm-common-go v1.5.9
 	github.com/multiversx/mx-components-big-int v1.0.0
 	github.com/pelletier/go-toml v1.9.3
