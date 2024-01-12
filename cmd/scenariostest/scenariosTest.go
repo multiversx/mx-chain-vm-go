@@ -2,7 +2,7 @@ package main
 
 import (
 	scenclibase "github.com/multiversx/mx-chain-scenario-go/clibase"
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 
 	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"

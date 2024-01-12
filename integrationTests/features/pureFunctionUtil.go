@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
-	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
+	er "github.com/multiversx/mx-chain-scenario-go/scenario/expression/reconstructor"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"

@@ -10,8 +10,8 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
-	scenexec "github.com/multiversx/mx-chain-scenario-go/executor"
+	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
+	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"

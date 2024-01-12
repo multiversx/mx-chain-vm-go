@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	roulette "github.com/multiversx/mx-chain-vm-go/fuzz/weightedroulette"
 	"github.com/stretchr/testify/require"
 )

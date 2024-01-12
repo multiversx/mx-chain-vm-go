@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
-	mjparse "github.com/multiversx/mx-chain-scenario-go/json/parse"
-	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
-	mj "github.com/multiversx/mx-chain-scenario-go/model"
+	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
+	mjparse "github.com/multiversx/mx-chain-scenario-go/scenario/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-scenario-go/scenario/json/write"
+	mj "github.com/multiversx/mx-chain-scenario-go/scenario/model"
 )
 
 func getTestRoot() string {

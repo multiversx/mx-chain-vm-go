@@ -10,7 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	scenexec "github.com/multiversx/mx-chain-scenario-go/executor"
+	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"

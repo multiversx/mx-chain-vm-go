@@ -10,12 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/multiversx/mx-chain-core-go/core"
-	"github.com/multiversx/mx-chain-core-go/data/esdt"
-	"github.com/multiversx/mx-chain-core-go/data/vm"
-	"github.com/multiversx/mx-chain-scenario-go/esdtconvert"
-	"github.com/multiversx/mx-chain-scenario-go/worldmock"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
@@ -24,6 +18,13 @@ import (
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
+
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock/esdtconvert"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
