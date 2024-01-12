@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
+	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	roulette "github.com/multiversx/mx-chain-vm-go/fuzz/weightedroulette"
 	"github.com/stretchr/testify/require"
 )
@@ -25,7 +25,7 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 		return nil
 	}
 
-	fileResolver := mc.NewDefaultFileResolver().
+	fileResolver := scenio.NewDefaultFileResolver().
 		ReplacePath(
 			"dex_router.wasm",
 			filepath.Join(pwd, "wasms/dex_router.wasm")).

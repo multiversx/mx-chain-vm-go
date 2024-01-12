@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
+	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	roulette "github.com/multiversx/mx-chain-vm-go/fuzz/weightedroulette"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,7 +31,7 @@ func getTestRoot() string {
 }
 
 func newExecutorWithPaths() *fuzzDelegationExecutor {
-	fileResolver := mc.NewDefaultFileResolver().
+	fileResolver := scenio.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
 			filepath.Join(getTestRoot(), "delegation/v0_5_latest_full/output/delegation_latest_full.wasm")).

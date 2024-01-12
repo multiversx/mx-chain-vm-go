@@ -2,7 +2,7 @@ package main
 
 import (
 	scenclibase "github.com/multiversx/mx-chain-scenario-go/clibase"
-	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
+	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 
 	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
@@ -37,7 +37,7 @@ func (*vm15Flags) GetFlags() []cli.Flag {
 }
 
 func (*vm15Flags) ParseFlags(cCtx *cli.Context) scenclibase.CLIRunOptions {
-	runOptions := &mc.RunScenarioOptions{
+	runOptions := &scenio.RunScenarioOptions{
 		ForceTraceGas: cCtx.Bool("force-trace-gas"),
 	}
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
-	mj "github.com/multiversx/mx-chain-scenario-go/scenario/model"
+	scenmodel "github.com/multiversx/mx-chain-scenario-go/scenario/model"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -39,15 +39,15 @@ func (*ScenarioVMHostBuilder) NewMockWorld() *worldmock.MockWorld {
 }
 
 // GasScheduleMapFromScenarios provides the correct gas schedule for the gas schedule named specified in a scenario.
-func (svb *ScenarioVMHostBuilder) GasScheduleMapFromScenarios(scenGasSchedule mj.GasSchedule) (worldmock.GasScheduleMap, error) {
+func (svb *ScenarioVMHostBuilder) GasScheduleMapFromScenarios(scenGasSchedule scenmodel.GasSchedule) (worldmock.GasScheduleMap, error) {
 	switch scenGasSchedule {
-	case mj.GasScheduleDefault:
+	case scenmodel.GasScheduleDefault:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
-	case mj.GasScheduleDummy:
+	case scenmodel.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
-	case mj.GasScheduleV3:
+	case scenmodel.GasScheduleV3:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
-	case mj.GasScheduleV4:
+	case scenmodel.GasScheduleV4:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	default:
 		return nil, fmt.Errorf("unknown scenario GasSchedule: %d", scenGasSchedule)

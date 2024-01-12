@@ -11,7 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
-	mc "github.com/multiversx/mx-chain-scenario-go/scenario/io"
+	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -119,9 +119,9 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 
 	executor.World.EnableEpochsHandler = mtb.enableEpochsHandler
 
-	runner := mc.NewScenarioController(
+	runner := scenio.NewScenarioController(
 		executor,
-		mc.NewDefaultFileResolver(),
+		scenio.NewDefaultFileResolver(),
 	)
 
 	if len(mtb.singleFile) > 0 {
@@ -130,14 +130,14 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 
 		mtb.currentError = runner.RunSingleJSONScenario(
 			fullPath,
-			mc.DefaultRunScenarioOptions())
+			scenio.DefaultRunScenarioOptions())
 	} else {
 		mtb.currentError = runner.RunAllJSONScenariosInDirectory(
 			getTestRoot(),
 			mtb.folder,
 			".scen.json",
 			mtb.exclusions,
-			mc.DefaultRunScenarioOptions())
+			scenio.DefaultRunScenarioOptions())
 	}
 
 	return mtb
