@@ -414,6 +414,12 @@ func (contractInput *ContractCreateInputBuilder) WithContractCode(code []byte) *
 	return contractInput
 }
 
+// WithContractCodeMetadata provides the ContractCodeMetadata for a ContractCreateInputBuilder
+func (contractInput *ContractCreateInputBuilder) WithContractCodeMetadata(codemetadata []byte) *ContractCreateInputBuilder {
+	contractInput.ContractCreateInput.ContractCodeMetadata = codemetadata
+	return contractInput
+}
+
 // WithCallerAddr provides the CallerAddr for a ContractCreateInputBuilder
 func (contractInput *ContractCreateInputBuilder) WithCallerAddr(address []byte) *ContractCreateInputBuilder {
 	contractInput.ContractCreateInput.CallerAddr = address
