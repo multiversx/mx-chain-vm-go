@@ -128,6 +128,7 @@ func (mex *MEXSetup) Deploy() {
 	vmInput := test.CreateTestContractCreateInputBuilder().
 		WithCallerAddr(mex.OwnerAddress).
 		WithContractCode(mex.Code).
+		WithContractCodeMetadata([]byte{5, 6}).
 		WithArguments(
 			mex.WEGLDToken,
 			mex.MEXToken,
