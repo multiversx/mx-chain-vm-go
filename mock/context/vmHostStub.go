@@ -315,3 +315,12 @@ func (vhs *VMHostStub) Close() error {
 // Reset -
 func (vhs *VMHostStub) Reset() {
 }
+
+// SetGasTracing -
+func (vhs *VMHostStub) SetGasTracing(enableGasTracing bool) {
+}
+
+// GetGasTrace -
+func (vhs *VMHostStub) GetGasTrace() map[string]map[string][]uint64 {
+	return make(map[string]map[string][]uint64)
+}

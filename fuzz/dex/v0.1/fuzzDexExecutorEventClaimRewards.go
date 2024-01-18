@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatistics) error {
@@ -84,7 +84,7 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		statistics.claimRewardsHits += 1
 
 		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)

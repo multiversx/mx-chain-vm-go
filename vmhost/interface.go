@@ -59,6 +59,8 @@ type VMHost interface {
 	CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string)
 
 	Reset()
+	SetGasTracing(enableGasTracing bool)
+	GetGasTrace() map[string]map[string][]uint64
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context

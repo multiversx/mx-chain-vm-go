@@ -12,9 +12,9 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
-	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
 var defaultHasher = blake2b.NewBlake2b()
