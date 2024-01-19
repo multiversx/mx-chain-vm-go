@@ -4,15 +4,16 @@ package dex
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
-	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
-	mjparse "github.com/multiversx/mx-chain-scenario-go/json/parse"
-	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
-	mj "github.com/multiversx/mx-chain-scenario-go/model"
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
-	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
+	fr "github.com/multiversx/mx-chain-scenario-go/scenario/expression/fileresolver"
+	scenjsonparse "github.com/multiversx/mx-chain-scenario-go/scenario/json/parse"
+	scenjsonwrite "github.com/multiversx/mx-chain-scenario-go/scenario/json/write"
+	scenmodel "github.com/multiversx/mx-chain-scenario-go/scenario/model"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -71,10 +72,10 @@ type FarmerInfo struct {
 }
 
 type fuzzDexExecutor struct {
-	vmTestExecutor *am.VMTestExecutor
-	world          *worldhook.MockWorld
-	vm             vmi.VMExecutionHandler
-	parser         mjparse.Parser
+	vmTestExecutor *scenexec.ScenarioExecutor
+	world          *worldmock.MockWorld
+	vm             vmcommon.VMExecutionHandler
+	parser         scenjsonparse.Parser
 	txIndex        int
 
 	wegldTokenId            string
@@ -115,7 +116,7 @@ type fuzzDexExecutor struct {
 	tokensCheckFrequency    int
 	currentFarmTokenNonce   map[string]int
 	farmers                 map[int]FarmerInfo
-	generatedScenario       *mj.Scenario
+	generatedScenario       *scenmodel.Scenario
 	farms                   [3]Farm
 	swaps                   [2]SwapPair
 }
@@ -154,18 +155,15 @@ type eventsStatistics struct {
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
-	vmTestExecutor, err := am.NewVMTestExecutor()
+	vmTestExecutor := vmscenario.DefaultScenarioExecutor()
+
+	scenGasSchedule := scenmodel.GasScheduleDummy
+	err := vmTestExecutor.InitVM(scenGasSchedule)
 	if err != nil {
 		return nil, err
 	}
 
-	scenGasSchedule := mj.GasScheduleDummy
-	err = vmTestExecutor.InitVM(scenGasSchedule)
-	if err != nil {
-		return nil, err
-	}
-
-	parser := mjparse.NewParser(fileResolver)
+	parser := scenjsonparse.NewParser(fileResolver)
 
 	return &fuzzDexExecutor{
 		vmTestExecutor: vmTestExecutor,
@@ -173,7 +171,7 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 		vm:             vmTestExecutor.GetVM(),
 		parser:         parser,
 		txIndex:        0,
-		generatedScenario: &mj.Scenario{
+		generatedScenario: &scenmodel.Scenario{
 			Name:        "fuzz generated",
 			GasSchedule: scenGasSchedule,
 		},
@@ -184,9 +182,9 @@ func (pfe *fuzzDexExecutor) saveGeneratedScenario() {
 	vmHost := pfe.vm.(vmhost.VMHost)
 	vmHost.Reset()
 
-	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
+	serialized := scenjsonwrite.ScenarioToJSONString(pfe.generatedScenario)
 
-	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
+	err := os.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -202,17 +200,17 @@ func (pfe *fuzzDexExecutor) executeStep(stepSnippet string) error {
 	return pfe.vmTestExecutor.ExecuteStep(step)
 }
 
-func (pfe *fuzzDexExecutor) addStep(step mj.Step) {
+func (pfe *fuzzDexExecutor) addStep(step scenmodel.Step) {
 	pfe.generatedScenario.Steps = append(pfe.generatedScenario.Steps, step)
 }
 
-func (pfe *fuzzDexExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
+func (pfe *fuzzDexExecutor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error) {
 	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
 	}
 
-	txStep, isTx := step.(*mj.TxStep)
+	txStep, isTx := step.(*scenmodel.TxStep)
 	if !isTx {
 		return nil, errors.New("tx step expected")
 	}
