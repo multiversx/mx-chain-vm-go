@@ -3,7 +3,6 @@ package featuresintegrationtest
 import (
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 	"testing"
 
@@ -72,21 +71,16 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	}, nil
 }
 
-func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
+func (pfe *pureFunctionExecutor) initAccounts(contractCode []byte) {
 	pfe.contractAddress = []byte("contract_addr_________________s1")
 	pfe.userAddress = []byte("user_addr_____________________s1")
-
-	scCode, err := os.ReadFile(contractPath)
-	if err != nil {
-		panic(err)
-	}
 
 	pfe.world.AcctMap.PutAccount(&worldmock.Account{
 		Address: pfe.contractAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0),
 		Storage: make(map[string][]byte),
-		Code:    scCode,
+		Code:    contractCode,
 	})
 
 	pfe.world.AcctMap.PutAccount(&worldmock.Account{
