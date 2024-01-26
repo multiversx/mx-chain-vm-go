@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	fr "github.com/multiversx/mx-chain-scenario-go/scenario/expression/fileresolver"
+	mei "github.com/multiversx/mx-chain-scenario-go/scenario/expression/interpreter"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
@@ -22,8 +24,15 @@ func getTestRoot() string {
 	return vmTestRoot
 }
 
-func getFeaturesContractPath() string {
-	return filepath.Join(getTestRoot(), "features/basic-features/output/basic-features.wasm")
+func getFeaturesContractCode() []byte {
+	ei := mei.ExprInterpreter{
+		FileResolver: fr.NewDefaultFileResolver().WithContext(getTestRoot()),
+	}
+	result, err := ei.InterpretString("mxsc:test/features/basic-features/output/basic-features.mxsc.json")
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func unsignedInterpreter(bytes []byte) *big.Int {
@@ -171,7 +180,7 @@ func TestBigIntArith(t *testing.T) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
@@ -269,7 +278,7 @@ func TestBigUintArith(t *testing.T) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
@@ -349,7 +358,7 @@ func runTestCases(t *testing.T, testCases []*pureFunctionIO, opName string) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
@@ -433,6 +442,6 @@ func TestBigUintShift(t *testing.T) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
