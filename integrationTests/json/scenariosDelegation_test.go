@@ -38,25 +38,13 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 		CheckNoError()
 }
 
-func TestDelegation_v0_5_latest_full(t *testing.T) {
+func TestDelegation_v0_5_latest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
 	ScenariosTest(t).
-		Folder("delegation/v0_5_latest_full").
+		Folder("delegation/v0_5_latest").
 		Run().
 		CheckNoError()
-}
-
-func TestDelegation_v0_5_latest_update(t *testing.T) {
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	ScenariosTest(t).
-		Folder("delegation/v0_5_latest_update").
-		Run().
-		CheckNoError()
-
 }
