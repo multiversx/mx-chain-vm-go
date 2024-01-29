@@ -23,8 +23,6 @@ func TestDelegation_v0_3(t *testing.T) {
 	ScenariosTest(t).
 		Folder("delegation/v0_3").
 		Exclude("delegation/v0_3/test/integration/genesis/genesis.scen.json").
-		Exclude("delegation/v0_3/test/fuzz_gen_purchase_stake_rewards_issue.scen.json"). // TODO fix this
-		Exclude("delegation/v0_3/test/fuzz_gen_unstake.scen.json").                      // TODO fix this
 		Run().
 		CheckNoError()
 }
