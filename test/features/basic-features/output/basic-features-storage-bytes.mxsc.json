@@ -1,0 +1,251 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.76.0-nightly",
+            "commitHash": "21cce21d8c012f14cf74d5afddd795d324600dac",
+            "commitDate": "2023-12-11",
+            "channel": "Nightly",
+            "short": "rustc 1.76.0-nightly (21cce21d8 2023-12-11)"
+        },
+        "contractCrate": {
+            "name": "basic-features",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.47.0"
+        }
+    },
+    "abi": {
+        "name": "BasicFeatures",
+        "constructor": {
+            "inputs": [],
+            "outputs": []
+        },
+        "endpoints": [
+            {
+                "name": "load_bytes",
+                "mutability": "readonly",
+                "inputs": [],
+                "outputs": [
+                    {
+                        "type": "bytes"
+                    }
+                ]
+            },
+            {
+                "name": "store_bytes",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "bi",
+                        "type": "bytes"
+                    }
+                ],
+                "outputs": []
+            }
+        ],
+        "events": [
+            {
+                "identifier": "event_err_topic",
+                "inputs": [
+                    {
+                        "name": "err_topic",
+                        "type": "CodecErrorTestType",
+                        "indexed": true
+                    }
+                ]
+            },
+            {
+                "identifier": "event_err_data",
+                "inputs": [
+                    {
+                        "name": "data",
+                        "type": "CodecErrorTestType"
+                    }
+                ]
+            },
+            {
+                "identifier": "event_a",
+                "inputs": [
+                    {
+                        "name": "data",
+                        "type": "u32"
+                    }
+                ]
+            },
+            {
+                "identifier": "event_b",
+                "inputs": [
+                    {
+                        "name": "arg1",
+                        "type": "BigUint",
+                        "indexed": true
+                    },
+                    {
+                        "name": "arg2",
+                        "type": "Address",
+                        "indexed": true
+                    },
+                    {
+                        "name": "data",
+                        "type": "List<bytes>"
+                    }
+                ]
+            }
+        ],
+        "esdtAttributes": [],
+        "hasCallback": false,
+        "types": {
+            "CodecErrorTestType": {
+                "type": "struct",
+                "docs": [
+                    "Helper type to explore encode/decode errors."
+                ]
+            },
+            "EsdtTokenPayment": {
+                "type": "struct",
+                "fields": [
+                    {
+                        "name": "token_identifier",
+                        "type": "TokenIdentifier"
+                    },
+                    {
+                        "name": "token_nonce",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "BigUint"
+                    }
+                ]
+            },
+            "ExampleEnumSimple": {
+                "type": "enum",
+                "docs": [
+                    "Copied from multiversx-sc serialization tests."
+                ],
+                "variants": [
+                    {
+                        "docs": [
+                            "Variant 0 doc comment.",
+                            "This will show up in the ABI."
+                        ],
+                        "name": "Variant0",
+                        "discriminant": 0
+                    },
+                    {
+                        "name": "Variant1",
+                        "discriminant": 1
+                    },
+                    {
+                        "docs": [
+                            "One line is enough. The one above doesn't have any."
+                        ],
+                        "name": "Variant2",
+                        "discriminant": 2
+                    }
+                ]
+            },
+            "ExampleEnumWithFields": {
+                "type": "enum",
+                "docs": [
+                    "Copied from multiversx-sc serialization tests."
+                ],
+                "variants": [
+                    {
+                        "name": "Unit",
+                        "discriminant": 0
+                    },
+                    {
+                        "name": "Newtype",
+                        "discriminant": 1,
+                        "fields": [
+                            {
+                                "name": "0",
+                                "type": "u32"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Tuple",
+                        "discriminant": 2,
+                        "fields": [
+                            {
+                                "name": "0",
+                                "type": "u32"
+                            },
+                            {
+                                "name": "1",
+                                "type": "u32"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Struct",
+                        "discriminant": 3,
+                        "fields": [
+                            {
+                                "name": "a",
+                                "type": "u32"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "ExampleStructManaged": {
+                "type": "struct",
+                "fields": [
+                    {
+                        "name": "big_uint",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "int",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "bytes",
+                        "type": "bytes"
+                    }
+                ]
+            },
+            "RgbColor": {
+                "type": "struct",
+                "fields": [
+                    {
+                        "name": "r",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "g",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "b",
+                        "type": "u8"
+                    }
+                ]
+            },
+            "TokenAttributesStruct": {
+                "type": "struct",
+                "fields": [
+                    {
+                        "name": "field_biguint",
+                        "type": "BigUint"
+                    },
+                    {
+                        "name": "field_u64",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "field_vec_u32",
+                        "type": "List<u32>"
+                    }
+                ]
+            }
+        }
+    },
+    "size": 539,
+    "code": "0061736d0100000001230760000060027f7f017f6000017f60027f7f0060037f7f7f017f60017f017f60017f0002b4010803656e76126d427566666572476574417267756d656e74000103656e760f6765744e756d417267756d656e7473000203656e760b7369676e616c4572726f72000303656e760f6d4275666665725365744279746573000403656e760e636865636b4e6f5061796d656e74000003656e76126d42756666657253746f726167654c6f6164000103656e760d6d42756666657246696e697368000503656e76136d42756666657253746f7261676553746f72650001030807020602000000000503010003060f027f0041ac80080b7f0041b080080b075207066d656d6f7279020004696e6974000b0a6c6f61645f6279746573000c0b73746f72655f6279746573000d0863616c6c4261636b000e0a5f5f646174615f656e6403000b5f5f686561705f6261736503010a8501071901017f41a8800841a8800828020041016b220036020020000b1400100120004604400f0b4180800841191002000b1301017f1008220041998008410d10031a20000b08001004410010090b1801017f100441001009100a1008220010051a200010061a0b1a01017f10044101100941001008220010001a100a200010071a0b0300010b0b390200418080080b2677726f6e67206e756d626572206f6620617267756d656e747373746f726167655f62797465730041a880080b049cffffff"
+}

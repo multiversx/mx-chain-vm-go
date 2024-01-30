@@ -10,12 +10,13 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
+	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
-	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/stretchr/testify/require"
 )
@@ -41,7 +42,7 @@ type ScenariosTestBuilder struct {
 	exclusions          []string
 	executorLogger      executorwrapper.ExecutorLogger
 	executorFactory     executor.ExecutorAbstractFactory
-	enableEpochsHandler vmi.EnableEpochsHandler
+	enableEpochsHandler vmcommon.EnableEpochsHandler
 	currentError        error
 }
 
@@ -53,7 +54,7 @@ func ScenariosTest(t *testing.T) *ScenariosTestBuilder {
 		singleFile:          "",
 		executorLogger:      nil,
 		executorFactory:     nil,
-		enableEpochsHandler: worldhook.EnableEpochsHandlerStubAllFlags(),
+		enableEpochsHandler: worldmock.EnableEpochsHandlerStubAllFlags(),
 	}
 }
 
@@ -94,31 +95,33 @@ func (mtb *ScenariosTestBuilder) WithExecutorFactory(executorFactory executor.Ex
 }
 
 // WithEnableEpochsHandler overrides the epoch flags
-func (mtb *ScenariosTestBuilder) WithEnableEpochsHandler(enableEpochsHandler vmi.EnableEpochsHandler) *ScenariosTestBuilder {
+func (mtb *ScenariosTestBuilder) WithEnableEpochsHandler(enableEpochsHandler vmcommon.EnableEpochsHandler) *ScenariosTestBuilder {
 	mtb.enableEpochsHandler = enableEpochsHandler
 	return mtb
 }
 
 // Run will start the testing process
 func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
-	executor, err := am.NewVMTestExecutor()
-	require.Nil(mtb.t, err)
-	defer executor.Close()
-
 	if check.IfNil(mtb.executorFactory) {
 		mtb.executorFactory = testexecutor.NewDefaultTestExecutorFactory(mtb.t)
 	}
-	executor.World.EnableEpochsHandler = mtb.enableEpochsHandler
-	executor.OverrideVMExecutor = mtb.executorFactory
+
+	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
+	vmBuilder.OverrideVMExecutor = mtb.executorFactory
 	if mtb.executorLogger != nil {
-		executor.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(
+		vmBuilder.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(
 			mtb.executorLogger,
 			mtb.executorFactory)
 	}
 
-	runner := mc.NewScenarioController(
+	executor := scenexec.NewScenarioExecutor(vmBuilder)
+	defer executor.Close()
+
+	executor.World.EnableEpochsHandler = mtb.enableEpochsHandler
+
+	runner := scenio.NewScenarioController(
 		executor,
-		mc.NewDefaultFileResolver(),
+		scenio.NewDefaultFileResolver(),
 	)
 
 	if len(mtb.singleFile) > 0 {
@@ -127,14 +130,14 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 
 		mtb.currentError = runner.RunSingleJSONScenario(
 			fullPath,
-			mc.DefaultRunScenarioOptions())
+			scenio.DefaultRunScenarioOptions())
 	} else {
 		mtb.currentError = runner.RunAllJSONScenariosInDirectory(
 			getTestRoot(),
 			mtb.folder,
 			".scen.json",
 			mtb.exclusions,
-			mc.DefaultRunScenarioOptions())
+			scenio.DefaultRunScenarioOptions())
 	}
 
 	return mtb

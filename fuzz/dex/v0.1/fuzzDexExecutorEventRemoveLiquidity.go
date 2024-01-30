@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"math/rand"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) removeLiquidity(r *rand.Rand, statistics *eventsStatistics) error {
@@ -69,7 +69,7 @@ func (pfe *fuzzDexExecutor) removeLiquidity(r *rand.Rand, statistics *eventsStat
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		statistics.removeLiquidityHits += 1
 
 		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	mc "github.com/multiversx/mx-chain-scenario-go/controller"
+	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	fuzzutil "github.com/multiversx/mx-chain-vm-go/fuzz/util"
 	"github.com/stretchr/testify/require"
 )
@@ -27,7 +27,7 @@ func getTestRoot() string {
 }
 
 func newExecutorWithPaths() *fuzzDelegationExecutor {
-	fileResolver := mc.NewDefaultFileResolver().
+	fileResolver := scenio.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
 			filepath.Join(getTestRoot(), "delegation/v0_3/output/delegation.wasm")).
