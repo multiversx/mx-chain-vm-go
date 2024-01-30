@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"math/rand"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatistics) error {
@@ -138,7 +138,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatist
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		statistics.addLiquidityHits += 1
 
 		rawEquivalentAfter, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,

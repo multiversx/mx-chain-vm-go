@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"math/rand"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) swap(r *rand.Rand, statistics *eventsStatistics) error {
@@ -76,7 +76,7 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		if output == nil {
 			return errors.New("output is nil")
 		}
@@ -168,7 +168,7 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		statistics.swapFixedOutputHits += 1
 
 		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)

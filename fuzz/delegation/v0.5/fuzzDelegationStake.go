@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error {
@@ -79,9 +79,9 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 	if err != nil {
 		return err
 	}
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		pfe.log("unStake, delegator: %d", delegatorIndex)
-	} else if output.ReturnCode == vmi.OutOfGas {
+	} else if output.ReturnCode == vmcommon.OutOfGas {
 		panic(fmt.Sprintf("unStake, delegator: %d, out of gas, message: %s", delegatorIndex, output.ReturnMessage))
 	} else {
 		pfe.log("unStake, delegator: %d, fail, %s", delegatorIndex, output.ReturnMessage)

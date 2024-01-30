@@ -41,7 +41,7 @@
                     "storage": {
                         "str:wrappedEgldTokenId": "str:WEGLD-123456"
                     },
-                    "code": "file:../../wegld-swap/output/multiversx-wegld-swap-sc.wasm"
+                    "code": "mxsc:../../wegld-swap/output/multiversx-wegld-swap-sc.mxsc.json"
                 }
             },
             "newAddresses": [
@@ -170,7 +170,7 @@
                     "storage": "*",
                     "owner": "*",
                     "nonce": "0",
-                    "code": "file:../../wegld-swap/output/multiversx-wegld-swap-sc.wasm"
+                    "code": "mxsc:../../wegld-swap/output/multiversx-wegld-swap-sc.mxsc.json"
                 },
                 "+": ""
             }
