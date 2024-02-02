@@ -102,9 +102,9 @@
                 ],
                 "function": "forwardExecution",
                 "arguments": [
-                    "0x72656c617965725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
-                    "0x000000000000000000007765676c645f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
-                    "0x756e7772617045676c64"
+                    "address:relayer",
+                    "sc:wegld",
+                    "str:unwrapEgld"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": ""

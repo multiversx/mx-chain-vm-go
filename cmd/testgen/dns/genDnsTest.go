@@ -40,7 +40,7 @@ func main() {
 			"dns.wasm",
 			filepath.Join(getTestRoot(), "dns/dns.wasm"))
 	tg := &testGenerator{
-		parser: scenjsonparse.NewParser(fileResolver),
+		parser: scenjsonparse.NewParser(fileResolver, []byte{5, 0}),
 		generatedScenario: &scenmodel.Scenario{
 			Name: "dns test",
 		},
