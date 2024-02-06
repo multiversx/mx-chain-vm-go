@@ -345,7 +345,7 @@ func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 	return host.gasSchedule
 }
 
-// GetGasScheduleMap returns the curent gas trace, used in scenario tests
+// GetGasTrace returns the curent gas trace, used in scenario tests
 func (host *vmHost) GetGasTrace() map[string]map[string][]uint64 {
 	return host.meteringContext.GetGasTrace()
 }

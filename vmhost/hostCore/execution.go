@@ -480,17 +480,24 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	if len(input.ESDTTransfers) == 0 && (input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(vmhost.Zero) == 0) {
+	isZeroBaseTransfer := input.CallValue.Cmp(vmhost.Zero) == 0
+	if len(input.ESDTTransfers) == 0 && (input.CallType != vm.AsynchronousCallBack || isZeroBaseTransfer) {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
 			return vmOutput, true, err
 		}
 	}
+	isAsyncCallBackWithBaseTransfer := !isZeroBaseTransfer && input.CallType == vm.AsynchronousCallBack
 	if len(input.ESDTTransfers) == 0 {
+		tmpCallValue := big.NewInt(0).Set(input.CallValue)
+		if isAsyncCallBackWithBaseTransfer {
+			tmpCallValue = big.NewInt(0)
+		}
+
 		output.WriteLogWithIdentifier(
 			input.CallerAddr,
-			[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
+			[][]byte{tmpCallValue.Bytes(), input.RecipientAddr},
 			vmcommon.FormatLogDataForCall("", input.Function, input.Arguments),
 			[]byte(vmhost.TransferValueOnlyString),
 		)
