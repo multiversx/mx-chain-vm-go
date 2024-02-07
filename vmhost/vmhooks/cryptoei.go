@@ -39,6 +39,9 @@ const (
 	getCurveLengthECName            = "getCurveLengthEC"
 	getPrivKeyByteLengthECName      = "getPrivKeyByteLengthEC"
 	ellipticCurveGetValuesName      = "ellipticCurveGetValues"
+	verifyBLSSignatureShare         = "verifyBLSSignatureShare"
+	verifyBLSAggregatedSignature    = "verifyBLSAggregatedSignature"
+	verifySecp256R1Signature        = "verifySecp256R1Signature"
 )
 
 // Sha256 VMHooks implementation.
@@ -1714,4 +1717,62 @@ func (context *VMHooksImpl) EllipticCurveGetValues(ecHandle int32, fieldOrderHan
 	xBasePoint.Set(ec.Gx)
 	yBasePoint.Set(ec.Gy)
 	return ecHandle
+}
+
+// ManagedVerifySecp256r1 VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedVerifySecp256r1(
+	keyHandle, messageHandle, sigHandle int32,
+	hashType int32,
+) int32 {
+	host := context.GetVMHost()
+	return ManagedVerifySecp256r1WithHost(
+		host,
+		keyHandle,
+		messageHandle,
+		sigHandle,
+		hashType)
+}
+
+// ManagedVerifySecp256r1WithHost VMHooks implementation.
+func ManagedVerifySecp256r1WithHost(
+	host vmhost.VMHost,
+	keyHandle, messageHandle, sigHandle int32,
+	hashType int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	crypto := host.Crypto()
+	metering.StartGasTracing(verifySecp256R1Signature)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256r1
+	metering.UseAndTraceGas(gasToUse)
+
+	keyBytes, err := managedType.GetBytes(keyHandle)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(keyBytes)
+
+	msgBytes, err := managedType.GetBytes(messageHandle)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(msgBytes)
+
+	sigBytes, err := managedType.GetBytes(sigHandle)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(sigBytes)
+
+	crypto.VerifySecp256k1()
+	invalidSigErr := crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
+	if invalidSigErr != nil {
+		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		return -1
+	}
+
+	return 0
 }

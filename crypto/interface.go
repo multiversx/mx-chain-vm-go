@@ -10,6 +10,8 @@ type Hasher interface {
 // BLS defines the functionality of a component able to verify BLS signatures
 type BLS interface {
 	VerifyBLS(key []byte, msg []byte, sig []byte) error
+	VerifySignatureShare(publicKey []byte, message []byte, sig []byte) error
+	VerifyAggregatedSig(pubKeysSigners [][]byte, message []byte, aggSig []byte) error
 }
 
 // Ed25519 defines the functionality of a component able to verify Ed25519 signatures
