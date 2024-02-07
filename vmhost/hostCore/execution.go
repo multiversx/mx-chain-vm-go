@@ -429,8 +429,6 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	}
 
 	err = contexts.AddAsyncArgumentsToOutputTransfers(
-		host.Output(),
-		input.RecipientAddr,
 		input.AsyncArguments,
 		vm.AsynchronousCall,
 		builtinOutput)
