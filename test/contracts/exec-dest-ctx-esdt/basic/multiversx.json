@@ -1,8 +1,0 @@
-{
-    "language": "clang",
-    "source_files": [
-        "basic.c",
-				"../../mxvm/args.c",
-				"../../mxvm/cbuiltins.c"
-    ]
-}

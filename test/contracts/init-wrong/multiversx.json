@@ -1,6 +1,0 @@
-{
-    "language": "clang",
-    "source_files": [
-        "./init-wrong.c"
-    ]
-}

@@ -1,6 +1,0 @@
-{
-    "language": "clang",
-    "source_files": [
-        "./child.c"
-    ]
-}

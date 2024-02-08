@@ -1,6 +1,0 @@
-{
-    "language": "clang",
-    "source_files": [
-        "./num-with-fp.c"
-    ]
-}
