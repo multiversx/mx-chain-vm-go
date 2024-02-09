@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -36,6 +37,23 @@ var _ scenexec.VMInterface = (*vmHost)(nil)
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
+// allFlags must have all flags used by mx-chain-vm-go in the current version
+var allFlags = []core.EnableEpochFlag{
+	vmhost.MultiESDTTransferFixOnCallBackFlag,
+	vmhost.RemoveNonUpdatedStorageFlag,
+	vmhost.CreateNFTThroughExecByCallerFlag,
+	vmhost.StorageAPICostOptimizationFlag,
+	vmhost.CheckExecuteOnReadOnlyFlag,
+	vmhost.FailExecutionOnEveryAPIErrorFlag,
+	vmhost.ManagedCryptoAPIsFlag,
+	vmhost.DisableExecByCallerFlag,
+	vmhost.RefactorContextFlag,
+	vmhost.RuntimeMemStoreLimitFlag,
+	vmhost.RuntimeCodeSizeFixFlag,
+	vmhost.FixOOGReturnCodeFlag,
+	vmhost.DynamicGasCostForDataTrieStorageLoadFlag,
+}
+
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook       crypto.VMCrypto
@@ -57,7 +75,7 @@ type vmHost struct {
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       vmhost.CallArgsParser
-	enableEpochsHandler  vmcommon.EnableEpochsHandler
+	enableEpochsHandler  vmhost.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 
 	transferLogIdentifiers map[string]bool
@@ -85,6 +103,10 @@ func NewVMHost(
 	}
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, vmhost.ErrNilEnableEpochsHandler
+	}
+	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler, allFlags)
+	if err != nil {
+		return nil, err
 	}
 	if check.IfNil(hostParameters.Hasher) {
 		return nil, vmhost.ErrNilHasher
@@ -247,7 +269,7 @@ func (host *vmHost) Storage() vmhost.StorageContext {
 }
 
 // EnableEpochsHandler returns the enableEpochsHandler instance of the host
-func (host *vmHost) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+func (host *vmHost) EnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return host.enableEpochsHandler
 }
 
