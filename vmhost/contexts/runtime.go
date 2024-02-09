@@ -668,13 +668,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
-		err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
-		if err != nil {
-			logRuntime.Trace("verify contract code", "error", err)
-			return err
-		}
-	}
+	if enableEpochsHandler.
 
 	logRuntime.Trace("verified contract code")
 

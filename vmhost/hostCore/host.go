@@ -93,7 +93,11 @@ func NewVMHost(
 		return nil, vmhost.ErrNilVMType
 	}
 
-	cryptoHook := factory.NewVMCrypto()
+	cryptoHook, err := factory.NewVMCrypto()
+	if err != nil {
+		return nil, err
+	}
+
 	host := &vmHost{
 		cryptoHook:           cryptoHook,
 		meteringContext:      nil,
@@ -114,7 +118,6 @@ func NewVMHost(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	var err error
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
@@ -557,31 +560,6 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 		host.Runtime().ClearWarmInstanceCache()
 		host.Blockchain().ClearCompiledCodes()
 	}
-}
-
-// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabled()
-}
-
-// FixFailExecutionEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFailExecutionOnEveryAPIErrorFlagEnabled()
-}
-
-// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
-func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsCreateNFTThroughExecByCallerFlagEnabled()
-}
-
-// DisableExecByCaller returns true if the corresponding flag is set
-func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabled()
-}
-
-// CheckExecuteReadOnly returns true if the corresponding flag is set
-func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabled()
 }
 
 func validateVMInput(vmInput *vmcommon.VMInput) error {
