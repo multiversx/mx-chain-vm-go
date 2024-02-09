@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
-	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
+	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
@@ -458,7 +458,8 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 							host,
 							keyHandle,
 							messageHandle,
-							sigHandle)
+							sigHandle,
+							"verifyBLSName")
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -539,7 +540,7 @@ func Test_VerifySecp256k1(t *testing.T) {
 	r, _ := hex.DecodeString("fef45d2892953aa5bbcdb057b5e98b208f1617a7498af7eb765574e29b5d9c2c")
 	s, _ := hex.DecodeString("d47563f52aac6b04b55de236b7c515eb9311757db01e02cff079c3ca6efb063f")
 
-	verifier := secp256k1.NewSecp256k1()
+	verifier, _ := secp256.NewSecp256()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
 	_, err := test.BuildMockInstanceCallTest(t).
@@ -591,7 +592,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 	r, _ := hex.DecodeString("fef45d2892953aa5bbcdb057b5e98b208f1617a7498af7eb765574e29b5d9c2c")
 	s, _ := hex.DecodeString("d47563f52aac6b04b55de236b7c515eb9311757db01e02cff079c3ca6efb063f")
 
-	verifier := secp256k1.NewSecp256k1()
+	verifier, _ := secp256.NewSecp256()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
 	_, err := test.BuildMockInstanceCallTest(t).
@@ -613,7 +614,8 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 							keyHandle,
 							messageHandle,
 							sigHandle,
-							int32(secp256k1.ECDSADoubleSha256))
+							int32(secp256.ECDSADoubleSha256),
+							"verifyCustomSecp256k1Name")
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -642,7 +644,7 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 	r, _ := hex.DecodeString("fef45d2892953aa5bbcdb057b5e98b208f1617a7498af7eb765574e29b5d9c2c")
 	s, _ := hex.DecodeString("d47563f52aac6b04b55de236b7c515eb9311757db01e02cff079c3ca6efb063f")
 
-	verifier := secp256k1.NewSecp256k1()
+	verifier, _ := secp256.NewSecp256()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
 	_, err := test.BuildMockInstanceCallTest(t).

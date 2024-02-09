@@ -5,7 +5,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/bls"
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/ed25519"
-	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
+	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 )
 
 // NewVMCrypto returns a composite struct containing VMCrypto functionality implementations
@@ -15,7 +15,7 @@ func NewVMCrypto() (crypto.VMCrypto, error) {
 		return nil, err
 	}
 
-	secp256, err := secp256k1.NewSecp256()
+	secp, err := secp256.NewSecp256()
 	if err != nil {
 		return nil, err
 	}
@@ -29,6 +29,6 @@ func NewVMCrypto() (crypto.VMCrypto, error) {
 		Hasher:  hashing.NewHasher(),
 		Ed25519: ed25519.NewEd25519Signer(),
 		BLS:     blsVerifier,
-		Secp256: secp256,
+		Secp256: secp,
 	}, nil
 }

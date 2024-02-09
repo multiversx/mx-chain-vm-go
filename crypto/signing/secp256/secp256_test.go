@@ -1,4 +1,4 @@
-package secp256k1
+package secp256
 
 import (
 	"encoding/hex"
@@ -16,7 +16,7 @@ func TestEthereumSig(t *testing.T) {
 	s, _ := hex.DecodeString("4a691139ad57a3f0b906637673aa2f63d1f55cb1a69199d4009eea23ceaddc93")
 	key, _ := hex.DecodeString("04e32df42865e97135acfb65f3bae71bdc86f4d49150ad6a440b6f15878109880a0a2b2667f7e725ceea70c673093bf67663e0312623c8e091b13cf2c0f11ef652")
 
-	verifier := NewSecp256k1()
+	verifier, _ := NewSecp256()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 	err := verifier.VerifySecp256k1(key, msg, sig, byte(ECDSAPlainMsg))
 
@@ -36,7 +36,7 @@ func TestWrongSizeForRSShouldNotPanic(t *testing.T) {
 	r, _ := hex.DecodeString("90f2")                                                                 // too short
 	s, _ := hex.DecodeString("4a691139ad57a3f0b906637673aa2f63d1f55cb1a69199d4009eea23ceaddc939393") // too long
 
-	verifier := NewSecp256k1()
+	verifier, _ := NewSecp256()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
 	assert.NotEmpty(t, sig)
@@ -50,7 +50,7 @@ func TestBitcoinSig(t *testing.T) {
 	r, _ := hex.DecodeString("fef45d2892953aa5bbcdb057b5e98b208f1617a7498af7eb765574e29b5d9c2c")
 	s, _ := hex.DecodeString("d47563f52aac6b04b55de236b7c515eb9311757db01e02cff079c3ca6efb063f")
 
-	verifier := NewSecp256k1()
+	verifier, _ := NewSecp256()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 	err := verifier.VerifySecp256k1(pubKey, msg, sig, byte(ECDSADoubleSha256))
 
@@ -63,7 +63,7 @@ func TestEthereumSig2(t *testing.T) {
 	msg, _ := hex.DecodeString("616161")
 	key, _ := hex.DecodeString("044338845e8308b819bf33a43dc7f47713f92d8d377dfde399831e9d8da23446be32cef60a7c923332ab06c768242d11017a6bcf419c17b8b184fc19ea603b07d6")
 	sig, _ := hex.DecodeString("3046022100da0db89620513df9a90cf8c97edf227e07182d1c91b3cab55a472122d639daee022100d5b9cf4a02274cf5b606df7b4fa73bff1190f54e0c6ef8cd362e63dc1dbecce1")
-	verifier := NewSecp256k1()
+	verifier, _ := NewSecp256()
 	err := verifier.VerifySecp256k1(key, msg, sig, byte(ECDSASha256))
 
 	assert.Nil(t, err)

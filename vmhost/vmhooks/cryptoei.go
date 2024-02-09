@@ -3,7 +3,7 @@ package vmhooks
 import (
 	"crypto/elliptic"
 
-	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
+	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -587,7 +587,7 @@ func (context *VMHooksImpl) VerifySecp256k1(
 		messageOffset,
 		messageLength,
 		sigOffset,
-		int32(secp256k1.ECDSADoubleSha256),
+		int32(secp256.ECDSADoubleSha256),
 	)
 }
 
@@ -610,7 +610,7 @@ func ManagedVerifySecp256k1WithHost(
 		keyHandle,
 		messageHandle,
 		sigHandle,
-		int32(secp256k1.ECDSADoubleSha256),
+		int32(secp256.ECDSADoubleSha256),
 		verifyCustomSecp256k1Name,
 	)
 }

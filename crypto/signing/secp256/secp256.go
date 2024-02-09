@@ -1,4 +1,4 @@
-package secp256k1
+package secp256
 
 import (
 	cryptoEcsda "crypto/ecdsa"
@@ -30,8 +30,6 @@ const (
 	// fieldSize is the curve domain size.
 	fieldSize  = 32
 	pubKeySize = fieldSize + 1
-
-	name = "secp256r1"
 )
 
 // p256Order returns the curve order for the secp256r1 curve
@@ -44,6 +42,11 @@ var p256Order = elliptic.P256().Params().N
 // a bit shift of 1 to the right (Rsh) is equivalent
 // to division by 2, only faster.
 var p256HalfOrder = new(big.Int).Rsh(p256Order, 1)
+
+var errInvalidSigLength = errors.New("invalid signature length")
+var errSignatureNotNormalized = errors.New("signature not normalized")
+var errSignatureVerificationFailed = errors.New("signature verification failed")
+var errPublicKeyLengthMissmatch = errors.New("invalid public key length")
 
 // signatureR1 holds the r and s values of an ECDSA signature.
 type signatureR1 struct {
@@ -138,12 +141,12 @@ func (sec *secp256) hashMessage(msg []byte, hashType uint8) ([]byte, error) {
 
 func (sec *secp256) VerifySecp256r1(key []byte, msg []byte, sig []byte) error {
 	if len(sig) != 64 {
-		return errors.New("invalid signature length")
+		return errInvalidSigLength
 	}
 
 	s := signatureFromBytes(sig)
 	if !IsSNormalized(s.S) {
-		return errors.New("signature not normalized")
+		return errSignatureNotNormalized
 	}
 
 	h := sha256.Sum256(msg)
@@ -154,7 +157,7 @@ func (sec *secp256) VerifySecp256r1(key []byte, msg []byte, sig []byte) error {
 
 	verified := cryptoEcsda.Verify(cpk, h[:], s.R, s.S)
 	if !verified {
-		return errors.New("signature verification failed")
+		return errSignatureVerificationFailed
 	}
 
 	return nil
@@ -162,7 +165,7 @@ func (sec *secp256) VerifySecp256r1(key []byte, msg []byte, sig []byte) error {
 
 func (sec *secp256) unmarshalPubKey(key []byte) (*cryptoEcsda.PublicKey, error) {
 	if len(key) != pubKeySize {
-		return nil, errors.New("invalid public key length")
+		return nil, errPublicKeyLengthMissmatch
 	}
 	cpk := &cryptoEcsda.PublicKey{Curve: sec.secp256r1}
 	cpk.X, cpk.Y = elliptic.UnmarshalCompressed(sec.secp256r1, key)
