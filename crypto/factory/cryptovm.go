@@ -15,6 +15,11 @@ func NewVMCrypto() (crypto.VMCrypto, error) {
 		return nil, err
 	}
 
+	secp256, err := secp256k1.NewSecp256()
+	if err != nil {
+		return nil, err
+	}
+
 	return struct {
 		crypto.Hasher
 		crypto.Ed25519
@@ -24,6 +29,6 @@ func NewVMCrypto() (crypto.VMCrypto, error) {
 		Hasher:  hashing.NewHasher(),
 		Ed25519: ed25519.NewEd25519Signer(),
 		BLS:     blsVerifier,
-		Secp256: secp256k1.NewSecp256k1(),
+		Secp256: secp256,
 	}, nil
 }

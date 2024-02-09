@@ -50,26 +50,26 @@ type signatureR1 struct {
 	R, S *big.Int
 }
 
-type secp256k1 struct {
+type secp256 struct {
 	secp256r1 elliptic.Curve
 }
 
-// NewSecp256k1 returns the component able to verify Secp256 signatures
-func NewSecp256k1() (*secp256k1, error) {
+// NewSecp256 returns the component able to verify Secp256 signatures
+func NewSecp256() (*secp256, error) {
 	secp256r1 := elliptic.P256()
 
 	expected := (secp256r1.Params().BitSize + 7) / 8
 	if expected != fieldSize {
 		return nil, errors.New("wrong secp256r1 curve")
 	}
-	return &secp256k1{
+	return &secp256{
 		secp256r1: secp256r1,
 	}, nil
 }
 
-// VerifySecp256k1 checks a secp256k1 signature provided in the DER encoding format.
+// VerifySecp256k1 checks a secp256 signature provided in the DER encoding format.
 // The hash type used over the message can also be configured using @param hashType
-func (sec *secp256k1) VerifySecp256k1(key, msg, sig []byte, hashType uint8) error {
+func (sec *secp256) VerifySecp256k1(key, msg, sig []byte, hashType uint8) error {
 	pubKey, err := btcec.ParsePubKey(key)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func (sec *secp256k1) VerifySecp256k1(key, msg, sig []byte, hashType uint8) erro
 // Useful when having the plain params - like in the case of ecrecover
 //
 //	from ethereum
-func (sec *secp256k1) EncodeSecp256k1DERSignature(r, s []byte) []byte {
+func (sec *secp256) EncodeSecp256k1DERSignature(r, s []byte) []byte {
 	rScalar := &btcec.ModNScalar{}
 	rScalar.SetByteSlice(r)
 
@@ -109,7 +109,7 @@ func (sec *secp256k1) EncodeSecp256k1DERSignature(r, s []byte) []byte {
 	return sig.Serialize()
 }
 
-func (sec *secp256k1) hashMessage(msg []byte, hashType uint8) ([]byte, error) {
+func (sec *secp256) hashMessage(msg []byte, hashType uint8) ([]byte, error) {
 	hasher := hashing.NewHasher()
 
 	var err error
@@ -136,7 +136,7 @@ func (sec *secp256k1) hashMessage(msg []byte, hashType uint8) ([]byte, error) {
 	return hashedMsg, nil
 }
 
-func (sec *secp256k1) VerifySecp256r1(key []byte, msg []byte, sig []byte) error {
+func (sec *secp256) VerifySecp256r1(key []byte, msg []byte, sig []byte) error {
 	if len(sig) != 64 {
 		return errors.New("invalid signature length")
 	}
@@ -147,8 +147,12 @@ func (sec *secp256k1) VerifySecp256r1(key []byte, msg []byte, sig []byte) error 
 	}
 
 	h := sha256.Sum256(msg)
+	cpk, err := sec.unmarshalPubKey(key)
+	if err != nil {
+		return err
+	}
 
-	verified := cryptoEcsda.Verify(&cpk, h[:], s.R, s.S)
+	verified := cryptoEcsda.Verify(cpk, h[:], s.R, s.S)
 	if !verified {
 		return errors.New("signature verification failed")
 	}
@@ -156,8 +160,11 @@ func (sec *secp256k1) VerifySecp256r1(key []byte, msg []byte, sig []byte) error 
 	return nil
 }
 
-func (sec *secp256k1) unmarshalPubKey(key []byte) (cryptoEcsda.PublicKey, error) {
-	cpk := cryptoEcsda.PublicKey{Curve: sec.secp256r1}
+func (sec *secp256) unmarshalPubKey(key []byte) (*cryptoEcsda.PublicKey, error) {
+	if len(key) != pubKeySize {
+		return nil, errors.New("invalid public key length")
+	}
+	cpk := &cryptoEcsda.PublicKey{Curve: sec.secp256r1}
 	cpk.X, cpk.Y = elliptic.UnmarshalCompressed(sec.secp256r1, key)
 	return cpk, nil
 }
