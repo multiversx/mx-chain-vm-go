@@ -18,6 +18,12 @@ var logRuntime = logger.GetOrCreate("vm/runtime")
 
 var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
+var mapNewCryptoAPI = map[string]struct{}{
+	"managedVerifyBLSSignatureShare":      {},
+	"managedVerifyBLSAggregatedSignature": {},
+	"managedVerifySecp256r1":              {},
+}
+
 const warmCacheSize = 100
 
 // WarmInstancesEnabled controls the usage of warm instances
@@ -75,7 +81,7 @@ func NewRuntimeContext(
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
+		validator:  newWASMValidator(scAPINames, builtInFuncContainer, host.EnableEpochsHandler()),
 		hasher:     hasher,
 		errors:     nil,
 	}
@@ -668,10 +674,25 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.CryptoAPIV1_7) {
+		err = context.checkIfContainsNewCryptoApi()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
 
 	logRuntime.Trace("verified contract code")
 
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
+	for funcName := range mapNewCryptoAPI {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
 	return nil
 }
 

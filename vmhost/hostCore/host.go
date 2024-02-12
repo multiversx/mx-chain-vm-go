@@ -39,19 +39,7 @@ const internalVMErrors = "internalVMErrors"
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
-	vmhost.MultiESDTTransferFixOnCallBackFlag,
-	vmhost.RemoveNonUpdatedStorageFlag,
-	vmhost.CreateNFTThroughExecByCallerFlag,
-	vmhost.StorageAPICostOptimizationFlag,
-	vmhost.CheckExecuteOnReadOnlyFlag,
-	vmhost.FailExecutionOnEveryAPIErrorFlag,
-	vmhost.ManagedCryptoAPIsFlag,
-	vmhost.DisableExecByCallerFlag,
-	vmhost.RefactorContextFlag,
-	vmhost.RuntimeMemStoreLimitFlag,
-	vmhost.RuntimeCodeSizeFixFlag,
-	vmhost.FixOOGReturnCodeFlag,
-	vmhost.DynamicGasCostForDataTrieStorageLoadFlag,
+	vmhost.CryptoAPIV1_7,
 }
 
 // vmHost implements HostContext interface.

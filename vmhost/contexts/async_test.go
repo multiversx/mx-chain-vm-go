@@ -94,7 +94,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	host.StorageContext = storageCtx
 
 	host.OutputContext, _ = NewOutputContext(host)
-	host.CryptoHook = factory.NewVMCrypto()
+	host.CryptoHook, _ = factory.NewVMCrypto()
 	host.StorageContext, _ = NewStorageContext(host, world, reservedTestPrefix)
 	host.EnableEpochsHandlerField = worldmock.EnableEpochsHandlerStubNoFlags()
 	host.IsBuiltinFunc = isBuiltinFunc
