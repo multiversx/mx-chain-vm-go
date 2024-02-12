@@ -12,6 +12,9 @@ import (
 	scenmodel "github.com/multiversx/mx-chain-scenario-go/scenario/model"
 )
 
+// DefaultVMType helps us set up the scenario generator.
+var DefaultVMType = []byte{5, 0}
+
 func getTestRoot() string {
 	exePath, err := os.Getwd()
 	if err != nil {
@@ -40,7 +43,7 @@ func main() {
 			"dns.wasm",
 			filepath.Join(getTestRoot(), "dns/dns.wasm"))
 	tg := &testGenerator{
-		parser: scenjsonparse.NewParser(fileResolver, []byte{5, 0}),
+		parser: scenjsonparse.NewParser(fileResolver, DefaultVMType),
 		generatedScenario: &scenmodel.Scenario{
 			Name: "dns test",
 		},
