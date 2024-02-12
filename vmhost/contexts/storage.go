@@ -191,7 +191,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	var err error
 	var trieDepth uint32
 
-	if context.isProtocolProtectedKey(key) {
+	if context.isProtocolProtectedKey(key) && !context.isVMProtectedKey(key) {
 		value, trieDepth, err = context.readFromBlockchain(address, key)
 		return value, trieDepth, false, err
 	}
