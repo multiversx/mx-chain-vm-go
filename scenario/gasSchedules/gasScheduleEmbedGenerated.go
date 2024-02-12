@@ -1060,6 +1060,9 @@ const (
     UnmarshalCompressedECC = 270000
     GenerateKeyECC = 7000000
     EncodeDERSig = 10000000
+VerifySecp256r1 = 2000000
+VerifyBLSSignatureShare = 2000000
+VerifyBLSMultiSig = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000

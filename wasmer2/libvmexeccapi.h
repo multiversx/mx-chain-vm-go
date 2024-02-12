@@ -293,6 +293,9 @@ typedef struct {
   int32_t (*get_curve_length_ec_func_ptr)(void *context, int32_t ec_handle);
   int32_t (*get_priv_key_byte_length_ec_func_ptr)(void *context, int32_t ec_handle);
   int32_t (*elliptic_curve_get_values_func_ptr)(void *context, int32_t ec_handle, int32_t field_order_handle, int32_t base_point_order_handle, int32_t eq_constant_handle, int32_t x_base_point_handle, int32_t y_base_point_handle);
+  int32_t (*managed_verify_secp256r1_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
+  int32_t (*managed_verify_blssignature_share_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
+  int32_t (*managed_verify_blsaggregated_signature_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
 typedef struct {
