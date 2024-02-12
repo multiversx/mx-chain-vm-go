@@ -20,6 +20,22 @@ func TestBls_VerifyBLS(t *testing.T) {
 	assert.NotNil(t, b.VerifyBLS(splitString(t, checkNOK)))
 }
 
+func TestBls_VerifyBLSSigShare(t *testing.T) {
+	t.Parallel()
+
+	b, _ := NewBLS()
+	assert.Nil(t, b.VerifySignatureShare(splitString(t, checkOK)))
+	assert.NotNil(t, b.VerifySignatureShare(splitString(t, checkNOK)))
+}
+
+func TestBls_VerifyBLSMultiSig(t *testing.T) {
+	t.Parallel()
+
+	b, _ := NewBLS()
+	assert.Nil(t, b.VerifyAggregatedSig([][]byte{}, []byte{}, []byte{}))
+	assert.NotNil(t, b.VerifyAggregatedSig([][]byte{}, []byte{}, []byte{}))
+}
+
 func splitString(t testing.TB, str string) ([]byte, []byte, []byte) {
 	split := strings.Split(str, "@")
 	pkBuff, err := hex.DecodeString(split[0])
