@@ -32,7 +32,7 @@ func TestBls_VerifyBLSMultiSig(t *testing.T) {
 	t.Parallel()
 
 	b, _ := NewBLS()
-	assert.Nil(t, b.VerifyAggregatedSig([][]byte{}, []byte{}, []byte{}))
+	assert.NotNil(t, b.VerifyAggregatedSig([][]byte{}, []byte{}, []byte{}))
 	assert.NotNil(t, b.VerifyAggregatedSig([][]byte{}, []byte{}, []byte{}))
 }
 
