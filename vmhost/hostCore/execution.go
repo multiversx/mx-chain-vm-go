@@ -101,9 +101,7 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunc
 	}
 
 	output.DeployCode(input)
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RemoveNonUpdatedStorageFlag) {
-		output.RemoveNonUpdatedStorage()
-	}
+	output.RemoveNonUpdatedStorage()
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
@@ -258,9 +256,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		return vmOutput
 	}
 
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RemoveNonUpdatedStorageFlag) {
-		output.RemoveNonUpdatedStorage()
-	}
+	output.RemoveNonUpdatedStorage()
 	vmOutput = output.GetVMOutput()
 	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DirectCallString)
 
@@ -582,10 +578,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RefactorContextFlag) {
-		input.RecipientAddr = input.CallerAddr
-	}
-
+	input.RecipientAddr = input.CallerAddr
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)

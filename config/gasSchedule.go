@@ -443,6 +443,9 @@ func FillGasMapCryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap["UnmarshalCompressedECC"] = value
 	gasMap["GenerateKeyECC"] = value
 	gasMap["EncodeDERSig"] = value
+	gasMap["VerifySecp256r1"] = value
+	gasMap["VerifyBLSSignatureShare"] = value
+	gasMap["VerifyBLSMultiSig"] = value
 
 	return gasMap
 }

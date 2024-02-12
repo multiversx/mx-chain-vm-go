@@ -15,7 +15,7 @@ const checkNOK = "2c9a358953f61d34401d7ee4175eec105c476b18baacab371e2f47270035b5
 func TestBls_VerifyBLS(t *testing.T) {
 	t.Parallel()
 
-	b := NewBLS()
+	b, _ := NewBLS()
 	assert.Nil(t, b.VerifyBLS(splitString(t, checkOK)))
 	assert.NotNil(t, b.VerifyBLS(splitString(t, checkNOK)))
 }

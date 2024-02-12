@@ -102,7 +102,7 @@ package wasmer
 // extern void      v1_5_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      v1_5_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      v1_5_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
-// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t callValueHandle);
+// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      v1_5_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      v1_5_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 // extern void      v1_5_managedAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
@@ -266,6 +266,9 @@ package wasmer
 // extern int32_t   v1_5_getCurveLengthEC(void* context, int32_t ecHandle);
 // extern int32_t   v1_5_getPrivKeyByteLengthEC(void* context, int32_t ecHandle);
 // extern int32_t   v1_5_ellipticCurveGetValues(void* context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
+// extern int32_t   v1_5_managedVerifySecp256r1(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t   v1_5_managedVerifyBLSSignatureShare(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t   v1_5_managedVerifyBLSAggregatedSignature(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
 import "C"
 
 import (
@@ -1552,6 +1555,21 @@ func populateWasmerImports(imports *wasmerImports) error {
 		return err
 	}
 
+	err = imports.append("managedVerifySecp256r1", v1_5_managedVerifySecp256r1, C.v1_5_managedVerifySecp256r1)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedVerifyBLSSignatureShare", v1_5_managedVerifyBLSSignatureShare, C.v1_5_managedVerifyBLSSignatureShare)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedVerifyBLSAggregatedSignature", v1_5_managedVerifyBLSAggregatedSignature, C.v1_5_managedVerifyBLSAggregatedSignature)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -2102,9 +2120,9 @@ func v1_5_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 }
 
 //export v1_5_managedGetBackTransfers
-func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, callValueHandle int32) {
+func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
+	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 }
 
 //export v1_5_managedGetESDTBalance
@@ -3083,4 +3101,22 @@ func v1_5_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 func v1_5_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+}
+
+//export v1_5_managedVerifySecp256r1
+func v1_5_managedVerifySecp256r1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
+}
+
+//export v1_5_managedVerifyBLSSignatureShare
+func v1_5_managedVerifyBLSSignatureShare(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
+}
+
+//export v1_5_managedVerifyBLSAggregatedSignature
+func v1_5_managedVerifyBLSAggregatedSignature(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 }
