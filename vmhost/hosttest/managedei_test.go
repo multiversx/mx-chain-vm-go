@@ -615,7 +615,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 							messageHandle,
 							sigHandle,
 							int32(secp256.ECDSADoubleSha256),
-							"verifyCustomSecp256k1Name")
+							"verifyCustomSecp256k1")
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
