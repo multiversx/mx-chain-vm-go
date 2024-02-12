@@ -60,7 +60,9 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	require.Nil(tb, err)
 	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
-	host := &contextmock.VMHostMock{}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+	}
 
 	mockMetering := &contextmock.MeteringContextMock{GasLeftMock: 10000}
 	mockMetering.SetGasSchedule(gasSchedule)

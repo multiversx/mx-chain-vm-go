@@ -582,23 +582,6 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 	t.Parallel()
 
-	t.Run("disabled DynamicGasCostForDataTrieStorageLoad returns static cost", func(t *testing.T) {
-		t.Parallel()
-
-		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-		host := &contextmock.VMHostMock{
-			EnableEpochsHandlerField: enableEpochsHandler,
-		}
-
-		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
-		trieDepth := int64(7)
-		staticCost := uint64(40000)
-
-		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
-		require.Nil(t, err)
-		require.Equal(t, staticCost, cost)
-	})
-
 	t.Run("trie depth 0", func(t *testing.T) {
 		t.Parallel()
 

@@ -2,7 +2,6 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
-
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"

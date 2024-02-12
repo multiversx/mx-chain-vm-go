@@ -453,13 +453,13 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 						keyHandle := managedTypes.NewManagedBufferFromBytes(key)
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
-
+						fmt.Println("are we here ?")
 						result := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
-							"verifyBLSName")
+							"verifyBLS")
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
