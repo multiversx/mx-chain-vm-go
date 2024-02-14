@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -1102,7 +1103,9 @@ func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcomm
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
 				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+				enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+					return false
+				}
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1131,7 +1134,9 @@ func runTestMBufferSetByteSlice(
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
 				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+				enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+					return false
+				}
 			}
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1586,7 +1591,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, 0).
-				GasUsed(test.ParentAddress, 25863).
+				GasUsed(test.ParentAddress, 41149).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1701,7 +1706,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, (big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))).Int64()).
-				GasUsed(test.ParentAddress, 30101).
+				GasUsed(test.ParentAddress, 45387).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1774,7 +1779,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, 0).
-				GasUsed(test.ParentAddress, 9284).
+				GasUsed(test.ParentAddress, 24570).
 				// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 0).
 				GasUsed(test.ChildAddress, 0).
@@ -1979,7 +1984,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	// SC and pass some arguments using executeOnDestContext().
 
 	parentGasBeforeExecuteAPI := uint64(168)
-	executeAPICost := uint64(42)
+	executeAPICost := uint64(15328)
 	childExecutionCost := uint64(93)
 	finalCost := uint64(63)
 	childTransferValue := int64(12)
@@ -2003,8 +2008,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4444).
-				GasUsed(test.ParentAddress, 4444).
+				GasUsed(test.ParentAddress, 19730).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
@@ -2242,7 +2246,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 30182).
+				GasUsed(test.ParentAddress, 45468).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -2301,7 +2305,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 38737).
+				GasUsed(test.ParentAddress, 54023).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -2378,11 +2382,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -balanceDelta).
-				GasUsed(test.ParentAddress, 7417).
+				GasUsed(test.ParentAddress, 22703).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, balanceDelta).
-				GasUsed(test.ChildAddress, 5588).
+				GasUsed(test.ChildAddress, 20874).
 				// others
 				ReturnData(returnData...).
 				Storage(storeEntries...)
@@ -2983,8 +2987,8 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 1109).
-				GasRemaining(998301).
+				GasUsed(test.ParentAddress, 16395).
+				GasRemaining(983015).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
