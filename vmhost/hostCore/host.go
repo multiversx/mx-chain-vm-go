@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -57,7 +58,7 @@ type vmHost struct {
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       vmhost.CallArgsParser
-	enableEpochsHandler  vmcommon.EnableEpochsHandler
+	enableEpochsHandler  vmhost.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 
 	transferLogIdentifiers map[string]bool
@@ -85,6 +86,10 @@ func NewVMHost(
 	}
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, vmhost.ErrNilEnableEpochsHandler
+	}
+	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler, []core.EnableEpochFlag{})
+	if err != nil {
+		return nil, err
 	}
 	if check.IfNil(hostParameters.Hasher) {
 		return nil, vmhost.ErrNilHasher
@@ -114,7 +119,6 @@ func NewVMHost(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	var err error
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
@@ -244,7 +248,7 @@ func (host *vmHost) Storage() vmhost.StorageContext {
 }
 
 // EnableEpochsHandler returns the enableEpochsHandler instance of the host
-func (host *vmHost) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+func (host *vmHost) EnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return host.enableEpochsHandler
 }
 
@@ -561,27 +565,27 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabled()
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FixOOGReturnCodeFlag)
 }
 
 // FixFailExecutionEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFailExecutionOnEveryAPIErrorFlagEnabled()
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FailExecutionOnEveryAPIErrorFlag)
 }
 
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsCreateNFTThroughExecByCallerFlagEnabled()
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CreateNFTThroughExecByCallerFlag)
 }
 
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabled()
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.DisableExecByCallerFlag)
 }
 
 // CheckExecuteReadOnly returns true if the corresponding flag is set
 func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabled()
+	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CheckExecuteOnReadOnlyFlag)
 }
 
 func validateVMInput(vmInput *vmcommon.VMInput) error {
