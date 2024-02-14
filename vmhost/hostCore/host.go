@@ -37,23 +37,6 @@ var _ scenexec.VMInterface = (*vmHost)(nil)
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
-// allFlags must have all flags used by mx-chain-vm-go in the current version
-var allFlags = []core.EnableEpochFlag{
-	vmhost.MultiESDTTransferFixOnCallBackFlag,
-	vmhost.RemoveNonUpdatedStorageFlag,
-	vmhost.CreateNFTThroughExecByCallerFlag,
-	vmhost.StorageAPICostOptimizationFlag,
-	vmhost.CheckExecuteOnReadOnlyFlag,
-	vmhost.FailExecutionOnEveryAPIErrorFlag,
-	vmhost.ManagedCryptoAPIsFlag,
-	vmhost.DisableExecByCallerFlag,
-	vmhost.RefactorContextFlag,
-	vmhost.RuntimeMemStoreLimitFlag,
-	vmhost.RuntimeCodeSizeFixFlag,
-	vmhost.FixOOGReturnCodeFlag,
-	vmhost.DynamicGasCostForDataTrieStorageLoadFlag,
-}
-
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook       crypto.VMCrypto
@@ -104,7 +87,7 @@ func NewVMHost(
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, vmhost.ErrNilEnableEpochsHandler
 	}
-	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler, allFlags)
+	err := core.CheckHandlerCompatibility(hostParameters.EnableEpochsHandler, []core.EnableEpochFlag{})
 	if err != nil {
 		return nil, err
 	}
