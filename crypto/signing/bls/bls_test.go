@@ -51,6 +51,12 @@ func TestBls_VerifyBLSMultiSig(t *testing.T) {
 	setupKOSK, multiSignerKOSK := createMultiSigSetupKOSK(uint16(numMessages), numMessages)
 	setupKOSK.aggSignatures = aggregateSignatures(setupKOSK, multiSignerKOSK)
 
+	for i := 0; i < len(setupKOSK.pubKeys); i++ {
+		fmt.Println(hex.EncodeToString(setupKOSK.pubKeys[i]))
+	}
+	fmt.Println(setupKOSK.messages[0])
+	fmt.Println(hex.EncodeToString(setupKOSK.aggSignatures[0]))
+
 	for i := 0; i < numMessages; i++ {
 		assert.Nil(t, b.VerifyAggregatedSig(setupKOSK.pubKeys, []byte(setupKOSK.messages[i]), setupKOSK.aggSignatures[i]))
 		changedSig := make([]byte, len(setupKOSK.aggSignatures[i]))

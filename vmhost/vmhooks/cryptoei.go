@@ -344,6 +344,7 @@ func ManagedVerifyBLSWithHost(
 		if invalidSigErr != nil {
 			break
 		}
+
 		invalidSigErr = crypto.VerifyAggregatedSig(pubKeyBytes, msgBytes, sigBytes)
 	}
 

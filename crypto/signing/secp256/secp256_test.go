@@ -1,8 +1,13 @@
 package secp256
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -69,9 +74,64 @@ func TestEthereumSig2(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-/*
-04a3fe01e1c6ab5306130d09c1a928bd1598ccce020503ade24d0a5bf7040d5f4cdec9fdcba6497f834641b7908ed04d0b7698bbce6100ff2bbf82e5c52d523b19
-776562656c69676874
-e368f0ab2a13804e63dbc64d4c25175f117d1a5cb2444416f557423730f9da26678d224e7c6952eea2b99dff14546538b8d3dfb4abe37177b85d0abaa6677935
+func TestSecp256_VerifySecp256r1(t *testing.T) {
+	t.Parallel()
 
-*/
+	msg := make([]byte, 100)
+	_, _ = rand.Read(msg)
+	verifier, _ := NewSecp256()
+
+	sk, _ := GenPrivateKeyR1()
+
+	key := elliptic.MarshalCompressed(elliptic.P256(), sk.PublicKey.X, sk.PublicKey.Y)
+	sig, _ := SignMessage(msg, sk)
+
+	err := verifier.VerifySecp256r1(nil, nil, nil)
+	assert.NotNil(t, err)
+
+	err = verifier.VerifySecp256r1(key, nil, nil)
+	assert.NotNil(t, err)
+
+	err = verifier.VerifySecp256r1(key, nil, sig)
+	assert.NotNil(t, err)
+
+	err = verifier.VerifySecp256r1(key, msg, sig)
+	assert.Nil(t, err)
+
+	msg[0] += 1
+	err = verifier.VerifySecp256r1(key, msg, sig)
+	assert.NotNil(t, err)
+}
+
+func GenPrivateKeyR1() (*ecdsa.PrivateKey, error) {
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return &ecdsa.PrivateKey{}, err
+	}
+
+	return key, nil
+}
+
+func SignMessage(msg []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	digest := sha256.Sum256(msg)
+	r, s, err := ecdsa.Sign(rand.Reader, privateKey, digest[:])
+	if err != nil {
+		return nil, err
+	}
+
+	normS := NormalizeS(s)
+	return signatureRaw(r, normS), nil
+}
+
+// will serialize signature to R || S.
+// R, S are padded to 32 bytes respectively.
+// code roughly copied from secp256k1_nocgo.go
+func signatureRaw(r *big.Int, s *big.Int) []byte {
+	rBytes := r.Bytes()
+	sBytes := s.Bytes()
+	sigBytes := make([]byte, 64)
+
+	copy(sigBytes[32-len(rBytes):32], rBytes)
+	copy(sigBytes[64-len(sBytes):64], sBytes)
+	return sigBytes
+}

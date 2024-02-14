@@ -421,6 +421,23 @@ func Test_ManagedRipemd160(t *testing.T) {
 }
 
 const blsCheckOK = "3e886a4c6e109a151f4105aee65a5192d150ef1fa68d3cd76964a0b086006dbe4324c989deb0e4416c6d6706db1b1910eb2732f08842fb4886067b9ed191109ac2188d76002d2e11da80a3f0ea89fee6b59c834cc478a6bd49cb8a193b1abb16@e96bd0f36b70c5ccc0c4396343bd7d8255b8a526c55fa1e218511fafe6539b8e@04725db195e37aa237cdbbda76270d4a229b6e7a3651104dc58c4349c0388e8546976fe54a04240530b99064e434c90f"
+const blsMultiSigOk = "9723bb054e8c79ef18dc24d329f84c7e6dbd43ee1a1064f1f7ecaf98be5695b1a62c78b530cfecb69304f07cefb76b02cdaed63cb2f62214971174f603704212d690f5ef76f1718ec1e920b00ac0792949d9f7371bbc5c9e054f040775ee9d06@6402df92cad7c9f0fb06381f66940266193c865ba6e90f08adbccc504913d4b8005b74b3210e38ba644f41b8e0af1519c9013791aaa798dd19536e3ddef1f9c49a83bab0521503f9aedf105cf32af421cf41f77ea7d26db4650a87ad0178f387@a7bd70d9eeb4ec0baff870335c6da592cb77aa1efd4a0b140e5f263a7ba346474aa2b5db2c407b47354febfc8bc1ab18157ce8d9a55aadf37e1c4ae4c4d7b1ae8e0498c520aebd2efac32ca82267c24ff3132006d14ae514282512935bf81a06@408ee8ebc5269599c9ecafcce6d7876f5fc7bbe3e86cf0bfa11d34df91c67451df7275ae8e399d34dd42d7172fb8f41605e16880497e1238e2e0d0855c331f5b42347984b6da36c8819f13fec7a6a3a0b6a55a5b269f19b80586381fcedff297@e13f11461d0e11f78dedd6cabfb4114516338f037e1cf8121bc842e74d434a1b728855a15267f5dbab7e31a1e903ee0959567817ab743f5bac57b782e184c98a554d092659fb7236bf1f5113a424aa42625608ce5646cae067e1a76576e72a01@message0@81c611c8ea8ba6c5f90207f9002e436e9cb97e927482fa755b46749dcf8d351c29756e34417e024687629c1cf0b4ec99"
+
+func blsMultiSigSplitString(t testing.TB, str string) ([][]byte, []byte, []byte) {
+	split := strings.Split(str, "@")
+
+	numKeys := len(split) - 2
+	msg := []byte(split[len(split)-2])
+	aggSig, err := hex.DecodeString(split[len(split)-1])
+	require.Nil(t, err)
+
+	keys := make([][]byte, numKeys)
+	for i := 0; i < numKeys; i++ {
+		keys[i], err = hex.DecodeString(split[i])
+		require.Nil(t, err)
+	}
+	return keys, msg, aggSig
+}
 
 func blsSplitString(t testing.TB, str string) ([]byte, []byte, []byte) {
 	split := strings.Split(str, "@")
@@ -453,7 +470,7 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 						keyHandle := managedTypes.NewManagedBufferFromBytes(key)
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
-						fmt.Println("are we here ?")
+
 						result := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
@@ -638,6 +655,56 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func Test_VerifySecp256r1(t *testing.T) {
+	testConfig := baseTestConfig
+
+	key, _ := hex.DecodeString("0303c3cff6a91831cef05550b89bc766713541337a66cf4e98636756e2ded55c10")
+	msg, _ := hex.DecodeString("f6bb0453930e24e0c19c25d9d732c45cfad0036cbf3057189a34df83141ec0d1f2de8d71eeb10e758d08f4a0c276d881bcd97f577d042fce0d98167d85697d51121fa7605a559f68b202cbdb7ba2419ab3f8ea9f0163a11831308e129a73c1a766fd36f5")
+	sig, _ := hex.DecodeString("e2c865aafdf4cd18a4c63279c078e3ebc7b948972cab329f036ba7fc1631c6a7683f8d1008395ec053c43d685b8fbe159da9e489270c66236c5682514281989a")
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						managedTypes := host.ManagedTypes()
+						keyHandle := managedTypes.NewManagedBufferFromBytes(key)
+						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
+						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
+
+						result := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
+							host,
+							keyHandle,
+							messageHandle,
+							sigHandle,
+							0,
+							"verifySecp256R1Signature")
+
+						if result != 0 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
 func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 	testConfig := baseTestConfig
 
@@ -680,6 +747,101 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_ManagedVerifyBLSSignatureShare(t *testing.T) {
+	testConfig := baseTestConfig
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						key, message, sig := blsSplitString(t, blsCheckOK)
+						managedTypes := host.ManagedTypes()
+						keyHandle := managedTypes.NewManagedBufferFromBytes(key)
+						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
+						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
+
+						result := vmhooks.ManagedVerifyBLSWithHost(
+							host,
+							keyHandle,
+							messageHandle,
+							sigHandle,
+							"verifyBLSSignatureShare")
+
+						if result != 0 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_ManagedVerifyBLSMultiSig(t *testing.T) {
+	testConfig := baseTestConfig
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						keys, message, sig := blsMultiSigSplitString(t, blsMultiSigOk)
+						managedTypes := host.ManagedTypes()
+
+						keysHandle := managedTypes.NewManagedBuffer()
+						managedTypes.WriteManagedVecOfManagedBuffers(keys, keysHandle)
+
+						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
+						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
+
+						result := vmhooks.ManagedVerifyBLSWithHost(
+							host,
+							keysHandle,
+							messageHandle,
+							sigHandle,
+							"verifyBLSAggregatedSignature")
+
+						if result != 0 {
+							host.Runtime().SignalUserError("assert failed")
+							return parentInstance
+						}
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided + 1000).
 			WithFunction("testFunction").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
