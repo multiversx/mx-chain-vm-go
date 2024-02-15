@@ -163,7 +163,7 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 		return nil, err
 	}
 
-	parser := scenjsonparse.NewParser(fileResolver)
+	parser := scenjsonparse.NewParser(fileResolver, vmTestExecutor.GetVMType())
 
 	return &fuzzDexExecutor{
 		vmTestExecutor: vmTestExecutor,
