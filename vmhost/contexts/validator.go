@@ -86,7 +86,7 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 }
 
 func (validator *wasmValidator) isFunctionNotYetEnabled(functionName string) bool {
-	if !validator.enableEpochsHandler.IsFlagEnabled(vmhost.CryptoAPIV1_7) {
+	if !validator.enableEpochsHandler.IsFlagEnabled(vmhost.CryptoAPIV2Flag) {
 		_, ok := mapNewCryptoAPI[functionName]
 		return ok
 	}

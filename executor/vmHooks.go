@@ -105,6 +105,8 @@ type ManagedVMHooks interface {
 	ManagedSCAddress(destinationHandle int32)
 	ManagedOwnerAddress(destinationHandle int32)
 	ManagedCaller(destinationHandle int32)
+	ManagedGetOriginalCallerAddr(destinationHandle int32)
+	ManagedGetRelayerAddr(destinationHandle int32)
 	ManagedSignalError(errHandle int32)
 	ManagedWriteLog(topicsHandle int32, dataHandle int32)
 	ManagedGetOriginalTxHash(resultHandle int32)

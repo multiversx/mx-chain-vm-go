@@ -1374,6 +1374,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 			OriginalTxHash:     vmInput.OriginalTxHash,
 			CurrentTxHash:      vmInput.CurrentTxHash,
 			PrevTxHash:         vmInput.PrevTxHash,
+			RelayerAddr:        vmInput.RelayerAddr,
 		},
 		RecipientAddr:     parsedTransfer.RcvAddr,
 		Function:          function,
