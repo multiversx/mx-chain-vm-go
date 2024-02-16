@@ -12,9 +12,9 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
-	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
 var defaultHasher = blake2b.NewBlake2b()
@@ -67,7 +67,7 @@ func MakeTestSCAddress(identifier string) []byte {
 // MakeTestSCAddressWithDefaultVM generates a new smart contract address to be used for
 // testing based on the given identifier.
 func MakeTestSCAddressWithDefaultVM(identifier string) []byte {
-	return MakeTestSCAddressWithVMType(identifier, worldmock.DefaultVMType)
+	return MakeTestSCAddressWithVMType(identifier, DefaultVMType)
 }
 
 // MakeTestSCAddressWithVMType generates a new smart contract address to be used for
@@ -411,6 +411,12 @@ func (contractInput *ContractCreateInputBuilder) WithGasProvided(gas uint64) *Co
 // WithContractCode provides the ContractCode for a ContractCreateInputBuilder
 func (contractInput *ContractCreateInputBuilder) WithContractCode(code []byte) *ContractCreateInputBuilder {
 	contractInput.ContractCreateInput.ContractCode = code
+	return contractInput
+}
+
+// WithContractCodeMetadata provides the ContractCodeMetadata for a ContractCreateInputBuilder
+func (contractInput *ContractCreateInputBuilder) WithContractCodeMetadata(codemetadata []byte) *ContractCreateInputBuilder {
+	contractInput.ContractCreateInput.ContractCodeMetadata = codemetadata
 	return contractInput
 }
 

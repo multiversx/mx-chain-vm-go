@@ -3,17 +3,16 @@ package featuresintegrationtest
 import (
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
-	er "github.com/multiversx/mx-chain-scenario-go/expression/reconstructor"
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	er "github.com/multiversx/mx-chain-scenario-go/scenario/expression/reconstructor"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
@@ -25,7 +24,7 @@ var defaultHasher = blake2b.NewBlake2b()
 type pureFunctionIO struct {
 	functionName    string
 	arguments       [][]byte
-	expectedStatus  vmi.ReturnCode
+	expectedStatus  vmcommon.ReturnCode
 	expectedMessage string
 	expectedResults [][]byte
 }
@@ -36,18 +35,18 @@ type resultInterpreter func([]byte) *big.Int
 type logProgress func(testCaseIndex, testCaseCount int)
 
 type pureFunctionExecutor struct {
-	world           *worldhook.MockWorld
-	vm              vmi.VMExecutionHandler
+	world           *worldmock.MockWorld
+	vm              vmcommon.VMExecutionHandler
 	contractAddress []byte
 	userAddress     []byte
 }
 
 func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
-	world := worldhook.NewMockWorld()
+	world := worldmock.NewMockWorld()
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
-	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	vm, err := hostCore.NewVMHost(
 		world,
 		&vmhost.VMHostParameters{
@@ -59,7 +58,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubNoFlags(),
+			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 			WasmerSIGSEGVPassthrough: false,
 			Hasher:                   defaultHasher,
 		})
@@ -72,24 +71,19 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	}, nil
 }
 
-func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
+func (pfe *pureFunctionExecutor) initAccounts(contractCode []byte) {
 	pfe.contractAddress = []byte("contract_addr_________________s1")
 	pfe.userAddress = []byte("user_addr_____________________s1")
 
-	scCode, err := os.ReadFile(contractPath)
-	if err != nil {
-		panic(err)
-	}
-
-	pfe.world.AcctMap.PutAccount(&worldhook.Account{
+	pfe.world.AcctMap.PutAccount(&worldmock.Account{
 		Address: pfe.contractAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0),
 		Storage: make(map[string][]byte),
-		Code:    scCode,
+		Code:    contractCode,
 	})
 
-	pfe.world.AcctMap.PutAccount(&worldhook.Account{
+	pfe.world.AcctMap.PutAccount(&worldmock.Account{
 		Address: pfe.userAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0x100000000),
@@ -98,11 +92,11 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 	})
 }
 
-func (pfe *pureFunctionExecutor) scCall(testCase *pureFunctionIO) (*vmi.VMOutput, error) {
-	input := &vmi.ContractCallInput{
+func (pfe *pureFunctionExecutor) scCall(testCase *pureFunctionIO) (*vmcommon.VMOutput, error) {
+	input := &vmcommon.ContractCallInput{
 		RecipientAddr: pfe.contractAddress,
 		Function:      testCase.functionName,
-		VMInput: vmi.VMInput{
+		VMInput: vmcommon.VMInput{
 			CallerAddr:  pfe.userAddress,
 			Arguments:   testCase.arguments,
 			CallValue:   big.NewInt(0),
@@ -116,7 +110,7 @@ func (pfe *pureFunctionExecutor) scCall(testCase *pureFunctionIO) (*vmi.VMOutput
 
 func (pfe *pureFunctionExecutor) checkTxResults(
 	testCase *pureFunctionIO,
-	output *vmi.VMOutput,
+	output *vmcommon.VMOutput,
 	resultInterpreter resultInterpreter) error {
 
 	if output.ReturnCode != testCase.expectedStatus {

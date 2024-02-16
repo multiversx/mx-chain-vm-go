@@ -11,6 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	logger "github.com/multiversx/mx-chain-logger-go"
+	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -31,6 +32,7 @@ var logGasTrace = logger.GetOrCreate("gasTrace")
 var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ vmhost.VMHost = (*vmHost)(nil)
+var _ scenexec.VMInterface = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
@@ -362,6 +364,16 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 // GetGasScheduleMap returns the currently stored gas schedule
 func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 	return host.gasSchedule
+}
+
+// GetGasTrace returns the curent gas trace, used in scenario tests
+func (host *vmHost) GetGasTrace() map[string]map[string][]uint64 {
+	return host.meteringContext.GetGasTrace()
+}
+
+// SetGasTracing configures the gas tracing flag, used in scenario tests
+func (host *vmHost) SetGasTracing(enableGasTracing bool) {
+	host.meteringContext.SetGasTracing(enableGasTracing)
 }
 
 // RunSmartContractCreate executes the deployment of a new contract

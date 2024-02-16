@@ -5,19 +5,20 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"math/rand"
+	"os"
 	"strings"
 	"testing"
 
-	fr "github.com/multiversx/mx-chain-scenario-go/fileresolver"
-	mjparse "github.com/multiversx/mx-chain-scenario-go/json/parse"
-	mjwrite "github.com/multiversx/mx-chain-scenario-go/json/write"
-	mj "github.com/multiversx/mx-chain-scenario-go/model"
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
-	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
+	fr "github.com/multiversx/mx-chain-scenario-go/scenario/expression/fileresolver"
+	scenjsonparse "github.com/multiversx/mx-chain-scenario-go/scenario/json/parse"
+	scenjsonwrite "github.com/multiversx/mx-chain-scenario-go/scenario/json/write"
+	scenmodel "github.com/multiversx/mx-chain-scenario-go/scenario/model"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
@@ -44,10 +45,10 @@ type fuzzDelegationExecutorInitArgs struct {
 }
 
 type fuzzDelegationExecutor struct {
-	vmTestExecutor *am.VMTestExecutor
-	world          *worldhook.MockWorld
-	vm             vmi.VMExecutionHandler
-	parser         mjparse.Parser
+	vmTestExecutor *scenexec.ScenarioExecutor
+	world          *worldmock.MockWorld
+	vm             vmcommon.VMExecutionHandler
+	parser         scenjsonparse.Parser
 	txIndex        int
 
 	serviceFee                  int
@@ -65,22 +66,18 @@ type fuzzDelegationExecutor struct {
 	totalStakeAdded             *big.Int
 	totalStakeWithdrawn         *big.Int
 	totalRewards                *big.Int
-	generatedScenario           *mj.Scenario
+	generatedScenario           *scenmodel.Scenario
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	vmTestExecutor, err := am.NewVMTestExecutor()
+	vmTestExecutor := vmscenario.DefaultScenarioExecutor()
+	scenGasSchedule := scenmodel.GasScheduleV3
+	err := vmTestExecutor.InitVM(scenGasSchedule)
 	if err != nil {
 		return nil, err
 	}
 
-	scenGasSchedule := mj.GasScheduleV3
-	err = vmTestExecutor.InitVM(scenGasSchedule)
-	if err != nil {
-		return nil, err
-	}
-
-	parser := mjparse.NewParser(fileResolver)
+	parser := scenjsonparse.NewParser(fileResolver, vmTestExecutor.GetVMType())
 
 	return &fuzzDelegationExecutor{
 		vmTestExecutor:      vmTestExecutor,
@@ -92,7 +89,7 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		totalStakeAdded:     big.NewInt(0),
 		totalStakeWithdrawn: big.NewInt(0),
 		totalRewards:        big.NewInt(0),
-		generatedScenario: &mj.Scenario{
+		generatedScenario: &scenmodel.Scenario{
 			Name:        "fuzz generated",
 			GasSchedule: scenGasSchedule,
 		},
@@ -109,28 +106,28 @@ func (pfe *fuzzDelegationExecutor) executeStep(stepSnippet string) error {
 	return pfe.vmTestExecutor.ExecuteStep(step)
 }
 
-func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
+func (pfe *fuzzDelegationExecutor) addStep(step scenmodel.Step) {
 	pfe.generatedScenario.Steps = append(pfe.generatedScenario.Steps, step)
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
 	vmHost := pfe.vm.(vmhost.VMHost)
 	vmHost.Reset()
-	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
+	serialized := scenjsonwrite.ScenarioToJSONString(pfe.generatedScenario)
 
-	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
+	err := os.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
+func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error) {
 	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
 	}
 
-	txStep, isTx := step.(*mj.TxStep)
+	txStep, isTx := step.(*scenmodel.TxStep)
 	if !isTx {
 		return nil, errors.New("tx step expected")
 	}
@@ -207,7 +204,7 @@ func (pfe *fuzzDelegationExecutor) removeNodes(numNodesToRemove int) error {
 		return err
 	}
 
-	if output.ReturnCode != vmi.Ok {
+	if output.ReturnCode != vmcommon.Ok {
 		pfe.log("could not remove node because %s", output.ReturnMessage)
 		return nil
 	}

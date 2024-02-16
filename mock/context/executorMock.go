@@ -3,9 +3,9 @@ package mock
 import (
 	"testing"
 
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
