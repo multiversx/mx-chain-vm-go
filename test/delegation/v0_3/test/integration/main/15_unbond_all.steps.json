@@ -54,7 +54,7 @@
                         "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [                            
-                            "333,000,000,000,000",
+                            "0",
                             "sc:delegation"
                         ],
                         "data": [

@@ -158,7 +158,7 @@
                         "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [                            
-                            "1000",
+                            "0",
                             "sc:delegation"
                         ],
                         "data": [

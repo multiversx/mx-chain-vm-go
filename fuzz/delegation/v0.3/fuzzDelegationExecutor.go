@@ -46,7 +46,7 @@ type fuzzDelegationExecutor struct {
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
 	vmTestExecutor := vmscenario.DefaultScenarioExecutor()
-	parser := scenjsonparse.NewParser(fileResolver)
+	parser := scenjsonparse.NewParser(fileResolver, vmTestExecutor.GetVMType())
 	return &fuzzDelegationExecutor{
 		vmTestExecutor:      vmTestExecutor,
 		world:               vmTestExecutor.World,
