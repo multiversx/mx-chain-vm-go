@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error {
@@ -187,7 +187,7 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 		return err
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		// keep track of stake withdrawn
 		pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, amount)
 
@@ -260,7 +260,7 @@ func (pfe *fuzzDelegationExecutor) announceUnStake(delegIndex int, amount *big.I
 	if err != nil {
 		return err
 	}
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		pfe.log("announceUnStake, delegator: %d, amount: %d", delegIndex, amount)
 	} else {
 		pfe.log("announceUnStake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
@@ -324,7 +324,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 	if err != nil {
 		return err
 	}
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d", sellerIndex, buyerIndex, amount)
 
 		// forward received sum
@@ -395,7 +395,7 @@ func (pfe *fuzzDelegationExecutor) unStake(delegIndex int) error {
 	if err != nil {
 		return err
 	}
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		pfe.log("unStake, delegator: %d", delegIndex)
 	} else {
 		pfe.log("unStake, delegator: %d, fail, %s", delegIndex, output.ReturnMessage)
@@ -426,7 +426,7 @@ func (pfe *fuzzDelegationExecutor) unBondAllAvailable() error {
 	if err != nil {
 		return err
 	}
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		pfe.log("unBondAllAvailable")
 	} else {
 		pfe.log("unBondAllAvailable, fail, %s", output.ReturnMessage)

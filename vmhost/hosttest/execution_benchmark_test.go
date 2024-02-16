@@ -10,10 +10,10 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
-	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
+	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenario/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"

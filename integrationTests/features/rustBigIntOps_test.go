@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	fr "github.com/multiversx/mx-chain-scenario-go/scenario/expression/fileresolver"
+	mei "github.com/multiversx/mx-chain-scenario-go/scenario/expression/interpreter"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/require"
@@ -22,8 +24,15 @@ func getTestRoot() string {
 	return vmTestRoot
 }
 
-func getFeaturesContractPath() string {
-	return filepath.Join(getTestRoot(), "features/basic-features/output/basic-features.wasm")
+func getFeaturesContractCode() []byte {
+	ei := mei.ExprInterpreter{
+		FileResolver: fr.NewDefaultFileResolver().WithContext(getTestRoot()),
+	}
+	result, err := ei.InterpretString("mxsc:test/features/basic-features/output/basic-features.mxsc.json")
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func unsignedInterpreter(bytes []byte) *big.Int {
@@ -34,7 +43,7 @@ func appendBinaryOpTestCase(
 	testCases []*pureFunctionIO,
 	opName string, signed bool,
 	arg1, arg2, result []byte,
-	expectedStatus vmi.ReturnCode, expectedMessage string,
+	expectedStatus vmcommon.ReturnCode, expectedMessage string,
 ) []*pureFunctionIO {
 
 	var typeName string
@@ -45,7 +54,7 @@ func appendBinaryOpTestCase(
 	}
 
 	expectedResults := make([][]byte, 0)
-	if expectedStatus == vmi.Ok {
+	if expectedStatus == vmcommon.Ok {
 		expectedResults = [][]byte{result}
 	}
 
@@ -112,34 +121,34 @@ func TestBigIntArith(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"add", true,
 				bytes1, bytes2, sumBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 
 			// sub
 			diffBytes := twos.ToBytes(big.NewInt(0).Sub(num1, num2))
 			testCases = appendBinaryOpTestCase(testCases,
 				"sub", true,
 				bytes1, bytes2, diffBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 
 			// mul
 			mulBytes := twos.ToBytes(big.NewInt(0).Mul(num1, num2))
 			testCases = appendBinaryOpTestCase(testCases,
 				"mul", true,
 				bytes1, bytes2, mulBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 
 			// div
 			if num2.Sign() == 0 {
 				testCases = appendBinaryOpTestCase(testCases,
 					"div", true,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
+					vmcommon.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				divBytes := twos.ToBytes(big.NewInt(0).Quo(num1, num2))
 				testCases = appendBinaryOpTestCase(testCases,
 					"div", true,
 					bytes1, bytes2, divBytes,
-					vmi.Ok, "")
+					vmcommon.Ok, "")
 			}
 
 			// mod
@@ -147,13 +156,13 @@ func TestBigIntArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"rem", true,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
+					vmcommon.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				remBytes := twos.ToBytes(big.NewInt(0).Rem(num1, num2))
 				testCases = appendBinaryOpTestCase(testCases,
 					"rem", true,
 					bytes1, bytes2, remBytes,
-					vmi.Ok, "")
+					vmcommon.Ok, "")
 			}
 		}
 	}
@@ -171,7 +180,7 @@ func TestBigIntArith(t *testing.T) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
@@ -203,7 +212,7 @@ func TestBigUintArith(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"add", false,
 				bytes1, bytes2, sumBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 
 			// sub
 			diff := big.NewInt(0).Sub(num1, num2)
@@ -211,12 +220,12 @@ func TestBigUintArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"sub", false,
 					bytes1, bytes2, nil,
-					vmi.UserError, "cannot subtract because result would be negative")
+					vmcommon.UserError, "cannot subtract because result would be negative")
 			} else {
 				testCases = appendBinaryOpTestCase(testCases,
 					"sub", false,
 					bytes1, bytes2, diff.Bytes(),
-					vmi.Ok, "")
+					vmcommon.Ok, "")
 			}
 
 			// mul
@@ -224,20 +233,20 @@ func TestBigUintArith(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"mul", false,
 				bytes1, bytes2, mulBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 
 			// div
 			if num2.Sign() == 0 {
 				testCases = appendBinaryOpTestCase(testCases,
 					"div", false,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
+					vmcommon.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				divBytes := big.NewInt(0).Quo(num1, num2).Bytes()
 				testCases = appendBinaryOpTestCase(testCases,
 					"div", false,
 					bytes1, bytes2, divBytes,
-					vmi.Ok, "")
+					vmcommon.Ok, "")
 			}
 
 			// mod
@@ -245,13 +254,13 @@ func TestBigUintArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"rem", false,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
+					vmcommon.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				remBytes := big.NewInt(0).Rem(num1, num2).Bytes()
 				testCases = appendBinaryOpTestCase(testCases,
 					"rem", false,
 					bytes1, bytes2, remBytes,
-					vmi.Ok, "")
+					vmcommon.Ok, "")
 			}
 		}
 	}
@@ -269,7 +278,7 @@ func TestBigUintArith(t *testing.T) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
@@ -288,7 +297,7 @@ func TestBigUintBitwiseAnd(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"bit_and", false,
 				bytes1, bytes2, sumBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 		}
 	}
 
@@ -310,7 +319,7 @@ func TestBigUintBitwiseOr(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"bit_or", false,
 				bytes1, bytes2, orBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 		}
 	}
 
@@ -332,7 +341,7 @@ func TestBigUintBitwiseXor(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"bit_xor", false,
 				bytes1, bytes2, xorBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 		}
 	}
 
@@ -349,7 +358,7 @@ func runTestCases(t *testing.T, testCases []*pureFunctionIO, opName string) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
@@ -409,14 +418,14 @@ func TestBigUintShift(t *testing.T) {
 			testCases = appendBinaryOpTestCase(testCases,
 				"shr", false,
 				bytes1, bytes2, shrBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 
 			// shift left
 			shlBytes := big.NewInt(0).Lsh(num, shiftAmount).Bytes()
 			testCases = appendBinaryOpTestCase(testCases,
 				"shl", false,
 				bytes1, bytes2, shlBytes,
-				vmi.Ok, "")
+				vmcommon.Ok, "")
 		}
 	}
 
@@ -433,6 +442,6 @@ func TestBigUintShift(t *testing.T) {
 		vmHost.Reset()
 	}()
 
-	pfe.initAccounts(getFeaturesContractPath())
+	pfe.initAccounts(getFeaturesContractCode())
 	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }

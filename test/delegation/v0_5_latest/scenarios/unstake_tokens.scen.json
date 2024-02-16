@@ -1,0 +1,196 @@
+{
+    "name": "unbonding scenario",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:node_address": {
+                    "nonce": "0",
+                    "balance": "0"
+                },
+                "sc:auction": {
+                    "nonce": "0",
+                    "balance": "1000",
+                    "code": "file:../../auction-mock/output/auction-mock.wasm"
+                },
+                "sc:delegation": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:auction_addr": "sc:auction"
+                    },
+                    "code": "file:../output/delegation_latest_full.wasm"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "unStakeTokens",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "function": "unStakeTokens",
+                "arguments": [
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:unStakeTokens",
+                        "topics": [
+                            "str:tokensUnstake"
+                        ],
+                        "data": [
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "",
+                            "sc:auction"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unStakeTokens",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "",
+                            "sc:delegation"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:auction": {
+                    "nonce": "0",
+                    "balance": "1000",
+                    "storage": {},
+                    "code": "file:../../auction-mock/output/auction-mock.wasm"
+                },
+                "sc:delegation": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:auction_addr": "sc:auction"
+                    },
+                    "code": "file:../output/delegation_latest_full.wasm"
+                },
+                "+": ""
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "unBondTokens",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "function": "unBondTokens",
+                "arguments": [
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:unBondTokens",
+                        "topics": [
+                            "str:tokensUnbond"
+                        ],
+                        "data": [
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "0",
+                            "*"
+                        ],
+                        "data": [
+                            "str:AsyncCall",
+                            "str:unBondTokens",
+                            "1000"
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "1000",
+                            "sc:delegation"
+                        ],
+                        "data": [
+                            "str:BackTransfer",
+                            ""
+                        ]
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [                            
+                            "0",
+                            "sc:delegation"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "0x00"
+                        ]
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:auction": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../../auction-mock/output/auction-mock.wasm"
+                },
+                "sc:delegation": {
+                    "nonce": "0",
+                    "balance": "1000",
+                    "storage": {
+                        "str:auction_addr": "sc:auction"
+                    },
+                    "code": "file:../output/delegation_latest_full.wasm"
+                },
+                "+": ""
+            }
+        }
+    ]
+}
