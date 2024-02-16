@@ -44,6 +44,7 @@ type ScenariosTestBuilder struct {
 	executorFactory     executor.ExecutorAbstractFactory
 	enableEpochsHandler vmcommon.EnableEpochsHandler
 	currentError        error
+	overrideVMType      []byte
 }
 
 // ScenariosTest will create a new ScenariosTestBuilder instance
@@ -100,6 +101,12 @@ func (mtb *ScenariosTestBuilder) WithEnableEpochsHandler(enableEpochsHandler vmc
 	return mtb
 }
 
+// WithVMType overrides the default VM type
+func (mtb *ScenariosTestBuilder) WithVMType(overrideVMType []byte) *ScenariosTestBuilder {
+	mtb.overrideVMType = overrideVMType
+	return mtb
+}
+
 // Run will start the testing process
 func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	if check.IfNil(mtb.executorFactory) {
@@ -108,6 +115,9 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 
 	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
 	vmBuilder.OverrideVMExecutor = mtb.executorFactory
+	if mtb.overrideVMType != nil {
+		vmBuilder.VMType = mtb.overrideVMType
+	}
 	if mtb.executorLogger != nil {
 		vmBuilder.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(
 			mtb.executorLogger,
@@ -122,6 +132,7 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	runner := scenio.NewScenarioController(
 		executor,
 		scenio.NewDefaultFileResolver(),
+		vmBuilder.GetVMType(),
 	)
 
 	if len(mtb.singleFile) > 0 {
