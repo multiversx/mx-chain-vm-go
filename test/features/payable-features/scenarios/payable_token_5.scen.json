@@ -80,9 +80,8 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "4",
-                "message":"str:function expects single ESDT payment",
+                "out": ["0x64", "0x50415941424c452d46454154555245532d544f4b454e"],
+                "status": "0",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
@@ -108,7 +107,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "str:function expects single ESDT payment",
+                "message": "str:bad call value token provided",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
