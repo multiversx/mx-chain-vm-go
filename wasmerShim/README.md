@@ -2,7 +2,11 @@
 
 ## Build
 
-On MacOS:
+On Linux AMD64: not applicable (not needed).
+
+On MacOS AMD64: not applicable (not needed).
+
+On MacOS ARM64:
 
 ```
 go build -buildmode=c-shared -ldflags="-w" -o ../wasmer/libwasmer_darwin_arm64_shim.dylib .
@@ -10,4 +14,10 @@ go build -buildmode=c-shared -ldflags="-w" -o ../wasmer/libwasmer_darwin_arm64_s
 install_name_tool -id @rpath/libwasmer_darwin_arm64_shim.dylib ../wasmer/libwasmer_darwin_arm64_shim.dylib
 ```
 
-On Linux: not applicable (not needed).
+On Linux ARM64:
+
+```
+go build -buildmode=c-shared -o ../wasmer/libwasmer_linux_arm64_shim.so .
+
+patchelf --set-soname libwasmer_linux_arm64_shim.so ../wasmer/libwasmer_linux_arm64_shim.so
+```
