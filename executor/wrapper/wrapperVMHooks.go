@@ -741,6 +741,22 @@ func (w *WrapperVMHooks) ManagedCaller(destinationHandle int32) {
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetOriginalCallerAddr VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetOriginalCallerAddr(destinationHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetOriginalCallerAddr(%d)", destinationHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetRelayerAddr VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetRelayerAddr(destinationHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetRelayerAddr(%d)", destinationHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetRelayerAddr(destinationHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedSignalError VM hook wrapper
 func (w *WrapperVMHooks) ManagedSignalError(errHandle int32) {
 	callInfo := fmt.Sprintf("ManagedSignalError(%d)", errHandle)

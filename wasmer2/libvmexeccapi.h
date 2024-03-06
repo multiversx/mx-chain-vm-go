@@ -296,6 +296,8 @@ typedef struct {
   int32_t (*managed_verify_secp256r1_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
   int32_t (*managed_verify_blssignature_share_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
   int32_t (*managed_verify_blsaggregated_signature_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
+  void (*managed_get_original_caller_addr_func_ptr)(void *context, int32_t destination_handle);
+  void (*managed_get_relayer_addr_func_ptr)(void *context, int32_t destination_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
 typedef struct {

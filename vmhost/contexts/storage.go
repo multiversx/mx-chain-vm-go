@@ -3,6 +3,7 @@ package contexts
 import (
 	"bytes"
 	"fmt"
+	"github.com/multiversx/mx-chain-core-go/core"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -157,8 +158,11 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 			return nil, 0, false, nil
 		}
 
+		isReadFromUserAddress := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.CryptoAPIV2Flag) &&
+			!core.IsSmartContractAddress(address)
+
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
-		if !metadata.Readable {
+		if !metadata.Readable || isReadFromUserAddress {
 			context.useExtraGasForKeyIfNeeded(key, false)
 			return nil, 0, false, nil
 		}

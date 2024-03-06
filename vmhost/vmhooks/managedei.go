@@ -95,6 +95,34 @@ func (context *VMHooksImpl) ManagedCaller(destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, caller)
 }
 
+// ManagedGetOriginalCallerAddr VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetOriginalCallerAddr(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
+	metering.UseGasAndAddTracedGas(managedCallerName, gasToUse)
+
+	caller := runtime.GetVMInput().OriginalCallerAddr
+	managedType.SetBytes(destinationHandle, caller)
+}
+
+// ManagedGetRelayerAddr VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetRelayerAddr(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
+	metering.UseGasAndAddTracedGas(managedCallerName, gasToUse)
+
+	caller := runtime.GetVMInput().RelayerAddr
+	managedType.SetBytes(destinationHandle, caller)
+}
+
 // ManagedSignalError VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedSignalError(errHandle int32) {
