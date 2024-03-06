@@ -2998,6 +2998,12 @@ func createContract(
 		ContractCodeMetadata: codeMetadata,
 	}
 
+	currentVMInput := host.Runtime().GetVMInput()
+	if len(currentVMInput.RelayerAddr) > 0 {
+		contractCreate.RelayerAddr = make([]byte, len(currentVMInput.RelayerAddr))
+		copy(contractCreate.RelayerAddr, currentVMInput.RelayerAddr)
+	}
+
 	return host.CreateNewContract(contractCreate, int(createContractCallType))
 }
 
@@ -3176,6 +3182,12 @@ func prepareIndirectContractCallInput(
 		},
 		RecipientAddr: destination,
 		Function:      string(function),
+	}
+
+	currentVMInput := runtime.GetVMInput()
+	if len(currentVMInput.RelayerAddr) > 0 {
+		contractCallInput.RelayerAddr = make([]byte, len(currentVMInput.RelayerAddr))
+		copy(contractCallInput.RelayerAddr, currentVMInput.RelayerAddr)
 	}
 
 	return contractCallInput, nil

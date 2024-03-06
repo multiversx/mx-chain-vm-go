@@ -39,7 +39,7 @@ const internalVMErrors = "internalVMErrors"
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
-	vmhost.CryptoAPIV1_7,
+	vmhost.CryptoAPIV2Flag,
 }
 
 // vmHost implements HostContext interface.
@@ -358,7 +358,7 @@ func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 	return host.gasSchedule
 }
 
-// GetGasScheduleMap returns the curent gas trace, used in scenario tests
+// GetGasTrace returns the curent gas trace, used in scenario tests
 func (host *vmHost) GetGasTrace() map[string]map[string][]uint64 {
 	return host.meteringContext.GetGasTrace()
 }

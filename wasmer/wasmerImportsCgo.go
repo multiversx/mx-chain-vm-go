@@ -94,6 +94,8 @@ package wasmer
 // extern void      v1_5_managedSCAddress(void* context, int32_t destinationHandle);
 // extern void      v1_5_managedOwnerAddress(void* context, int32_t destinationHandle);
 // extern void      v1_5_managedCaller(void* context, int32_t destinationHandle);
+// extern void      v1_5_managedGetOriginalCallerAddr(void* context, int32_t destinationHandle);
+// extern void      v1_5_managedGetRelayerAddr(void* context, int32_t destinationHandle);
 // extern void      v1_5_managedSignalError(void* context, int32_t errHandle);
 // extern void      v1_5_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
 // extern void      v1_5_managedGetOriginalTxHash(void* context, int32_t resultHandle);
@@ -691,6 +693,16 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("managedCaller", v1_5_managedCaller, C.v1_5_managedCaller)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedGetOriginalCallerAddr", v1_5_managedGetOriginalCallerAddr, C.v1_5_managedGetOriginalCallerAddr)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedGetRelayerAddr", v1_5_managedGetRelayerAddr, C.v1_5_managedGetRelayerAddr)
 	if err != nil {
 		return err
 	}
@@ -2069,6 +2081,18 @@ func v1_5_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 func v1_5_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedCaller(destinationHandle)
+}
+
+//export v1_5_managedGetOriginalCallerAddr
+func v1_5_managedGetOriginalCallerAddr(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+}
+
+//export v1_5_managedGetRelayerAddr
+func v1_5_managedGetRelayerAddr(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetRelayerAddr(destinationHandle)
 }
 
 //export v1_5_managedSignalError
