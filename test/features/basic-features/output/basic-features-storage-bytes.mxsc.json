@@ -2,10 +2,10 @@
     "buildInfo": {
         "rustc": {
             "version": "1.76.0-nightly",
-            "commitHash": "21cce21d8c012f14cf74d5afddd795d324600dac",
-            "commitDate": "2023-12-11",
+            "commitHash": "d86d65bbc19b928387f68427fcc3a0da498d8a19",
+            "commitDate": "2023-12-10",
             "channel": "Nightly",
-            "short": "rustc 1.76.0-nightly (21cce21d8 2023-12-11)"
+            "short": "rustc 1.76.0-nightly (d86d65bbc 2023-12-10)"
         },
         "contractCrate": {
             "name": "basic-features",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.47.0"
+            "version": "0.47.1"
         }
     },
     "abi": {
