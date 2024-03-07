@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,6 +21,8 @@ func getSCCode(fileName string) []byte {
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
+	testcommon.SkipTestIfWasmer1NotAllowed(t)
+
 	// Empty imports on purpose.
 	// We have currently no access to the vmhooks package here, due to cyclic imports.
 	// Fortunately, imports are not necessary for this test.

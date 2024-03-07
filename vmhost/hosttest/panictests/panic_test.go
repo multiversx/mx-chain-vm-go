@@ -7,6 +7,7 @@ import (
 	"time"
 
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
@@ -86,6 +87,8 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 }
 
 func TestTwoPanicsInSuccession(t *testing.T) {
+	testcommon.SkipTestOnARM64(t)
+
 	TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
 	TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
 }
@@ -158,6 +161,8 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 }
 
 func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
+	testcommon.SkipTestOnARM64(t)
+
 	numParallel := 100
 	hosts := make([]vmhost.VMHost, numParallel)
 	blockchains := make([]*mock.BlockchainHookStub, numParallel)

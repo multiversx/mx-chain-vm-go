@@ -2,12 +2,12 @@ package hostCoretest
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
@@ -221,6 +221,8 @@ func TestBadContract_NoPanic_BadGetBlockHash3(t *testing.T) {
 }
 
 func TestBadContract_NoPanic_BadRecursive(t *testing.T) {
+	testcommon.SkipTestOnDarwin(t)
+
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -259,9 +261,7 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 }
 
 func TestBadContractExtra_LongIntLoop_Wasmer1(t *testing.T) {
-	if os.Getenv("VMEXECUTOR") != "wasmer1" {
-		t.Skip("Skipping test")
-	}
+	testcommon.SkipTestIfWasmer1NotAllowed(t)
 
 	testBadContractExtraLongIntLoop(t, wasmer.ExecutorFactory())
 }

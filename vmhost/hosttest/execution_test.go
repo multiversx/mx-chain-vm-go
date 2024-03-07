@@ -7,7 +7,6 @@ import (
 	"io"
 	"math"
 	"math/big"
-	"os"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core"
@@ -20,6 +19,7 @@ import (
 	vmMath "github.com/multiversx/mx-chain-vm-go/math"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -142,9 +142,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
-	if os.Getenv("VMEXECUTOR") != "wasmer1" {
-		t.Skip("Skipping test")
-	}
+	testcommon.SkipTestIfWasmer1NotAllowed(t)
 
 	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
 }
