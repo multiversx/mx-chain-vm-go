@@ -22,4 +22,4 @@ jobs:
         uses: actions/checkout@v4
       - name: Test
         run: |
-          make test-w2
+          VMEXECUTOR="wasmer2" go test -timeout 1000s ./...

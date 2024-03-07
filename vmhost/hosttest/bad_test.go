@@ -2,6 +2,7 @@ package hostCoretest
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -258,6 +259,10 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 }
 
 func TestBadContractExtra_LongIntLoop_Wasmer1(t *testing.T) {
+	if os.Getenv("VMEXECUTOR") != "wasmer1" {
+		t.Skip("Skipping test")
+	}
+
 	testBadContractExtraLongIntLoop(t, wasmer.ExecutorFactory())
 }
 

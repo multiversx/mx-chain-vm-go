@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"math/big"
+	"os"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core"
@@ -141,6 +142,10 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
+	if os.Getenv("VMEXECUTOR") != "wasmer1" {
+		t.Skip("Skipping test")
+	}
+
 	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
 }
 
