@@ -1021,6 +1021,26 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
+	return TransferESDTNFTExecuteWithTypedArgsWithSender(
+		host,
+		host.Runtime().GetContextAddress(),
+		dest,
+		transfers,
+		gasLimit,
+		function,
+		data)
+}
+
+// TransferESDTNFTExecuteWithTypedArgsWithSender defines the actual transfer ESDT execute logic and execution
+func TransferESDTNFTExecuteWithTypedArgsWithSender(
+	host vmhost.VMHost,
+	senderFoExecution []byte,
+	dest []byte,
+	transfers []*vmcommon.ESDTTransfer,
+	gasLimit int64,
+	function []byte,
+	data [][]byte,
+) int32 {
 	var executeErr error
 
 	runtime := host.Runtime()
@@ -1061,6 +1081,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		OriginalCaller: originalCaller,
 		Sender:         sender,
 		Transfers:      transfers,
+		SenderForExec:  senderFoExecution,
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
@@ -1069,6 +1090,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
+		contractCallInput.CallerAddr = senderFoExecution
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {

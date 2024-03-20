@@ -144,6 +144,7 @@ typedef struct {
   int32_t (*managed_execute_on_same_context_func_ptr)(void *context, int64_t gas, int32_t address_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle, int32_t result_handle);
   int32_t (*managed_execute_on_dest_context_func_ptr)(void *context, int64_t gas, int32_t address_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle, int32_t result_handle);
   int32_t (*managed_multi_transfer_esdt_nft_execute_func_ptr)(void *context, int32_t dst_handle, int32_t token_transfers_handle, int64_t gas_limit, int32_t function_handle, int32_t arguments_handle);
+  int32_t (*managed_multi_transfer_esdt_nft_execute_by_user_func_ptr)(void *context, int32_t user_handle, int32_t dst_handle, int32_t token_transfers_handle, int64_t gas_limit, int32_t function_handle, int32_t arguments_handle);
   int32_t (*managed_transfer_value_execute_func_ptr)(void *context, int32_t dst_handle, int32_t value_handle, int64_t gas_limit, int32_t function_handle, int32_t arguments_handle);
   int32_t (*managed_is_esdt_frozen_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce);
   int32_t (*managed_is_esdt_limited_transfer_func_ptr)(void *context, int32_t token_id_handle);

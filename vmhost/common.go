@@ -303,4 +303,5 @@ type ESDTTransfersArgs struct {
 	Transfers      []*vmcommon.ESDTTransfer
 	Function       string
 	Arguments      [][]byte
+	SenderForExec  []byte
 }

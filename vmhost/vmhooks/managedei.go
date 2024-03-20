@@ -931,6 +931,48 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 	)
 }
 
+// ManagedMultiTransferESDTNFTExecuteByUser VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
+	userHandle int32,
+	dstHandle int32,
+	tokenTransfersHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteName)
+
+	user, err := managedType.GetBytes(userHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return TransferESDTNFTExecuteWithTypedArgsWithSender(
+		host,
+		user,
+		vmInput.destination,
+		transfers,
+		gasLimit,
+		[]byte(vmInput.function),
+		vmInput.arguments,
+	)
+}
+
 // ManagedTransferValueExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedTransferValueExecute(

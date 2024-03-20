@@ -119,6 +119,7 @@ package wasmer
 // extern int32_t   v1_5_managedExecuteOnSameContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   v1_5_managedExecuteOnDestContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   v1_5_managedMultiTransferESDTNFTExecute(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t   v1_5_managedMultiTransferESDTNFTExecuteByUser(void* context, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   v1_5_managedTransferValueExecute(void* context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   v1_5_managedIsESDTFrozen(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
 // extern int32_t   v1_5_managedIsESDTLimitedTransfer(void* context, int32_t tokenIDHandle);
@@ -818,6 +819,11 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("managedMultiTransferESDTNFTExecute", v1_5_managedMultiTransferESDTNFTExecute, C.v1_5_managedMultiTransferESDTNFTExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMultiTransferESDTNFTExecuteByUser", v1_5_managedMultiTransferESDTNFTExecuteByUser, C.v1_5_managedMultiTransferESDTNFTExecuteByUser)
 	if err != nil {
 		return err
 	}
@@ -2231,6 +2237,12 @@ func v1_5_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, address
 func v1_5_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+}
+
+//export v1_5_managedMultiTransferESDTNFTExecuteByUser
+func v1_5_managedMultiTransferESDTNFTExecuteByUser(context unsafe.Pointer, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export v1_5_managedTransferValueExecute
