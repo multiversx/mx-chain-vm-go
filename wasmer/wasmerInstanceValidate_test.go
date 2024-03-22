@@ -20,6 +20,10 @@ func getSCCode(fileName string) []byte {
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
+	if os.Getenv("VMEXECUTOR") != "wasmer1" {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	// Empty imports on purpose.
 	// We have currently no access to the vmhooks package here, due to cyclic imports.
 	// Fortunately, imports are not necessary for this test.

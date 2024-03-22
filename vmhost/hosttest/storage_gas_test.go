@@ -14,7 +14,7 @@ import (
 var smallKey = []byte("testKey")
 var bigKey = make([]byte, 50)
 
-const storageLoadGas = uint64(10)
+const storageLoadGasForOneLeaf = uint64(0)
 const cachedStorageLoadGas = uint64(5)
 const dataCopyGas = uint64(1)
 
@@ -46,7 +46,7 @@ func loadStorage(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGasForOneLeaf
 			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
@@ -96,7 +96,7 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGasForOneLeaf
 			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
@@ -121,7 +121,7 @@ func computeExpectedGasForGetStorage(key []byte, value []byte) uint64 {
 		extraBytesForKey = 0
 	}
 
-	expectedUsedGas := storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
+	expectedUsedGas := storageLoadGasForOneLeaf + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
 	return expectedUsedGas
 }
 

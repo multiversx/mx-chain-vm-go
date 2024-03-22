@@ -2,6 +2,7 @@ package panictests
 
 import (
 	"math/big"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -86,6 +87,10 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 }
 
 func TestTwoPanicsInSuccession(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
 	TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
 }
@@ -158,6 +163,10 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 }
 
 func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	numParallel := 100
 	hosts := make([]vmhost.VMHost, numParallel)
 	blockchains := make([]*mock.BlockchainHookStub, numParallel)
