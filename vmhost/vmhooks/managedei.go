@@ -962,7 +962,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 		return -1
 	}
 
-	return TransferESDTNFTExecuteWithTypedArgsWithSender(
+	return TransferESDTNFTExecuteByUserWithTypedArgs(
 		host,
 		user,
 		vmInput.destination,

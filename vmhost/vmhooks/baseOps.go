@@ -1021,26 +1021,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
-	return TransferESDTNFTExecuteWithTypedArgsWithSender(
-		host,
-		host.Runtime().GetContextAddress(),
-		dest,
-		transfers,
-		gasLimit,
-		function,
-		data)
-}
-
-// TransferESDTNFTExecuteWithTypedArgsWithSender defines the actual transfer ESDT execute logic and execution
-func TransferESDTNFTExecuteWithTypedArgsWithSender(
-	host vmhost.VMHost,
-	senderFoExecution []byte,
-	dest []byte,
-	transfers []*vmcommon.ESDTTransfer,
-	gasLimit int64,
-	function []byte,
-	data [][]byte,
-) int32 {
 	var executeErr error
 
 	runtime := host.Runtime()
@@ -1081,7 +1061,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithSender(
 		OriginalCaller: originalCaller,
 		Sender:         sender,
 		Transfers:      transfers,
-		SenderForExec:  senderFoExecution,
+		SenderForExec:  sender,
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
@@ -1090,13 +1070,98 @@ func TransferESDTNFTExecuteWithTypedArgsWithSender(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
-		contractCallInput.CallerAddr = senderFoExecution
+		contractCallInput.CallerAddr = sender
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 			WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution())
+			return 1
+		}
+
+		return 0
+	}
+
+	return 0
+
+}
+
+// TransferESDTNFTExecuteByUserWithTypedArgs defines the actual transfer ESDT execute logic and execution
+func TransferESDTNFTExecuteByUserWithTypedArgs(
+	host vmhost.VMHost,
+	callerForExecution []byte,
+	dest []byte,
+	transfers []*vmcommon.ESDTTransfer,
+	gasLimit int64,
+	function []byte,
+	data [][]byte,
+) int32 {
+	var executeErr error
+
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	output := host.Output()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
+	metering.UseAndTraceGas(gasToUse)
+
+	sender := runtime.GetContextAddress()
+
+	var contractCallInput *vmcommon.ContractCallInput
+	if len(function) > 0 {
+		contractCallInput, executeErr = prepareIndirectContractCallInput(
+			host,
+			sender,
+			big.NewInt(0),
+			gasLimit,
+			dest,
+			function,
+			data,
+			gasToUse,
+			false,
+		)
+		if WithFaultAndHost(host, executeErr, runtime.SyncExecAPIErrorShouldFailExecution()) {
+			return 1
+		}
+
+		contractCallInput.ESDTTransfers = transfers
+	}
+
+	originalCaller := host.Runtime().GetOriginalCallerAddress()
+	transfersArgs := &vmhost.ESDTTransfersArgs{
+		Destination:    dest,
+		OriginalCaller: originalCaller,
+		Sender:         sender,
+		Transfers:      transfers,
+		SenderForExec:  callerForExecution,
+	}
+	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
+	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
+		contractCallInput.GasProvided = gasLimitForExec
+		contractCallInput.CallerAddr = callerForExecution
+		logEEI.Trace("ESDT post-transfer execution begin")
+		_, executeErr = executeOnDestContextFromAPI(host, contractCallInput)
+		if executeErr != nil {
+			logEEI.Trace("ESDT post-transfer execution failed, started transfer to user", "error", executeErr)
+
+			// in case of failed execution, the funds have to be moved to the user
+			returnTransferArgs := &vmhost.ESDTTransfersArgs{
+				Destination:    callerForExecution,
+				OriginalCaller: originalCaller,
+				Sender:         dest,
+				Transfers:      transfers,
+			}
+			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
+			if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
+				return 1
+			}
+
 			return 1
 		}
 

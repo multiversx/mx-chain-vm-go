@@ -209,6 +209,7 @@ type VMHostParameters struct {
 	EnableEpochsHandler                 EnableEpochsHandler
 	Hasher                              HashComputer
 	TimeOutForSCExecutionInMilliseconds uint32
+	MapOpcodeAddressIsAllowed           map[string]map[string]struct{}
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
