@@ -1156,6 +1156,7 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 				OriginalCaller: originalCaller,
 				Sender:         dest,
 				Transfers:      transfers,
+				SenderForExec:  dest,
 			}
 			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
 			if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
