@@ -26,6 +26,16 @@ func (c *CryptoHookMock) VerifyBLS(_ []byte, _ []byte, _ []byte) error {
 	return c.Err
 }
 
+// VerifyAggregatedSig mocked method
+func (c *CryptoHookMock) VerifyAggregatedSig(_ [][]byte, _ []byte, _ []byte) error {
+	return c.Err
+}
+
+// VerifySignatureShare mocked method
+func (c *CryptoHookMock) VerifySignatureShare(_ []byte, _ []byte, _ []byte) error {
+	return c.Err
+}
+
 // VerifyEd25519 mocked method
 func (c *CryptoHookMock) VerifyEd25519(_ []byte, _ []byte, _ []byte) error {
 	return c.Err
@@ -33,6 +43,11 @@ func (c *CryptoHookMock) VerifyEd25519(_ []byte, _ []byte, _ []byte) error {
 
 // VerifySecp256k1 mocked method
 func (c *CryptoHookMock) VerifySecp256k1(_ []byte, _ []byte, _ []byte, _ uint8) error {
+	return c.Err
+}
+
+// VerifySecp256r1 mocked method
+func (c *CryptoHookMock) VerifySecp256r1(_ []byte, _ []byte, _ []byte) error {
 	return c.Err
 }
 

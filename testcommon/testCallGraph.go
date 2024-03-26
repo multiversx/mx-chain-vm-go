@@ -342,9 +342,10 @@ type TestCallGraph struct {
 
 // CreateTestCallGraph is the initial build metohd for the call graph
 func CreateTestCallGraph() *TestCallGraph {
+	cryptoVM, _ := factory.NewVMCrypto()
 	return &TestCallGraph{
 		Nodes:  make([]*TestCallNode, 0),
-		Crypto: factory.NewVMCrypto(),
+		Crypto: cryptoVM,
 	}
 }
 

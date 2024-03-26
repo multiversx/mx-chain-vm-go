@@ -39,19 +39,7 @@ const internalVMErrors = "internalVMErrors"
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
-	vmhost.MultiESDTTransferFixOnCallBackFlag,
-	vmhost.RemoveNonUpdatedStorageFlag,
-	vmhost.CreateNFTThroughExecByCallerFlag,
-	vmhost.StorageAPICostOptimizationFlag,
-	vmhost.CheckExecuteOnReadOnlyFlag,
-	vmhost.FailExecutionOnEveryAPIErrorFlag,
-	vmhost.ManagedCryptoAPIsFlag,
-	vmhost.DisableExecByCallerFlag,
-	vmhost.RefactorContextFlag,
-	vmhost.RuntimeMemStoreLimitFlag,
-	vmhost.RuntimeCodeSizeFixFlag,
-	vmhost.FixOOGReturnCodeFlag,
-	vmhost.DynamicGasCostForDataTrieStorageLoadFlag,
+	vmhost.CryptoAPIV2Flag,
 }
 
 // vmHost implements HostContext interface.
@@ -115,7 +103,11 @@ func NewVMHost(
 		return nil, vmhost.ErrNilVMType
 	}
 
-	cryptoHook := factory.NewVMCrypto()
+	cryptoHook, err := factory.NewVMCrypto()
+	if err != nil {
+		return nil, err
+	}
+
 	host := &vmHost{
 		cryptoHook:           cryptoHook,
 		meteringContext:      nil,
@@ -578,31 +570,6 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 		host.Runtime().ClearWarmInstanceCache()
 		host.Blockchain().ClearCompiledCodes()
 	}
-}
-
-// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FixOOGReturnCodeFlag)
-}
-
-// FixFailExecutionEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FailExecutionOnEveryAPIErrorFlag)
-}
-
-// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
-func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CreateNFTThroughExecByCallerFlag)
-}
-
-// DisableExecByCaller returns true if the corresponding flag is set
-func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.DisableExecByCallerFlag)
-}
-
-// CheckExecuteReadOnly returns true if the corresponding flag is set
-func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CheckExecuteOnReadOnlyFlag)
 }
 
 func validateVMInput(vmInput *vmcommon.VMInput) error {

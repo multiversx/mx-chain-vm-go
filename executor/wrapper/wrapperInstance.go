@@ -128,7 +128,6 @@ func (inst *WrapperInstance) MemDump() []byte {
 // IsFunctionImported wraps the call to the underlying instance.
 func (inst *WrapperInstance) IsFunctionImported(name string) bool {
 	result := inst.wrappedInstance.IsFunctionImported(name)
-	inst.logger.LogExecutorEvent(fmt.Sprintf("IsFunctionImported(%s): %t", name, result))
 	return result
 }
 
