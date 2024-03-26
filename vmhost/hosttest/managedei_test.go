@@ -1710,8 +1710,6 @@ func assertTestESDTTokenBalance(t *testing.T, world *worldmock.MockWorld, addres
 }
 
 func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
-	_ = logger.SetLogLevel("*:TRACE")
-
 	testConfig := baseTestConfig
 
 	initialESDTTokenBalance := uint64(100)
@@ -1781,8 +1779,6 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
 }
 
 func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
-	_ = logger.SetLogLevel("*:TRACE")
-
 	testConfig := baseTestConfig
 
 	initialESDTTokenBalance := uint64(100)
