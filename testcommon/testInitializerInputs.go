@@ -67,7 +67,7 @@ func MakeTestSCAddress(identifier string) []byte {
 // MakeTestSCAddressWithDefaultVM generates a new smart contract address to be used for
 // testing based on the given identifier.
 func MakeTestSCAddressWithDefaultVM(identifier string) []byte {
-	return MakeTestSCAddressWithVMType(identifier, worldmock.DefaultVMType)
+	return MakeTestSCAddressWithVMType(identifier, DefaultVMType)
 }
 
 // MakeTestSCAddressWithVMType generates a new smart contract address to be used for
