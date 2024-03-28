@@ -27,6 +27,11 @@ const (
     ESDTNFTAddUri = 500000
     ESDTNFTUpdateAttributes = 500000
     ESDTNFTMultiTransfer = 1000000
+    ESDTModifyRoyalties = 500000
+    ESDTModifyCreator = 500000
+    ESDTNFTRecreate = 1000000
+    ESDTNFTUpdate = 1000000
+    ESDTNFTSetNewURIs = 500000
     SetGuardian              = 250000
     GuardAccount             = 250000
     UnGuardAccount           = 250000
@@ -847,6 +852,11 @@ const (
     ESDTNFTAddUri = 50000
     ESDTNFTUpdateAttributes = 50000
     ESDTNFTMultiTransfer = 200000
+    ESDTModifyRoyalties = 100000
+    ESDTModifyCreator = 100000
+    ESDTNFTRecreate = 1000000
+    ESDTNFTUpdate = 1000000
+    ESDTNFTSetNewURIs = 500000
     SetGuardian              = 250000
     GuardAccount             = 250000
     UnGuardAccount           = 250000
