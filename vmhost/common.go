@@ -298,11 +298,12 @@ func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 
 // ESDTTransfersArgs defines the structure for ESDTTransferArgs, used in TransferAndExecute
 type ESDTTransfersArgs struct {
-	Destination    []byte
-	OriginalCaller []byte
-	Sender         []byte
-	Transfers      []*vmcommon.ESDTTransfer
-	Function       string
-	Arguments      [][]byte
-	SenderForExec  []byte
+	Destination      []byte
+	OriginalCaller   []byte
+	Sender           []byte
+	Transfers        []*vmcommon.ESDTTransfer
+	Function         string
+	Arguments        [][]byte
+	SenderForExec    []byte
+	ReturnAfterError bool
 }

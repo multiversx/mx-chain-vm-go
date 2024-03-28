@@ -1152,11 +1152,12 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 
 			// in case of failed execution, the funds have to be moved to the user
 			returnTransferArgs := &vmhost.ESDTTransfersArgs{
-				Destination:    callerForExecution,
-				OriginalCaller: originalCaller,
-				Sender:         dest,
-				Transfers:      transfers,
-				SenderForExec:  dest,
+				Destination:      callerForExecution,
+				OriginalCaller:   originalCaller,
+				Sender:           dest,
+				Transfers:        transfers,
+				SenderForExec:    dest,
+				ReturnAfterError: true,
 			}
 			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
 			if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
