@@ -209,6 +209,7 @@ type VMHostParameters struct {
 	EnableEpochsHandler                 EnableEpochsHandler
 	Hasher                              HashComputer
 	TimeOutForSCExecutionInMilliseconds uint32
+	MapOpcodeAddressIsAllowed           map[string]map[string]struct{}
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
@@ -297,10 +298,12 @@ func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 
 // ESDTTransfersArgs defines the structure for ESDTTransferArgs, used in TransferAndExecute
 type ESDTTransfersArgs struct {
-	Destination    []byte
-	OriginalCaller []byte
-	Sender         []byte
-	Transfers      []*vmcommon.ESDTTransfer
-	Function       string
-	Arguments      [][]byte
+	Destination      []byte
+	OriginalCaller   []byte
+	Sender           []byte
+	Transfers        []*vmcommon.ESDTTransfer
+	Function         string
+	Arguments        [][]byte
+	SenderForExec    []byte
+	ReturnAfterError bool
 }

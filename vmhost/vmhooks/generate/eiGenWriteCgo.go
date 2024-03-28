@@ -174,9 +174,18 @@ func (writer *cgoWriter) writePopulateFuncPointers(out *eiGenWriter, eiMetadata 
 func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 	return &cWasmerVmHookPointers{`)
 
+	maxNameLength := longestFuncNameLengthSnake(eiMetadata)
 	for _, funcMetadata := range eiMetadata.AllFunctions {
-		out.WriteString(fmt.Sprintf("\n\t\t%s: funcPointer(C.%s),",
+		out.WriteString(fmt.Sprintf("\n\t\t%s:",
 			cgoFuncPointerFieldName(funcMetadata),
+		))
+
+		numSpaces := maxNameLength - len(snakeCase(funcMetadata.Name)) + 1
+		for i := 0; i < numSpaces; i++ {
+			out.WriteString(" ")
+		}
+
+		out.WriteString(fmt.Sprintf("funcPointer(C.%s),",
 			writer.cgoFuncName(funcMetadata),
 		))
 	}

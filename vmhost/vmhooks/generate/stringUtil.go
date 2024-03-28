@@ -40,3 +40,27 @@ func snakeCase(camelCase string) string {
 	}
 	return sb.String()
 }
+
+// Helps align code to the right.
+func longestFuncNameLengthCamel(eiMetadata *EIMetadata) int {
+	maxNameLength := 0
+	for _, funcMetadata := range eiMetadata.AllFunctions {
+		l := len(funcMetadata.Name)
+		if l > maxNameLength {
+			maxNameLength = l
+		}
+	}
+	return maxNameLength
+}
+
+// Helps align code to the right.
+func longestFuncNameLengthSnake(eiMetadata *EIMetadata) int {
+	maxNameLength := 0
+	for _, funcMetadata := range eiMetadata.AllFunctions {
+		l := len(snakeCase(funcMetadata.Name))
+		if l > maxNameLength {
+			maxNameLength = l
+		}
+	}
+	return maxNameLength
+}

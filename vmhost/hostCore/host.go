@@ -66,7 +66,8 @@ type vmHost struct {
 	enableEpochsHandler  vmhost.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 
-	transferLogIdentifiers map[string]bool
+	transferLogIdentifiers    map[string]bool
+	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
 }
 
 // NewVMHost creates a new VM vmHost
@@ -102,6 +103,9 @@ func NewVMHost(
 	if hostParameters.VMType == nil {
 		return nil, vmhost.ErrNilVMType
 	}
+	if hostParameters.MapOpcodeAddressIsAllowed == nil {
+		return nil, vmhost.ErrNilMapOpcodeAddress
+	}
 
 	cryptoHook, err := factory.NewVMCrypto()
 	if err != nil {
@@ -109,19 +113,20 @@ func NewVMHost(
 	}
 
 	host := &vmHost{
-		cryptoHook:           cryptoHook,
-		meteringContext:      nil,
-		runtimeContext:       nil,
-		asyncContext:         nil,
-		blockchainContext:    nil,
-		storageContext:       nil,
-		managedTypesContext:  nil,
-		gasSchedule:          hostParameters.GasSchedule,
-		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
-		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		callArgsParser:       parsers.NewCallArgsParser(),
-		executionTimeout:     minExecutionTimeout,
-		enableEpochsHandler:  hostParameters.EnableEpochsHandler,
+		cryptoHook:                cryptoHook,
+		meteringContext:           nil,
+		runtimeContext:            nil,
+		asyncContext:              nil,
+		blockchainContext:         nil,
+		storageContext:            nil,
+		managedTypesContext:       nil,
+		gasSchedule:               hostParameters.GasSchedule,
+		builtInFuncContainer:      hostParameters.BuiltInFuncContainer,
+		esdtTransferParser:        hostParameters.ESDTTransferParser,
+		callArgsParser:            parsers.NewCallArgsParser(),
+		executionTimeout:          minExecutionTimeout,
+		enableEpochsHandler:       hostParameters.EnableEpochsHandler,
+		mapOpcodeAddressIsAllowed: hostParameters.MapOpcodeAddressIsAllowed,
 	}
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {
@@ -535,6 +540,18 @@ func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 	rightShard := blockchain.GetShardOfAddress(rightAddress)
 
 	return leftShard == rightShard
+}
+
+// IsAllowedToExecute returns true if the special opcode is allowed to be run by the address
+func (host *vmHost) IsAllowedToExecute(opcode string) bool {
+	mapAddresses, ok := host.mapOpcodeAddressIsAllowed[opcode]
+	if !ok {
+		return false
+	}
+
+	scAddress := string(host.Runtime().GetContextAddress())
+	_, ok = mapAddresses[scAddress]
+	return ok
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

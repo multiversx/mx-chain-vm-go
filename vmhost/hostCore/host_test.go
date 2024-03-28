@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
@@ -25,12 +25,13 @@ func TestNewVMHost(t *testing.T) {
 
 	makeHostParameters := func() *vmhost.VMHostParameters {
 		return &vmhost.VMHostParameters{
-			VMType:               vmType,
-			ESDTTransferParser:   esdtTransferParser,
-			BuiltInFuncContainer: bfc,
-			EpochNotifier:        epochNotifier,
-			EnableEpochsHandler:  epochsHandler,
-			Hasher:               worldmock.DefaultHasher,
+			VMType:                    vmType,
+			ESDTTransferParser:        esdtTransferParser,
+			BuiltInFuncContainer:      bfc,
+			EpochNotifier:             epochNotifier,
+			EnableEpochsHandler:       epochsHandler,
+			Hasher:                    worldmock.DefaultHasher,
+			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 		}
 	}
 
