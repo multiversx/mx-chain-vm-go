@@ -77,7 +77,7 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		return nil, err
 	}
 
-	parser := scenjsonparse.NewParser(fileResolver)
+	parser := scenjsonparse.NewParser(fileResolver, vmTestExecutor.GetVMType())
 
 	return &fuzzDelegationExecutor{
 		vmTestExecutor:      vmTestExecutor,

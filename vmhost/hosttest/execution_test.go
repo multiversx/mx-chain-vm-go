@@ -141,6 +141,10 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
+	if !testexecutor.IsWasmer1Allowed() {
+		t.Skip("run exclusively with wasmer1")
+	}
+
 	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
 }
 
