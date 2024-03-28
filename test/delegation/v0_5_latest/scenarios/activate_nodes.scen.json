@@ -281,7 +281,7 @@
                         "address": "sc:auction",
                         "endpoint": "str:transferValueOnly",
                         "topics": [                            
-                            "100,000,000,000,000",
+                            "0",
                             "sc:delegation"
                         ],
                         "data": [
