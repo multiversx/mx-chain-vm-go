@@ -1,6 +1,7 @@
 package vmjsonintegrationtest
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -9,6 +10,10 @@ import (
 )
 
 func TestCErc20Executors_TwiceW1ThenTwiceW2(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
@@ -16,6 +21,10 @@ func TestCErc20Executors_TwiceW1ThenTwiceW2(t *testing.T) {
 }
 
 func TestCErc20Executors_W1W2W1W2(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
@@ -23,6 +32,10 @@ func TestCErc20Executors_W1W2W1W2(t *testing.T) {
 }
 
 func TestCErc20Executors_W1W2W2W1W2(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
@@ -31,12 +44,20 @@ func TestCErc20Executors_W1W2W2W1W2(t *testing.T) {
 }
 
 func TestCErc20Executors_W2W1W2(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 }
 
 func TestCErc20Executors_W2W2W1W2(t *testing.T) {
+	if runtime.GOARCH == "arm64" {
+		t.Skip("skipping test on arm64")
+	}
+
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer.ExecutorFactory())

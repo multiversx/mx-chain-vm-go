@@ -128,7 +128,7 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, uint32, bool, err
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
 	metering := context.host.Metering()
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	gasFlagSet := enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
+	gasFlagSet := enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 	if !usedCache || !gasFlagSet {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
@@ -144,7 +144,7 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 		return
 	}
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	gasFlagSet := enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
+	gasFlagSet := enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 	if !gasFlagSet || !usedCache {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		// TODO replace UseGas with UseGasBounded
@@ -196,7 +196,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	var trieDepth uint32
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if context.isProtocolProtectedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
+	if context.isProtocolProtectedKey(key) && enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) {
 		value, trieDepth, err = context.readFromBlockchain(address, key)
 		return value, trieDepth, false, err
 	}
@@ -437,7 +437,7 @@ func (context *storageContext) computeGasForUnchangedValue(length int, usedCache
 	metering := context.host.Metering()
 	useGas := uint64(0)
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if !usedCache || !enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
+	if !usedCache || !enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) {
 		useGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	}
 	return useGas
@@ -472,7 +472,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 	extraKeyLenGas := uint64(0)
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if extraBytes > 0 &&
-		(!usedCache || !enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()) {
+		(!usedCache || !enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)) {
 		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 	}
 	return extraKeyLenGas
@@ -490,7 +490,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, t
 
 func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
+	if enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag) && usedCache {
 		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
 	}
 
@@ -500,7 +500,7 @@ func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasC
 // IsUseDifferentGasCostFlagSet - getter for flag
 func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	return enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
+	return enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
@@ -515,7 +515,7 @@ func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 
 // GetStorageLoadCost returns the gas cost for the storage load operation
 func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
-	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
+	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.DynamicGasCostForDataTrieStorageLoadFlag) {
 		return computeGasForStorageLoadBasedOnTrieDepth(
 			trieDepth,
 			context.host.Metering().GasSchedule().DynamicStorageLoad,

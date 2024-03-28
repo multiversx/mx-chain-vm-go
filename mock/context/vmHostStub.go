@@ -25,7 +25,7 @@ type VMHostStub struct {
 	MeteringCalled            func() vmhost.MeteringContext
 	AsyncCalled               func() vmhost.AsyncContext
 	StorageCalled             func() vmhost.StorageContext
-	EnableEpochsHandlerCalled func() vmcommon.EnableEpochsHandler
+	EnableEpochsHandlerCalled func() vmhost.EnableEpochsHandler
 	GetContextsCalled         func() (vmhost.ManagedTypesContext, vmhost.BlockchainContext, vmhost.MeteringContext, vmhost.OutputContext, vmhost.RuntimeContext, vmhost.AsyncContext, vmhost.StorageContext)
 	ManagedTypesCalled        func() vmhost.ManagedTypesContext
 
@@ -160,7 +160,7 @@ func (vhs *VMHostStub) Storage() vmhost.StorageContext {
 }
 
 // EnableEpochsHandler mocked method
-func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+func (vhs *VMHostStub) EnableEpochsHandler() vmhost.EnableEpochsHandler {
 	if vhs.EnableEpochsHandlerCalled != nil {
 		return vhs.EnableEpochsHandlerCalled()
 	}
