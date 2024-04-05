@@ -2905,6 +2905,8 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_Promises_CallBackFails(t *testing.T) {
+	_ = logger.SetLogLevel("*:TRACE")
+
 	// same scenario as in TestExecution_AsyncCall_CallBackFails
 	txHash := []byte("txhash..........................")
 	test.BuildInstanceCallTest(t).
