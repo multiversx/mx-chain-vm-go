@@ -19,11 +19,12 @@ var logRuntime = logger.GetOrCreate("vm/runtime")
 var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
 var mapNewCryptoAPI = map[string]struct{}{
-	"managedVerifyBLSSignatureShare":      {},
-	"managedVerifyBLSAggregatedSignature": {},
-	"managedVerifySecp256r1":              {},
-	"managedGetOriginalCallerAddr":        {},
-	"managedGetRelayerAddr":               {},
+	"managedVerifyBLSSignatureShare":           {},
+	"managedVerifyBLSAggregatedSignature":      {},
+	"managedVerifySecp256r1":                   {},
+	"managedGetOriginalCallerAddr":             {},
+	"managedGetRelayerAddr":                    {},
+	"managedMultiTransferESDTNFTExecuteByUser": {},
 }
 
 const warmCacheSize = 100
