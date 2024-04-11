@@ -563,7 +563,7 @@ func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
 }
 
 // createVMOutputInCaseOfErrorOfAsyncCallback appends the deletion of the async context to the output
-func (context *outputContext) createVMOutputInCaseOfErrorOfAsyncCallback(err error, returnCode vmcommon.ReturnCode, returnMessage string) *vmcommon.VMOutput {
+func (context *outputContext) createVMOutputInCaseOfErrorOfAsyncCallback(returnCode vmcommon.ReturnCode, returnMessage string) *vmcommon.VMOutput {
 	async := context.host.Async()
 	metering := context.host.Metering()
 
@@ -577,7 +577,7 @@ func (context *outputContext) createVMOutputInCaseOfErrorOfAsyncCallback(err err
 		OutputAccounts: make(map[string]*vmcommon.OutputAccount),
 	}
 
-	err = async.DeleteFromCallID(callId)
+	err := async.DeleteFromCallID(callId)
 	if err != nil {
 		logOutput.Trace("failed to delete Async Context", "callId", callId, "err", err)
 	}
@@ -600,7 +600,7 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	returnMessage := context.resolveReturnMessageFromError(err)
 
 	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3Flag) && callType == vm.AsynchronousCallBack {
-		return context.createVMOutputInCaseOfErrorOfAsyncCallback(err, returnCode, returnMessage)
+		return context.createVMOutputInCaseOfErrorOfAsyncCallback(returnCode, returnMessage)
 	}
 
 	vmOutput := &vmcommon.VMOutput{
