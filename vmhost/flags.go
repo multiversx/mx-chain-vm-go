@@ -3,6 +3,8 @@ package vmhost
 import "github.com/multiversx/mx-chain-core-go/core"
 
 const (
+	// AsyncV3Flag defines the flag that activates async v3
+	AsyncV3Flag core.EnableEpochFlag = "AsyncV3Flag"
 	// MultiESDTTransferFixOnCallBackFlag defines the flag that activates the multi esdt transfer fix on callback
 	MultiESDTTransferFixOnCallBackFlag core.EnableEpochFlag = "MultiESDTTransferFixOnCallBackFlag"
 	// RemoveNonUpdatedStorageFlag defines the flag that activates the remove non updated storage fix
