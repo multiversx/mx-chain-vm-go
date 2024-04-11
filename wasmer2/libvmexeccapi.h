@@ -121,6 +121,8 @@ typedef struct {
   void (*managed_sc_address_func_ptr)(void *context, int32_t destination_handle);
   void (*managed_owner_address_func_ptr)(void *context, int32_t destination_handle);
   void (*managed_caller_func_ptr)(void *context, int32_t destination_handle);
+  void (*managed_get_original_caller_addr_func_ptr)(void *context, int32_t destination_handle);
+  void (*managed_get_relayer_addr_func_ptr)(void *context, int32_t destination_handle);
   void (*managed_signal_error_func_ptr)(void *context, int32_t err_handle);
   void (*managed_write_log_func_ptr)(void *context, int32_t topics_handle, int32_t data_handle);
   void (*managed_get_original_tx_hash_func_ptr)(void *context, int32_t result_handle);
@@ -297,8 +299,6 @@ typedef struct {
   int32_t (*managed_verify_secp256r1_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
   int32_t (*managed_verify_blssignature_share_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
   int32_t (*managed_verify_blsaggregated_signature_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
-  void (*managed_get_original_caller_addr_func_ptr)(void *context, int32_t destination_handle);
-  void (*managed_get_relayer_addr_func_ptr)(void *context, int32_t destination_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
 typedef struct {
