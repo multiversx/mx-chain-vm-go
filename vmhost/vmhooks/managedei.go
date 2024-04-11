@@ -947,6 +947,11 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 	metering := host.Metering()
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteName)
 
+	if !host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteName) {
+		_ = WithFaultAndHost(host, vmhost.ErrOpcodeIsNotAllowed, runtime.BaseOpsErrorShouldFailExecution())
+		return -1
+	}
+
 	user, err := managedType.GetBytes(userHandle)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
