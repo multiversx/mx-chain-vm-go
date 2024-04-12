@@ -19,5 +19,4 @@ jobs:
         uses: actions/checkout@v4
       - name: Test
         run: |
-          VMEXECUTOR="wasmer2" go test ./integrationTests/json -failfast -v
-          VMEXECUTOR="wasmer2" go test ./integrationTests/features -run TestBigUintArith -v
+          VMEXECUTOR="wasmer2" go test ./integrationTests/... -failfast -v
