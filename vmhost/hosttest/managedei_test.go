@@ -6,7 +6,6 @@ import (
 	"crypto/elliptic"
 	"encoding/hex"
 	"fmt"
-	logger "github.com/multiversx/mx-chain-logger-go"
 	"math/big"
 	"strings"
 	"testing"
@@ -1847,8 +1846,6 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
 }
 
 func Test_ManagedMultiTransferESDTNFTExecuteByUser_ReturnOnFail(t *testing.T) {
-	_ = logger.SetLogLevel("*:TRACE")
-
 	testConfig := baseTestConfig
 
 	initialESDTTokenBalance := uint64(100)
