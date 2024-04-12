@@ -549,8 +549,7 @@ func (host *vmHost) IsAllowedToExecute(opcode string) bool {
 		return false
 	}
 
-	scAddress := string(host.Runtime().GetContextAddress())
-	_, ok = mapAddresses[scAddress]
+	_, ok = mapAddresses[string(host.Runtime().GetContextAddress())]
 	return ok
 }
 
