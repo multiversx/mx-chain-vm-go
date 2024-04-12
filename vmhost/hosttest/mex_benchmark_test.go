@@ -8,7 +8,6 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
-	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
@@ -21,7 +20,7 @@ func Test_RunDEXPairBenchmark(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-	_ = logger.SetLogLevel("vm/benchmark:TRACE")
+	//_ = logger.SetLogLevel("vm/benchmark:TRACE")
 	owner := vmhost.MakeTestSCAddress("owner")
 	user := vmhost.MakeTestSCAddress("user")
 

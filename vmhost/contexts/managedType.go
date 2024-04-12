@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	basicMath "math"
 	"math/big"
@@ -294,7 +295,7 @@ func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 func (context *managedTypesContext) GetBigInt(handle int32) (*big.Int, error) {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
-		logMTypes.Trace("missing big int", "handle", handle)
+		fmt.Println("BAD_ERROR (managedTypesContext.GetBigInt) missing big int", handle)
 		return nil, vmhost.ErrNoBigIntUnderThisHandle
 	}
 	return value, nil
@@ -305,12 +306,12 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	bigIntValues := context.managedTypesValues.bigIntValues
 	value1, ok := bigIntValues[handle1]
 	if !ok {
-		logMTypes.Trace("missing big int", "handle", handle1)
+		fmt.Println("BAD_ERROR (managedTypesContext.GetTwoBigInt) missing big int (first)", handle1)
 		return nil, nil, vmhost.ErrNoBigIntUnderThisHandle
 	}
 	value2, ok := bigIntValues[handle2]
 	if !ok {
-		logMTypes.Trace("missing big int", "handle", handle2)
+		fmt.Println("BAD_ERROR (managedTypesContext.GetTwoBigInt) missing big int (second)", handle2)
 		return nil, nil, vmhost.ErrNoBigIntUnderThisHandle
 	}
 	return value1, value2, nil

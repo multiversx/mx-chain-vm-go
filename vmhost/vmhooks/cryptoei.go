@@ -2,6 +2,8 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
+	"fmt"
+
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -719,16 +721,19 @@ func (context *VMHooksImpl) AddEC(
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	if err != nil {
+		fmt.Println("BAD_ERROR (VMHooksImpl.AddEC) missing big int (a)")
 		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	x1, y1, err := managedType.GetTwoBigInt(fstPointXHandle, fstPointYHandle)
 	if err != nil {
+		fmt.Println("BAD_ERROR (VMHooksImpl.AddEC) missing big int (b)")
 		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	x2, y2, err := managedType.GetTwoBigInt(sndPointXHandle, sndPointYHandle)
 	if err != nil {
+		fmt.Println("BAD_ERROR (VMHooksImpl.AddEC) missing big int (c)")
 		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -774,6 +779,7 @@ func (context *VMHooksImpl) DoubleEC(
 	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	x, y, err2 := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err1 != nil || err2 != nil {
+		fmt.Println("BAD_ERROR (VMHooksImpl.DoubleEC) missing big int")
 		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
@@ -816,6 +822,7 @@ func (context *VMHooksImpl) IsOnCurveEC(
 
 	x, y, err := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err != nil || x == nil || y == nil {
+		fmt.Println("BAD_ERROR (VMHooksImpl.IsOnCurveEC) missing big int")
 		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
@@ -1063,6 +1070,7 @@ func commonScalarMultEC(
 	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	x, y, err2 := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err1 != nil || err2 != nil {
+		fmt.Println("BAD_ERROR (commonScalarMultEC) missing big int")
 		_ = WithFaultAndHost(host, vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
