@@ -29,4 +29,6 @@ const (
 	FixOOGReturnCodeFlag core.EnableEpochFlag = "FixOOGReturnCodeFlag"
 	// DynamicGasCostForDataTrieStorageLoadFlag defines the flag that activates the dynamic gas cost for data trie storage load
 	DynamicGasCostForDataTrieStorageLoadFlag core.EnableEpochFlag = "DynamicGasCostForDataTrieStorageLoadFlag"
+	// AsyncV3Flag defines the flag that activates async v3
+	AsyncV3Flag core.EnableEpochFlag = "AsyncV3Flag"
 )
