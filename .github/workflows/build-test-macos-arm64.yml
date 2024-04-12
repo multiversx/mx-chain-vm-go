@@ -2,9 +2,7 @@ name: Build and run tests (MacOS ARM64)
 
 on:
   push:
-    branches: [master, rc/*, feat/*]
   pull_request:
-    branches: [master, feat/*, rc/*]
   workflow_dispatch:
 
 jobs:
