@@ -295,7 +295,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	}
 
 	if bytes.Equal(oldValue, value) {
-		return context.storageUnchanged(length, usedCache)
+		return context.storageUnchanged(length, usedCache, key)
 	}
 
 	deltaBytes := len(value) - len(oldValue)
@@ -421,14 +421,14 @@ func (context *storageContext) storageDeleted(lengthOldValue int, key []byte) (v
 	return vmhost.StorageDeleted, nil
 }
 
-func (context *storageContext) storageUnchanged(length int, usedCache bool) (vmhost.StorageStatus, error) {
+func (context *storageContext) storageUnchanged(length int, usedCache bool, key []byte) (vmhost.StorageStatus, error) {
 	useGas := context.computeGasForUnchangedValue(length, usedCache)
 	err := context.host.Metering().UseGasBounded(useGas)
 	if err != nil {
 		return vmhost.StorageUnchanged, err
 	}
 
-	logStorage.Trace("storage set to identical value")
+	logStorage.Trace("storage set to identical value", "key", key)
 	return vmhost.StorageUnchanged, nil
 }
 
