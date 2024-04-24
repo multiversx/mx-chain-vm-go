@@ -84,7 +84,7 @@ func NewRuntimeContext(
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer, host.EnableEpochsHandler()),
+		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
 		hasher:     hasher,
 		errors:     nil,
 	}

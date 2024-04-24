@@ -13,19 +13,16 @@ const allowedCharsInFunctionName = "abcdefghijklmnopqrstuvwxyz0123456789_"
 
 // wasmValidator is a validator for WASM SmartContracts
 type wasmValidator struct {
-	reserved            *reservedFunctions
-	enableEpochsHandler vmhost.EnableEpochsHandler
+	reserved *reservedFunctions
 }
 
 // newWASMValidator creates a new WASMValidator
 func newWASMValidator(
 	scAPINames vmcommon.FunctionNames,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	enableEpochsHandler vmhost.EnableEpochsHandler,
 ) *wasmValidator {
 	return &wasmValidator{
-		reserved:            NewReservedFunctions(scAPINames, builtInFuncContainer),
-		enableEpochsHandler: enableEpochsHandler,
+		reserved: NewReservedFunctions(scAPINames, builtInFuncContainer),
 	}
 }
 
@@ -73,24 +70,12 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 		return err
 	}
 
-	if validator.isFunctionNotYetEnabled(functionName) {
-		return nil
-	}
-
 	errInvalidName := fmt.Errorf("%w: %x", vmhost.ErrInvalidFunctionName, functionName)
 	if validator.reserved.IsReserved(functionName) {
 		return errInvalidName
 	}
 
 	return nil
-}
-
-func (validator *wasmValidator) isFunctionNotYetEnabled(functionName string) bool {
-	if !validator.enableEpochsHandler.IsFlagEnabled(vmhost.CryptoAPIV2Flag) {
-		_, ok := mapNewCryptoAPI[functionName]
-		return ok
-	}
-	return false
 }
 
 func verifyCallFunction(functionName string) error {
