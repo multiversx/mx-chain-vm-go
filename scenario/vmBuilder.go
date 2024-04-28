@@ -36,7 +36,7 @@ func NewScenarioVMHostBuilder() *ScenarioVMHostBuilder {
 	return &ScenarioVMHostBuilder{
 		OverrideVMExecutor:                  nil,
 		VMType:                              DefaultVMType,
-		TimeOutForSCExecutionInMilliseconds: DefaultTimeOutForSCExecutionInMilliseconds
+		TimeOutForSCExecutionInMilliseconds: DefaultTimeOutForSCExecutionInMilliseconds,
 	}
 }
 
