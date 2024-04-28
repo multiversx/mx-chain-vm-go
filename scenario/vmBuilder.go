@@ -21,10 +21,14 @@ var _ scenexec.VMBuilder = (*ScenarioVMHostBuilder)(nil)
 // DefaultVMType is the VM type argument we use in tests.
 var DefaultVMType = []byte{5, 0}
 
+// DefaultTimeOutForSCExecutionInMilliseconds is the mainnet timeout.
+var DefaultTimeOutForSCExecutionInMilliseconds uint32 = 10000
+
 // VMTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with VM.
 type ScenarioVMHostBuilder struct {
-	OverrideVMExecutor executor.ExecutorAbstractFactory
-	VMType             []byte
+	OverrideVMExecutor                  executor.ExecutorAbstractFactory
+	VMType                              []byte
+	TimeOutForSCExecutionInMilliseconds uint32
 }
 
 // NewScenarioVMHostBuilder creates a default ScenarioVMHostBuilder.
@@ -32,6 +36,7 @@ func NewScenarioVMHostBuilder() *ScenarioVMHostBuilder {
 	return &ScenarioVMHostBuilder{
 		OverrideVMExecutor: nil,
 		VMType:             DefaultVMType,
+		TimeOutForSCExecutionInMilliseconds: DefaultTimeOutForSCExecutionInMilliseconds,
 	}
 }
 
@@ -78,17 +83,18 @@ func (svb *ScenarioVMHostBuilder) NewVM(
 	return hostCore.NewVMHost(
 		world,
 		&vmhost.VMHostParameters{
-			VMType:                   svb.VMType,
-			OverrideVMExecutor:       svb.OverrideVMExecutor,
-			BlockGasLimit:            blockGasLimit,
-			GasSchedule:              gasSchedule,
-			BuiltInFuncContainer:     world.BuiltinFuncs.Container,
-			ProtectedKeyPrefix:       []byte(core.ProtectedKeyPrefix),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      world.EnableEpochsHandler,
-			WasmerSIGSEGVPassthrough: false,
-			Hasher:                   worldmock.DefaultHasher,
+			VMType:                              svb.VMType,
+			OverrideVMExecutor:                  svb.OverrideVMExecutor,
+			BlockGasLimit:                       blockGasLimit,
+			GasSchedule:                         gasSchedule,
+			BuiltInFuncContainer:                world.BuiltinFuncs.Container,
+			ProtectedKeyPrefix:                  []byte(core.ProtectedKeyPrefix),
+			ESDTTransferParser:                  esdtTransferParser,
+			EpochNotifier:                       &mock.EpochNotifierStub{},
+			EnableEpochsHandler:                 world.EnableEpochsHandler,
+			WasmerSIGSEGVPassthrough:            false,
+			Hasher:                              worldmock.DefaultHasher,
+			TimeOutForSCExecutionInMilliseconds: svb.TimeOutForSCExecutionInMilliseconds,
 		})
 
 }
