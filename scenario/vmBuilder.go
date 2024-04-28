@@ -22,7 +22,7 @@ var _ scenexec.VMBuilder = (*ScenarioVMHostBuilder)(nil)
 var DefaultVMType = []byte{5, 0}
 
 // DefaultTimeOutForSCExecutionInMilliseconds is the mainnet timeout.
-var DefaultTimeOutForSCExecutionInMilliseconds = 10000
+var DefaultTimeOutForSCExecutionInMilliseconds uint32 = 10000
 
 // VMTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with VM.
 type ScenarioVMHostBuilder struct {
