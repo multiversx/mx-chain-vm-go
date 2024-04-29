@@ -158,7 +158,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 			return nil, 0, false, nil
 		}
 
-		isReadFromUserAddress := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.CryptoAPIV2Flag) &&
+		isReadFromUserAddress := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.CryptoOpcodesV2Flag) &&
 			!core.IsSmartContractAddress(address)
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())

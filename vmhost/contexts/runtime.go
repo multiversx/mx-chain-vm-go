@@ -681,7 +681,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if !enableEpochsHandler.IsFlagEnabled(vmhost.CryptoAPIV2Flag) {
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag) {
 		err = context.checkIfContainsNewCryptoApi()
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
