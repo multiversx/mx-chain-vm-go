@@ -2,9 +2,9 @@ name: Build and run tests
 
 on:
   push:
-    branches: [ master, rc/*, feat/* ]
+    branches: [ master, rc/*, feat/*, multiBLS-secpr1-more-crypto ]
   pull_request:
-    branches: [ master, feat/*, rc/* ]
+    branches: [ master, feat/*, rc/*, multiBLS-secpr1-more-crypto ]
   workflow_dispatch:
 
 jobs:
