@@ -101,9 +101,7 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunc
 	}
 
 	output.DeployCode(input)
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RemoveNonUpdatedStorageFlag) {
-		output.RemoveNonUpdatedStorage()
-	}
+	output.RemoveNonUpdatedStorage()
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
@@ -258,9 +256,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		return vmOutput
 	}
 
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RemoveNonUpdatedStorageFlag) {
-		output.RemoveNonUpdatedStorage()
-	}
+	output.RemoveNonUpdatedStorage()
 	vmOutput = output.GetVMOutput()
 	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DirectCallString)
 
@@ -589,10 +585,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.RefactorContextFlag) {
-		input.RecipientAddr = input.CallerAddr
-	}
-
+	input.RecipientAddr = input.CallerAddr
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -943,14 +936,15 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			OriginalCallerAddr: transfersArgs.OriginalCaller,
-			CallerAddr:         transfersArgs.Sender,
-			Arguments:          make([][]byte, 0),
-			CallValue:          big.NewInt(0),
-			CallType:           callType,
-			GasPrice:           runtime.GetVMInput().GasPrice,
-			GasProvided:        metering.GasLeft(),
-			GasLocked:          0,
+			OriginalCallerAddr:   transfersArgs.OriginalCaller,
+			CallerAddr:           transfersArgs.Sender,
+			Arguments:            make([][]byte, 0),
+			CallValue:            big.NewInt(0),
+			CallType:             callType,
+			GasPrice:             runtime.GetVMInput().GasPrice,
+			GasProvided:          metering.GasLeft(),
+			GasLocked:            0,
+			ReturnCallAfterError: transfersArgs.ReturnAfterError,
 		},
 		RecipientAddr:     transfersArgs.Destination,
 		Function:          core.BuiltInFunctionESDTTransfer,
@@ -1388,6 +1382,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 			OriginalTxHash:     vmInput.OriginalTxHash,
 			CurrentTxHash:      vmInput.CurrentTxHash,
 			PrevTxHash:         vmInput.PrevTxHash,
+			RelayerAddr:        vmInput.RelayerAddr,
 		},
 		RecipientAddr:     parsedTransfer.RcvAddr,
 		Function:          function,

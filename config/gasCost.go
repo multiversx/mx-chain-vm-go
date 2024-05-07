@@ -173,23 +173,26 @@ type BigFloatAPICost struct {
 
 // CryptoAPICost defines the crypto operations gas cost config structure
 type CryptoAPICost struct {
-	SHA256                 uint64
-	Keccak256              uint64
-	Ripemd160              uint64
-	VerifyBLS              uint64
-	VerifyEd25519          uint64
-	VerifySecp256k1        uint64
-	EllipticCurveNew       uint64
-	AddECC                 uint64
-	DoubleECC              uint64
-	IsOnCurveECC           uint64
-	ScalarMultECC          uint64
-	MarshalECC             uint64
-	MarshalCompressedECC   uint64
-	UnmarshalECC           uint64
-	UnmarshalCompressedECC uint64
-	GenerateKeyECC         uint64
-	EncodeDERSig           uint64
+	SHA256                  uint64
+	Keccak256               uint64
+	Ripemd160               uint64
+	VerifyBLS               uint64
+	VerifyEd25519           uint64
+	VerifySecp256k1         uint64
+	EllipticCurveNew        uint64
+	AddECC                  uint64
+	DoubleECC               uint64
+	IsOnCurveECC            uint64
+	ScalarMultECC           uint64
+	MarshalECC              uint64
+	MarshalCompressedECC    uint64
+	UnmarshalECC            uint64
+	UnmarshalCompressedECC  uint64
+	GenerateKeyECC          uint64
+	EncodeDERSig            uint64
+	VerifySecp256r1         uint64
+	VerifyBLSSignatureShare uint64
+	VerifyBLSMultiSig       uint64
 }
 
 // ManagedBufferAPICost defines the managed buffer operations gas cost config structure

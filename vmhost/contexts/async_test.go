@@ -60,7 +60,9 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	require.Nil(tb, err)
 	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
-	host := &contextmock.VMHostMock{}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+	}
 
 	mockMetering := &contextmock.MeteringContextMock{GasLeftMock: 10000}
 	mockMetering.SetGasSchedule(gasSchedule)
@@ -94,7 +96,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	host.StorageContext = storageCtx
 
 	host.OutputContext, _ = NewOutputContext(host)
-	host.CryptoHook = factory.NewVMCrypto()
+	host.CryptoHook, _ = factory.NewVMCrypto()
 	host.StorageContext, _ = NewStorageContext(host, world, reservedTestPrefix)
 	host.EnableEpochsHandlerField = worldmock.EnableEpochsHandlerStubNoFlags()
 	host.IsBuiltinFunc = isBuiltinFunc
@@ -430,7 +432,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	_, _, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.NotNil(t, err)
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
@@ -447,7 +449,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
+	_, _, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
 	require.NotNil(t, err)
 
 	// CallType == AsynchronousCallback, but this time there is a corresponding AsyncCall

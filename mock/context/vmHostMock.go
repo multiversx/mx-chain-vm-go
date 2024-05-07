@@ -102,6 +102,11 @@ func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 	return leftShard == rightShard
 }
 
+// IsAllowedToExecute mocked method
+func (host *VMHostMock) IsAllowedToExecute(_ string) bool {
+	return true
+}
+
 // ExecuteESDTTransfer mocked method
 func (host *VMHostMock) ExecuteESDTTransfer(_ *vmhost.ESDTTransfersArgs, _ vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil

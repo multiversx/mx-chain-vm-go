@@ -36,6 +36,7 @@ type VMHostStub struct {
 	IsBuiltinFunctionNameCalled func(functionName string) bool
 	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
+	IsAllowedToExecuteCalled    func(opcode string) bool
 
 	RunSmartContractCallCalled           func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
 	RunSmartContractCreateCalled         func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -211,6 +212,14 @@ func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (
 func (vhs *VMHostStub) AreInSameShard(left []byte, right []byte) bool {
 	if vhs.AreInSameShardCalled != nil {
 		return vhs.AreInSameShardCalled(left, right)
+	}
+	return true
+}
+
+// IsAllowedToExecute mocked method
+func (vhs *VMHostStub) IsAllowedToExecute(opcode string) bool {
+	if vhs.IsAllowedToExecuteCalled != nil {
+		return vhs.IsAllowedToExecuteCalled(opcode)
 	}
 	return true
 }
