@@ -8,17 +8,17 @@ require (
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/multiversx/mx-chain-core-go v1.2.20-0.20240328090024-e88291d59ace
+	github.com/multiversx/mx-chain-core-go v1.2.20-0.20240507090904-fb3dbed69fd0
 	github.com/multiversx/mx-chain-crypto-go v1.2.10-0.20231206065052-38843c1f1479
 	github.com/multiversx/mx-chain-logger-go v1.0.14-0.20240129144507-d00e967c890c
 	github.com/multiversx/mx-chain-scenario-go v1.4.3-0.20240212160120-cc32d1580157
-	github.com/multiversx/mx-chain-storage-go v1.0.15-0.20240321150623-3974ec1d6474
-	github.com/multiversx/mx-chain-vm-common-go v1.5.12-0.20240423121536-5130480c0f69
+	github.com/multiversx/mx-chain-storage-go v1.0.15-0.20240507133659-ea37d8e8e129
+	github.com/multiversx/mx-chain-vm-common-go v1.5.12-0.20240507093748-8b13467a0f2d
 	github.com/multiversx/mx-components-big-int v1.0.0
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.27.1
-	golang.org/x/crypto v0.3.0
+	golang.org/x/crypto v0.14.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/denisbrodbeck/machineid v1.0.1 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/golang-lru v0.6.0 // indirect
 	github.com/herumi/bls-go-binary v1.28.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
@@ -37,8 +37,8 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
