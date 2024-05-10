@@ -145,7 +145,7 @@
                 "arguments": [
                     "1000000000"
                 ],
-                "gasLimit": "100,000",
+                "gasLimit": "150,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -164,7 +164,7 @@
                 "to": "sc:fuzz-delegation",
                 "function": "setAnyoneCanActivate",
                 "arguments": [],
-                "gasLimit": "100,000",
+                "gasLimit": "150,000",
                 "gasPrice": "0"
             },
             "expect": {
