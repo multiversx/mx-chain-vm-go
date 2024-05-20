@@ -32,6 +32,8 @@ message SerializableAsyncCall {
     string SuccessCallback = 10;
     string ErrorCallback = 11;
     bytes CallbackClosure = 12;
+    bool IsAsyncV3 = 13;
+    bool IsCallbackPending = 14;
 }
 
 message SerializableAsyncCallGroup {

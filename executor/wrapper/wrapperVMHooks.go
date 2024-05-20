@@ -203,6 +203,15 @@ func (w *WrapperVMHooks) CreateAsyncCall(destOffset executor.MemPtr, valueOffset
 	return result
 }
 
+// CreateAsyncV3Call VM hook wrapper
+func (w *WrapperVMHooks) CreateAsyncV3Call(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, dataLength executor.MemLength, successOffset executor.MemPtr, successLength executor.MemLength, errorOffset executor.MemPtr, errorLength executor.MemLength, gas int64, extraGasForCallback int64) int32 {
+	callInfo := fmt.Sprintf("CreateAsyncV3Call(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.CreateAsyncV3Call(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // SetAsyncContextCallback VM hook wrapper
 func (w *WrapperVMHooks) SetAsyncContextCallback(callback executor.MemPtr, callbackLength executor.MemLength, data executor.MemPtr, dataLength executor.MemLength, gas int64) int32 {
 	callInfo := fmt.Sprintf("SetAsyncContextCallback(%d, %d, %d, %d, %d)", callback, callbackLength, data, dataLength, gas)
@@ -806,10 +815,10 @@ func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32
 }
 
 // ManagedGetBackTransfers VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, callValueHandle int32) {
-	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, callValueHandle)
+func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, egldValueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
+	w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 

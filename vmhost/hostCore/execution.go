@@ -1238,6 +1238,10 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		return nil
 	}
 
+	if asyncCall.IsCallbackPending {
+		return nil
+	}
+
 	async.SetCallbackParentCall(asyncCall)
 
 	if asyncCall.HasCallback() {

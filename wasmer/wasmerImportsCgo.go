@@ -32,6 +32,7 @@ package wasmer
 // extern int32_t   v1_5_transferESDTNFTExecute(void* context, int32_t destOffset, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   v1_5_multiTransferESDTNFTExecute(void* context, int32_t destOffset, int32_t numTokenTransfers, int32_t tokenTransfersArgsLengthOffset, int32_t tokenTransferDataOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   v1_5_createAsyncCall(void* context, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t dataLength, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback);
+// extern int32_t   v1_5_createAsyncV3Call(void* context, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t dataLength, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback);
 // extern int32_t   v1_5_setAsyncContextCallback(void* context, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
 // extern void      v1_5_upgradeContract(void* context, int32_t destOffset, long long gasLimit, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void      v1_5_upgradeFromSourceContract(void* context, int32_t destOffset, long long gasLimit, int32_t valueOffset, int32_t sourceContractAddressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -102,7 +103,7 @@ package wasmer
 // extern void      v1_5_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      v1_5_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      v1_5_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
-// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t callValueHandle);
+// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      v1_5_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      v1_5_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 // extern void      v1_5_managedAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
@@ -378,6 +379,11 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("createAsyncCall", v1_5_createAsyncCall, C.v1_5_createAsyncCall)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("createAsyncV3Call", v1_5_createAsyncV3Call, C.v1_5_createAsyncV3Call)
 	if err != nil {
 		return err
 	}
@@ -1681,6 +1687,12 @@ func v1_5_createAsyncCall(context unsafe.Pointer, destOffset int32, valueOffset 
 	return vmHooks.CreateAsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), dataLength, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback)
 }
 
+//export v1_5_createAsyncV3Call
+func v1_5_createAsyncV3Call(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, dataLength int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.CreateAsyncV3Call(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), dataLength, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback)
+}
+
 //export v1_5_setAsyncContextCallback
 func v1_5_setAsyncContextCallback(context unsafe.Pointer, callback int32, callbackLength int32, data int32, dataLength int32, gas int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -2102,9 +2114,9 @@ func v1_5_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 }
 
 //export v1_5_managedGetBackTransfers
-func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, callValueHandle int32) {
+func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
+	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 }
 
 //export v1_5_managedGetESDTBalance

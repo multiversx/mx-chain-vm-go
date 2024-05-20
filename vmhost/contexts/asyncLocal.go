@@ -16,12 +16,24 @@ type lastTransferInfo struct {
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
 	localCalls := make([]*vmhost.AsyncCall, 0)
+	hasAnyRemoteCallbacks := false
 
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if call.IsLocal() {
 				localCalls = append(localCalls, call)
 			}
+
+			if call.IsRemote() && call.HasCallback() {
+				hasAnyRemoteCallbacks = true
+			}
+		}
+	}
+
+	if hasAnyRemoteCallbacks {
+		currentCall := context.GetAsyncCallByCallID(context.GetCallID()).GetAsyncCall()
+		if currentCall != nil && currentCall.IsAsyncV3 {
+			currentCall.MarkSkippedCallback()
 		}
 	}
 
@@ -78,27 +90,68 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
 	if isComplete {
-		callbackGasRemaining := uint64(0)
-		if asyncCall.HasCallback() {
-			// Restore gas locked while still on the caller instance; otherwise, the
-			// locked gas will appear to have been used twice by the caller instance.
-			isCallbackComplete, callbackVMOutput := context.ExecuteLocalCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
-			if callbackVMOutput == nil {
-				return vmhost.ErrAsyncNoOutputFromCallback
-			}
-
-			context.host.CompleteLogEntriesWithCallType(callbackVMOutput, vmhost.AsyncCallbackString)
-
-			if isCallbackComplete {
-				callbackGasRemaining = callbackVMOutput.GasRemaining
-				callbackVMOutput.GasRemaining = 0
-			}
-		}
-
-		return context.completeChild(asyncCall.CallID, callbackGasRemaining)
+		return context.executeAsyncCallbackAndComplete(asyncCall, vmOutput, destinationCallInput, err)
 	}
 
 	return nil
+}
+
+func (context *asyncContext) executePendingLocalAsyncCallbacks() error {
+	localCallsWithPendingCallbacks := make([]*vmhost.AsyncCall, 0)
+	for _, group := range context.asyncCallGroups {
+		for _, call := range group.AsyncCalls {
+			if call.IsLocal() && call.IsCallbackPending {
+				localCallsWithPendingCallbacks = append(localCallsWithPendingCallbacks, call)
+			}
+		}
+	}
+
+	for _, call := range localCallsWithPendingCallbacks {
+		err := context.executePendingLocalAsyncCallback(call)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (context *asyncContext) executePendingLocalAsyncCallback(asyncCall *vmhost.AsyncCall) error {
+	output := context.host.Output()
+
+	destinationCallInput, err := context.createContractCallInput(asyncCall)
+	if err != nil {
+		logAsync.Trace("executePendingLocalAsyncCallback failed", "error", err)
+		return err
+	}
+
+	return nil
+}
+
+func (context *asyncContext) executeAsyncCallbackAndComplete(
+	asyncCall *vmhost.AsyncCall,
+	destinationVMOutput *vmcommon.VMOutput,
+	destinationCallInput *vmcommon.ContractCallInput,
+	destinationErr error,
+) error {
+	callbackGasRemaining := uint64(0)
+	if asyncCall.HasCallback() {
+		// Restore gas locked while still on the caller instance; otherwise, the
+		// locked gas will appear to have been used twice by the caller instance.
+		isCallbackComplete, callbackVMOutput := context.ExecuteLocalCallbackAndFinishOutput(asyncCall, destinationVMOutput, destinationCallInput, 0, destinationErr)
+		if callbackVMOutput == nil {
+			return vmhost.ErrAsyncNoOutputFromCallback
+		}
+
+		context.host.CompleteLogEntriesWithCallType(callbackVMOutput, vmhost.AsyncCallbackString)
+
+		if isCallbackComplete {
+			callbackGasRemaining = callbackVMOutput.GasRemaining
+			callbackVMOutput.GasRemaining = 0
+		}
+	}
+
+	return context.completeChild(asyncCall.CallID, callbackGasRemaining)
 }
 
 // ExecuteLocalCallbackAndFinishOutput executes the callback and finishes the output
