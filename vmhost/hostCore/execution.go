@@ -387,8 +387,6 @@ func (host *vmHost) completeLogEntriesAfterBuiltinCall(input *vmcommon.ContractC
 func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	output := host.Output()
 
-	log.Error("we are here")
-
 	vmOutput, err := host.callFunctionOnOtherVM(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext function on other VM", "error", err)
@@ -396,8 +394,6 @@ func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInpu
 	}
 
 	output.AddToActiveState(vmOutput)
-
-	log.Error("merge done above")
 
 	return vmOutput, nil
 }
