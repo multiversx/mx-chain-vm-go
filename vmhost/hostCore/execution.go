@@ -397,6 +397,8 @@ func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInpu
 
 	output.AddToActiveState(vmOutput)
 
+	log.Error("merge done above")
+
 	return vmOutput, nil
 }
 
