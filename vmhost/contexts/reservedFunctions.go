@@ -11,7 +11,10 @@ type reservedFunctions struct {
 }
 
 // NewReservedFunctions creates a new reservedFunctions
-func NewReservedFunctions(scAPINames vmcommon.FunctionNames, builtInFuncContainer vmcommon.BuiltInFunctionContainer) *reservedFunctions {
+func NewReservedFunctions(
+	scAPINames vmcommon.FunctionNames,
+	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+) *reservedFunctions {
 	result := &reservedFunctions{
 		functionNames: make(vmcommon.FunctionNames),
 	}

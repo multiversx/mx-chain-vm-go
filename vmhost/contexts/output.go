@@ -493,6 +493,7 @@ func (context *outputContext) TransferESDT(
 		esdtOutTransfer := outputAcc.OutputTransfers[0]
 		esdtOutTransfer.GasLimit = gasRemaining
 		esdtOutTransfer.CallType = callType
+		esdtOutTransfer.SenderAddress = transfersArgs.SenderForExec
 		if sameShard {
 			esdtOutTransfer.GasLimit = 0
 		}
