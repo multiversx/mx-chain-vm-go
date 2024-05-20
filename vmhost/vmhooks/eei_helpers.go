@@ -5,6 +5,12 @@ const esdtRoleLocalBurn = "ESDTRoleLocalBurn"
 const esdtRoleNFTCreate = "ESDTRoleNFTCreate"
 const esdtRoleNFTAddQuantity = "ESDTRoleNFTAddQuantity"
 const esdtRoleNFTBurn = "ESDTRoleNFTBurn"
+const esdtRoleNFTUpdateAttributes = "ESDTRoleNFTUpdateAttributes"
+const esdtRoleNFTAddURI = "ESDTRoleNFTAddURI"
+const esdtRoleNFTRecreate = "ESDTRoleNFTRecreate"
+const esdtRoleModifyCreator = "ESDTRoleModifyCreator"
+const esdtRoleModifyRoyalties = "ESDTRoleModifyRoyalties"
+const esdtRoleSetNewURI = "ESDTRoleSetNewURI"
 
 const tickerMinLength = 3
 const tickerMaxLength = 10
@@ -19,6 +25,12 @@ const (
 	RoleNFTCreate
 	RoleNFTAddQuantity
 	RoleNFTBurn
+	RoleNFTUpdateAttributes
+	RoleNFTAddURI
+	RoleNFTRecreate
+	RoleModifyCreator
+	RoleModifyRoyalties
+	RoleSetNewURI
 )
 
 func roleFromByteArray(bytes []byte) int64 {
@@ -39,7 +51,37 @@ func roleFromByteArray(bytes []byte) int64 {
 	}
 }
 
-func getESDTRoles(dataBuffer []byte) int64 {
+func roleFromByteArrayV2(bytes []byte) int64 {
+	stringValue := string(bytes)
+	switch stringValue {
+	case esdtRoleLocalMint:
+		return RoleMint
+	case esdtRoleLocalBurn:
+		return RoleBurn
+	case esdtRoleNFTCreate:
+		return RoleNFTCreate
+	case esdtRoleNFTAddQuantity:
+		return RoleNFTAddQuantity
+	case esdtRoleNFTBurn:
+		return RoleNFTBurn
+	case esdtRoleNFTUpdateAttributes:
+		return RoleNFTUpdateAttributes
+	case esdtRoleNFTAddURI:
+		return RoleNFTAddURI
+	case esdtRoleNFTRecreate:
+		return RoleNFTRecreate
+	case esdtRoleModifyCreator:
+		return RoleModifyCreator
+	case esdtRoleModifyRoyalties:
+		return RoleModifyRoyalties
+	case esdtRoleSetNewURI:
+		return RoleSetNewURI
+	default:
+		return 0
+	}
+}
+
+func getESDTRoles(dataBuffer []byte, cryptoOpcodesV2Enabled bool) int64 {
 	result := int64(0)
 	currentIndex := 0
 	valueLen := len(dataBuffer)
@@ -57,7 +99,11 @@ func getESDTRoles(dataBuffer []byte) int64 {
 		roleName := dataBuffer[currentIndex:endIndex]
 		currentIndex = endIndex
 
-		result |= roleFromByteArray(roleName)
+		if cryptoOpcodesV2Enabled {
+			result |= roleFromByteArrayV2(roleName)
+		} else {
+			result |= roleFromByteArray(roleName)
+		}
 	}
 	return result
 }

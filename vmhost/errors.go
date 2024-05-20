@@ -295,3 +295,9 @@ var ErrEmptyProtectedKeyPrefix = errors.New("protectedKeyPrefix is empty or nil"
 
 // ErrInvalidGasProvided signals that an unacceptable GasProvided value was specified
 var ErrInvalidGasProvided = errors.New("invalid gas provided")
+
+// ErrNilMapOpcodeAddress signals that nil map of opcodes and addresses was provided
+var ErrNilMapOpcodeAddress = errors.New("nil map opcode address")
+
+// ErrOpcodeIsNotAllowed signals that opcode is not allowed for the address
+var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")

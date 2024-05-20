@@ -94,6 +94,8 @@ package wasmer
 // extern void      v1_5_managedSCAddress(void* context, int32_t destinationHandle);
 // extern void      v1_5_managedOwnerAddress(void* context, int32_t destinationHandle);
 // extern void      v1_5_managedCaller(void* context, int32_t destinationHandle);
+// extern void      v1_5_managedGetOriginalCallerAddr(void* context, int32_t destinationHandle);
+// extern void      v1_5_managedGetRelayerAddr(void* context, int32_t destinationHandle);
 // extern void      v1_5_managedSignalError(void* context, int32_t errHandle);
 // extern void      v1_5_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
 // extern void      v1_5_managedGetOriginalTxHash(void* context, int32_t resultHandle);
@@ -102,7 +104,7 @@ package wasmer
 // extern void      v1_5_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      v1_5_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      v1_5_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
-// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t callValueHandle);
+// extern void      v1_5_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      v1_5_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      v1_5_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 // extern void      v1_5_managedAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
@@ -117,6 +119,7 @@ package wasmer
 // extern int32_t   v1_5_managedExecuteOnSameContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   v1_5_managedExecuteOnDestContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   v1_5_managedMultiTransferESDTNFTExecute(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t   v1_5_managedMultiTransferESDTNFTExecuteByUser(void* context, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   v1_5_managedTransferValueExecute(void* context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   v1_5_managedIsESDTFrozen(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
 // extern int32_t   v1_5_managedIsESDTLimitedTransfer(void* context, int32_t tokenIDHandle);
@@ -266,6 +269,9 @@ package wasmer
 // extern int32_t   v1_5_getCurveLengthEC(void* context, int32_t ecHandle);
 // extern int32_t   v1_5_getPrivKeyByteLengthEC(void* context, int32_t ecHandle);
 // extern int32_t   v1_5_ellipticCurveGetValues(void* context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
+// extern int32_t   v1_5_managedVerifySecp256r1(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t   v1_5_managedVerifyBLSSignatureShare(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t   v1_5_managedVerifyBLSAggregatedSignature(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
 import "C"
 
 import (
@@ -692,6 +698,16 @@ func populateWasmerImports(imports *wasmerImports) error {
 		return err
 	}
 
+	err = imports.append("managedGetOriginalCallerAddr", v1_5_managedGetOriginalCallerAddr, C.v1_5_managedGetOriginalCallerAddr)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedGetRelayerAddr", v1_5_managedGetRelayerAddr, C.v1_5_managedGetRelayerAddr)
+	if err != nil {
+		return err
+	}
+
 	err = imports.append("managedSignalError", v1_5_managedSignalError, C.v1_5_managedSignalError)
 	if err != nil {
 		return err
@@ -803,6 +819,11 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("managedMultiTransferESDTNFTExecute", v1_5_managedMultiTransferESDTNFTExecute, C.v1_5_managedMultiTransferESDTNFTExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedMultiTransferESDTNFTExecuteByUser", v1_5_managedMultiTransferESDTNFTExecuteByUser, C.v1_5_managedMultiTransferESDTNFTExecuteByUser)
 	if err != nil {
 		return err
 	}
@@ -1552,6 +1573,21 @@ func populateWasmerImports(imports *wasmerImports) error {
 		return err
 	}
 
+	err = imports.append("managedVerifySecp256r1", v1_5_managedVerifySecp256r1, C.v1_5_managedVerifySecp256r1)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedVerifyBLSSignatureShare", v1_5_managedVerifyBLSSignatureShare, C.v1_5_managedVerifyBLSSignatureShare)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("managedVerifyBLSAggregatedSignature", v1_5_managedVerifyBLSAggregatedSignature, C.v1_5_managedVerifyBLSAggregatedSignature)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -2053,6 +2089,18 @@ func v1_5_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks.ManagedCaller(destinationHandle)
 }
 
+//export v1_5_managedGetOriginalCallerAddr
+func v1_5_managedGetOriginalCallerAddr(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+}
+
+//export v1_5_managedGetRelayerAddr
+func v1_5_managedGetRelayerAddr(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetRelayerAddr(destinationHandle)
+}
+
 //export v1_5_managedSignalError
 func v1_5_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -2102,9 +2150,9 @@ func v1_5_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 }
 
 //export v1_5_managedGetBackTransfers
-func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, callValueHandle int32) {
+func v1_5_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
+	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 }
 
 //export v1_5_managedGetESDTBalance
@@ -2189,6 +2237,12 @@ func v1_5_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, address
 func v1_5_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+}
+
+//export v1_5_managedMultiTransferESDTNFTExecuteByUser
+func v1_5_managedMultiTransferESDTNFTExecuteByUser(context unsafe.Pointer, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export v1_5_managedTransferValueExecute
@@ -3083,4 +3137,22 @@ func v1_5_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 func v1_5_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+}
+
+//export v1_5_managedVerifySecp256r1
+func v1_5_managedVerifySecp256r1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
+}
+
+//export v1_5_managedVerifyBLSSignatureShare
+func v1_5_managedVerifyBLSSignatureShare(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
+}
+
+//export v1_5_managedVerifyBLSAggregatedSignature
+func v1_5_managedVerifyBLSAggregatedSignature(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 }

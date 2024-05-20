@@ -18,6 +18,15 @@ var logRuntime = logger.GetOrCreate("vm/runtime")
 
 var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
+var mapNewCryptoAPI = map[string]struct{}{
+	"managedVerifyBLSSignatureShare":           {},
+	"managedVerifyBLSAggregatedSignature":      {},
+	"managedVerifySecp256r1":                   {},
+	"managedGetOriginalCallerAddr":             {},
+	"managedGetRelayerAddr":                    {},
+	"managedMultiTransferESDTNFTExecuteByUser": {},
+}
+
 const warmCacheSize = 100
 
 // WarmInstancesEnabled controls the usage of warm instances
@@ -497,6 +506,10 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		context.vmInput.OriginalCallerAddr = make([]byte, len(vmInput.OriginalCallerAddr))
 		copy(context.vmInput.OriginalCallerAddr, vmInput.OriginalCallerAddr)
 	}
+	if len(vmInput.RelayerAddr) > 0 {
+		context.vmInput.RelayerAddr = make([]byte, len(vmInput.RelayerAddr))
+		copy(context.vmInput.RelayerAddr, vmInput.RelayerAddr)
+	}
 
 	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
 
@@ -668,8 +681,8 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsFlagEnabled(vmhost.ManagedCryptoAPIsFlag) {
-		err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag) {
+		err = context.checkIfContainsNewCryptoApi()
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
 			return err
@@ -678,6 +691,15 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	logRuntime.Trace("verified contract code")
 
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
+	for funcName := range mapNewCryptoAPI {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
 	return nil
 }
 
