@@ -813,6 +813,7 @@ func mergeStorageUpdates(
 	}
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
+		logOutput.Warn("merging storages", "key", key, "value", update)
 	}
 }
 
