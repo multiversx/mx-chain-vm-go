@@ -510,7 +510,8 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 		return -1
 	}
 
-	return getESDTRoles(data)
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	return getESDTRoles(data, enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag))
 }
 
 // ValidateTokenIdentifier VMHooks implementation.
