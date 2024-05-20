@@ -438,6 +438,8 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 		}
+
+		return vmOutput, true, err
 	}
 
 	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
