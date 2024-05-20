@@ -24,7 +24,9 @@ type AsyncCall struct {
 
 	IsBuiltinFunctionCall bool
 	IsAsyncV3             bool
-	IsCallbackPending     bool
+
+	HasPendingCallback     bool
+	PendingCallbackGasLocked uint64
 }
 
 // Clone creates a deep clone of the AsyncCall
@@ -41,7 +43,8 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		SuccessCallback:   ac.SuccessCallback,
 		ErrorCallback:     ac.ErrorCallback,
 		IsAsyncV3:         ac.IsAsyncV3,
-		IsCallbackPending: ac.IsCallbackPending,
+		HasPendingCallback: ac.HasPendingCallback,
+		PendingCallbackGasLocked: ac.PendingCallbackGasLocked,
 	}
 
 	copy(clone.Destination, ac.Destination)
@@ -110,8 +113,9 @@ func (ac *AsyncCall) HasDefinedAnyCallback() bool {
 }
 
 // MarkSkippedCallback this async call has skipped calling its callback
-func (ac *AsyncCall) MarkSkippedCallback() {
-	ac.IsCallbackPending = true
+func (ac *AsyncCall) MarkSkippedCallback(pendingGasLock uint64) {
+	ac.HasPendingCallback = true
+	ac.PendingCallbackGasLocked = pendingGasLock
 }
 
 // UpdateStatus sets the status of the async call depending on the provided ReturnCode
@@ -156,7 +160,8 @@ func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
 		ErrorCallback:     ac.ErrorCallback,
 		CallbackClosure:   ac.CallbackClosure,
 		IsAsyncV3:         ac.IsAsyncV3,
-		IsCallbackPending: ac.IsCallbackPending,
+		HasPendingCallback: ac.HasPendingCallback,
+		PendingCallbackGasLocked: ac.PendingCallbackGasLocked,
 	}
 }
 
@@ -182,6 +187,7 @@ func (serAsyncCall *SerializableAsyncCall) fromSerializable() *AsyncCall {
 		ErrorCallback:     serAsyncCall.ErrorCallback,
 		CallbackClosure:   serAsyncCall.CallbackClosure,
 		IsAsyncV3:         serAsyncCall.IsAsyncV3,
-		IsCallbackPending: serAsyncCall.IsCallbackPending,
+		HasPendingCallback: serAsyncCall.HasPendingCallback,
+		PendingCallbackGasLocked: serAsyncCall.PendingCallbackGasLocked,
 	}
 }

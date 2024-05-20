@@ -4,12 +4,16 @@
 package vmhost
 
 import (
+	bytes "bytes"
 	fmt "fmt"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	reflect "reflect"
+	strconv "strconv"
+	strings "strings"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,9 +30,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type SerializableAsyncCallStatus int32
 
 const (
-	SerializableAsyncCallStatus_SerializableAsyncCallPending  SerializableAsyncCallStatus = 0
-	SerializableAsyncCallStatus_SerializableAsyncCallResolved SerializableAsyncCallStatus = 1
-	SerializableAsyncCallStatus_SerializableAsyncCallRejected SerializableAsyncCallStatus = 2
+	SerializableAsyncCallPending  SerializableAsyncCallStatus = 0
+	SerializableAsyncCallResolved SerializableAsyncCallStatus = 1
+	SerializableAsyncCallRejected SerializableAsyncCallStatus = 2
 )
 
 var SerializableAsyncCallStatus_name = map[int32]string{
@@ -43,10 +47,6 @@ var SerializableAsyncCallStatus_value = map[string]int32{
 	"SerializableAsyncCallRejected": 2,
 }
 
-func (x SerializableAsyncCallStatus) String() string {
-	return proto.EnumName(SerializableAsyncCallStatus_name, int32(x))
-}
-
 func (SerializableAsyncCallStatus) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a0e9b586d6e1f667, []int{0}
 }
@@ -54,10 +54,10 @@ func (SerializableAsyncCallStatus) EnumDescriptor() ([]byte, []int) {
 type SerializableAsyncCallExecutionMode int32
 
 const (
-	SerializableAsyncCallExecutionMode_SerializableSyncExecution              SerializableAsyncCallExecutionMode = 0
-	SerializableAsyncCallExecutionMode_SerializableAsyncBuiltinFuncIntraShard SerializableAsyncCallExecutionMode = 1
-	SerializableAsyncCallExecutionMode_SerializableAsyncBuiltinFuncCrossShard SerializableAsyncCallExecutionMode = 2
-	SerializableAsyncCallExecutionMode_SerializableAsyncUnknown               SerializableAsyncCallExecutionMode = 3
+	SerializableSyncExecution              SerializableAsyncCallExecutionMode = 0
+	SerializableAsyncBuiltinFuncIntraShard SerializableAsyncCallExecutionMode = 1
+	SerializableAsyncBuiltinFuncCrossShard SerializableAsyncCallExecutionMode = 2
+	SerializableAsyncUnknown               SerializableAsyncCallExecutionMode = 3
 )
 
 var SerializableAsyncCallExecutionMode_name = map[int32]string{
@@ -74,33 +74,29 @@ var SerializableAsyncCallExecutionMode_value = map[string]int32{
 	"SerializableAsyncUnknown":               3,
 }
 
-func (x SerializableAsyncCallExecutionMode) String() string {
-	return proto.EnumName(SerializableAsyncCallExecutionMode_name, int32(x))
-}
-
 func (SerializableAsyncCallExecutionMode) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a0e9b586d6e1f667, []int{1}
 }
 
 type SerializableAsyncCall struct {
-	CallID            []byte                             `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
-	Status            SerializableAsyncCallStatus        `protobuf:"varint,2,opt,name=Status,proto3,enum=vmhost.SerializableAsyncCallStatus" json:"Status,omitempty"`
-	ExecutionMode     SerializableAsyncCallExecutionMode `protobuf:"varint,3,opt,name=ExecutionMode,proto3,enum=vmhost.SerializableAsyncCallExecutionMode" json:"ExecutionMode,omitempty"`
-	Destination       []byte                             `protobuf:"bytes,5,opt,name=Destination,proto3" json:"Destination,omitempty"`
-	Data              []byte                             `protobuf:"bytes,6,opt,name=Data,proto3" json:"Data,omitempty"`
-	GasLimit          uint64                             `protobuf:"varint,7,opt,name=GasLimit,proto3" json:"GasLimit,omitempty"`
-	GasLocked         uint64                             `protobuf:"varint,8,opt,name=GasLocked,proto3" json:"GasLocked,omitempty"`
-	ValueBytes        []byte                             `protobuf:"bytes,9,opt,name=ValueBytes,proto3" json:"ValueBytes,omitempty"`
-	SuccessCallback   string                             `protobuf:"bytes,10,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
-	ErrorCallback     string                             `protobuf:"bytes,11,opt,name=ErrorCallback,proto3" json:"ErrorCallback,omitempty"`
-	CallbackClosure   []byte                             `protobuf:"bytes,12,opt,name=CallbackClosure,proto3" json:"CallbackClosure,omitempty"`
-	IsAsyncV3         bool                               `protobuf:"varint,13,opt,name=IsAsyncV3,proto3" json:"IsAsyncV3,omitempty"`
-	IsCallbackPending bool                               `protobuf:"varint,14,opt,name=IsCallbackPending,proto3" json:"IsCallbackPending,omitempty"`
+	CallID                   []byte                             `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
+	Status                   SerializableAsyncCallStatus        `protobuf:"varint,2,opt,name=Status,proto3,enum=vmhost.SerializableAsyncCallStatus" json:"Status,omitempty"`
+	ExecutionMode            SerializableAsyncCallExecutionMode `protobuf:"varint,3,opt,name=ExecutionMode,proto3,enum=vmhost.SerializableAsyncCallExecutionMode" json:"ExecutionMode,omitempty"`
+	Destination              []byte                             `protobuf:"bytes,5,opt,name=Destination,proto3" json:"Destination,omitempty"`
+	Data                     []byte                             `protobuf:"bytes,6,opt,name=Data,proto3" json:"Data,omitempty"`
+	GasLimit                 uint64                             `protobuf:"varint,7,opt,name=GasLimit,proto3" json:"GasLimit,omitempty"`
+	GasLocked                uint64                             `protobuf:"varint,8,opt,name=GasLocked,proto3" json:"GasLocked,omitempty"`
+	ValueBytes               []byte                             `protobuf:"bytes,9,opt,name=ValueBytes,proto3" json:"ValueBytes,omitempty"`
+	SuccessCallback          string                             `protobuf:"bytes,10,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
+	ErrorCallback            string                             `protobuf:"bytes,11,opt,name=ErrorCallback,proto3" json:"ErrorCallback,omitempty"`
+	CallbackClosure          []byte                             `protobuf:"bytes,12,opt,name=CallbackClosure,proto3" json:"CallbackClosure,omitempty"`
+	IsAsyncV3                bool                               `protobuf:"varint,13,opt,name=IsAsyncV3,proto3" json:"IsAsyncV3,omitempty"`
+	HasPendingCallback       bool                               `protobuf:"varint,14,opt,name=HasPendingCallback,proto3" json:"HasPendingCallback,omitempty"`
+	PendingCallbackGasLocked uint64                             `protobuf:"varint,15,opt,name=PendingCallbackGasLocked,proto3" json:"PendingCallbackGasLocked,omitempty"`
 }
 
-func (m *SerializableAsyncCall) Reset()         { *m = SerializableAsyncCall{} }
-func (m *SerializableAsyncCall) String() string { return proto.CompactTextString(m) }
-func (*SerializableAsyncCall) ProtoMessage()    {}
+func (m *SerializableAsyncCall) Reset()      { *m = SerializableAsyncCall{} }
+func (*SerializableAsyncCall) ProtoMessage() {}
 func (*SerializableAsyncCall) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a0e9b586d6e1f667, []int{0}
 }
@@ -138,14 +134,14 @@ func (m *SerializableAsyncCall) GetStatus() SerializableAsyncCallStatus {
 	if m != nil {
 		return m.Status
 	}
-	return SerializableAsyncCallStatus_SerializableAsyncCallPending
+	return SerializableAsyncCallPending
 }
 
 func (m *SerializableAsyncCall) GetExecutionMode() SerializableAsyncCallExecutionMode {
 	if m != nil {
 		return m.ExecutionMode
 	}
-	return SerializableAsyncCallExecutionMode_SerializableSyncExecution
+	return SerializableSyncExecution
 }
 
 func (m *SerializableAsyncCall) GetDestination() []byte {
@@ -211,11 +207,18 @@ func (m *SerializableAsyncCall) GetIsAsyncV3() bool {
 	return false
 }
 
-func (m *SerializableAsyncCall) GetIsCallbackPending() bool {
+func (m *SerializableAsyncCall) GetHasPendingCallback() bool {
 	if m != nil {
-		return m.IsCallbackPending
+		return m.HasPendingCallback
 	}
 	return false
+}
+
+func (m *SerializableAsyncCall) GetPendingCallbackGasLocked() uint64 {
+	if m != nil {
+		return m.PendingCallbackGasLocked
+	}
+	return 0
 }
 
 type SerializableAsyncCallGroup struct {
@@ -226,9 +229,8 @@ type SerializableAsyncCallGroup struct {
 	AsyncCalls   []*SerializableAsyncCall `protobuf:"bytes,5,rep,name=AsyncCalls,proto3" json:"AsyncCalls,omitempty"`
 }
 
-func (m *SerializableAsyncCallGroup) Reset()         { *m = SerializableAsyncCallGroup{} }
-func (m *SerializableAsyncCallGroup) String() string { return proto.CompactTextString(m) }
-func (*SerializableAsyncCallGroup) ProtoMessage()    {}
+func (m *SerializableAsyncCallGroup) Reset()      { *m = SerializableAsyncCallGroup{} }
+func (*SerializableAsyncCallGroup) ProtoMessage() {}
 func (*SerializableAsyncCallGroup) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a0e9b586d6e1f667, []int{1}
 }
@@ -300,45 +302,212 @@ func init() {
 func init() { proto.RegisterFile("asyncCall.proto", fileDescriptor_a0e9b586d6e1f667) }
 
 var fileDescriptor_a0e9b586d6e1f667 = []byte{
-	// 565 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x4f, 0x6f, 0x1a, 0x3f,
-	0x10, 0xc5, 0x40, 0xf8, 0x25, 0x13, 0x48, 0xf8, 0x59, 0x6a, 0xe5, 0x52, 0x58, 0x6d, 0x69, 0x54,
-	0xad, 0x50, 0x4b, 0xa4, 0xe4, 0x58, 0xf5, 0x50, 0x20, 0x8d, 0x90, 0x5a, 0x29, 0x5a, 0xd4, 0x1c,
-	0x7a, 0x33, 0xbb, 0x0e, 0xb8, 0x2c, 0x76, 0xb4, 0xf6, 0xa6, 0xa5, 0xf7, 0xde, 0x7b, 0xe8, 0x97,
-	0xe9, 0x37, 0xe8, 0x31, 0xc7, 0xf4, 0x56, 0xc1, 0x17, 0xa9, 0xd6, 0xc0, 0x86, 0x7f, 0x22, 0xa7,
-	0x9d, 0x79, 0xf3, 0xe6, 0xcd, 0xdb, 0xb1, 0x65, 0x38, 0xa4, 0x6a, 0x24, 0xbc, 0x26, 0x0d, 0x82,
-	0xfa, 0x75, 0x28, 0xb5, 0xc4, 0xb9, 0x9b, 0x61, 0x5f, 0x2a, 0x5d, 0x7a, 0xd5, 0xe3, 0xba, 0x1f,
-	0x75, 0xeb, 0x9e, 0x1c, 0x1e, 0xf7, 0x64, 0x4f, 0x1e, 0x9b, 0x72, 0x37, 0xba, 0x32, 0x99, 0x49,
-	0x4c, 0x34, 0x6d, 0xab, 0xfe, 0xcc, 0xc2, 0xa3, 0x0e, 0x0b, 0x39, 0x0d, 0xf8, 0x37, 0xda, 0x0d,
-	0xd8, 0xdb, 0xb9, 0x2c, 0x7e, 0x0c, 0xb9, 0xf8, 0xdb, 0x6e, 0x11, 0x64, 0x23, 0x27, 0xef, 0xce,
-	0x32, 0xfc, 0x1a, 0x72, 0x1d, 0x4d, 0x75, 0xa4, 0x48, 0xda, 0x46, 0xce, 0xc1, 0xc9, 0xf3, 0xfa,
-	0x74, 0x72, 0x7d, 0xa3, 0xcc, 0x94, 0xea, 0xce, 0x5a, 0xf0, 0x05, 0x14, 0xce, 0xbe, 0x32, 0x2f,
-	0xd2, 0x5c, 0x8a, 0x0f, 0xd2, 0x67, 0x24, 0x63, 0x34, 0x6a, 0x5b, 0x35, 0x96, 0x3a, 0xdc, 0x65,
-	0x01, 0x6c, 0xc3, 0x7e, 0x8b, 0x29, 0xcd, 0x05, 0x8d, 0x21, 0xb2, 0x63, 0xbc, 0x2e, 0x42, 0x18,
-	0x43, 0xb6, 0x45, 0x35, 0x25, 0x39, 0x53, 0x32, 0x31, 0x2e, 0xc1, 0xee, 0x39, 0x55, 0xef, 0xf9,
-	0x90, 0x6b, 0xf2, 0x9f, 0x8d, 0x9c, 0xac, 0x9b, 0xe4, 0xb8, 0x0c, 0x7b, 0x71, 0x2c, 0xbd, 0x01,
-	0xf3, 0xc9, 0xae, 0x29, 0xde, 0x03, 0xd8, 0x02, 0xb8, 0xa4, 0x41, 0xc4, 0x1a, 0x23, 0xcd, 0x14,
-	0xd9, 0x33, 0x9a, 0x0b, 0x08, 0x76, 0xe0, 0xb0, 0x13, 0x79, 0x1e, 0x53, 0x2a, 0xb6, 0xde, 0xa5,
-	0xde, 0x80, 0x80, 0x8d, 0x9c, 0x3d, 0x77, 0x15, 0xc6, 0x47, 0x50, 0x38, 0x0b, 0x43, 0x19, 0x26,
-	0xbc, 0x7d, 0xc3, 0x5b, 0x06, 0x63, 0xbd, 0x79, 0xdc, 0x0c, 0xa4, 0x8a, 0x42, 0x46, 0xf2, 0x66,
-	0xe8, 0x2a, 0x1c, 0xfb, 0x6e, 0x2b, 0xb3, 0xb4, 0xcb, 0x53, 0x52, 0xb0, 0x91, 0xb3, 0xeb, 0xde,
-	0x03, 0xf8, 0x25, 0xfc, 0xdf, 0x4e, 0x66, 0x5f, 0x30, 0xe1, 0x73, 0xd1, 0x23, 0x07, 0x86, 0xb5,
-	0x5e, 0xa8, 0xfe, 0x41, 0x50, 0xda, 0x78, 0x16, 0xe7, 0xa1, 0x8c, 0xae, 0xe3, 0xf5, 0x25, 0xae,
-	0x91, 0x71, 0x9d, 0xe4, 0xcb, 0xeb, 0x4b, 0xaf, 0xae, 0xaf, 0x0a, 0xf9, 0x39, 0xd3, 0x1c, 0x4a,
-	0xc6, 0xfc, 0xcb, 0x12, 0x16, 0xaf, 0xb8, 0xed, 0x33, 0xa1, 0xf9, 0x15, 0x67, 0x21, 0xc9, 0x1a,
-	0xfd, 0x05, 0x04, 0xbf, 0x01, 0x48, 0xfc, 0x28, 0xb2, 0x63, 0x67, 0x9c, 0xfd, 0x93, 0xca, 0xd6,
-	0x1b, 0xe4, 0x2e, 0x34, 0xd4, 0xbe, 0x23, 0x78, 0xba, 0xe5, 0xae, 0x62, 0x1b, 0xca, 0x1b, 0xcb,
-	0xb3, 0xdd, 0x14, 0x53, 0xf8, 0x19, 0x54, 0x36, 0x8f, 0x61, 0x4a, 0x06, 0x37, 0xcc, 0x2f, 0xa2,
-	0x2d, 0x94, 0xcf, 0xcc, 0xd3, 0xcc, 0x2f, 0xa6, 0x6b, 0xbf, 0x10, 0x54, 0x1f, 0xbe, 0xef, 0xb8,
-	0x02, 0x4f, 0x16, 0x59, 0x9d, 0x91, 0xf0, 0x12, 0x42, 0x31, 0x85, 0x6b, 0xf0, 0x62, 0x4d, 0xa4,
-	0x11, 0xf1, 0x40, 0x73, 0xf1, 0x2e, 0x12, 0x5e, 0x5b, 0xe8, 0x90, 0x76, 0xfa, 0x34, 0x8c, 0x4d,
-	0x3d, 0xc0, 0x6d, 0x86, 0x52, 0xa9, 0x29, 0x37, 0x8d, 0xcb, 0x40, 0xd6, 0xb8, 0x1f, 0xc5, 0x40,
-	0xc8, 0x2f, 0xa2, 0x98, 0x69, 0x1c, 0xfd, 0x1e, 0x5b, 0xe8, 0x76, 0x6c, 0xa1, 0xbb, 0xb1, 0x85,
-	0xfe, 0x8e, 0x2d, 0xf4, 0x63, 0x62, 0xa5, 0x6e, 0x27, 0x56, 0xea, 0x6e, 0x62, 0xa5, 0x3e, 0xcd,
-	0xde, 0xa2, 0x6e, 0xce, 0xbc, 0x31, 0xa7, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff, 0x35, 0x55, 0x47,
-	0x36, 0xad, 0x04, 0x00, 0x00,
+	// 608 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0xcd, 0x6e, 0x13, 0x3d,
+	0x14, 0x1d, 0x27, 0x69, 0xbe, 0xf6, 0xf6, 0x2f, 0xb2, 0xf4, 0x21, 0x53, 0x5a, 0x6b, 0x08, 0x08,
+	0x8d, 0x22, 0x91, 0x4a, 0xed, 0x0e, 0x84, 0x04, 0xfd, 0xa1, 0x44, 0x02, 0xa9, 0x9a, 0x88, 0x2e,
+	0xd8, 0x39, 0x33, 0x6e, 0x6a, 0x3a, 0xb5, 0xab, 0xb1, 0xa7, 0x50, 0x56, 0x6c, 0xd8, 0xf3, 0x18,
+	0xbc, 0x02, 0x6f, 0xc0, 0xb2, 0x62, 0x55, 0x76, 0x74, 0xb2, 0x61, 0xd9, 0x47, 0x40, 0xe3, 0x24,
+	0x93, 0x9f, 0x86, 0x74, 0x95, 0x7b, 0xcf, 0x3d, 0xf7, 0xdc, 0x9b, 0x63, 0x8f, 0x61, 0x99, 0xe9,
+	0x73, 0x19, 0x6c, 0xb3, 0x28, 0xaa, 0x9f, 0xc6, 0xca, 0x28, 0x5c, 0x3e, 0x3b, 0x39, 0x52, 0xda,
+	0xac, 0x3c, 0x6e, 0x0b, 0x73, 0x94, 0xb4, 0xea, 0x81, 0x3a, 0x59, 0x6f, 0xab, 0xb6, 0x5a, 0xb7,
+	0xe5, 0x56, 0x72, 0x68, 0x33, 0x9b, 0xd8, 0xa8, 0xdb, 0x56, 0xfd, 0x59, 0x82, 0xff, 0x9b, 0x3c,
+	0x16, 0x2c, 0x12, 0x9f, 0x58, 0x2b, 0xe2, 0x2f, 0xfa, 0xb2, 0xf8, 0x0e, 0x94, 0xb3, 0xdf, 0xc6,
+	0x0e, 0x41, 0x2e, 0xf2, 0x16, 0xfc, 0x5e, 0x86, 0x9f, 0x42, 0xb9, 0x69, 0x98, 0x49, 0x34, 0x29,
+	0xb8, 0xc8, 0x5b, 0xda, 0x78, 0x50, 0xef, 0x4e, 0xae, 0x4f, 0x94, 0xe9, 0x52, 0xfd, 0x5e, 0x0b,
+	0xde, 0x87, 0xc5, 0xdd, 0x8f, 0x3c, 0x48, 0x8c, 0x50, 0xf2, 0x8d, 0x0a, 0x39, 0x29, 0x5a, 0x8d,
+	0xda, 0x54, 0x8d, 0x91, 0x0e, 0x7f, 0x54, 0x00, 0xbb, 0x30, 0xbf, 0xc3, 0xb5, 0x11, 0x92, 0x65,
+	0x10, 0x99, 0xb1, 0xbb, 0x0e, 0x43, 0x18, 0x43, 0x69, 0x87, 0x19, 0x46, 0xca, 0xb6, 0x64, 0x63,
+	0xbc, 0x02, 0xb3, 0x7b, 0x4c, 0xbf, 0x16, 0x27, 0xc2, 0x90, 0xff, 0x5c, 0xe4, 0x95, 0xfc, 0x3c,
+	0xc7, 0xab, 0x30, 0x97, 0xc5, 0x2a, 0x38, 0xe6, 0x21, 0x99, 0xb5, 0xc5, 0x01, 0x80, 0x29, 0xc0,
+	0x01, 0x8b, 0x12, 0xbe, 0x75, 0x6e, 0xb8, 0x26, 0x73, 0x56, 0x73, 0x08, 0xc1, 0x1e, 0x2c, 0x37,
+	0x93, 0x20, 0xe0, 0x5a, 0x67, 0xab, 0xb7, 0x58, 0x70, 0x4c, 0xc0, 0x45, 0xde, 0x9c, 0x3f, 0x0e,
+	0xe3, 0x87, 0xb0, 0xb8, 0x1b, 0xc7, 0x2a, 0xce, 0x79, 0xf3, 0x96, 0x37, 0x0a, 0x66, 0x7a, 0xfd,
+	0x78, 0x3b, 0x52, 0x3a, 0x89, 0x39, 0x59, 0xb0, 0x43, 0xc7, 0xe1, 0x6c, 0xef, 0x86, 0xb6, 0xa6,
+	0x1d, 0x6c, 0x92, 0x45, 0x17, 0x79, 0xb3, 0xfe, 0x00, 0xc0, 0x75, 0xc0, 0xaf, 0x98, 0xde, 0xe7,
+	0x32, 0x14, 0xb2, 0x9d, 0x8f, 0x5c, 0xb2, 0xb4, 0x09, 0x15, 0xfc, 0x04, 0xc8, 0x18, 0x34, 0x30,
+	0x65, 0xd9, 0x9a, 0xf2, 0xcf, 0x7a, 0xf5, 0x17, 0x82, 0x95, 0x89, 0x27, 0xb9, 0x17, 0xab, 0xe4,
+	0x34, 0x33, 0x3f, 0x5f, 0x00, 0xd9, 0xff, 0x9c, 0xe7, 0xa3, 0xe6, 0x17, 0xc6, 0xcd, 0xaf, 0xc2,
+	0x42, 0x9f, 0x69, 0x8f, 0xb4, 0x68, 0x9d, 0x18, 0xc1, 0xb2, 0x03, 0x6a, 0x84, 0x5c, 0x1a, 0x71,
+	0x28, 0x78, 0x4c, 0x4a, 0x56, 0x7f, 0x08, 0xc1, 0xcf, 0x00, 0xf2, 0x7d, 0x34, 0x99, 0x71, 0x8b,
+	0xde, 0xfc, 0xc6, 0xda, 0xd4, 0xfb, 0xe7, 0x0f, 0x35, 0xd4, 0xbe, 0x20, 0xb8, 0x37, 0xe5, 0xa6,
+	0x63, 0x17, 0x56, 0x27, 0x96, 0x7b, 0x66, 0x55, 0x1c, 0x7c, 0x1f, 0xd6, 0x26, 0x8f, 0xe1, 0x5a,
+	0x45, 0x67, 0x3c, 0xac, 0xa0, 0x29, 0x94, 0xf7, 0x3c, 0x30, 0x3c, 0xac, 0x14, 0x6a, 0xdf, 0x11,
+	0x54, 0x6f, 0xff, 0x5a, 0xf0, 0x1a, 0xdc, 0x1d, 0x66, 0x35, 0xcf, 0x65, 0x90, 0x13, 0x2a, 0x0e,
+	0xae, 0xc1, 0xa3, 0x1b, 0x22, 0x5b, 0x89, 0x88, 0x8c, 0x90, 0x2f, 0x13, 0x19, 0x34, 0xa4, 0x89,
+	0x59, 0xf3, 0x88, 0xc5, 0xd9, 0x52, 0xb7, 0x70, 0xb7, 0x63, 0xa5, 0x75, 0x97, 0x5b, 0xc0, 0xab,
+	0x40, 0x6e, 0x70, 0xdf, 0xca, 0x63, 0xa9, 0x3e, 0xc8, 0x4a, 0x71, 0xeb, 0xf9, 0xc5, 0x15, 0x75,
+	0x2e, 0xaf, 0xa8, 0x73, 0x7d, 0x45, 0xd1, 0xe7, 0x94, 0xa2, 0x6f, 0x29, 0x45, 0x3f, 0x52, 0x8a,
+	0x2e, 0x52, 0x8a, 0x2e, 0x53, 0x8a, 0x7e, 0xa7, 0x14, 0xfd, 0x49, 0xa9, 0x73, 0x9d, 0x52, 0xf4,
+	0xb5, 0x43, 0x9d, 0x8b, 0x0e, 0x75, 0x2e, 0x3b, 0xd4, 0x79, 0xd7, 0x7b, 0xe5, 0x5a, 0x65, 0xfb,
+	0x7a, 0x6d, 0xfe, 0x0d, 0x00, 0x00, 0xff, 0xff, 0x15, 0xd8, 0x65, 0xd8, 0x07, 0x05, 0x00, 0x00,
 }
 
+func (x SerializableAsyncCallStatus) String() string {
+	s, ok := SerializableAsyncCallStatus_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (x SerializableAsyncCallExecutionMode) String() string {
+	s, ok := SerializableAsyncCallExecutionMode_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (this *SerializableAsyncCall) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SerializableAsyncCall)
+	if !ok {
+		that2, ok := that.(SerializableAsyncCall)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.CallID, that1.CallID) {
+		return false
+	}
+	if this.Status != that1.Status {
+		return false
+	}
+	if this.ExecutionMode != that1.ExecutionMode {
+		return false
+	}
+	if !bytes.Equal(this.Destination, that1.Destination) {
+		return false
+	}
+	if !bytes.Equal(this.Data, that1.Data) {
+		return false
+	}
+	if this.GasLimit != that1.GasLimit {
+		return false
+	}
+	if this.GasLocked != that1.GasLocked {
+		return false
+	}
+	if !bytes.Equal(this.ValueBytes, that1.ValueBytes) {
+		return false
+	}
+	if this.SuccessCallback != that1.SuccessCallback {
+		return false
+	}
+	if this.ErrorCallback != that1.ErrorCallback {
+		return false
+	}
+	if !bytes.Equal(this.CallbackClosure, that1.CallbackClosure) {
+		return false
+	}
+	if this.IsAsyncV3 != that1.IsAsyncV3 {
+		return false
+	}
+	if this.HasPendingCallback != that1.HasPendingCallback {
+		return false
+	}
+	if this.PendingCallbackGasLocked != that1.PendingCallbackGasLocked {
+		return false
+	}
+	return true
+}
+func (this *SerializableAsyncCallGroup) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SerializableAsyncCallGroup)
+	if !ok {
+		that2, ok := that.(SerializableAsyncCallGroup)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Callback != that1.Callback {
+		return false
+	}
+	if this.GasLocked != that1.GasLocked {
+		return false
+	}
+	if !bytes.Equal(this.CallbackData, that1.CallbackData) {
+		return false
+	}
+	if this.Identifier != that1.Identifier {
+		return false
+	}
+	if len(this.AsyncCalls) != len(that1.AsyncCalls) {
+		return false
+	}
+	for i := range this.AsyncCalls {
+		if !this.AsyncCalls[i].Equal(that1.AsyncCalls[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *SerializableAsyncCall) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 18)
+	s = append(s, "&vmhost.SerializableAsyncCall{")
+	s = append(s, "CallID: "+fmt.Sprintf("%#v", this.CallID)+",\n")
+	s = append(s, "Status: "+fmt.Sprintf("%#v", this.Status)+",\n")
+	s = append(s, "ExecutionMode: "+fmt.Sprintf("%#v", this.ExecutionMode)+",\n")
+	s = append(s, "Destination: "+fmt.Sprintf("%#v", this.Destination)+",\n")
+	s = append(s, "Data: "+fmt.Sprintf("%#v", this.Data)+",\n")
+	s = append(s, "GasLimit: "+fmt.Sprintf("%#v", this.GasLimit)+",\n")
+	s = append(s, "GasLocked: "+fmt.Sprintf("%#v", this.GasLocked)+",\n")
+	s = append(s, "ValueBytes: "+fmt.Sprintf("%#v", this.ValueBytes)+",\n")
+	s = append(s, "SuccessCallback: "+fmt.Sprintf("%#v", this.SuccessCallback)+",\n")
+	s = append(s, "ErrorCallback: "+fmt.Sprintf("%#v", this.ErrorCallback)+",\n")
+	s = append(s, "CallbackClosure: "+fmt.Sprintf("%#v", this.CallbackClosure)+",\n")
+	s = append(s, "IsAsyncV3: "+fmt.Sprintf("%#v", this.IsAsyncV3)+",\n")
+	s = append(s, "HasPendingCallback: "+fmt.Sprintf("%#v", this.HasPendingCallback)+",\n")
+	s = append(s, "PendingCallbackGasLocked: "+fmt.Sprintf("%#v", this.PendingCallbackGasLocked)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *SerializableAsyncCallGroup) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 9)
+	s = append(s, "&vmhost.SerializableAsyncCallGroup{")
+	s = append(s, "Callback: "+fmt.Sprintf("%#v", this.Callback)+",\n")
+	s = append(s, "GasLocked: "+fmt.Sprintf("%#v", this.GasLocked)+",\n")
+	s = append(s, "CallbackData: "+fmt.Sprintf("%#v", this.CallbackData)+",\n")
+	s = append(s, "Identifier: "+fmt.Sprintf("%#v", this.Identifier)+",\n")
+	if this.AsyncCalls != nil {
+		s = append(s, "AsyncCalls: "+fmt.Sprintf("%#v", this.AsyncCalls)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func valueToGoStringAsyncCall(v interface{}, typ string) string {
+	rv := reflect.ValueOf(v)
+	if rv.IsNil() {
+		return "nil"
+	}
+	pv := reflect.Indirect(rv).Interface()
+	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
+}
 func (m *SerializableAsyncCall) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -359,9 +528,14 @@ func (m *SerializableAsyncCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.IsCallbackPending {
+	if m.PendingCallbackGasLocked != 0 {
+		i = encodeVarintAsyncCall(dAtA, i, uint64(m.PendingCallbackGasLocked))
 		i--
-		if m.IsCallbackPending {
+		dAtA[i] = 0x78
+	}
+	if m.HasPendingCallback {
+		i--
+		if m.HasPendingCallback {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
@@ -574,8 +748,11 @@ func (m *SerializableAsyncCall) Size() (n int) {
 	if m.IsAsyncV3 {
 		n += 2
 	}
-	if m.IsCallbackPending {
+	if m.HasPendingCallback {
 		n += 2
+	}
+	if m.PendingCallbackGasLocked != 0 {
+		n += 1 + sovAsyncCall(uint64(m.PendingCallbackGasLocked))
 	}
 	return n
 }
@@ -615,6 +792,56 @@ func sovAsyncCall(x uint64) (n int) {
 }
 func sozAsyncCall(x uint64) (n int) {
 	return sovAsyncCall(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (this *SerializableAsyncCall) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&SerializableAsyncCall{`,
+		`CallID:` + fmt.Sprintf("%v", this.CallID) + `,`,
+		`Status:` + fmt.Sprintf("%v", this.Status) + `,`,
+		`ExecutionMode:` + fmt.Sprintf("%v", this.ExecutionMode) + `,`,
+		`Destination:` + fmt.Sprintf("%v", this.Destination) + `,`,
+		`Data:` + fmt.Sprintf("%v", this.Data) + `,`,
+		`GasLimit:` + fmt.Sprintf("%v", this.GasLimit) + `,`,
+		`GasLocked:` + fmt.Sprintf("%v", this.GasLocked) + `,`,
+		`ValueBytes:` + fmt.Sprintf("%v", this.ValueBytes) + `,`,
+		`SuccessCallback:` + fmt.Sprintf("%v", this.SuccessCallback) + `,`,
+		`ErrorCallback:` + fmt.Sprintf("%v", this.ErrorCallback) + `,`,
+		`CallbackClosure:` + fmt.Sprintf("%v", this.CallbackClosure) + `,`,
+		`IsAsyncV3:` + fmt.Sprintf("%v", this.IsAsyncV3) + `,`,
+		`HasPendingCallback:` + fmt.Sprintf("%v", this.HasPendingCallback) + `,`,
+		`PendingCallbackGasLocked:` + fmt.Sprintf("%v", this.PendingCallbackGasLocked) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *SerializableAsyncCallGroup) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForAsyncCalls := "[]*SerializableAsyncCall{"
+	for _, f := range this.AsyncCalls {
+		repeatedStringForAsyncCalls += strings.Replace(f.String(), "SerializableAsyncCall", "SerializableAsyncCall", 1) + ","
+	}
+	repeatedStringForAsyncCalls += "}"
+	s := strings.Join([]string{`&SerializableAsyncCallGroup{`,
+		`Callback:` + fmt.Sprintf("%v", this.Callback) + `,`,
+		`GasLocked:` + fmt.Sprintf("%v", this.GasLocked) + `,`,
+		`CallbackData:` + fmt.Sprintf("%v", this.CallbackData) + `,`,
+		`Identifier:` + fmt.Sprintf("%v", this.Identifier) + `,`,
+		`AsyncCalls:` + repeatedStringForAsyncCalls + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func valueToStringAsyncCall(v interface{}) string {
+	rv := reflect.ValueOf(v)
+	if rv.IsNil() {
+		return "nil"
+	}
+	pv := reflect.Indirect(rv).Interface()
+	return fmt.Sprintf("*%v", pv)
 }
 func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -977,7 +1204,7 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 			m.IsAsyncV3 = bool(v != 0)
 		case 14:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IsCallbackPending", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field HasPendingCallback", wireType)
 			}
 			var v int
 			for shift := uint(0); ; shift += 7 {
@@ -994,7 +1221,26 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-			m.IsCallbackPending = bool(v != 0)
+			m.HasPendingCallback = bool(v != 0)
+		case 15:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PendingCallbackGasLocked", wireType)
+			}
+			m.PendingCallbackGasLocked = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsyncCall
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PendingCallbackGasLocked |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipAsyncCall(dAtA[iNdEx:])

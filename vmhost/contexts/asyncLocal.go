@@ -33,7 +33,7 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 	if hasAnyRemoteCallbacks {
 		currentCall := context.GetAsyncCallByCallID(context.GetCallID()).GetAsyncCall()
 		if currentCall != nil && currentCall.IsAsyncV3 {
-			currentCall.MarkSkippedCallback()
+			currentCall.MarkSkippedCallback(currentCall.GetGasLocked())
 		}
 	}
 
@@ -91,38 +91,6 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 
 	if isComplete {
 		return context.executeAsyncCallbackAndComplete(asyncCall, vmOutput, destinationCallInput, err)
-	}
-
-	return nil
-}
-
-func (context *asyncContext) executePendingLocalAsyncCallbacks() error {
-	localCallsWithPendingCallbacks := make([]*vmhost.AsyncCall, 0)
-	for _, group := range context.asyncCallGroups {
-		for _, call := range group.AsyncCalls {
-			if call.IsLocal() && call.IsCallbackPending {
-				localCallsWithPendingCallbacks = append(localCallsWithPendingCallbacks, call)
-			}
-		}
-	}
-
-	for _, call := range localCallsWithPendingCallbacks {
-		err := context.executePendingLocalAsyncCallback(call)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (context *asyncContext) executePendingLocalAsyncCallback(asyncCall *vmhost.AsyncCall) error {
-	output := context.host.Output()
-
-	destinationCallInput, err := context.createContractCallInput(asyncCall)
-	if err != nil {
-		logAsync.Trace("executePendingLocalAsyncCallback failed", "error", err)
-		return err
 	}
 
 	return nil

@@ -1238,7 +1238,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		return nil
 	}
 
-	if asyncCall.IsCallbackPending {
+	if asyncCall.HasPendingCallback {
 		return nil
 	}
 
