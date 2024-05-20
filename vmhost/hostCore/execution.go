@@ -300,19 +300,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	blockchain.PushState()
 
-	if host.IsOutOfVMFunctionExecution(input) {
-		vmOutput, err = host.handleFunctionCallOnOtherVM(input)
-		if err != nil {
-			blockchain.PopSetActiveState()
-			host.Runtime().AddError(err, input.Function)
-			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
-			isChildComplete = true
-		} else {
-			blockchain.PopDiscard()
-		}
-		return
-	}
-
 	if host.IsBuiltinFunctionName(input.Function) {
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
@@ -445,6 +432,14 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
+	if host.IsOutOfVMFunctionExecution(input) {
+		vmOutput, err = host.handleFunctionCallOnOtherVM(input)
+		if err != nil {
+			host.Runtime().AddError(err, input.Function)
+			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
+		}
+	}
+
 	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
