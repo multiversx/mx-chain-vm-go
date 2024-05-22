@@ -812,6 +812,7 @@ func mergeStorageUpdates(
 	if leftAccount.StorageUpdates == nil {
 		leftAccount.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
 	}
+
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
 	}
