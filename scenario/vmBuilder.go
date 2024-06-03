@@ -95,7 +95,7 @@ func (svb *ScenarioVMHostBuilder) NewVM(
 			WasmerSIGSEGVPassthrough:  false,
 			Hasher:                    worldmock.DefaultHasher,
 			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
-      TimeOutForSCExecutionInMilliseconds: svb.TimeOutForSCExecutionInMilliseconds,
+			TimeOutForSCExecutionInMilliseconds: svb.TimeOutForSCExecutionInMilliseconds,
 		})
 
 }
