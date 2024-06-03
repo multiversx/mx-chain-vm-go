@@ -39,19 +39,7 @@ const internalVMErrors = "internalVMErrors"
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
-	vmhost.MultiESDTTransferFixOnCallBackFlag,
-	vmhost.RemoveNonUpdatedStorageFlag,
-	vmhost.CreateNFTThroughExecByCallerFlag,
-	vmhost.StorageAPICostOptimizationFlag,
-	vmhost.CheckExecuteOnReadOnlyFlag,
-	vmhost.FailExecutionOnEveryAPIErrorFlag,
-	vmhost.ManagedCryptoAPIsFlag,
-	vmhost.DisableExecByCallerFlag,
-	vmhost.RefactorContextFlag,
-	vmhost.RuntimeMemStoreLimitFlag,
-	vmhost.RuntimeCodeSizeFixFlag,
-	vmhost.FixOOGReturnCodeFlag,
-	vmhost.DynamicGasCostForDataTrieStorageLoadFlag,
+	vmhost.CryptoOpcodesV2Flag,
 }
 
 // vmHost implements HostContext interface.
@@ -78,7 +66,8 @@ type vmHost struct {
 	enableEpochsHandler  vmhost.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 
-	transferLogIdentifiers map[string]bool
+	transferLogIdentifiers    map[string]bool
+	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
 }
 
 // NewVMHost creates a new VM vmHost
@@ -114,22 +103,30 @@ func NewVMHost(
 	if hostParameters.VMType == nil {
 		return nil, vmhost.ErrNilVMType
 	}
+	if hostParameters.MapOpcodeAddressIsAllowed == nil {
+		return nil, vmhost.ErrNilMapOpcodeAddress
+	}
 
-	cryptoHook := factory.NewVMCrypto()
+	cryptoHook, err := factory.NewVMCrypto()
+	if err != nil {
+		return nil, err
+	}
+
 	host := &vmHost{
-		cryptoHook:           cryptoHook,
-		meteringContext:      nil,
-		runtimeContext:       nil,
-		asyncContext:         nil,
-		blockchainContext:    nil,
-		storageContext:       nil,
-		managedTypesContext:  nil,
-		gasSchedule:          hostParameters.GasSchedule,
-		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
-		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		callArgsParser:       parsers.NewCallArgsParser(),
-		executionTimeout:     minExecutionTimeout,
-		enableEpochsHandler:  hostParameters.EnableEpochsHandler,
+		cryptoHook:                cryptoHook,
+		meteringContext:           nil,
+		runtimeContext:            nil,
+		asyncContext:              nil,
+		blockchainContext:         nil,
+		storageContext:            nil,
+		managedTypesContext:       nil,
+		gasSchedule:               hostParameters.GasSchedule,
+		builtInFuncContainer:      hostParameters.BuiltInFuncContainer,
+		esdtTransferParser:        hostParameters.ESDTTransferParser,
+		callArgsParser:            parsers.NewCallArgsParser(),
+		executionTimeout:          minExecutionTimeout,
+		enableEpochsHandler:       hostParameters.EnableEpochsHandler,
+		mapOpcodeAddressIsAllowed: hostParameters.MapOpcodeAddressIsAllowed,
 	}
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {
@@ -545,6 +542,17 @@ func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 	return leftShard == rightShard
 }
 
+// IsAllowedToExecute returns true if the special opcode is allowed to be run by the address
+func (host *vmHost) IsAllowedToExecute(opcode string) bool {
+	mapAddresses, ok := host.mapOpcodeAddressIsAllowed[opcode]
+	if !ok {
+		return false
+	}
+
+	_, ok = mapAddresses[string(host.Runtime().GetContextAddress())]
+	return ok
+}
+
 // IsInterfaceNil returns true if there is no value under the interface
 func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil
@@ -578,31 +586,6 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 		host.Runtime().ClearWarmInstanceCache()
 		host.Blockchain().ClearCompiledCodes()
 	}
-}
-
-// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FixOOGReturnCodeFlag)
-}
-
-// FixFailExecutionEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.FailExecutionOnEveryAPIErrorFlag)
-}
-
-// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
-func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CreateNFTThroughExecByCallerFlag)
-}
-
-// DisableExecByCaller returns true if the corresponding flag is set
-func (host *vmHost) DisableExecByCaller() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.DisableExecByCallerFlag)
-}
-
-// CheckExecuteReadOnly returns true if the corresponding flag is set
-func (host *vmHost) CheckExecuteReadOnly() bool {
-	return host.enableEpochsHandler.IsFlagEnabled(vmhost.CheckExecuteOnReadOnlyFlag)
 }
 
 func validateVMInput(vmInput *vmcommon.VMInput) error {

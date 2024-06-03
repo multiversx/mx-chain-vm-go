@@ -41,7 +41,7 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	host.MeteringContext = mockMetering
 	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
 	host.OutputContext, _ = NewOutputContext(host)
-	host.CryptoHook = factory.NewVMCrypto()
+	host.CryptoHook, _ = factory.NewVMCrypto()
 	return host
 }
 
