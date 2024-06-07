@@ -64,6 +64,7 @@ package wasmer
 // extern int32_t   v1_5_getNumESDTTransfers(void* context);
 // extern int32_t   v1_5_getCallValueTokenName(void* context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern int32_t   v1_5_getCallValueTokenNameByIndex(void* context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
+// extern int32_t   v1_5_isBuiltinFunctionName(void* context, int32_t nameOffset, int32_t nameLength);
 // extern void      v1_5_writeLog(void* context, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
 // extern void      v1_5_writeEventLog(void* context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern long long v1_5_getBlockTimestamp(void* context);
@@ -544,6 +545,11 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("getCallValueTokenNameByIndex", v1_5_getCallValueTokenNameByIndex, C.v1_5_getCallValueTokenNameByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("isBuiltinFunctionName", v1_5_isBuiltinFunctionName, C.v1_5_isBuiltinFunctionName)
 	if err != nil {
 		return err
 	}
@@ -1907,6 +1913,12 @@ func v1_5_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, t
 func v1_5_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.GetCallValueTokenNameByIndex(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset), index)
+}
+
+//export v1_5_isBuiltinFunctionName
+func v1_5_isBuiltinFunctionName(context unsafe.Pointer, nameOffset int32, nameLength int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.IsBuiltinFunctionName(executor.MemPtr(nameOffset), nameLength)
 }
 
 //export v1_5_writeLog

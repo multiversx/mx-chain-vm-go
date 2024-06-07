@@ -2324,6 +2324,24 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 	return int32(len(tokenName))
 }
 
+// IsBuiltinFunctionName VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) IsBuiltinFunctionName(nameOffset executor.MemPtr, nameLength executor.MemLength) int32 {
+	host := context.host
+	runtime := host.Runtime()
+
+	name, err := context.MemLoad(nameOffset, nameLength)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	if host.IsBuiltinFunctionName(string(name)) {
+		return 1
+	}
+
+	return 0
+}
+
 // WriteLog VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) WriteLog(

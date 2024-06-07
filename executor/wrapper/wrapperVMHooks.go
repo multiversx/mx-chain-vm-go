@@ -485,6 +485,15 @@ func (w *WrapperVMHooks) GetCallValueTokenNameByIndex(callValueOffset executor.M
 	return result
 }
 
+// IsBuiltinFunctionName VM hook wrapper
+func (w *WrapperVMHooks) IsBuiltinFunctionName(nameOffset executor.MemPtr, nameLength executor.MemLength) int32 {
+	callInfo := fmt.Sprintf("IsBuiltinFunctionName(%d, %d)", nameOffset, nameLength)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.IsBuiltinFunctionName(nameOffset, nameLength)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // WriteLog VM hook wrapper
 func (w *WrapperVMHooks) WriteLog(dataPointer executor.MemPtr, dataLength executor.MemLength, topicPtr executor.MemPtr, numTopics int32) {
 	callInfo := fmt.Sprintf("WriteLog(%d, %d, %d, %d)", dataPointer, dataLength, topicPtr, numTopics)
