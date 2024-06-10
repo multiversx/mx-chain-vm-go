@@ -2332,7 +2332,6 @@ func (context *VMHooksImpl) IsReservedFunctionName(nameOffset executor.MemPtr, n
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsReservedFunctionName
-	gasToUse += math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(nameLength))
 	metering.UseAndTraceGas(gasToUse)
 
 	name, err := context.MemLoad(nameOffset, nameLength)
