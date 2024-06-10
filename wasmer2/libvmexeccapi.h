@@ -91,7 +91,7 @@ typedef struct {
   int32_t (*get_num_esdt_transfers_func_ptr)(void *context);
   int32_t (*get_call_value_token_name_func_ptr)(void *context, int32_t call_value_offset, int32_t token_name_offset);
   int32_t (*get_call_value_token_name_by_index_func_ptr)(void *context, int32_t call_value_offset, int32_t token_name_offset, int32_t index);
-  int32_t (*is_builtin_function_name_func_ptr)(void *context, int32_t name_offset, int32_t name_length);
+  int32_t (*is_reserved_function_name_func_ptr)(void *context, int32_t name_offset, int32_t name_length);
   void (*write_log_func_ptr)(void *context, int32_t data_pointer, int32_t data_length, int32_t topic_ptr, int32_t num_topics);
   void (*write_event_log_func_ptr)(void *context, int32_t num_topics, int32_t topic_lengths_offset, int32_t topic_offset, int32_t data_offset, int32_t data_length);
   int64_t (*get_block_timestamp_func_ptr)(void *context);

@@ -121,6 +121,7 @@ const (
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
     IsBuiltinFunction = 100
+    IsReservedFunctionName = 100
 
 [EthAPICost]
     UseGas = 100
@@ -951,6 +952,7 @@ const (
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
     IsBuiltinFunction = 100
+    IsReservedFunctionName = 100
 
 [EthAPICost]
     UseGas = 100

@@ -2324,18 +2324,23 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 	return int32(len(tokenName))
 }
 
-// IsBuiltinFunctionName VMHooks implementation.
+// IsReservedFunctionName VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) IsBuiltinFunctionName(nameOffset executor.MemPtr, nameLength executor.MemLength) int32 {
+func (context *VMHooksImpl) IsReservedFunctionName(nameOffset executor.MemPtr, nameLength executor.MemLength) int32 {
 	host := context.host
 	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsReservedFunctionName
+	gasToUse += math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(nameLength))
+	metering.UseAndTraceGas(gasToUse)
 
 	name, err := context.MemLoad(nameOffset, nameLength)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
-	if host.IsBuiltinFunctionName(string(name)) {
+	if runtime.IsReservedFunctionName(string(name)) {
 		return 1
 	}
 

@@ -582,6 +582,11 @@ func (contextWrapper *RuntimeContextWrapper) ValidateCallbackName(callbackName s
 	return contextWrapper.runtimeContext.ValidateCallbackName(callbackName)
 }
 
+// IsReservedFunctionName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) IsReservedFunctionName(functionName string) bool {
+	return contextWrapper.runtimeContext.IsReservedFunctionName(functionName)
+}
+
 // HasFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) HasFunction(functionName string) bool {
 	return contextWrapper.runtimeContext.HasFunction(functionName)

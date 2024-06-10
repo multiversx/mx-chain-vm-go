@@ -72,7 +72,7 @@ type MainVMHooks interface {
 	GetNumESDTTransfers() int32
 	GetCallValueTokenName(callValueOffset MemPtr, tokenNameOffset MemPtr) int32
 	GetCallValueTokenNameByIndex(callValueOffset MemPtr, tokenNameOffset MemPtr, index int32) int32
-	IsBuiltinFunctionName(nameOffset MemPtr, nameLength MemLength) int32
+	IsReservedFunctionName(nameOffset MemPtr, nameLength MemLength) int32
 	WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32)
 	WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength)
 	GetBlockTimestamp() int64
