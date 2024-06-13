@@ -62,6 +62,7 @@ var functionNames = map[string]struct{}{
 	"getNumESDTTransfers":                      empty,
 	"getCallValueTokenName":                    empty,
 	"getCallValueTokenNameByIndex":             empty,
+	"isReservedFunctionName":                   empty,
 	"writeLog":                                 empty,
 	"writeEventLog":                            empty,
 	"getBlockTimestamp":                        empty,

@@ -909,6 +909,11 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	return nil
 }
 
+// IsReservedFunctionName checks if the function name is reserved
+func (context *runtimeContext) IsReservedFunctionName(functionName string) bool {
+	return context.validator.reserved.IsReserved(functionName)
+}
+
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (context *runtimeContext) HasFunction(functionName string) bool {
 	return context.iTracker.Instance().HasFunction(functionName)

@@ -161,6 +161,9 @@ type RuntimeContext interface {
 	GetAllErrors() error
 
 	ValidateCallbackName(callbackName string) error
+	
+	IsReservedFunctionName(functionName string) bool
+
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
 	EndExecution()
