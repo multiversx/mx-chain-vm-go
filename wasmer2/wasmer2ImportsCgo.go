@@ -64,7 +64,7 @@ package wasmer2
 // extern int32_t   w2_getNumESDTTransfers(void* context);
 // extern int32_t   w2_getCallValueTokenName(void* context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern int32_t   w2_getCallValueTokenNameByIndex(void* context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
-// extern int32_t   w2_isReservedFunctionName(void* context, int32_t nameOffset, int32_t nameLength);
+// extern int32_t   w2_isReservedFunctionName(void* context, int32_t nameHandle);
 // extern void      w2_writeLog(void* context, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
 // extern void      w2_writeEventLog(void* context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern long long w2_getBlockTimestamp(void* context);
@@ -868,9 +868,9 @@ func w2_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int
 }
 
 //export w2_isReservedFunctionName
-func w2_isReservedFunctionName(context unsafe.Pointer, nameOffset int32, nameLength int32) int32 {
+func w2_isReservedFunctionName(context unsafe.Pointer, nameHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.IsReservedFunctionName(executor.MemPtr(nameOffset), nameLength)
+	return vmHooks.IsReservedFunctionName(nameHandle)
 }
 
 //export w2_writeLog

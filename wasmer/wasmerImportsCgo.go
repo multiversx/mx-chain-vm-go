@@ -64,7 +64,7 @@ package wasmer
 // extern int32_t   v1_5_getNumESDTTransfers(void* context);
 // extern int32_t   v1_5_getCallValueTokenName(void* context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern int32_t   v1_5_getCallValueTokenNameByIndex(void* context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
-// extern int32_t   v1_5_isReservedFunctionName(void* context, int32_t nameOffset, int32_t nameLength);
+// extern int32_t   v1_5_isReservedFunctionName(void* context, int32_t nameHandle);
 // extern void      v1_5_writeLog(void* context, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
 // extern void      v1_5_writeEventLog(void* context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern long long v1_5_getBlockTimestamp(void* context);
@@ -1916,9 +1916,9 @@ func v1_5_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset i
 }
 
 //export v1_5_isReservedFunctionName
-func v1_5_isReservedFunctionName(context unsafe.Pointer, nameOffset int32, nameLength int32) int32 {
+func v1_5_isReservedFunctionName(context unsafe.Pointer, nameHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.IsReservedFunctionName(executor.MemPtr(nameOffset), nameLength)
+	return vmHooks.IsReservedFunctionName(nameHandle)
 }
 
 //export v1_5_writeLog
