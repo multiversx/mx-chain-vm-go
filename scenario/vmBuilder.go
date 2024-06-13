@@ -21,17 +21,22 @@ var _ scenexec.VMBuilder = (*ScenarioVMHostBuilder)(nil)
 // DefaultVMType is the VM type argument we use in tests.
 var DefaultVMType = []byte{5, 0}
 
+// DefaultTimeOutForSCExecutionInMilliseconds is the mainnet timeout.
+var DefaultTimeOutForSCExecutionInMilliseconds uint32 = 10000
+
 // VMTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with VM.
 type ScenarioVMHostBuilder struct {
-	OverrideVMExecutor executor.ExecutorAbstractFactory
-	VMType             []byte
+	OverrideVMExecutor                  executor.ExecutorAbstractFactory
+	VMType                              []byte
+	TimeOutForSCExecutionInMilliseconds uint32
 }
 
 // NewScenarioVMHostBuilder creates a default ScenarioVMHostBuilder.
 func NewScenarioVMHostBuilder() *ScenarioVMHostBuilder {
 	return &ScenarioVMHostBuilder{
-		OverrideVMExecutor: nil,
-		VMType:             DefaultVMType,
+		OverrideVMExecutor:                  nil,
+		VMType:                              DefaultVMType,
+		TimeOutForSCExecutionInMilliseconds: DefaultTimeOutForSCExecutionInMilliseconds,
 	}
 }
 
@@ -90,6 +95,7 @@ func (svb *ScenarioVMHostBuilder) NewVM(
 			WasmerSIGSEGVPassthrough:  false,
 			Hasher:                    worldmock.DefaultHasher,
 			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
+			TimeOutForSCExecutionInMilliseconds: svb.TimeOutForSCExecutionInMilliseconds,
 		})
 
 }
