@@ -15,8 +15,14 @@ var empty struct{}
 
 var functionNames = map[string]struct{}{`)
 
+	maxNameLength := longestFuncNameLengthCamel(eiMetadata)
 	for _, funcMetadata := range eiMetadata.AllFunctions {
-		out.WriteString(fmt.Sprintf("\n\t\"%s\": empty,", lowerInitial(funcMetadata.Name)))
+		out.WriteString(fmt.Sprintf("\n\t\"%s\":", lowerInitial(funcMetadata.Name)))
+		numSpaces := maxNameLength - len(funcMetadata.Name) + 1
+		for i := 0; i < numSpaces; i++ {
+			out.WriteString(" ")
+		}
+		out.WriteString("empty,")
 	}
 
 	out.WriteString(`
