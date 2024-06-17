@@ -5,11 +5,11 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "1000"
                 },
                 "sc:vault": {
                     "nonce": "0",
-                    "balance": "1000",
+                    "balance": "0",
                     "code": "mxsc:../vault/output/vault.mxsc.json"
                 },
                 "sc:forwarder": {
@@ -25,12 +25,10 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_promise_retrieve_funds",
+                "egldValue": "1000",
+                "function": "forward_payment_callback",
                 "arguments": [
-                    "sc:vault",
-                    "str:EGLD",
-                    "0",
-                    "1000"
+                    "sc:vault"
                 ],
                 "gasLimit": "60,000,000",
                 "gasPrice": "0"
@@ -43,62 +41,19 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "0",
+                            "1000",
                             "sc:vault"
                         ],
                         "data": [
                             "str:AsyncCall",
-                            "str:retrieve_funds",
-                            "str:EGLD",
-                            "0",
-                            "1000"
+                            "str:accept_funds"
                         ]
                     },
                     {
                         "address": "sc:vault",
-                        "endpoint": "str:retrieve_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
-                            "str:retrieve_funds",
-                            "str:EGLD",
-                            "0",
-                            "1000"
-                        ],
-                        "data": [
-                            ""
-                        ]
-                    },
-                    {
-                        "address": "sc:vault",
-                        "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "1000",
-                            "sc:forwarder"
-                        ],
-                        "data": [
-                            "str:BackTransfer",
-                            ""
-                        ]
-                    },
-                    {
-                        "address": "sc:vault",
-                        "endpoint": "str:transferValueOnly",
-                        "topics": [
-                            "1000",
-                            "sc:forwarder"
-                        ],
-                        "data": [
-                            "str:AsyncCallback",
-                            "str:retrieve_funds_callback",
-                            "0x00"
-                        ]
-                    },
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:retrieve_funds_callback",
-                        "topics": [
-                            "str:retrieve_funds_callback",
-                            "str:EGLD",
-                            "0",
+                            "str:accept_funds",
                             "1000"
                         ],
                         "data": [
@@ -121,14 +76,16 @@
                 },
                 "sc:vault": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
+                    "balance": "1000",
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds": "1"
+                    },
                     "code": "mxsc:../vault/output/vault.mxsc.json"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
-                    "balance": "1000",
-                    "storage": "*",
+                    "balance": "0",
+                    "storage": {},
                     "code": "mxsc:../promises-features/output/promises-features.mxsc.json"
                 }
             }
