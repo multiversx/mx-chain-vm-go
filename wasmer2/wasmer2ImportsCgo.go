@@ -207,6 +207,10 @@ package wasmer2
 // extern int32_t   w2_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   w2_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   w2_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern long long w2_mBufferToSmallIntUnsigned(void* context, int32_t mBufferHandle);
+// extern long long w2_mBufferToSmallIntSigned(void* context, int32_t mBufferHandle);
+// extern void      w2_mBufferFromSmallIntUnsigned(void* context, int32_t mBufferHandle, long long value);
+// extern void      w2_mBufferFromSmallIntSigned(void* context, int32_t mBufferHandle, long long value);
 // extern int32_t   w2_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   w2_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   w2_mBufferStorageStore(void* context, int32_t keyHandle, int32_t sourceHandle);
@@ -480,6 +484,10 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		mbuffer_to_big_int_signed_func_ptr:                       funcPointer(C.w2_mBufferToBigIntSigned),
 		mbuffer_from_big_int_unsigned_func_ptr:                   funcPointer(C.w2_mBufferFromBigIntUnsigned),
 		mbuffer_from_big_int_signed_func_ptr:                     funcPointer(C.w2_mBufferFromBigIntSigned),
+		mbuffer_to_small_int_unsigned_func_ptr:                   funcPointer(C.w2_mBufferToSmallIntUnsigned),
+		mbuffer_to_small_int_signed_func_ptr:                     funcPointer(C.w2_mBufferToSmallIntSigned),
+		mbuffer_from_small_int_unsigned_func_ptr:                 funcPointer(C.w2_mBufferFromSmallIntUnsigned),
+		mbuffer_from_small_int_signed_func_ptr:                   funcPointer(C.w2_mBufferFromSmallIntSigned),
 		mbuffer_to_big_float_func_ptr:                            funcPointer(C.w2_mBufferToBigFloat),
 		mbuffer_from_big_float_func_ptr:                          funcPointer(C.w2_mBufferFromBigFloat),
 		mbuffer_storage_store_func_ptr:                           funcPointer(C.w2_mBufferStorageStore),
@@ -1723,6 +1731,30 @@ func w2_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, b
 func w2_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+}
+
+//export w2_mBufferToSmallIntUnsigned
+func w2_mBufferToSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+}
+
+//export w2_mBufferToSmallIntSigned
+func w2_mBufferToSmallIntSigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+}
+
+//export w2_mBufferFromSmallIntUnsigned
+func w2_mBufferFromSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+}
+
+//export w2_mBufferFromSmallIntSigned
+func w2_mBufferFromSmallIntSigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 }
 
 //export w2_mBufferToBigFloat

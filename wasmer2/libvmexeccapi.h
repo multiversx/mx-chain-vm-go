@@ -234,6 +234,10 @@ typedef struct {
   int32_t (*mbuffer_to_big_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
   int32_t (*mbuffer_from_big_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
   int32_t (*mbuffer_from_big_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
+  int64_t (*mbuffer_to_small_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle);
+  int64_t (*mbuffer_to_small_int_signed_func_ptr)(void *context, int32_t m_buffer_handle);
+  void (*mbuffer_from_small_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle, int64_t value);
+  void (*mbuffer_from_small_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int64_t value);
   int32_t (*mbuffer_to_big_float_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_float_handle);
   int32_t (*mbuffer_from_big_float_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_float_handle);
   int32_t (*mbuffer_storage_store_func_ptr)(void *context, int32_t key_handle, int32_t source_handle);
