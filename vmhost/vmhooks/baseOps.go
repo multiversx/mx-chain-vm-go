@@ -2568,6 +2568,54 @@ func (context *VMHooksImpl) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
 }
 
+// GetRoundTime VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetRoundTime() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetRoundTime
+	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+
+	return int64(blockchain.RoundTime())
+}
+
+// EpochStartBlockTimeStamp VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) EpochStartBlockTimeStamp() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockTimeStamp
+	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+
+	return int64(blockchain.EpochStartBlockTimeStamp())
+}
+
+// EpochStartBlockNonce VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) EpochStartBlockNonce() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockNonce
+	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+
+	return int64(blockchain.EpochStartBlockNonce())
+}
+
+// EpochStartBlockRound VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) EpochStartBlockRound() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockRound
+	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+
+	return int64(blockchain.EpochStartBlockRound())
+}
+
 // Finish VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) Finish(pointer executor.MemPtr, length executor.MemLength) {
