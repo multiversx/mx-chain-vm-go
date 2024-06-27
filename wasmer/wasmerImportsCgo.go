@@ -78,6 +78,10 @@ package wasmer
 // extern long long v1_5_getPrevBlockRound(void* context);
 // extern long long v1_5_getPrevBlockEpoch(void* context);
 // extern void      v1_5_getPrevBlockRandomSeed(void* context, int32_t pointer);
+// extern long long v1_5_getRoundTime(void* context);
+// extern long long v1_5_epochStartBlockTimeStamp(void* context);
+// extern long long v1_5_epochStartBlockNonce(void* context);
+// extern long long v1_5_epochStartBlockRound(void* context);
 // extern void      v1_5_finish(void* context, int32_t pointer, int32_t length);
 // extern int32_t   v1_5_executeOnSameContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   v1_5_executeOnDestContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -615,6 +619,26 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("getPrevBlockRandomSeed", v1_5_getPrevBlockRandomSeed, C.v1_5_getPrevBlockRandomSeed)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("getRoundTime", v1_5_getRoundTime, C.v1_5_getRoundTime)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("epochStartBlockTimeStamp", v1_5_epochStartBlockTimeStamp, C.v1_5_epochStartBlockTimeStamp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("epochStartBlockNonce", v1_5_epochStartBlockNonce, C.v1_5_epochStartBlockNonce)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("epochStartBlockRound", v1_5_epochStartBlockRound, C.v1_5_epochStartBlockRound)
 	if err != nil {
 		return err
 	}
@@ -1997,6 +2021,30 @@ func v1_5_getPrevBlockEpoch(context unsafe.Pointer) int64 {
 func v1_5_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
+}
+
+//export v1_5_getRoundTime
+func v1_5_getRoundTime(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetRoundTime()
+}
+
+//export v1_5_epochStartBlockTimeStamp
+func v1_5_epochStartBlockTimeStamp(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockTimeStamp()
+}
+
+//export v1_5_epochStartBlockNonce
+func v1_5_epochStartBlockNonce(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockNonce()
+}
+
+//export v1_5_epochStartBlockRound
+func v1_5_epochStartBlockRound(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockRound()
 }
 
 //export v1_5_finish
