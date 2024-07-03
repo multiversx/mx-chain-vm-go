@@ -162,7 +162,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 			!core.IsSmartContractAddress(address)
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
-		if !metadata.Readable || isReadFromUserAddress {
+		if !metadata.Readable && !isReadFromUserAddress {
 			context.useExtraGasForKeyIfNeeded(key, false)
 			return nil, 0, false, nil
 		}
