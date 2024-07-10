@@ -32,7 +32,7 @@
             "expect": {
                 "out": [],
                 "status": "10",
-                "message": "str:this big Float operation is not permitted while doing float.Add"
+                "message": "str:Float.GobDecode: msb not set in last word 0x1f1c1a96fe0e2d of 0x.1f1c1a96fe0e2dp+58"
             }
         },
         {
@@ -72,7 +72,7 @@
             "expect": {
                 "out": [],
                 "status": "10",
-                "message": "str:this big Float operation is not permitted while doing float.Sub"
+                "message": "str:Float.GobDecode: msb not set in last word 0x1f1c1a96fe0e2d of 0x.1f1c1a96fe0e2dp+58"
             }
         }
     ]
