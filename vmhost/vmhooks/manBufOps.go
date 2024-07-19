@@ -443,7 +443,7 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntUnsigned
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToSmallIntUnsigned
 	metering.UseGasAndAddTracedGas(mBufferToSmallIntUnsignedName, gasToUse)
 
 	bytes, err := managedType.GetBytes(mBufferHandle)
@@ -451,8 +451,8 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 		return 1
 	}
 	bigInt := big.NewInt(0).SetBytes(bytes)
-	if !bigInt.IsInt64() {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+	if !bigInt.IsUint64() {
+		_ = context.WithFault(vmhost.ErrBytesExceedUint64, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 	return int64(bigInt.Uint64())
@@ -465,7 +465,7 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntSigned
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToSmallIntSigned
 	metering.UseGasAndAddTracedGas(mBufferToSmallIntSignedName, gasToUse)
 
 	bytes, err := managedType.GetBytes(mBufferHandle)
@@ -474,7 +474,7 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 	}
 	bigInt := twos.SetBytes(big.NewInt(0), bytes)
 	if !bigInt.IsInt64() {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBytesExceedInt64, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 	return bigInt.Int64()
@@ -486,7 +486,7 @@ func (context *VMHooksImpl) MBufferFromSmallIntUnsigned(mBufferHandle int32, val
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromBigIntUnsigned
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromSmallIntUnsigned
 	metering.UseGasAndAddTracedGas(mBufferFromSmallIntUnsignedName, gasToUse)
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
@@ -499,7 +499,7 @@ func (context *VMHooksImpl) MBufferFromSmallIntSigned(mBufferHandle int32, value
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromBigIntSigned
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromSmallIntSigned
 	metering.UseGasAndAddTracedGas(mBufferFromSmallIntSignedName, gasToUse)
 
 	valueBytes := big.NewInt(0).SetInt64(value).Bytes()
