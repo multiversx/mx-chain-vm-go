@@ -83,7 +83,7 @@
                         "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "0",
+                            "1000",
                             "sc:forwarder"
                         ],
                         "data": [
