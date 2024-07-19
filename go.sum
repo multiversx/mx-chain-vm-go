@@ -89,12 +89,12 @@ github.com/multiversx/mx-chain-crypto-go v1.2.12-0.20240719104037-eb4789931fd8 h
 github.com/multiversx/mx-chain-crypto-go v1.2.12-0.20240719104037-eb4789931fd8/go.mod h1:hf7R/JrrifUmP4PU8e3fPj6atUwGGsuIoYcWOwSdZLU=
 github.com/multiversx/mx-chain-logger-go v1.0.15-0.20240719103913-f78291da6ec4 h1:pYrnT0KQZloC2/mcagWZeMAVVVnNunzWDkR2qKqldDM=
 github.com/multiversx/mx-chain-logger-go v1.0.15-0.20240719103913-f78291da6ec4/go.mod h1:LbhgSvQs5AsoAnerq4S9b8+5bHOJKhqejP5wv8H0D+Q=
-github.com/multiversx/mx-chain-scenario-go v1.4.4-0.20240719104512-8dfe56bef0d9 h1:2IT3l+nzcaJaf2mhZCXfW9ymuJGTkmBnGdFr+Q7umxQ=
-github.com/multiversx/mx-chain-scenario-go v1.4.4-0.20240719104512-8dfe56bef0d9/go.mod h1:PFiIY5C1Pnu5uEu8fyCQSDzMlUgxb6cVbY5DIEUBjQc=
+github.com/multiversx/mx-chain-scenario-go v1.4.4-0.20240719110047-f00e99be0195 h1:3GSA3Ze41Kuuzww1Z2bo2kS5Tj4BF28s1Sce+YxXQyI=
+github.com/multiversx/mx-chain-scenario-go v1.4.4-0.20240719110047-f00e99be0195/go.mod h1:GMLXCI5A6xdt5B8Rz3ELwQ/TJ1Tg5XyXHMrSOKY6i28=
 github.com/multiversx/mx-chain-storage-go v1.0.16-0.20240719104131-439b7008529f h1:62H7nBUAg4yyJ5V+gAhT3cJE5vS8xgydHDUWLpVFJik=
 github.com/multiversx/mx-chain-storage-go v1.0.16-0.20240719104131-439b7008529f/go.mod h1:GOwIJ00PINe0DizixjCXnYl6Ec1sm3q9Vh/u3qmtlMI=
-github.com/multiversx/mx-chain-vm-common-go v1.5.13-0.20240719104429-aa413cfe385a h1:biBUaoeG3s824KBnLXogDveFbEg5Je9AtJxZZVOls/E=
-github.com/multiversx/mx-chain-vm-common-go v1.5.13-0.20240719104429-aa413cfe385a/go.mod h1:930Ymc6nTiloEW6hI0Kd5gpIZvyM7Qh97+DFDwQW4Sw=
+github.com/multiversx/mx-chain-vm-common-go v1.5.13-0.20240719110000-e9227ef24076 h1:Ato2Xx2xiL3mOfbnU1zvvOQpeHNFqaFX7RRlr0DU51s=
+github.com/multiversx/mx-chain-vm-common-go v1.5.13-0.20240719110000-e9227ef24076/go.mod h1:930Ymc6nTiloEW6hI0Kd5gpIZvyM7Qh97+DFDwQW4Sw=
 github.com/multiversx/mx-components-big-int v1.0.1-0.20240617091634-bd0f0556c4e2 h1:rjU5k2i9y3gpkz7S4bYk2CE9vUDflU7yDu12vHDPZPY=
 github.com/multiversx/mx-components-big-int v1.0.1-0.20240617091634-bd0f0556c4e2/go.mod h1:6OgyB2H8Tk3hiLFr5FpURvetxjEI2bgw6yrwd7iMVJA=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
