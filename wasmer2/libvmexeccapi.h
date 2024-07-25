@@ -105,6 +105,10 @@ typedef struct {
   int64_t (*get_prev_block_round_func_ptr)(void *context);
   int64_t (*get_prev_block_epoch_func_ptr)(void *context);
   void (*get_prev_block_random_seed_func_ptr)(void *context, int32_t pointer);
+  int64_t (*get_round_time_func_ptr)(void *context);
+  int64_t (*epoch_start_block_time_stamp_func_ptr)(void *context);
+  int64_t (*epoch_start_block_nonce_func_ptr)(void *context);
+  int64_t (*epoch_start_block_round_func_ptr)(void *context);
   void (*finish_func_ptr)(void *context, int32_t pointer, int32_t length);
   int32_t (*execute_on_same_context_func_ptr)(void *context, int64_t gas_limit, int32_t address_offset, int32_t value_offset, int32_t function_offset, int32_t function_length, int32_t num_arguments, int32_t arguments_length_offset, int32_t data_offset);
   int32_t (*execute_on_dest_context_func_ptr)(void *context, int64_t gas_limit, int32_t address_offset, int32_t value_offset, int32_t function_offset, int32_t function_length, int32_t num_arguments, int32_t arguments_length_offset, int32_t data_offset);
