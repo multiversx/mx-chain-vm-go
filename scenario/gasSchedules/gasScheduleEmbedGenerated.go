@@ -263,6 +263,10 @@ const (
     MBufferToBigIntSigned = 10000
     MBufferFromBigIntUnsigned = 4000
     MBufferFromBigIntSigned = 10000
+    MBufferToSmallIntUnsigned = 4000
+    MBufferToSmallIntSigned = 10000
+    MBufferFromSmallIntUnsigned = 4000
+    MBufferFromSmallIntSigned = 10000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000
@@ -1080,9 +1084,9 @@ const (
     UnmarshalCompressedECC = 270000
     GenerateKeyECC = 7000000
     EncodeDERSig = 10000000
-VerifySecp256r1 = 2000000
-VerifyBLSSignatureShare = 2000000
-VerifyBLSMultiSig = 2000000
+    VerifySecp256r1 = 2000000
+    VerifyBLSSignatureShare = 2000000
+    VerifyBLSMultiSig = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000
@@ -1098,6 +1102,10 @@ VerifyBLSMultiSig = 2000000
     MBufferToBigIntSigned = 5000
     MBufferFromBigIntUnsigned = 2000
     MBufferFromBigIntSigned = 5000
+    MBufferToSmallIntUnsigned = 2000
+    MBufferToSmallIntSigned = 5000
+    MBufferFromSmallIntUnsigned = 2000
+    MBufferFromSmallIntSigned = 5000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000

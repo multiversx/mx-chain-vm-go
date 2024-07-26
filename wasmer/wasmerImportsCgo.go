@@ -211,6 +211,10 @@ package wasmer
 // extern int32_t   v1_5_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   v1_5_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   v1_5_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern long long v1_5_mBufferToSmallIntUnsigned(void* context, int32_t mBufferHandle);
+// extern long long v1_5_mBufferToSmallIntSigned(void* context, int32_t mBufferHandle);
+// extern void      v1_5_mBufferFromSmallIntUnsigned(void* context, int32_t mBufferHandle, long long value);
+// extern void      v1_5_mBufferFromSmallIntSigned(void* context, int32_t mBufferHandle, long long value);
 // extern int32_t   v1_5_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   v1_5_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   v1_5_mBufferStorageStore(void* context, int32_t keyHandle, int32_t sourceHandle);
@@ -1284,6 +1288,26 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	err = imports.append("mBufferFromBigIntSigned", v1_5_mBufferFromBigIntSigned, C.v1_5_mBufferFromBigIntSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("mBufferToSmallIntUnsigned", v1_5_mBufferToSmallIntUnsigned, C.v1_5_mBufferToSmallIntUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("mBufferToSmallIntSigned", v1_5_mBufferToSmallIntSigned, C.v1_5_mBufferToSmallIntSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("mBufferFromSmallIntUnsigned", v1_5_mBufferFromSmallIntUnsigned, C.v1_5_mBufferFromSmallIntUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("mBufferFromSmallIntSigned", v1_5_mBufferFromSmallIntSigned, C.v1_5_mBufferFromSmallIntSigned)
 	if err != nil {
 		return err
 	}
@@ -2819,6 +2843,30 @@ func v1_5_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32,
 func v1_5_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+}
+
+//export v1_5_mBufferToSmallIntUnsigned
+func v1_5_mBufferToSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+}
+
+//export v1_5_mBufferToSmallIntSigned
+func v1_5_mBufferToSmallIntSigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+}
+
+//export v1_5_mBufferFromSmallIntUnsigned
+func v1_5_mBufferFromSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+}
+
+//export v1_5_mBufferFromSmallIntSigned
+func v1_5_mBufferFromSmallIntSigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 }
 
 //export v1_5_mBufferToBigFloat

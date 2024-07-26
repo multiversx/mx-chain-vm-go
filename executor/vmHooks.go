@@ -231,6 +231,10 @@ type ManagedBufferVMHooks interface {
 	MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
 	MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32
 	MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
+	MBufferToSmallIntUnsigned(mBufferHandle int32) int64
+	MBufferToSmallIntSigned(mBufferHandle int32) int64
+	MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64)
+	MBufferFromSmallIntSigned(mBufferHandle int32, value int64)
 	MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
 	MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
 	MBufferStorageStore(keyHandle int32, sourceHandle int32) int32

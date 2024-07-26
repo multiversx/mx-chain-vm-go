@@ -1728,6 +1728,40 @@ func (w *WrapperVMHooks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHand
 	return result
 }
 
+// MBufferToSmallIntUnsigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferToSmallIntUnsigned(mBufferHandle int32) int64 {
+	callInfo := fmt.Sprintf("MBufferToSmallIntUnsigned(%d)", mBufferHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// MBufferToSmallIntSigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
+	callInfo := fmt.Sprintf("MBufferToSmallIntSigned(%d)", mBufferHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.MBufferToSmallIntSigned(mBufferHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// MBufferFromSmallIntUnsigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) {
+	callInfo := fmt.Sprintf("MBufferFromSmallIntUnsigned(%d, %d)", mBufferHandle, value)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// MBufferFromSmallIntSigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) {
+	callInfo := fmt.Sprintf("MBufferFromSmallIntSigned(%d, %d)", mBufferHandle, value)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // MBufferToBigFloat VM hook wrapper
 func (w *WrapperVMHooks) MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32 {
 	callInfo := fmt.Sprintf("MBufferToBigFloat(%d, %d)", mBufferHandle, bigFloatHandle)
