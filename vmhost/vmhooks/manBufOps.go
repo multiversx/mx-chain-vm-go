@@ -11,27 +11,31 @@ import (
 )
 
 const (
-	mBufferNewName                = "mBufferNew"
-	mBufferNewFromBytesName       = "mBufferNewFromBytes"
-	mBufferGetLengthName          = "mBufferGetLength"
-	mBufferGetBytesName           = "mBufferGetBytes"
-	mBufferGetByteSliceName       = "mBufferGetByteSlice"
-	mBufferCopyByteSliceName      = "mBufferCopyByteSlice"
-	mBufferEqName                 = "mBufferEq"
-	mBufferSetBytesName           = "mBufferSetBytes"
-	mBufferAppendName             = "mBufferAppend"
-	mBufferAppendBytesName        = "mBufferAppendBytes"
-	mBufferToBigIntUnsignedName   = "mBufferToBigIntUnsigned"
-	mBufferToBigIntSignedName     = "mBufferToBigIntSigned"
-	mBufferFromBigIntUnsignedName = "mBufferFromBigIntUnsigned"
-	mBufferFromBigIntSignedName   = "mBufferFromBigIntSigned"
-	mBufferStorageStoreName       = "mBufferStorageStore"
-	mBufferStorageLoadName        = "mBufferStorageLoad"
-	mBufferGetArgumentName        = "mBufferGetArgument"
-	mBufferFinishName             = "mBufferFinish"
-	mBufferSetRandomName          = "mBufferSetRandom"
-	mBufferToBigFloatName         = "mBufferToBigFloat"
-	mBufferFromBigFloatName       = "mBufferFromBigFloat"
+	mBufferNewName                  = "mBufferNew"
+	mBufferNewFromBytesName         = "mBufferNewFromBytes"
+	mBufferGetLengthName            = "mBufferGetLength"
+	mBufferGetBytesName             = "mBufferGetBytes"
+	mBufferGetByteSliceName         = "mBufferGetByteSlice"
+	mBufferCopyByteSliceName        = "mBufferCopyByteSlice"
+	mBufferEqName                   = "mBufferEq"
+	mBufferSetBytesName             = "mBufferSetBytes"
+	mBufferAppendName               = "mBufferAppend"
+	mBufferAppendBytesName          = "mBufferAppendBytes"
+	mBufferToBigIntUnsignedName     = "mBufferToBigIntUnsigned"
+	mBufferToBigIntSignedName       = "mBufferToBigIntSigned"
+	mBufferFromBigIntUnsignedName   = "mBufferFromBigIntUnsigned"
+	mBufferFromBigIntSignedName     = "mBufferFromBigIntSigned"
+	mBufferToSmallIntUnsignedName   = "mBufferToSmallIntUnsigned"
+	mBufferToSmallIntSignedName     = "mBufferToSmallIntSigned"
+	mBufferFromSmallIntUnsignedName = "mBufferFromSmallIntUnsigned"
+	mBufferFromSmallIntSignedName   = "mBufferFromSmallIntSigned"
+	mBufferStorageStoreName         = "mBufferStorageStore"
+	mBufferStorageLoadName          = "mBufferStorageLoad"
+	mBufferGetArgumentName          = "mBufferGetArgument"
+	mBufferFinishName               = "mBufferFinish"
+	mBufferSetRandomName            = "mBufferSetRandom"
+	mBufferToBigFloatName           = "mBufferToBigFloat"
+	mBufferFromBigFloatName         = "mBufferFromBigFloat"
 )
 
 // MBufferNew VMHooks implementation.
@@ -430,6 +434,76 @@ func (context *VMHooksImpl) MBufferFromBigIntSigned(mBufferHandle int32, bigIntH
 
 	managedType.SetBytes(mBufferHandle, twos.ToBytes(value))
 	return 0
+}
+
+// MBufferToSmallIntUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64 {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToSmallIntUnsigned
+	metering.UseGasAndAddTracedGas(mBufferToSmallIntUnsignedName, gasToUse)
+
+	bytes, err := managedType.GetBytes(mBufferHandle)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	bigInt := big.NewInt(0).SetBytes(bytes)
+	if !bigInt.IsUint64() {
+		_ = context.WithFault(vmhost.ErrBytesExceedUint64, runtime.BaseOpsErrorShouldFailExecution())
+		return 0
+	}
+	return int64(bigInt.Uint64())
+}
+
+// MBufferToSmallIntSigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToSmallIntSigned
+	metering.UseGasAndAddTracedGas(mBufferToSmallIntSignedName, gasToUse)
+
+	bytes, err := managedType.GetBytes(mBufferHandle)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	bigInt := twos.SetBytes(big.NewInt(0), bytes)
+	if !bigInt.IsInt64() {
+		_ = context.WithFault(vmhost.ErrBytesExceedInt64, runtime.BaseOpsErrorShouldFailExecution())
+		return 0
+	}
+	return bigInt.Int64()
+}
+
+// MBufferFromSmallIntUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) {
+	managedType := context.GetManagedTypesContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromSmallIntUnsigned
+	metering.UseGasAndAddTracedGas(mBufferFromSmallIntUnsignedName, gasToUse)
+
+	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
+	managedType.SetBytes(mBufferHandle, valueBytes)
+}
+
+// MBufferFromSmallIntSigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) {
+	managedType := context.GetManagedTypesContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromSmallIntSigned
+	metering.UseGasAndAddTracedGas(mBufferFromSmallIntSignedName, gasToUse)
+
+	valueBytes := big.NewInt(0).SetInt64(value).Bytes()
+	managedType.SetBytes(mBufferHandle, valueBytes)
 }
 
 // MBufferToBigFloat VMHooks implementation.

@@ -184,6 +184,10 @@
     MBufferToBigIntSigned = 10
     MBufferFromBigIntUnsigned = 10
     MBufferFromBigIntSigned = 10
+    MBufferToSmallIntUnsigned = 10
+    MBufferToSmallIntSigned = 10
+    MBufferFromSmallIntUnsigned = 10
+    MBufferFromSmallIntSigned = 10
     MBufferToBigFloat = 10
     MBufferFromBigFloat = 10
     MBufferStorageStore = 10

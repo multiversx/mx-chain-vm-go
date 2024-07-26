@@ -105,6 +105,10 @@ typedef struct {
   int64_t (*get_prev_block_round_func_ptr)(void *context);
   int64_t (*get_prev_block_epoch_func_ptr)(void *context);
   void (*get_prev_block_random_seed_func_ptr)(void *context, int32_t pointer);
+  int64_t (*get_round_time_func_ptr)(void *context);
+  int64_t (*epoch_start_block_time_stamp_func_ptr)(void *context);
+  int64_t (*epoch_start_block_nonce_func_ptr)(void *context);
+  int64_t (*epoch_start_block_round_func_ptr)(void *context);
   void (*finish_func_ptr)(void *context, int32_t pointer, int32_t length);
   int32_t (*execute_on_same_context_func_ptr)(void *context, int64_t gas_limit, int32_t address_offset, int32_t value_offset, int32_t function_offset, int32_t function_length, int32_t num_arguments, int32_t arguments_length_offset, int32_t data_offset);
   int32_t (*execute_on_dest_context_func_ptr)(void *context, int64_t gas_limit, int32_t address_offset, int32_t value_offset, int32_t function_offset, int32_t function_length, int32_t num_arguments, int32_t arguments_length_offset, int32_t data_offset);
@@ -234,6 +238,10 @@ typedef struct {
   int32_t (*mbuffer_to_big_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
   int32_t (*mbuffer_from_big_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
   int32_t (*mbuffer_from_big_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
+  int64_t (*mbuffer_to_small_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle);
+  int64_t (*mbuffer_to_small_int_signed_func_ptr)(void *context, int32_t m_buffer_handle);
+  void (*mbuffer_from_small_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle, int64_t value);
+  void (*mbuffer_from_small_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int64_t value);
   int32_t (*mbuffer_to_big_float_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_float_handle);
   int32_t (*mbuffer_from_big_float_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_float_handle);
   int32_t (*mbuffer_storage_store_func_ptr)(void *context, int32_t key_handle, int32_t source_handle);
