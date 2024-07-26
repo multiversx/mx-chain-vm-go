@@ -250,9 +250,9 @@
     MBufferFromBigIntUnsigned = 2000
     MBufferFromBigIntSigned = 5000
     MBufferToSmallIntUnsigned = 2000
-	MBufferToSmallIntSigned = 5000
-	MBufferFromSmallIntUnsigned = 2000
-	MBufferFromSmallIntSigned = 5000
+    MBufferToSmallIntSigned = 5000
+    MBufferFromSmallIntUnsigned = 2000
+    MBufferFromSmallIntSigned = 5000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000

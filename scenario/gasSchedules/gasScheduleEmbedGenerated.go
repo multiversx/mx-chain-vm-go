@@ -260,9 +260,9 @@ const (
     MBufferFromBigIntUnsigned = 4000
     MBufferFromBigIntSigned = 10000
     MBufferToSmallIntUnsigned = 4000
-	MBufferToSmallIntSigned = 10000
-	MBufferFromSmallIntUnsigned = 4000
-	MBufferFromSmallIntSigned = 10000
+    MBufferToSmallIntSigned = 10000
+    MBufferFromSmallIntUnsigned = 4000
+    MBufferFromSmallIntSigned = 10000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000
@@ -1095,9 +1095,9 @@ const (
     MBufferFromBigIntUnsigned = 2000
     MBufferFromBigIntSigned = 5000
     MBufferToSmallIntUnsigned = 2000
-	MBufferToSmallIntSigned = 5000
-	MBufferFromSmallIntUnsigned = 2000
-	MBufferFromSmallIntSigned = 5000
+    MBufferToSmallIntSigned = 5000
+    MBufferFromSmallIntUnsigned = 2000
+    MBufferFromSmallIntSigned = 5000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000
