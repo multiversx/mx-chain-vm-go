@@ -56,7 +56,7 @@
         },
         {
             "step": "scDeploy",
-            "id": "",
+            "id": "1",
             "tx": {
                 "from": "address:owner",
                 "contractCode": "mxsc:../output/multisig.mxsc.json",
@@ -64,7 +64,7 @@
                     "0x01",
                     "0x6f776e65725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -83,7 +83,7 @@
         },
         {
             "step": "scDeploy",
-            "id": "",
+            "id": "2",
             "tx": {
                 "from": "address:owner",
                 "contractCode": "mxsc:../output/energy-factory.mxsc.json",
@@ -99,7 +99,7 @@
                     "0x05a0",
                     "0x1f40"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -108,7 +108,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "3",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -116,7 +116,7 @@
                 "arguments": [
                     "0x4c4f434b45442d313233343536"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -125,13 +125,13 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "4",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
                 "function": "unpause",
                 "arguments": [],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -140,7 +140,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "5",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -148,7 +148,7 @@
                 "arguments": [
                     "0x00000000000000000500666565732d636f6c6c6563746f725f5f5f5f5f5f5f5f"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -167,7 +167,7 @@
         },
         {
             "step": "scDeploy",
-            "id": "",
+            "id": "6",
             "tx": {
                 "from": "address:owner",
                 "contractCode": "mxsc:../output/fees-collector.mxsc.json",
@@ -175,7 +175,7 @@
                     "0x4c4f434b45442d313233343536",
                     "0x00000000000000000500656e657267792d666163746f72795f5f5f5f5f5f5f5f"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -184,7 +184,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "7",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:fees-collector",
@@ -192,7 +192,7 @@
                 "arguments": [
                     "0x6465706f7369746f725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -201,7 +201,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "8",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:fees-collector",
@@ -211,7 +211,7 @@
                     "0x5345434f4e442d313233343536",
                     "0x4c4f434b45442d313233343536"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -220,7 +220,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "9",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:fees-collector",
@@ -228,7 +228,7 @@
                 "arguments": [
                     "0x00000000000000000500656e657267792d666163746f72795f5f5f5f5f5f5f5f"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -237,7 +237,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "10",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:fees-collector",
@@ -245,7 +245,7 @@
                 "arguments": [
                     "0x00000000000000000500656e657267792d666163746f72795f5f5f5f5f5f5f5f"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -254,7 +254,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "11",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:fees-collector",
@@ -262,7 +262,7 @@
                 "arguments": [
                     "0x05a0"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -271,7 +271,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "12",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -281,7 +281,7 @@
                     "0x01",
                     "0x02"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -290,7 +290,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "13",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -302,7 +302,7 @@
                     "0x05",
                     "0x08"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -311,7 +311,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "14",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:fees-collector",
@@ -320,7 +320,7 @@
                     "0x4c4f434b45442d313233343536",
                     "0x05"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -329,7 +329,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "15",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -339,7 +339,7 @@
                     "0x01f4",
                     "0x03e8"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -348,7 +348,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "16",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -358,7 +358,7 @@
                     "0x01f4",
                     "0x2328"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -367,7 +367,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "17",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:energy-factory",
@@ -377,7 +377,7 @@
                     "0x2328",
                     "0x2328"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [],
@@ -386,7 +386,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "18",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:multisig",
@@ -397,7 +397,7 @@
                     "0x010000000005f5e100",
                     "0x636c61696d52657761726473"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [
@@ -408,7 +408,7 @@
         },
         {
             "step": "scCall",
-            "id": "",
+            "id": "19",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:multisig",
@@ -416,7 +416,7 @@
                 "arguments": [
                     "0x01"
                 ],
-                "gasLimit": "5,000,000"
+                "gasLimit": "50,000,000"
             },
             "expect": {
                 "out": [
@@ -427,7 +427,7 @@
         },
         {
             "step": "scQuery",
-            "id": "",
+            "id": "20",
             "tx": {
                 "to": "sc:fees-collector",
                 "function": "getCurrentClaimProgress",
