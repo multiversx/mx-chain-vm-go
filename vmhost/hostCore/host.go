@@ -40,6 +40,7 @@ const internalVMErrors = "internalVMErrors"
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
 	vmhost.CryptoOpcodesV2Flag,
+	vmhost.MultiESDTNFTTransferAndExecuteByUserFlag,
 }
 
 // vmHost implements HostContext interface.
@@ -544,6 +545,10 @@ func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 // IsAllowedToExecute returns true if the special opcode is allowed to be run by the address
 func (host *vmHost) IsAllowedToExecute(opcode string) bool {
+	if !host.enableEpochsHandler.IsFlagEnabled(vmhost.MultiESDTNFTTransferAndExecuteByUserFlag) {
+		return false
+	}
+
 	mapAddresses, ok := host.mapOpcodeAddressIsAllowed[opcode]
 	if !ok {
 		return false
