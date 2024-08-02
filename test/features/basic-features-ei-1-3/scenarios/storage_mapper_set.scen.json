@@ -1,0 +1,303 @@
+{
+    "name": "storage",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../output/basic-features.mxsc.json"
+                },
+                "address:an_account": {
+                    "nonce": "0",
+                    "balance": "0"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "before",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "first-push-back",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper_insert",
+                "arguments": [
+                    "123"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:set_mapper.node_links|u32:1": "u32:0|u32:0",
+                        "str:set_mapper.value|u32:1": "123",
+                        "str:set_mapper.node_id|u32:123": "1",
+                        "str:set_mapper.info": "u32:1|u32:1|u32:1|u32:1"
+                    },
+                    "code": "mxsc:../output/basic-features.mxsc.json"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-list-after-first-push-back",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "123"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "second-push-back",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper_insert",
+                "arguments": [
+                    "111"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-set-after-second-insert",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "123",
+                    "111"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:set_mapper.node_links|u32:1": "u32:0|u32:2",
+                        "str:set_mapper.node_links|u32:2": "u32:1|u32:0",
+                        "str:set_mapper.value|u32:1": "123",
+                        "str:set_mapper.value|u32:2": "111",
+                        "str:set_mapper.node_id|u32:123": "1",
+                        "str:set_mapper.node_id|u32:111": "2",
+                        "str:set_mapper.info": "u32:2|u32:1|u32:2|u32:2"
+                    },
+                    "code": "mxsc:../output/basic-features.mxsc.json"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-contains-after-second-push-back",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper_contains",
+                "arguments": [
+                    "111"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "first-remove",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper_remove",
+                "arguments": [
+                    "123"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:set_mapper.node_links|u32:2": "u32:0|u32:0",
+                        "str:set_mapper.value|u32:2": "111",
+                        "str:set_mapper.node_id|u32:111": "2",
+                        "str:set_mapper.info": "u32:1|u32:2|u32:2|u32:2"
+                    },
+                    "code": "mxsc:../output/basic-features.mxsc.json"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "second-pop-front",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "set_mapper_remove",
+                "arguments": [
+                    "111"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "mxsc:../output/basic-features.mxsc.json"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-front-after-second-pop-front",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "queue_mapper_front",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:Queue empty!",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

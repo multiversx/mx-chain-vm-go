@@ -118,8 +118,14 @@ var ErrStorageValueOutOfRange = errors.New("storage value out of range")
 // ErrDivZero signals that an attempt to divide by 0 has been made
 var ErrDivZero = errors.New("division by 0")
 
-// ErrBigIntCannotBeRepresentedAsInt64 signals that an attempt to apply a bitwise operation on negative numbers has been made
+// ErrBigIntCannotBeRepresentedAsInt64 signals that a big in conversion to int64 was attempted, but with a too large input
 var ErrBigIntCannotBeRepresentedAsInt64 = errors.New("big int cannot be represented as int64")
+
+// ErrBytesExceedInt64 signals that managed buffer cannot be converted to int64
+var ErrBytesExceedInt64 = errors.New("bytes cannot be parsed as int64")
+
+// ErrBytesExceedUint64 signals that managed buffer cannot be converted to unsigned int64
+var ErrBytesExceedUint64 = errors.New("bytes cannot be parsed as uint64")
 
 // ErrBitwiseNegative signals that an attempt to apply a bitwise operation on negative numbers has been made
 var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive integers")
