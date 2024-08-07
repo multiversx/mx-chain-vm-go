@@ -994,10 +994,10 @@ func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tok
 }
 
 // ManagedMultiTransferESDTNFTExecuteByUser VM hook wrapper
-func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteByUser(%d, %d, %d, %d, %d, %d)", userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32, signHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteByUser(%d, %d, %d, %d, %d, %d, %d)", userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle, signHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle, signHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }

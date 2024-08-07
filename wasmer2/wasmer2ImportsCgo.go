@@ -124,7 +124,7 @@ package wasmer2
 // extern int32_t   w2_managedExecuteOnSameContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteOnDestContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedMultiTransferESDTNFTExecute(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t   w2_managedMultiTransferESDTNFTExecuteByUser(void* context, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t   w2_managedMultiTransferESDTNFTExecuteByUser(void* context, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle, int32_t signHandle);
 // extern int32_t   w2_managedTransferValueExecute(void* context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedIsESDTFrozen(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
 // extern int32_t   w2_managedIsESDTLimitedTransfer(void* context, int32_t tokenIDHandle);
@@ -1244,9 +1244,9 @@ func w2_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int
 }
 
 //export w2_managedMultiTransferESDTNFTExecuteByUser
-func w2_managedMultiTransferESDTNFTExecuteByUser(context unsafe.Pointer, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+func w2_managedMultiTransferESDTNFTExecuteByUser(context unsafe.Pointer, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32, signHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	return vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle, signHandle)
 }
 
 //export w2_managedTransferValueExecute

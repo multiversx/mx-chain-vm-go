@@ -941,6 +941,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 	gasLimit int64,
 	functionHandle int32,
 	argumentsHandle int32,
+	signHandle int32,
 ) int32 {
 	host := context.GetVMHost()
 	managedType := host.ManagedTypes()
@@ -968,6 +969,11 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 		return -1
 	}
 
+	signData, err := managedType.GetBytes(userHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
 	return TransferESDTNFTExecuteByUserWithTypedArgs(
 		host,
 		user,
@@ -976,6 +982,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
+		signData,
 	)
 }
 

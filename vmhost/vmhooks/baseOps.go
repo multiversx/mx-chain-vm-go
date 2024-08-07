@@ -1097,6 +1097,7 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 	gasLimit int64,
 	function []byte,
 	data [][]byte,
+	signData []byte,
 ) int32 {
 	var executeErr error
 

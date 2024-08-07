@@ -1,9 +1,12 @@
 package hostCoretest
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -385,4 +388,237 @@ func checkLogsHaveDefinedString(logs []*vmcommon.LogEntry, str string) bool {
 		}
 	}
 	return false
+}
+
+func TestStrangeContracts(t *testing.T) {
+	mockWorld, ownerAccount, host, err := prepare(t, owner)
+	require.Nil(t, err)
+
+	code, err := os.ReadFile(filepath.Clean("many_mem_grow.wasm"))
+	require.Nil(t, err)
+	deployInput := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  owner,
+			Arguments:   [][]byte{},
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    0,
+			GasProvided: math.MaxInt64,
+		},
+		ContractCode: code,
+	}
+
+	mockWorld.NewAddressMocks = append(mockWorld.NewAddressMocks, &worldmock.NewAddressMock{
+		CreatorAddress: owner,
+		CreatorNonce:   ownerAccount.Nonce,
+		NewAddress:     scAddress,
+	})
+	ownerAccount.Nonce++ // nonce increases before deploy
+
+	_ = logger.SetLogLevel("*:TRACE")
+
+	start := time.Now()
+
+	vmOutput, err := host.RunSmartContractCreate(deployInput)
+
+	elapsedTime := time.Since(start)
+	logBenchmark.Trace("Executing Strange contract transfers", "time", elapsedTime.String())
+
+	fmt.Println("elapsed time " + elapsedTime.String())
+
+	time.Sleep(time.Second)
+
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	// Ensure the deployment persists in the mock BlockchainHook
+	_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	/*
+		transferInput := &vmcommon.ContractCallInput{
+			VMInput: vmcommon.VMInput{
+				CallerAddr:  owner,
+				Arguments:   [][]byte{},
+				CallValue:   big.NewInt(0),
+				CallType:    vm.DirectCall,
+				GasPrice:    100000000000000,
+				GasProvided: gasProvided,
+			},
+			RecipientAddr: scAddress,
+			Function:      "foo",
+		}
+
+		// Perform ERC20 transfers
+		for r := 0; r < 10; r++ {
+			start = time.Now()
+
+			for i := 0; i < 10; i++ {
+				transferInput.GasProvided = gasProvided
+				vmOutput, err := host.RunSmartContractCall(transferInput)
+				require.Nil(t, err)
+				require.NotNil(t, vmOutput)
+			}
+			elapsedTime = time.Since(start)
+			logBenchmark.Trace("Executing Strange contract transfers", "batch", r, "transfers", 100, "time", elapsedTime.String())
+		}*/
+
+	defer func() {
+		err := host.Runtime().ValidateInstances()
+		require.Nil(t, err)
+		host.Reset()
+	}()
+}
+
+func TestStrangeContracts1(t *testing.T) {
+	mockWorld, ownerAccount, host, err := prepare(t, owner)
+	require.Nil(t, err)
+
+	code, err := os.ReadFile(filepath.Clean("many_mem_grow_in_fn.wasm"))
+	require.Nil(t, err)
+	deployInput := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  owner,
+			Arguments:   [][]byte{},
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    0,
+			GasProvided: math.MaxInt64,
+		},
+		ContractCode: code,
+	}
+
+	mockWorld.NewAddressMocks = append(mockWorld.NewAddressMocks, &worldmock.NewAddressMock{
+		CreatorAddress: owner,
+		CreatorNonce:   ownerAccount.Nonce,
+		NewAddress:     scAddress,
+	})
+	ownerAccount.Nonce++ // nonce increases before deploy
+
+	start := time.Now()
+
+	vmOutput, err := host.RunSmartContractCreate(deployInput)
+
+	elapsedTime := time.Since(start)
+	logBenchmark.Warn("Executing Strange contract transfers", "time", elapsedTime.String())
+
+	fmt.Println("elapsed time " + elapsedTime.String())
+
+	time.Sleep(time.Second)
+
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	// Ensure the deployment persists in the mock BlockchainHook
+	_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+
+	transferInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  owner,
+			Arguments:   [][]byte{},
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    100000000000000,
+			GasProvided: gasProvided,
+		},
+		RecipientAddr: scAddress,
+		Function:      "foo",
+	}
+
+	// Perform ERC20 transfers
+	for r := 0; r < 10; r++ {
+		start = time.Now()
+
+		for i := 0; i < 10; i++ {
+			transferInput.GasProvided = gasProvided
+			vmOutput, err := host.RunSmartContractCall(transferInput)
+			require.Nil(t, err)
+			require.NotNil(t, vmOutput)
+		}
+		elapsedTime = time.Since(start)
+		logBenchmark.Warn("Executing Strange contract transfers", "batch", r, "transfers", 10, "time", elapsedTime.String())
+	}
+
+	defer func() {
+		err := host.Runtime().ValidateInstances()
+		require.Nil(t, err)
+		host.Reset()
+	}()
+}
+
+func TestStrangeContracts2(t *testing.T) {
+	mockWorld, ownerAccount, host, err := prepare(t, owner)
+	require.Nil(t, err)
+
+	code, err := os.ReadFile(filepath.Clean("mx-wasm-code-bloat.wasm"))
+	require.Nil(t, err)
+	deployInput := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  owner,
+			Arguments:   [][]byte{},
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    0,
+			GasProvided: math.MaxInt64,
+		},
+		ContractCode: code,
+	}
+
+	mockWorld.NewAddressMocks = append(mockWorld.NewAddressMocks, &worldmock.NewAddressMock{
+		CreatorAddress: owner,
+		CreatorNonce:   ownerAccount.Nonce,
+		NewAddress:     scAddress,
+	})
+	ownerAccount.Nonce++ // nonce increases before deploy
+	_ = logger.SetLogLevel("*:TRACE")
+	start := time.Now()
+
+	vmOutput, err := host.RunSmartContractCreate(deployInput)
+
+	elapsedTime := time.Since(start)
+	logBenchmark.Warn("Executing Strange contract transfers", "time", elapsedTime.String())
+
+	fmt.Println("elapsed time " + elapsedTime.String())
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	// Ensure the deployment persists in the mock BlockchainHook
+	_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+
+	transferInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  owner,
+			Arguments:   [][]byte{},
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    100000000000000,
+			GasProvided: gasProvided,
+		},
+		RecipientAddr: scAddress,
+		Function:      "foo",
+	}
+
+	// Perform ERC20 transfers
+	for r := 0; r < 10; r++ {
+		start = time.Now()
+
+		for i := 0; i < 10; i++ {
+			transferInput.GasProvided = gasProvided
+			vmOutput, err := host.RunSmartContractCall(transferInput)
+			require.Nil(t, err)
+			require.NotNil(t, vmOutput)
+		}
+		elapsedTime = time.Since(start)
+		logBenchmark.Trace("Executing Strange contract transfers", "batch", r, "transfers", 100, "time", elapsedTime.String())
+	}
+
+	defer func() {
+		err := host.Runtime().ValidateInstances()
+		require.Nil(t, err)
+		host.Reset()
+	}()
 }
