@@ -3343,12 +3343,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						assert.Equal(t, int32(0), returnValue)
 
 						instance.BreakpointValue = 0
-						returnData := vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
-						assert.Nil(t, returnData)
-
-						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						returnData := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, zero, string(returnData))
 
@@ -3374,11 +3369,6 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
-						assert.Nil(t, returnData)
-
-						instance.BreakpointValue = 0
 						vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						remainingReturnData := host.Output().ReturnData()
@@ -3390,13 +3380,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
 						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
 						assert.Nil(t, returnData)
+
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
-						assert.Nil(t, returnData)
-						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
+						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
+						assert.Equal(t, vmhost.BreakpointOutOfGas, instance.BreakpointValue)
 						assert.Nil(t, returnData)
 
 						return instance

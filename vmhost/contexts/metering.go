@@ -342,7 +342,6 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 func (context *meteringContext) useGas(gas uint64) {
 	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
 	context.host.Runtime().SetPointsUsed(gasUsed)
-	logMetering.Trace("used gas", "gas", gas)
 }
 
 // useAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
@@ -474,13 +473,12 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 }
 
 // UseGasBoundedAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) UseGasBoundedAndAddTracedGas(functionName string, gas uint64) error {
-	context.addToGasTrace(functionName, 0)
-	err := context.UseGasBounded(gas)
-	if err != nil {
-		return err
+func (context *meteringContext) UseGasBoundedAndAddTracedGas(functionName string, gasToUse uint64) error {
+	if context.GasLeft() < gasToUse {
+		return vmhost.ErrNotEnoughGas
 	}
-
+	context.useGas(gasToUse)
+	context.addToGasTrace(functionName, gasToUse)
 	return nil
 }
 
