@@ -344,18 +344,6 @@ func (context *meteringContext) useGas(gas uint64) {
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
-// useAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) useAndTraceGas(gas uint64) {
-	context.useGas(gas)
-	context.traceGas(gas)
-}
-
-// useGasAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) useGasAndAddTracedGas(functionName string, gas uint64) {
-	context.useGas(gas)
-	context.addToGasTrace(functionName, gas)
-}
-
 // GetGasTrace returns the gasTrace map
 func (context *meteringContext) GetGasTrace() map[string]map[string][]uint64 {
 	return context.gasTracer.GetGasTrace()

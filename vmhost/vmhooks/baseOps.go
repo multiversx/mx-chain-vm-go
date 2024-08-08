@@ -1359,6 +1359,9 @@ func (context *VMHooksImpl) UpgradeContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	err = metering.UseGasBounded(gasToUse)
@@ -1429,6 +1432,9 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	err = metering.UseGasBounded(gasToUse)
@@ -1548,6 +1554,9 @@ func (context *VMHooksImpl) DeleteContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	err = metering.UseGasBounded(gasToUse)

@@ -368,7 +368,7 @@ func Test_BigIntToInt64_NotRepresentable(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithArguments(bigIntArg).
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(testConfig.GasProvided + 20000).
+			WithGasProvided(testConfig.GasProvided).
 			WithFunction("testFunction").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {

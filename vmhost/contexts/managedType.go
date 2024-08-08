@@ -266,8 +266,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) error {
 	metering := context.host.Metering()
 	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
-	err := metering.UseGasBounded(gasToUse)
-	return err
+	return metering.UseGasBounded(gasToUse)
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
@@ -775,8 +774,7 @@ func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle in
 	}
 
 	context.SetBytes(outValueHandle, value)
-	err = context.ConsumeGasForBytes(value)
-	return err
+	return context.ConsumeGasForBytes(value)
 }
 
 // ManagedMapRemove removes the bytes stored as the key handle and returns it in an output value handle

@@ -880,9 +880,9 @@ func setReturnDataIfExists(
 	returnData := host.Output().ReturnData()
 	if len(returnData) > oldLen {
 		return host.ManagedTypes().WriteManagedVecOfManagedBuffers(returnData[oldLen:], resultHandle)
-	} else {
-		host.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	}
+
+	host.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	return nil
 }
 
