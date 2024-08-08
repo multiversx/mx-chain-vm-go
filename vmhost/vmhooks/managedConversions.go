@@ -213,7 +213,10 @@ func readDestinationArguments(
 	vmInput.arguments = data
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, err
+	}
 
 	return vmInput, err
 }
