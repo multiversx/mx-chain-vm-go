@@ -122,7 +122,11 @@ func (context *VMHooksImpl) ManagedSignalError(errHandle int32) {
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBytes(errBytes)
+
+	err = managedType.ConsumeGasForBytes(errBytes)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(errBytes))
 	err = metering.UseGasBounded(gasToUse)
@@ -155,7 +159,12 @@ func (context *VMHooksImpl) ManagedWriteLog(
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBytes(dataBytes)
+
+	err = managedType.ConsumeGasForBytes(dataBytes)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	dataByteLen := uint64(len(dataBytes))
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
@@ -273,7 +282,10 @@ func (context *VMHooksImpl) ManagedGetMultiESDTCallValue(multiCallValueHandle in
 
 	esdtTransfers := runtime.GetVMInput().ESDTTransfers
 	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
-	managedType.ConsumeGasForBytes(multiCallBytes)
+	err = managedType.ConsumeGasForBytes(multiCallBytes)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
@@ -292,7 +304,10 @@ func (context *VMHooksImpl) ManagedGetBackTransfers(esdtTransfersValueHandle int
 
 	esdtTransfers, transferValue := managedType.GetBackTransfers()
 	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
-	managedType.ConsumeGasForBytes(multiCallBytes)
+	err = managedType.ConsumeGasForBytes(multiCallBytes)
+	if context.WithFault(err, context.GetRuntimeContext().BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	managedType.SetBytes(esdtTransfersValueHandle, multiCallBytes)
 	egldValue := managedType.GetBigIntOrCreate(egldValueHandle)
@@ -392,17 +407,32 @@ func ManagedGetESDTTokenDataWithHost(
 	managedType.SetBytes(propertiesHandle, esdtToken.Properties)
 	if esdtToken.TokenMetaData != nil {
 		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
-		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
+		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+			return
+		}
 		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
-		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
+		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+			return
+		}
 		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
-		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
+		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+			return
+		}
 		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
-		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
+		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+			return
+		}
 		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
 		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
 
-		managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
+		err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
+		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+			return
+		}
 	}
 
 }
@@ -613,7 +643,10 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 		gas,
 		codeMetadata,
 	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 }
 
 // ManagedUpgradeContract VMHooks implementation.
@@ -661,7 +694,10 @@ func (context *VMHooksImpl) ManagedUpgradeContract(
 	lenReturnData := len(host.Output().ReturnData())
 
 	upgradeContract(host, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 }
 
 // ManagedDeleteContract VMHooks implementation.
@@ -763,7 +799,10 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 	}
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return 1
+	}
 
 	return 0
 }
@@ -825,7 +864,10 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	}
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return 1
+	}
 
 	return 0
 }
@@ -834,13 +876,14 @@ func setReturnDataIfExists(
 	host vmhost.VMHost,
 	oldLen int,
 	resultHandle int32,
-) {
+) error {
 	returnData := host.Output().ReturnData()
 	if len(returnData) > oldLen {
-		host.ManagedTypes().WriteManagedVecOfManagedBuffers(returnData[oldLen:], resultHandle)
+		return host.ManagedTypes().WriteManagedVecOfManagedBuffers(returnData[oldLen:], resultHandle)
 	} else {
 		host.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	}
+	return nil
 }
 
 // ManagedExecuteReadOnly VMHooks implementation.
@@ -869,7 +912,11 @@ func (context *VMHooksImpl) ManagedExecuteReadOnly(
 		vmInput.destination,
 		vmInput.arguments,
 	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
 	return returnVal
 }
 
@@ -901,7 +948,11 @@ func (context *VMHooksImpl) ManagedExecuteOnSameContext(
 		vmInput.destination,
 		vmInput.arguments,
 	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
 	return returnVal
 }
 
@@ -933,7 +984,11 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 		vmInput.destination,
 		vmInput.arguments,
 	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
 	return returnVal
 }
 

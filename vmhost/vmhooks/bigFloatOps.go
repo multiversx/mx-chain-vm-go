@@ -475,7 +475,10 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 
 	//this calculates the length of the result in bytes
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
-	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	powResult, err := context.pow(op, exponent)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -523,8 +526,12 @@ func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	op.Int(bigIntOp)
-	managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if op.IsInt() {
 		return
 	}
@@ -553,8 +560,12 @@ func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	op.Int(bigIntOp)
-	managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if op.IsInt() {
 		return
 	}
@@ -583,8 +594,12 @@ func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	}
 	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	op.Int(bigIntValue)
-	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 }
 
 // BigFloatSetInt64 VMHooks implementation.
@@ -646,10 +661,15 @@ func (context *VMHooksImpl) BigFloatSetBigInt(destinationHandle, bigIntHandle in
 	}
 
 	bigIntValue, err := managedType.GetBigInt(bigIntHandle)
-	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
+
+	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	resultSetInt := big.NewFloat(0).SetInt(bigIntValue)
 	setResultIfNotInfinity(context.GetVMHost(), resultSetInt, destinationHandle)
 }

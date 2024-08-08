@@ -27,14 +27,23 @@ func readESDTTransfer(
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForBytes(tokenIdentifier)
+
+	err = managedType.ConsumeGasForBytes(tokenIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	nonce := binary.BigEndian.Uint64(data[4:12])
 	valueHandle := int32(binary.BigEndian.Uint32(data[12:16]))
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForBigIntCopy(value)
+
+	err = managedType.ConsumeGasForBigIntCopy(value)
+	if err != nil {
+		return nil, err
+	}
 
 	tokenType := core.Fungible
 	if nonce > 0 {
@@ -63,7 +72,11 @@ func readESDTTransfers(
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForBytes(managedVecBytes)
+
+	err = managedType.ConsumeGasForBytes(managedVecBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(managedVecBytes)%esdtTransferLen != 0 {
 		return nil, errors.New("invalid managed vector of ESDT transfers")

@@ -95,7 +95,11 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(inputBytes)
+
+	err = managedType.ConsumeGasForBytes(inputBytes)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	resultBytes, err := crypto.Sha256(inputBytes)
 	if err != nil {
@@ -158,7 +162,11 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) in
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(inputBytes)
+
+	err = managedType.ConsumeGasForBytes(inputBytes)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	resultBytes, err := crypto.Keccak256(inputBytes)
 	if err != nil {
@@ -227,7 +235,11 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(inputBytes)
+
+	err = managedType.ConsumeGasForBytes(inputBytes)
+	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	result, err := crypto.Ripemd160(inputBytes)
 	if err != nil {
@@ -323,19 +335,31 @@ func ManagedVerifyBLSWithHost(
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(keyBytes)
+
+	err = managedType.ConsumeGasForBytes(keyBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(msgBytes)
+
+	err = managedType.ConsumeGasForBytes(msgBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sigBytes)
+
+	err = managedType.ConsumeGasForBytes(sigBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	invalidSigErr := crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
@@ -425,19 +449,31 @@ func ManagedVerifyEd25519WithHost(
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(keyBytes)
+
+	err = managedType.ConsumeGasForBytes(keyBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(msgBytes)
+
+	err = managedType.ConsumeGasForBytes(msgBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sigBytes)
+
+	err = managedType.ConsumeGasForBytes(sigBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
@@ -550,19 +586,31 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(keyBytes)
+
+	err = managedType.ConsumeGasForBytes(keyBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(msgBytes)
+
+	err = managedType.ConsumeGasForBytes(msgBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sigBytes)
+
+	err = managedType.ConsumeGasForBytes(sigBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	invalidSigErr := crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
 	if invalidSigErr != nil {
@@ -747,7 +795,10 @@ func (context *VMHooksImpl) AddEC(
 		return
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
+	err = managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
+	if context.WithFault(vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
 	xResultAdd, yResultAdd := ec.Add(x1, y1, x2, y2)
 	xResult.Set(xResultAdd)
 	yResult.Set(yResultAdd)
@@ -794,7 +845,10 @@ func (context *VMHooksImpl) DoubleEC(
 		return
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	xResultDouble, yResultDouble := ec.Double(x, y)
 	xResult.Set(xResultDouble)
@@ -835,7 +889,11 @@ func (context *VMHooksImpl) IsOnCurveEC(
 		return -1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
 	if ec.IsOnCurve(x, y) {
 		return 1
 	}
@@ -955,7 +1013,10 @@ func commonScalarBaseMultEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
 	if !ec.IsOnCurve(xResultSBM, yResultSBM) {
@@ -1098,7 +1159,11 @@ func commonScalarMultEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err := managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
 	if !ec.IsOnCurve(xResultSM, yResultSM) {
 		_ = WithFaultAndHost(host, vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
@@ -1206,7 +1271,10 @@ func commonMarshalEC(
 		return nil, vmhost.ErrLengthOfBufferNotCorrect
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if err != nil {
+		return nil, err
+	}
 
 	result := elliptic.Marshal(ec, x, y)
 	return result, nil
@@ -1308,7 +1376,10 @@ func commonMarshalCompressedEC(host vmhost.VMHost,
 		return nil, vmhost.ErrLengthOfBufferNotCorrect
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if err != nil {
+		return nil, err
+	}
 
 	result := elliptic.MarshalCompressed(ec, x, y)
 	return result, nil
@@ -1423,7 +1494,10 @@ func commonUnmarshalEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	xResultU, yResultU := elliptic.Unmarshal(ec, data)
 	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
@@ -1545,7 +1619,10 @@ func commonUnmarshalCompressedEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
 	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
@@ -1649,7 +1726,11 @@ func commonGenerateEC(
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
+
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
+	if err != nil {
+		return nil, err
+	}
 
 	ioReader := managedType.GetRandReader()
 	result, xPubKeyGK, yPubKeyGK, err := elliptic.GenerateKey(ec, ioReader)

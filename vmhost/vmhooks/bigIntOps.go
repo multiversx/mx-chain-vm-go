@@ -532,7 +532,12 @@ func (context *VMHooksImpl) BigIntAdd(destinationHandle, op1Handle, op2Handle in
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	dest.Add(a, b)
 }
 
@@ -555,7 +560,12 @@ func (context *VMHooksImpl) BigIntSub(destinationHandle, op1Handle, op2Handle in
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	dest.Sub(a, b)
 }
 
@@ -578,7 +588,11 @@ func (context *VMHooksImpl) BigIntMul(destinationHandle, op1Handle, op2Handle in
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	dest.Mul(a, b)
 }
@@ -602,7 +616,12 @@ func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle i
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if b.Sign() == 0 {
 		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -629,7 +648,12 @@ func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle i
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if b.Sign() == 0 {
 		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -656,7 +680,12 @@ func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle i
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if b.Sign() == 0 {
 		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -683,7 +712,12 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if b.Sign() == 0 {
 		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -710,7 +744,12 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -741,8 +780,15 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 	//this calculates the length of the result in bytes
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(b, big.NewInt(int64(a.BitLen()))), big.NewInt(8))
 
-	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
-	managedType.ConsumeGasForBigIntCopy(a, b)
+	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	err = managedType.ConsumeGasForBigIntCopy(a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	if b.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
@@ -770,7 +816,12 @@ func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	managedType.ConsumeGasForBigIntCopy(a)
+
+	err = managedType.ConsumeGasForBigIntCopy(a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
 	if a.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
 		return -1
@@ -798,7 +849,12 @@ func (context *VMHooksImpl) BigIntAbs(destinationHandle, opHandle int32) {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	dest.Abs(a)
 }
 
@@ -821,7 +877,12 @@ func (context *VMHooksImpl) BigIntNeg(destinationHandle, opHandle int32) {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	dest.Neg(a)
 }
 
@@ -843,7 +904,12 @@ func (context *VMHooksImpl) BigIntSign(opHandle int32) int32 {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -2
 	}
-	managedType.ConsumeGasForBigIntCopy(a)
+
+	err = managedType.ConsumeGasForBigIntCopy(a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -2
+	}
+
 	return int32(a.Sign())
 }
 
@@ -865,7 +931,12 @@ func (context *VMHooksImpl) BigIntCmp(op1Handle, op2Handle int32) int32 {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -2
 	}
-	managedType.ConsumeGasForBigIntCopy(a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -2
+	}
+
 	return int32(a.Cmp(b))
 }
 
@@ -888,7 +959,12 @@ func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(dest, a)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest, a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -915,7 +991,12 @@ func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle in
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 || b.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -942,7 +1023,12 @@ func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 || b.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -969,7 +1055,12 @@ func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle in
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(a, b)
+
+	err = managedType.ConsumeGasForBigIntCopy(a, b)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 || b.Sign() < 0 {
 		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
@@ -996,13 +1087,22 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(a)
+
+	err = managedType.ConsumeGasForBigIntCopy(a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 || bits < 0 {
 		_ = context.WithFault(vmhost.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Rsh(a, uint(bits))
-	managedType.ConsumeGasForBigIntCopy(dest)
+
+	err = managedType.ConsumeGasForBigIntCopy(dest)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
 }
 
 // BigIntShl VMHooks implementation.
@@ -1024,14 +1124,22 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigIntCopy(a)
+
+	err = managedType.ConsumeGasForBigIntCopy(a)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	if a.Sign() < 0 || bits < 0 {
 		_ = context.WithFault(vmhost.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Lsh(a, uint(bits))
-	managedType.ConsumeGasForBigIntCopy(dest)
 
+	err = managedType.ConsumeGasForBigIntCopy(dest)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
 }
 
 // BigIntFinishUnsigned VMHooks implementation.

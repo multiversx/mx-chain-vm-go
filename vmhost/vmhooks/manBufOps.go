@@ -110,7 +110,10 @@ func (context *VMHooksImpl) MBufferGetBytes(mBufferHandle int32, resultOffset ex
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(mBufferBytes)
+	err = managedType.ConsumeGasForBytes(mBufferBytes)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	err = context.MemStore(resultOffset, mBufferBytes)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -143,7 +146,10 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sourceBytes)
+	err = managedType.ConsumeGasForBytes(sourceBytes)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		// does not fail execution if slice exceeds bounds
@@ -183,7 +189,10 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sourceBytes)
+	err = managedType.ConsumeGasForBytes(sourceBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		// does not fail execution if slice exceeds bounds
@@ -220,13 +229,19 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	managedType.ConsumeGasForBytes(bytes1)
+	err = managedType.ConsumeGasForBytes(bytes1)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	bytes2, err := managedType.GetBytes(mBufferHandle2)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	managedType.ConsumeGasForBytes(bytes2)
+	err = managedType.ConsumeGasForBytes(bytes2)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	if bytes.Equal(bytes1, bytes2) {
 		return 1
@@ -253,7 +268,12 @@ func (context *VMHooksImpl) MBufferSetBytes(mBufferHandle int32, dataOffset exec
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(data)
+
+	err = managedType.ConsumeGasForBytes(data)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	managedType.SetBytes(mBufferHandle, data)
 
 	return 0
@@ -304,7 +324,10 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 	metering := host.Metering()
 	metering.StartGasTracing(mBufferGetByteSliceName)
 
-	managedType.ConsumeGasForBytes(data)
+	err := managedType.ConsumeGasForBytes(data)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	bufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -345,7 +368,11 @@ func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle in
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(dataBufferBytes)
+
+	err = managedType.ConsumeGasForBytes(dataBufferBytes)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, dataBufferBytes)
 	if !isSuccess {
@@ -502,7 +529,11 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 		return 1
 	}
 
-	managedType.ConsumeGasForBytes(managedBuffer)
+	err = managedType.ConsumeGasForBytes(managedBuffer)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
 		_ = context.WithFault(vmhost.ErrBigFloatWrongPrecision, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
@@ -550,7 +581,11 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(encodedFloat)
+
+	err = managedType.ConsumeGasForBytes(encodedFloat)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	managedType.SetBytes(mBufferHandle, encodedFloat)
 
