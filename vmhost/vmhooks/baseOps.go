@@ -2390,14 +2390,15 @@ func (context *VMHooksImpl) WriteLog(
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
 	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*vmhost.HashLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
-	err := metering.UseGasBoundedAndAddTracedGas(writeLogName, gasToUse)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return
-	}
 
 	if numTopics < 0 || dataLength < 0 {
 		err := vmhost.ErrNegativeLength
 		context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+		return
+	}
+
+	err := metering.UseGasBoundedAndAddTracedGas(writeLogName, gasToUse)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 

@@ -191,11 +191,11 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 	errGas := context.useExtraGasForKeyIfNeeded(key, usedCache)
 	if errGas != nil {
-		return nil, 0, false, nil
+		return nil, 0, false, errGas
 	}
 	errGas = context.useGasForValueIfNeeded(value, usedCache)
 	if errGas != nil {
-		return nil, 0, false, nil
+		return nil, 0, false, errGas
 	}
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
