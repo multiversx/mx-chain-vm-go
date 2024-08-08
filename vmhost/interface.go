@@ -270,9 +270,6 @@ type MeteringContext interface {
 	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
-	UseGas(gas uint64)
-	UseAndTraceGas(gas uint64)
-	UseGasAndAddTracedGas(functionName string, gas uint64)
 	UseGasBoundedAndAddTracedGas(functionName string, gas uint64) error
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)

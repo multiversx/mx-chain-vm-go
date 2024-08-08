@@ -118,38 +118,50 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, uint32, bool, err
 	if err != nil {
 		return nil, trieDepth, false, err
 	}
-	context.useExtraGasForKeyIfNeeded(key, usedCache)
-	context.useGasForValueIfNeeded(value, usedCache)
+
+	errGas := context.useExtraGasForKeyIfNeeded(key, usedCache)
+	if errGas != nil {
+		return nil, 0, false, nil
+	}
+
+	errGas = context.useGasForValueIfNeeded(value, usedCache)
+	if errGas != nil {
+		return nil, 0, false, nil
+	}
+
 	logStorage.Trace("get", "key", key, "value", value)
 
 	return value, trieDepth, usedCache, nil
 }
 
-func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
+func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) error {
 	metering := context.host.Metering()
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	gasFlagSet := enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 	if !usedCache || !gasFlagSet {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
-		// TODO replace UseGas with UseGasBounded
-		metering.UseGas(gasToUse)
+		return metering.UseGasBounded(gasToUse)
 	}
+
+	return nil
 }
 
-func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache bool) {
+func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache bool) error {
 	metering := context.host.Metering()
 	extraBytes := len(key) - vmhost.AddressLen
 	if extraBytes <= 0 {
-		return
+		return nil
 	}
+
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	gasFlagSet := enableEpochsHandler.IsFlagEnabled(vmhost.StorageAPICostOptimizationFlag)
 	if !gasFlagSet || !usedCache {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		// TODO replace UseGas with UseGasBounded
-		metering.UseGas(gasToUse)
+		return metering.UseGasBounded(gasToUse)
 	}
+
+	return nil
 }
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
@@ -157,21 +169,34 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
-			context.useExtraGasForKeyIfNeeded(key, false)
+			errGas := context.useExtraGasForKeyIfNeeded(key, false)
+			if errGas != nil {
+				return nil, 0, false, errGas
+			}
 			return nil, 0, false, nil
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
-			context.useExtraGasForKeyIfNeeded(key, false)
+			errGas := context.useExtraGasForKeyIfNeeded(key, false)
+			if errGas != nil {
+				return nil, 0, false, errGas
+			}
+
 			return nil, 0, false, nil
 		}
 	}
 
 	value, trieDepth, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
 
-	context.useExtraGasForKeyIfNeeded(key, usedCache)
-	context.useGasForValueIfNeeded(value, usedCache)
+	errGas := context.useExtraGasForKeyIfNeeded(key, usedCache)
+	if errGas != nil {
+		return nil, 0, false, nil
+	}
+	errGas = context.useGasForValueIfNeeded(value, usedCache)
+	if errGas != nil {
+		return nil, 0, false, nil
+	}
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, trieDepth, usedCache, err

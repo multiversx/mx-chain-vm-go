@@ -230,7 +230,7 @@ func (context *meteringContext) TrackGasUsedByOutOfVMFunction(
 		gasUsed = math.SubUint64(gasUsed, postBuiltinInput.GasProvided)
 	}
 
-	context.UseGas(gasUsed)
+	context.useGas(gasUsed)
 	logMetering.Trace("gas used by builtin function", "gas", gasUsed)
 }
 
@@ -339,22 +339,22 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	context.gasSchedule = gasSchedule
 }
 
-// UseGas consumes the specified amount of gas on the currently running Wasmer instance.
-func (context *meteringContext) UseGas(gas uint64) {
+// useGas consumes the specified amount of gas on the currently running Wasmer instance.
+func (context *meteringContext) useGas(gas uint64) {
 	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
 	context.host.Runtime().SetPointsUsed(gasUsed)
 	logMetering.Trace("used gas", "gas", gas)
 }
 
-// UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) UseAndTraceGas(gas uint64) {
-	context.UseGas(gas)
+// useAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
+func (context *meteringContext) useAndTraceGas(gas uint64) {
+	context.useGas(gas)
 	context.traceGas(gas)
 }
 
-// UseGasAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) UseGasAndAddTracedGas(functionName string, gas uint64) {
-	context.UseGas(gas)
+// useGasAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
+func (context *meteringContext) useGasAndAddTracedGas(functionName string, gas uint64) {
+	context.useGas(gas)
 	context.addToGasTrace(functionName, gas)
 }
 
@@ -474,7 +474,7 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 	if context.GasLeft() < gasToUse {
 		return vmhost.ErrNotEnoughGas
 	}
-	context.UseGas(gasToUse)
+	context.useGas(gasToUse)
 	context.traceGas(gasToUse)
 	return nil
 }

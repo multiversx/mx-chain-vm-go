@@ -17,7 +17,7 @@ func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, c
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		_ = host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 
 		runtime := host.Runtime()
 		output := host.Output()

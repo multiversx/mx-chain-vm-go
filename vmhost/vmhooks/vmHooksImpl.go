@@ -107,7 +107,7 @@ func WithFaultAndHost(host vmhost.VMHost, err error, failExecution bool) bool {
 	if failExecution {
 		runtime := host.Runtime()
 		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
+		_ = metering.UseGasBounded(metering.GasLeft())
 		runtime.FailExecution(err)
 	}
 

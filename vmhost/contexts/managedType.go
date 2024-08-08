@@ -236,32 +236,42 @@ func (context *managedTypesContext) IsInterfaceNil() bool {
 }
 
 // ConsumeGasForBigIntCopy uses gas for Copy operations
-func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
+func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) error {
 	for _, val := range values {
 		byteLen := val.BitLen() / 8
-		context.ConsumeGasForThisIntNumberOfBytes(byteLen)
+		err := context.ConsumeGasForThisIntNumberOfBytes(byteLen)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given
-func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) error {
 	gasToUse := uint64(0)
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
 		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)
-		metering.UseAndTraceGas(gasToUse)
+		err := metering.UseGasBounded(gasToUse)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 // ConsumeGasForBytes uses gas for the given bytes
-func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
+func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) error {
 	metering := context.host.Metering()
 	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	return err
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
-func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
+func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) error {
 	metering := context.host.Metering()
 
 	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)))
@@ -270,12 +280,12 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
 		gasToUse = gasToUseBigInt.Uint64()
 	}
-	metering.UseAndTraceGas(gasToUse)
+	return metering.UseGasBounded(gasToUse)
 }
 
 // ConsumeGasForBigFloatCopy uses gas for the given big float values
-func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
-	context.ConsumeGasForThisIntNumberOfBytes(encodedBigFloatMaxByteLen * len(values))
+func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) error {
+	return context.ConsumeGasForThisIntNumberOfBytes(encodedBigFloatMaxByteLen * len(values))
 }
 
 // BIGINT
@@ -663,7 +673,10 @@ func (context *managedTypesContext) ReadManagedVecOfManagedBuffers(
 	if err != nil {
 		return nil, 0, err
 	}
-	context.ConsumeGasForBytes(managedVecBytes)
+	err = context.ConsumeGasForBytes(managedVecBytes)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	if len(managedVecBytes)%handleLen != 0 {
 		return nil, 0, errors.New("invalid managed vector of managed buffer handles")
@@ -679,7 +692,10 @@ func (context *managedTypesContext) ReadManagedVecOfManagedBuffers(
 		if err != nil {
 			return nil, 0, err
 		}
-		context.ConsumeGasForBytes(itemBytes)
+		err = context.ConsumeGasForBytes(itemBytes)
+		if err != nil {
+			return nil, 0, err
+		}
 
 		sumOfItemByteLengths += uint64(len(itemBytes))
 		result = append(result, itemBytes)
@@ -692,7 +708,7 @@ func (context *managedTypesContext) ReadManagedVecOfManagedBuffers(
 func (context *managedTypesContext) WriteManagedVecOfManagedBuffers(
 	data [][]byte,
 	destinationHandle int32,
-) {
+) error {
 	sumOfItemByteLengths := uint64(0)
 	destinationBytes := make([]byte, handleLen*len(data))
 	dataIndex := 0
@@ -705,7 +721,7 @@ func (context *managedTypesContext) WriteManagedVecOfManagedBuffers(
 
 	context.SetBytes(destinationHandle, destinationBytes)
 	metering := context.host.Metering()
-	metering.UseAndTraceGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	return metering.UseGasBounded(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
 }
 
 // NewManagedMap creates a new empty managed map in the managed buffers map and returns the handle
@@ -741,7 +757,10 @@ func (context *managedTypesContext) ManagedMapPut(mMapHandle int32, keyHandle in
 	valueCopy := make([]byte, len(value))
 	copy(valueCopy, value)
 
-	context.ConsumeGasForBytes(value)
+	err = context.ConsumeGasForBytes(value)
+	if err != nil {
+		return err
+	}
 
 	mMap[string(key)] = valueCopy
 
@@ -756,9 +775,8 @@ func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle in
 	}
 
 	context.SetBytes(outValueHandle, value)
-	context.ConsumeGasForBytes(value)
-
-	return nil
+	err = context.ConsumeGasForBytes(value)
+	return err
 }
 
 // ManagedMapRemove removes the bytes stored as the key handle and returns it in an output value handle
@@ -769,7 +787,10 @@ func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle
 	}
 
 	context.SetBytes(outValueHandle, value)
-	context.ConsumeGasForBytes(value)
+	err = context.ConsumeGasForBytes(value)
+	if err != nil {
+		return err
+	}
 
 	delete(mMap, string(key))
 	return nil
