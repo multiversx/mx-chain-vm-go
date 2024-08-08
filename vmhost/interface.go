@@ -178,11 +178,11 @@ type ManagedTypesContext interface {
 	StateStack
 
 	GetRandReader() io.Reader
-	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
-	ConsumeGasForThisIntNumberOfBytes(byteLen int)
-	ConsumeGasForBytes(bytes []byte)
-	ConsumeGasForBigIntCopy(values ...*big.Int)
-	ConsumeGasForBigFloatCopy(values ...*big.Float)
+	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) error
+	ConsumeGasForThisIntNumberOfBytes(byteLen int) error
+	ConsumeGasForBytes(bytes []byte) error
+	ConsumeGasForBigIntCopy(values ...*big.Int) error
+	ConsumeGasForBigFloatCopy(values ...*big.Float) error
 	NewBigInt(value *big.Int) int32
 	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
@@ -212,7 +212,7 @@ type ManagedTypesContext interface {
 	DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
 	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
 	ReadManagedVecOfManagedBuffers(managedVecHandle int32) ([][]byte, uint64, error)
-	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32)
+	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32) error
 	NewManagedMap() int32
 	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) error
 	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error
