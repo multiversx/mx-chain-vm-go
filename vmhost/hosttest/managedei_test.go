@@ -318,6 +318,10 @@ func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{})
 		inputHandle := int32(0)
 		vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
 		result := vmHooksImpl.BigIntGetInt64(inputHandle)
+		if result < 0 {
+			return parentInstance
+		}
+
 		vmHooksImpl.SmallIntFinishSigned(result)
 
 		return parentInstance
@@ -364,7 +368,7 @@ func Test_BigIntToInt64_NotRepresentable(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithArguments(bigIntArg).
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(testConfig.GasProvided).
+			WithGasProvided(testConfig.GasProvided + 20000).
 			WithFunction("testFunction").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -1150,7 +1154,7 @@ func Test_ManagedDeleteContract(t *testing.T) {
 						managedTypes := host.ManagedTypes()
 
 						argumentsHandle := managedTypes.NewManagedBuffer()
-						managedTypes.WriteManagedVecOfManagedBuffers([][]byte{{1, 2}, {3, 4}}, argumentsHandle)
+						_ = managedTypes.WriteManagedVecOfManagedBuffers([][]byte{{1, 2}, {3, 4}}, argumentsHandle)
 
 						destHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 
