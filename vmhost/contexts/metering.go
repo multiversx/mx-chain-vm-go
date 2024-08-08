@@ -452,7 +452,9 @@ func (context *meteringContext) UseGasForContractInit(gasToUse uint64) {
 // UseGasBounded consumes the specified amount of gas on the currently running
 // Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
-	if context.GasLeft() < gasToUse {
+	gasLeft := context.GasLeft()
+	if gasLeft < gasToUse {
+		context.useGas(gasLeft)
 		return vmhost.ErrNotEnoughGas
 	}
 	context.useGas(gasToUse)
@@ -462,9 +464,12 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 
 // UseGasBoundedAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
 func (context *meteringContext) UseGasBoundedAndAddTracedGas(functionName string, gasToUse uint64) error {
-	if context.GasLeft() < gasToUse {
+	gasLeft := context.GasLeft()
+	if gasLeft < gasToUse {
+		context.useGas(gasLeft)
 		return vmhost.ErrNotEnoughGas
 	}
+
 	context.useGas(gasToUse)
 	context.addToGasTrace(functionName, gasToUse)
 	return nil
