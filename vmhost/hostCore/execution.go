@@ -868,10 +868,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	// Use all gas initially, on the Wasmer instance of the caller. In case of
 	// successful execution, the unused gas will be restored.
-	err := metering.UseGasBounded(input.GasProvided)
-	if err != nil {
-		return err
-	}
+	metering.UseGasForContractInit(input.GasProvided)
 
 	isUpgrade := input.Function == vmhost.UpgradeFunctionName
 	if isUpgrade {

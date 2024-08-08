@@ -145,6 +145,11 @@ func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
 	return m.Err
 }
 
+// UseGasForContractInit mocked method
+func (m *MeteringContextMock) UseGasForContractInit(gasToUse uint64) {
+	m.useGas(gasToUse)
+}
+
 // UseGasBounded mocked method
 func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
 	if m.Err != nil {

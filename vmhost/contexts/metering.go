@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -466,6 +465,12 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 	gasSchedule := context.GasSchedule().BaseOpsAPICost
 	gasToDeduct := gasSchedule.AsyncCallStep
 	return context.UseGasBounded(gasToDeduct)
+}
+
+// UseGasForContractInit consumes gas on the previous wasmer instance in SC to SC call
+func (context *meteringContext) UseGasForContractInit(gasToUse uint64) {
+	context.useGas(gasToUse)
+	context.traceGas(gasToUse)
 }
 
 // UseGasBounded consumes the specified amount of gas on the currently running

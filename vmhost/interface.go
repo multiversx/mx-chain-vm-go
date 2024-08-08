@@ -287,6 +287,7 @@ type MeteringContext interface {
 	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
+	UseGasForContractInit(gasToUse uint64)
 	GetGasLocked() uint64
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
