@@ -408,29 +408,29 @@ func ManagedGetESDTTokenDataWithHost(
 	if esdtToken.TokenMetaData != nil {
 		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
-		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+		if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 			return
 		}
 		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
-		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+		if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 			return
 		}
 		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
-		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+		if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 			return
 		}
 		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
-		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+		if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 			return
 		}
 		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
 		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
 
 		err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
-		if WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution()) {
+		if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 			return
 		}
 	}

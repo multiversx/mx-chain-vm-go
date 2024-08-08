@@ -796,7 +796,7 @@ func (context *VMHooksImpl) AddEC(
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
-	if context.WithFault(vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return
 	}
 	xResultAdd, yResultAdd := ec.Add(x1, y1, x2, y2)
