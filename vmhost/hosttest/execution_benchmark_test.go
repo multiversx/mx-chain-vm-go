@@ -251,16 +251,17 @@ func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmo
 	host, err := hostCore.NewVMHost(
 		mockWorld,
 		&vmhost.VMHostParameters{
-			VMType:                   testcommon.DefaultVMType,
-			BlockGasLimit:            uint64(1000),
-			GasSchedule:              gasMap,
-			BuiltInFuncContainer:     mockWorld.BuiltinFuncs.Container,
-			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
-			WasmerSIGSEGVPassthrough: false,
-			Hasher:                   worldmock.DefaultHasher,
+			VMType:                    testcommon.DefaultVMType,
+			BlockGasLimit:             uint64(1000),
+			GasSchedule:               gasMap,
+			BuiltInFuncContainer:      mockWorld.BuiltinFuncs.Container,
+			ProtectedKeyPrefix:        []byte("E" + "L" + "R" + "O" + "N" + "D"),
+			ESDTTransferParser:        esdtTransferParser,
+			EpochNotifier:             &mock.EpochNotifierStub{},
+			EnableEpochsHandler:       worldmock.EnableEpochsHandlerStubNoFlags(),
+			WasmerSIGSEGVPassthrough:  false,
+			Hasher:                    worldmock.DefaultHasher,
+			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 		})
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err

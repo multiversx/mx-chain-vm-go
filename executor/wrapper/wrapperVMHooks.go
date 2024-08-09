@@ -485,6 +485,15 @@ func (w *WrapperVMHooks) GetCallValueTokenNameByIndex(callValueOffset executor.M
 	return result
 }
 
+// IsReservedFunctionName VM hook wrapper
+func (w *WrapperVMHooks) IsReservedFunctionName(nameHandle int32) int32 {
+	callInfo := fmt.Sprintf("IsReservedFunctionName(%d)", nameHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.IsReservedFunctionName(nameHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // WriteLog VM hook wrapper
 func (w *WrapperVMHooks) WriteLog(dataPointer executor.MemPtr, dataLength executor.MemLength, topicPtr executor.MemPtr, numTopics int32) {
 	callInfo := fmt.Sprintf("WriteLog(%d, %d, %d, %d)", dataPointer, dataLength, topicPtr, numTopics)
@@ -741,6 +750,22 @@ func (w *WrapperVMHooks) ManagedCaller(destinationHandle int32) {
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetOriginalCallerAddr VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetOriginalCallerAddr(destinationHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetOriginalCallerAddr(%d)", destinationHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetRelayerAddr VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetRelayerAddr(destinationHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetRelayerAddr(%d)", destinationHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetRelayerAddr(destinationHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedSignalError VM hook wrapper
 func (w *WrapperVMHooks) ManagedSignalError(errHandle int32) {
 	callInfo := fmt.Sprintf("ManagedSignalError(%d)", errHandle)
@@ -806,10 +831,10 @@ func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32
 }
 
 // ManagedGetBackTransfers VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, callValueHandle int32) {
-	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, callValueHandle)
+func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, egldValueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, callValueHandle)
+	w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
@@ -928,6 +953,15 @@ func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tok
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecute(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMultiTransferESDTNFTExecuteByUser VM hook wrapper
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteByUser(%d, %d, %d, %d, %d, %d)", userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
@@ -2215,6 +2249,33 @@ func (w *WrapperVMHooks) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle
 	callInfo := fmt.Sprintf("EllipticCurveGetValues(%d, %d, %d, %d, %d, %d)", ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifySecp256r1 VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifySecp256r1(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifyBLSSignatureShare VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifyBLSSignatureShare(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifyBLSAggregatedSignature VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifyBLSAggregatedSignature(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }

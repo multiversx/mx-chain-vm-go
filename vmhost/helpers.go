@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-vm-go/math"
 )
 
@@ -91,23 +90,6 @@ func GetSCCode(fileName string) []byte {
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 	return GetSCCode(pathToSC)
-}
-
-// SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
-func SetLoggingForTests() {
-	SetLoggingForTestsWithLogger("*")
-}
-
-// SetLoggingForTestsWithLogger configures the logger package with a certain logger
-func SetLoggingForTestsWithLogger(loggerName string) {
-	_ = logger.SetLogLevel(fmt.Sprintf("*:NONE,%s:TRACE", loggerName))
-	logger.ToggleCorrelation(false)
-	logger.ToggleLoggerName(true)
-}
-
-// DisableLoggingForTests sets log level to *:NONE
-func DisableLoggingForTests() {
-	_ = logger.SetLogLevel("*:NONE")
 }
 
 // U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode

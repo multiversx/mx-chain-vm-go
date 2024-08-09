@@ -32,6 +32,11 @@ func (a *StubAccount) AddToBalance(_ *big.Int) error {
 	panic("implement me")
 }
 
+// SubFromBalance -
+func (a *StubAccount) SubFromBalance(_ *big.Int) error {
+	panic("implement me")
+}
+
 // ClaimDeveloperRewards -
 func (a *StubAccount) ClaimDeveloperRewards(_ []byte) (*big.Int, error) {
 	panic("implement me")

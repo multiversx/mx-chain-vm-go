@@ -17,7 +17,10 @@ type wasmValidator struct {
 }
 
 // newWASMValidator creates a new WASMValidator
-func newWASMValidator(scAPINames vmcommon.FunctionNames, builtInFuncContainer vmcommon.BuiltInFunctionContainer) *wasmValidator {
+func newWASMValidator(
+	scAPINames vmcommon.FunctionNames,
+	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+) *wasmValidator {
 	return &wasmValidator{
 		reserved: NewReservedFunctions(scAPINames, builtInFuncContainer),
 	}
