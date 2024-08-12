@@ -154,6 +154,7 @@ type RuntimeContext interface {
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ManagedMapAPIErrorShouldFailExecution() bool
+	UseGasBoundedShouldFailExecution() bool
 	CleanInstance()
 
 	AddError(err error, otherInfo ...string)

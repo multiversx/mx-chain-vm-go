@@ -719,6 +719,14 @@ func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
 	return true
 }
 
+// UseGasBoundedShouldFailExecution returns true when flag activated
+func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
+	if !context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag) {
+		return false
+	}
+	return true
+}
+
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
 	if check.IfNil(context.iTracker.Instance()) {

@@ -315,6 +315,11 @@ func (r *RuntimeContextMock) ManagedMapAPIErrorShouldFailExecution() bool {
 	return r.FailManagedMapAPI
 }
 
+// UseGasBoundedShouldFailExecution mocked method
+func (r *RuntimeContextMock) UseGasBoundedShouldFailExecution() bool {
+	return true
+}
+
 // FailExecution mocked method
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
