@@ -121,12 +121,12 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, uint32, bool, err
 
 	errGas := context.useExtraGasForKeyIfNeeded(key, usedCache)
 	if errGas != nil {
-		return nil, 0, false, nil
+		return nil, 0, false, errGas
 	}
 
 	errGas = context.useGasForValueIfNeeded(value, usedCache)
 	if errGas != nil {
-		return nil, 0, false, nil
+		return nil, 0, false, errGas
 	}
 
 	logStorage.Trace("get", "key", key, "value", value)

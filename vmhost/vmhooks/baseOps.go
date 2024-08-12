@@ -3369,7 +3369,9 @@ func (context *VMHooksImpl) GetPrevTxHash(dataOffset executor.MemPtr) {
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetPrevTxHash
 	err := metering.UseGasBoundedAndAddTracedGas(getPrevTxHashName, gasToUse)
-	context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	err = context.MemStore(dataOffset, runtime.GetPrevTxHash())
 	_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
