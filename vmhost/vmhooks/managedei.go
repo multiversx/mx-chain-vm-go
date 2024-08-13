@@ -114,7 +114,7 @@ func (context *VMHooksImpl) ManagedSignalError(errHandle int32) {
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.SignalError
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -124,14 +124,13 @@ func (context *VMHooksImpl) ManagedSignalError(errHandle int32) {
 	}
 
 	err = managedType.ConsumeGasForBytes(errBytes)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
 	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(errBytes))
 	err = metering.UseGasBounded(gasToUse)
-	if err != nil {
-		_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	if err != nil && context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -468,7 +467,7 @@ func ManagedAsyncCallWithHost(
 	gasSchedule := metering.GasSchedule()
 	gasToUse := gasSchedule.BaseOpsAPICost.AsyncCallStep
 	err := metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -487,7 +486,7 @@ func ManagedAsyncCallWithHost(
 
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	err = metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -613,7 +612,7 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -644,7 +643,7 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 		codeMetadata,
 	)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 }
@@ -668,7 +667,7 @@ func (context *VMHooksImpl) ManagedUpgradeContract(
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -695,7 +694,7 @@ func (context *VMHooksImpl) ManagedUpgradeContract(
 
 	upgradeContract(host, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 }
@@ -729,7 +728,7 @@ func ManagedDeleteContractWithHost(
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	err := metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return
 	}
 
@@ -770,7 +769,7 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return -1
 	}
 
@@ -800,7 +799,7 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return 1
 	}
 
@@ -826,7 +825,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return -1
 	}
 
@@ -843,7 +842,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.UseGasBoundedShouldFailExecution()) {
 		return -1
 	}
 
@@ -865,7 +864,7 @@ func (context *VMHooksImpl) ManagedCreateContract(
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return 1
 	}
 
@@ -913,7 +912,7 @@ func (context *VMHooksImpl) ManagedExecuteReadOnly(
 		vmInput.arguments,
 	)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().UseGasBoundedShouldFailExecution()) {
 		return -1
 	}
 
@@ -949,7 +948,7 @@ func (context *VMHooksImpl) ManagedExecuteOnSameContext(
 		vmInput.arguments,
 	)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().UseGasBoundedShouldFailExecution()) {
 		return -1
 	}
 
@@ -985,7 +984,7 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 		vmInput.arguments,
 	)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
-	if WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().UseGasBoundedShouldFailExecution()) {
 		return -1
 	}
 
