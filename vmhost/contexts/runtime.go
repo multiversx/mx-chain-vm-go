@@ -6,6 +6,7 @@ import (
 	"fmt"
 	builtinMath "math"
 	"math/big"
+	"runtime/debug"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -632,6 +633,11 @@ func (context *runtimeContext) SignalUserError(message string) {
 // immediately stopping the contract execution.
 func (context *runtimeContext) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
 	context.iTracker.Instance().SetBreakpointValue(uint64(value))
+
+	if value == vmhost.BreakpointOutOfGas {
+		debug.PrintStack()
+	}
+
 	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
