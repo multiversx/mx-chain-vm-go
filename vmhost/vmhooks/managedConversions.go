@@ -16,6 +16,7 @@ const esdtTransferLen = 16
 // Deserializes a vmcommon.ESDTTransfer object.
 func readESDTTransfer(
 	managedType vmhost.ManagedTypesContext,
+	runtime vmhost.RuntimeContext,
 	data []byte,
 ) (*vmcommon.ESDTTransfer, error) {
 	if len(data) != esdtTransferLen {
@@ -29,7 +30,7 @@ func readESDTTransfer(
 	}
 
 	err = managedType.ConsumeGasForBytes(tokenIdentifier)
-	if err != nil {
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		return nil, err
 	}
 
@@ -41,7 +42,7 @@ func readESDTTransfer(
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(value)
-	if err != nil {
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		return nil, err
 	}
 
@@ -66,6 +67,7 @@ func readESDTTransfer(
 // Total: 16 bytes.
 func readESDTTransfers(
 	managedType vmhost.ManagedTypesContext,
+	runtime vmhost.RuntimeContext,
 	managedVecHandle int32,
 ) ([]*vmcommon.ESDTTransfer, error) {
 	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
@@ -74,7 +76,7 @@ func readESDTTransfers(
 	}
 
 	err = managedType.ConsumeGasForBytes(managedVecBytes)
-	if err != nil {
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		return nil, err
 	}
 
@@ -85,7 +87,7 @@ func readESDTTransfers(
 	numTransfers := len(managedVecBytes) / esdtTransferLen
 	result := make([]*vmcommon.ESDTTransfer, 0, numTransfers)
 	for i := 0; i < len(managedVecBytes); i += esdtTransferLen {
-		esdtTransfer, err := readESDTTransfer(managedType, managedVecBytes[i:i+esdtTransferLen])
+		esdtTransfer, err := readESDTTransfer(managedType, runtime, managedVecBytes[i:i+esdtTransferLen])
 		if err != nil {
 			return nil, err
 		}
@@ -227,7 +229,7 @@ func readDestinationArguments(
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
 	err = metering.UseGasBounded(gasToUse)
-	if err != nil {
+	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
 		return nil, err
 	}
 

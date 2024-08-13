@@ -1011,7 +1011,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 		return -1
 	}
 
-	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
+	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
