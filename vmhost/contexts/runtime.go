@@ -11,6 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	builtinMath "math"
 	"math/big"
+	"runtime/debug"
 )
 
 var logRuntime = logger.GetOrCreate("vm/runtime")
@@ -631,6 +632,11 @@ func (context *runtimeContext) SignalUserError(message string) {
 // immediately stopping the contract execution.
 func (context *runtimeContext) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
 	context.iTracker.Instance().SetBreakpointValue(uint64(value))
+
+	if value == vmhost.BreakpointOutOfGas {
+		debug.PrintStack()
+	}
+
 	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
@@ -720,10 +726,7 @@ func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
 
 // UseGasBoundedShouldFailExecution returns true when flag activated
 func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
-	if !context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag) {
-		return false
-	}
-	return true
+	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag)
 }
 
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
