@@ -158,7 +158,7 @@ func readDestinationValueFunctionArguments(
 	}
 	vmInput.function = string(function)
 
-	return vmInput, err
+	return vmInput, nil
 }
 
 func readDestinationValueArguments(
@@ -179,7 +179,7 @@ func readDestinationValueArguments(
 		return nil, err
 	}
 
-	return vmInput, err
+	return vmInput, nil
 }
 
 func readDestinationFunctionArguments(
@@ -201,7 +201,7 @@ func readDestinationFunctionArguments(
 	}
 	vmInput.function = string(function)
 
-	return vmInput, err
+	return vmInput, nil
 }
 
 func readDestinationArguments(
@@ -233,5 +233,5 @@ func readDestinationArguments(
 		return nil, err
 	}
 
-	return vmInput, err
+	return vmInput, nil
 }
