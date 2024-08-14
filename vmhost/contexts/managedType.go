@@ -235,6 +235,18 @@ func (context *managedTypesContext) IsInterfaceNil() bool {
 	return context == nil
 }
 
+func (context *managedTypesContext) useGasBoundedWithBackwardCompatibility(gasToUse uint64) error {
+	metering := context.host.Metering()
+	runtime := context.host.Runtime()
+
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		return err
+	}
+
+	return nil
+}
+
 // ConsumeGasForBigIntCopy uses gas for Copy operations
 func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) error {
 	for _, val := range values {
@@ -253,7 +265,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
 		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)
-		err := metering.UseGasBounded(gasToUse)
+		err := context.useGasBoundedWithBackwardCompatibility(gasToUse)
 		if err != nil {
 			return err
 		}
@@ -266,7 +278,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) error {
 	metering := context.host.Metering()
 	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
-	return metering.UseGasBounded(gasToUse)
+	return context.useGasBoundedWithBackwardCompatibility(gasToUse)
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
@@ -279,7 +291,7 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
 		gasToUse = gasToUseBigInt.Uint64()
 	}
-	return metering.UseGasBounded(gasToUse)
+	return context.useGasBoundedWithBackwardCompatibility(gasToUse)
 }
 
 // ConsumeGasForBigFloatCopy uses gas for the given big float values
