@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	builtinMath "math"
-	"math/big"
-
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	builtinMath "math"
+	"math/big"
 )
 
 var logRuntime = logger.GetOrCreate("vm/runtime")
@@ -717,6 +716,11 @@ func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
 // ManagedMapAPIErrorShouldFailExecution returns true
 func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
 	return true
+}
+
+// UseGasBoundedShouldFailExecution returns true when flag activated
+func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
+	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag)
 }
 
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.

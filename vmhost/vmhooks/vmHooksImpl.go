@@ -100,16 +100,14 @@ func (context *VMHooksImpl) WithFault(err error, failExecution bool) bool {
 
 // WithFaultAndHost fails the execution with the provided error
 func WithFaultAndHost(host vmhost.VMHost, err error, failExecution bool) bool {
-	if err == nil {
+	if err == nil || !failExecution {
 		return false
 	}
 
-	if failExecution {
-		runtime := host.Runtime()
-		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
-	}
+	runtime := host.Runtime()
+	metering := host.Metering()
+	_ = metering.UseGasBounded(metering.GasLeft())
+	runtime.FailExecution(err)
 
 	return true
 }
