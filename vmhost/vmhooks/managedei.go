@@ -113,7 +113,10 @@ func (context *VMHooksImpl) ManagedGetOriginalCallerAddr(destinationHandle int32
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
-	metering.UseGasAndAddTracedGas(managedCallerName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(managedCallerName, gasToUse)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	caller := runtime.GetVMInput().OriginalCallerAddr
 	managedType.SetBytes(destinationHandle, caller)
@@ -127,7 +130,10 @@ func (context *VMHooksImpl) ManagedGetRelayerAddr(destinationHandle int32) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
-	metering.UseGasAndAddTracedGas(managedCallerName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(managedCallerName, gasToUse)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	caller := runtime.GetVMInput().RelayerAddr
 	managedType.SetBytes(destinationHandle, caller)
@@ -1086,7 +1092,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 		return -1
 	}
 
-	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
+	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
 	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}

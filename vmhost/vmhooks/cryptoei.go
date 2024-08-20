@@ -317,7 +317,7 @@ func (context *VMHooksImpl) ManagedVerifyBLS(
 func useGasForCryptoVerify(
 	metering vmhost.MeteringContext,
 	sigVerificationType string,
-) {
+) error {
 	metering.StartGasTracing(sigVerificationType)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
@@ -333,7 +333,8 @@ func useGasForCryptoVerify(
 	case verifyBLSAggregatedSignature:
 		gasToUse = metering.GasSchedule().CryptoAPICost.VerifyBLSMultiSig
 	}
-	metering.UseAndTraceGas(gasToUse)
+
+	return metering.UseGasBounded(gasToUse)
 }
 
 // ManagedVerifyBLSWithHost VMHooks implementation.
@@ -348,7 +349,10 @@ func ManagedVerifyBLSWithHost(
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
-	useGasForCryptoVerify(metering, sigVerificationType)
+	err := useGasForCryptoVerify(metering, sigVerificationType)
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
+		return 1
+	}
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -611,7 +615,10 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
 
-	useGasForCryptoVerify(metering, verifyCryptoFunc)
+	err := useGasForCryptoVerify(metering, verifyCryptoFunc)
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
+		return 1
+	}
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {

@@ -1161,7 +1161,10 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 	output := host.Output()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.SyncExecAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sender := runtime.GetContextAddress()
 
@@ -2481,7 +2484,10 @@ func (context *VMHooksImpl) IsReservedFunctionName(nameHandle int32) int32 {
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsReservedFunctionName
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
 
 	name, err := managedTypes.GetBytes(nameHandle)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
