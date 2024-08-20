@@ -72,13 +72,16 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGasAndAddTracedGas(bigFloatNewFromPartsName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatNewFromPartsName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	if exponent > 0 {
 		_ = context.WithFault(vmhost.ErrPositiveExponent, runtime.BigFloatAPIErrorShouldFailExecution())
 		return -1
 	}
-	var err error
+
 	var bigFractional *big.Float
 	if exponent < -322 {
 		bigFractional = big.NewFloat(0)
@@ -118,7 +121,10 @@ func (context *VMHooksImpl) BigFloatNewFromFrac(numerator, denominator int64) in
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGasAndAddTracedGas(bigFloatNewFromFracName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatNewFromFracName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	if denominator == 0 {
 		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -146,7 +152,10 @@ func (context *VMHooksImpl) BigFloatNewFromSci(significand, exponent int64) int3
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGasAndAddTracedGas(bigFloatNewFromSciName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatNewFromSciName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	if exponent > 0 {
 		_ = context.WithFault(vmhost.ErrPositiveExponent, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -182,7 +191,10 @@ func (context *VMHooksImpl) BigFloatAdd(destinationHandle, op1Handle, op2Handle 
 	metering.StartGasTracing(bigFloatAddName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAdd
-	metering.UseGasAndAddTracedGas(bigFloatAddName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatAddName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -206,7 +218,10 @@ func (context *VMHooksImpl) BigFloatSub(destinationHandle, op1Handle, op2Handle 
 	metering.StartGasTracing(bigFloatSubName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSub
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -229,7 +244,10 @@ func (context *VMHooksImpl) BigFloatMul(destinationHandle, op1Handle, op2Handle 
 	metering.StartGasTracing(bigFloatMulName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatMul
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
@@ -253,7 +271,10 @@ func (context *VMHooksImpl) BigFloatDiv(destinationHandle, op1Handle, op2Handle 
 	metering.StartGasTracing(bigFloatDivName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatDiv
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
@@ -281,7 +302,10 @@ func (context *VMHooksImpl) BigFloatNeg(destinationHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatNegName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNeg
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -304,7 +328,10 @@ func (context *VMHooksImpl) BigFloatClone(destinationHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatCloneName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatClone
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -327,7 +354,10 @@ func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	metering.StartGasTracing(bigFloatCmpName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCmp
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -2
+	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
@@ -346,7 +376,10 @@ func (context *VMHooksImpl) BigFloatAbs(destinationHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatAbsName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -368,7 +401,10 @@ func (context *VMHooksImpl) BigFloatSign(opHandle int32) int32 {
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
-	metering.UseGasAndAddTracedGas(bigFloatSignName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatSignName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -2
+	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -386,7 +422,10 @@ func (context *VMHooksImpl) BigFloatSqrt(destinationHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatSqrtName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSqrt
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -417,7 +456,10 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 	metering.StartGasTracing(bigFloatPowName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatPow
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -433,7 +475,10 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 
 	//this calculates the length of the result in bytes
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
-	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	powResult, err := context.pow(op, exponent)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -470,7 +515,10 @@ func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatFloorName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatFloor
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -478,8 +526,12 @@ func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	op.Int(bigIntOp)
-	managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if op.IsInt() {
 		return
 	}
@@ -497,7 +549,10 @@ func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatCeilName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCeil
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -505,8 +560,12 @@ func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	op.Int(bigIntOp)
-	managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if op.IsInt() {
 		return
 	}
@@ -524,7 +583,10 @@ func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	metering.StartGasTracing(bigFloatTruncateName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatTruncate
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -532,8 +594,12 @@ func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	}
 	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	op.Int(bigIntValue)
-	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 }
 
 // BigFloatSetInt64 VMHooks implementation.
@@ -544,7 +610,10 @@ func (context *VMHooksImpl) BigFloatSetInt64(destinationHandle int32, value int6
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetInt64
-	metering.UseGasAndAddTracedGas(bigFloatSetInt64Name, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatSetInt64Name, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -562,7 +631,11 @@ func (context *VMHooksImpl) BigFloatIsInt(opHandle int32) int32 {
 	metering.StartGasTracing(bigFloatIsIntName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatIsInt
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
 	op, err := managedType.GetBigFloat(opHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
@@ -582,13 +655,21 @@ func (context *VMHooksImpl) BigFloatSetBigInt(destinationHandle, bigIntHandle in
 	metering.StartGasTracing(bigFloatSetBigIntName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetBigInt
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	bigIntValue, err := managedType.GetBigInt(bigIntHandle)
-	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
+
+	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	resultSetInt := big.NewFloat(0).SetInt(bigIntValue)
 	setResultIfNotInfinity(context.GetVMHost(), resultSetInt, destinationHandle)
 }
@@ -601,7 +682,10 @@ func (context *VMHooksImpl) BigFloatGetConstPi(destinationHandle int32) {
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetConst
-	metering.UseGasAndAddTracedGas(bigFloatGetConstPiName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatGetConstPiName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	pi, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -618,7 +702,10 @@ func (context *VMHooksImpl) BigFloatGetConstE(destinationHandle int32) {
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetConst
-	metering.UseGasAndAddTracedGas(bigFloatGetConstEName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(bigFloatGetConstEName, gasToUse)
+	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	e, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {

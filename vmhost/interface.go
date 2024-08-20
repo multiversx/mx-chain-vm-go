@@ -155,6 +155,7 @@ type RuntimeContext interface {
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ManagedMapAPIErrorShouldFailExecution() bool
+	UseGasBoundedShouldFailExecution() bool
 	CleanInstance()
 
 	AddError(err error, otherInfo ...string)
@@ -182,11 +183,11 @@ type ManagedTypesContext interface {
 	StateStack
 
 	GetRandReader() io.Reader
-	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
-	ConsumeGasForThisIntNumberOfBytes(byteLen int)
-	ConsumeGasForBytes(bytes []byte)
-	ConsumeGasForBigIntCopy(values ...*big.Int)
-	ConsumeGasForBigFloatCopy(values ...*big.Float)
+	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) error
+	ConsumeGasForThisIntNumberOfBytes(byteLen int) error
+	ConsumeGasForBytes(bytes []byte) error
+	ConsumeGasForBigIntCopy(values ...*big.Int) error
+	ConsumeGasForBigFloatCopy(values ...*big.Float) error
 	NewBigInt(value *big.Int) int32
 	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
@@ -216,7 +217,7 @@ type ManagedTypesContext interface {
 	DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
 	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
 	ReadManagedVecOfManagedBuffers(managedVecHandle int32) ([][]byte, uint64, error)
-	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32)
+	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32) error
 	NewManagedMap() int32
 	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) error
 	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error
@@ -274,9 +275,6 @@ type MeteringContext interface {
 	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
-	UseGas(gas uint64)
-	UseAndTraceGas(gas uint64)
-	UseGasAndAddTracedGas(functionName string, gas uint64)
 	UseGasBoundedAndAddTracedGas(functionName string, gas uint64) error
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
@@ -294,6 +292,7 @@ type MeteringContext interface {
 	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
+	UseGasForContractInit(gasToUse uint64)
 	GetGasLocked() uint64
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
