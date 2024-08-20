@@ -179,9 +179,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable && !isReadFromUserAddress {
 			errGas := context.useExtraGasForKeyIfNeeded(key, false)
-			if errGas != nil {
-				return nil, 0, false, errGas
-			}
+			return nil, 0, false, errGas
 		}
 	}
 
