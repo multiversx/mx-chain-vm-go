@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -230,7 +229,7 @@ func (context *meteringContext) TrackGasUsedByOutOfVMFunction(
 		gasUsed = math.SubUint64(gasUsed, postBuiltinInput.GasProvided)
 	}
 
-	context.UseGas(gasUsed)
+	context.useGas(gasUsed)
 	logMetering.Trace("gas used by builtin function", "gas", gasUsed)
 }
 
@@ -339,34 +338,10 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	context.gasSchedule = gasSchedule
 }
 
-// UseGas consumes the specified amount of gas on the currently running Wasmer instance.
-func (context *meteringContext) UseGas(gas uint64) {
+// useGas consumes the specified amount of gas on the currently running Wasmer instance.
+func (context *meteringContext) useGas(gas uint64) {
 	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
 	context.host.Runtime().SetPointsUsed(gasUsed)
-	logMetering.Trace("used gas", "gas", gas)
-}
-
-// UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) UseAndTraceGas(gas uint64) {
-	context.UseGas(gas)
-	context.traceGas(gas)
-}
-
-// UseGasAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) UseGasAndAddTracedGas(functionName string, gas uint64) {
-	context.UseGas(gas)
-	context.addToGasTrace(functionName, gas)
-}
-
-// UseGasBoundedAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
-func (context *meteringContext) UseGasBoundedAndAddTracedGas(functionName string, gas uint64) error {
-	err := context.UseGasBounded(gas)
-	if err != nil {
-		return err
-	}
-
-	context.addToGasTrace(functionName, gas)
-	return nil
 }
 
 // GetGasTrace returns the gasTrace map
@@ -468,14 +443,35 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 	return context.UseGasBounded(gasToDeduct)
 }
 
+// UseGasForContractInit consumes gas on the previous wasmer instance in SC to SC call
+func (context *meteringContext) UseGasForContractInit(gasToUse uint64) {
+	context.useGas(gasToUse)
+	context.traceGas(gasToUse)
+}
+
 // UseGasBounded consumes the specified amount of gas on the currently running
 // Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
-	if context.GasLeft() < gasToUse {
+	gasLeft := context.GasLeft()
+	if gasLeft < gasToUse {
+		context.useGas(gasLeft)
 		return vmhost.ErrNotEnoughGas
 	}
-	context.UseGas(gasToUse)
+	context.useGas(gasToUse)
 	context.traceGas(gasToUse)
+	return nil
+}
+
+// UseGasBoundedAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
+func (context *meteringContext) UseGasBoundedAndAddTracedGas(functionName string, gasToUse uint64) error {
+	gasLeft := context.GasLeft()
+	if gasLeft < gasToUse {
+		context.useGas(gasLeft)
+		return vmhost.ErrNotEnoughGas
+	}
+
+	context.useGas(gasToUse)
+	context.addToGasTrace(functionName, gasToUse)
 	return nil
 }
 
