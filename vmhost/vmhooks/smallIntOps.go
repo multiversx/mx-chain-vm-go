@@ -30,7 +30,10 @@ func (context *VMHooksImpl) SmallIntGetUnsignedArgument(id int32) int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
-	metering.UseGasAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
+	if context.WithFault(err, runtime.ManagedMapAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
@@ -54,7 +57,10 @@ func (context *VMHooksImpl) SmallIntGetSignedArgument(id int32) int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
-	metering.UseGasAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
+	if context.WithFault(err, runtime.ManagedMapAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
@@ -78,7 +84,10 @@ func (context *VMHooksImpl) SmallIntFinishUnsigned(value int64) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
-	metering.UseGasAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
+	if context.WithFault(err, context.GetRuntimeContext().BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
 	output.Finish(valueBytes)
@@ -91,7 +100,10 @@ func (context *VMHooksImpl) SmallIntFinishSigned(value int64) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
-	metering.UseGasAndAddTracedGas(smallIntFinishSignedName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(smallIntFinishSignedName, gasToUse)
+	if context.WithFault(err, context.GetRuntimeContext().BaseOpsErrorShouldFailExecution()) {
+		return
+	}
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
 	output.Finish(valueBytes)
@@ -105,7 +117,10 @@ func (context *VMHooksImpl) SmallIntStorageStoreUnsigned(keyOffset executor.MemP
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
-	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
@@ -129,7 +144,10 @@ func (context *VMHooksImpl) SmallIntStorageStoreSigned(keyOffset executor.MemPtr
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
-	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {

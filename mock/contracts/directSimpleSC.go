@@ -161,7 +161,7 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		_ = host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) < 2 {
@@ -287,7 +287,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		_ = host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 
 		switch behavior {
 		case esdtOnCallbackSuccess:
