@@ -41,6 +41,7 @@ const internalVMErrors = "internalVMErrors"
 var allFlags = []core.EnableEpochFlag{
 	vmhost.CryptoOpcodesV2Flag,
 	vmhost.MultiESDTNFTTransferAndExecuteByUserFlag,
+	vmhost.UseGasBoundedShouldFailExecutionFlag,
 }
 
 // vmHost implements HostContext interface.
