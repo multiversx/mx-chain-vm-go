@@ -23,7 +23,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/assert"
@@ -138,14 +137,6 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
-}
-
-func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
-	if !testexecutor.IsWasmer1Allowed() {
-		t.Skip("run exclusively with wasmer1")
-	}
-
-	testExecutionDeployWASMWrongInit(t, wasmer.ExecutorFactory())
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
