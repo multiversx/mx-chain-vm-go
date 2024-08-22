@@ -2800,7 +2800,9 @@ func (context *VMHooksImpl) GetBlockRandomSeed(pointer executor.MemPtr) {
 
 	randomSeed := blockchain.CurrentRandomSeed()
 	err = context.MemStore(pointer, randomSeed)
-	context.FailExecution(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetStateRootHash VMHooks implementation.
@@ -2818,7 +2820,9 @@ func (context *VMHooksImpl) GetStateRootHash(pointer executor.MemPtr) {
 
 	stateRootHash := blockchain.GetStateRootHash()
 	err = context.MemStore(pointer, stateRootHash)
-	context.FailExecution(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetPrevBlockTimestamp VMHooks implementation.
@@ -2900,7 +2904,9 @@ func (context *VMHooksImpl) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 
 	randomSeed := blockchain.LastRandomSeed()
 	err = context.MemStore(pointer, randomSeed)
-	context.FailExecution(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // Finish VMHooks implementation.
@@ -3638,7 +3644,9 @@ func (context *VMHooksImpl) GetOriginalTxHash(dataOffset executor.MemPtr) {
 	}
 
 	err = context.MemStore(dataOffset, runtime.GetOriginalTxHash())
-	context.FailExecution(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetCurrentTxHash VMHooks implementation.
@@ -3655,7 +3663,9 @@ func (context *VMHooksImpl) GetCurrentTxHash(dataOffset executor.MemPtr) {
 	}
 
 	err = context.MemStore(dataOffset, runtime.GetCurrentTxHash())
-	context.FailExecution(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetPrevTxHash VMHooks implementation.
@@ -3672,7 +3682,9 @@ func (context *VMHooksImpl) GetPrevTxHash(dataOffset executor.MemPtr) {
 	}
 
 	err = context.MemStore(dataOffset, runtime.GetPrevTxHash())
-	context.FailExecution(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 func prepareIndirectContractCallInput(
