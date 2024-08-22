@@ -76,10 +76,6 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 		context.FailExecution(err)
 		return -1
 	}
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
 
 	if exponent > 0 {
 		context.FailExecution(vmhost.ErrPositiveExponent)
