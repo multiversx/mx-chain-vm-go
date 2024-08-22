@@ -99,7 +99,8 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32
 	}
 
 	err = managedType.ConsumeGasForBytes(inputBytes)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -166,7 +167,8 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) in
 	}
 
 	err = managedType.ConsumeGasForBytes(inputBytes)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -239,7 +241,8 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 	}
 
 	err = managedType.ConsumeGasForBytes(inputBytes)
-	if FailExecution(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -545,7 +548,7 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	}
 
 	if keyLength != secp256k1CompressedPublicKeyLength && keyLength != secp256k1UncompressedPublicKeyLength {
-		_ = context.WithFault(vmhost.ErrInvalidPublicKeySize, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrInvalidPublicKeySize, runtime.BaseOpsErrorShouldFailExecution())
 		return 1
 	}
 
@@ -808,7 +811,7 @@ func (context *VMHooksImpl) AddEC(
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.AddECC * uint64(curveMultiplier) / 100
@@ -824,22 +827,22 @@ func (context *VMHooksImpl) AddEC(
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	if err != nil {
-		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	x1, y1, err := managedType.GetTwoBigInt(fstPointXHandle, fstPointYHandle)
 	if err != nil {
-		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	x2, y2, err := managedType.GetTwoBigInt(sndPointXHandle, sndPointYHandle)
 	if err != nil {
-		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoBigIntUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 
 	if !ec.IsOnCurve(x1, y1) || !ec.IsOnCurve(x2, y2) {
-		_ = context.WithFault(vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -868,7 +871,7 @@ func (context *VMHooksImpl) DoubleEC(
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.DoubleECC * uint64(curveMultiplier) / 100
@@ -885,11 +888,11 @@ func (context *VMHooksImpl) DoubleEC(
 	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	x, y, err2 := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err1 != nil || err2 != nil {
-		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
 	if !ec.IsOnCurve(x, y) {
-		_ = context.WithFault(vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -917,7 +920,7 @@ func (context *VMHooksImpl) IsOnCurveEC(
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.IsOnCurveECC * uint64(curveMultiplier) / 100
@@ -933,7 +936,7 @@ func (context *VMHooksImpl) IsOnCurveEC(
 
 	x, y, err := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err != nil || x == nil || y == nil {
-		_ = context.WithFault(vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -964,13 +967,13 @@ func (context *VMHooksImpl) ScalarBaseMultEC(
 	metering.StartGasTracing(scalarBaseMultECName)
 
 	if length < 0 {
-		_ = context.WithFault(vmhost.ErrNegativeLength, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNegativeLength, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	curveMultiplier := managedType.GetScalarMult100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
@@ -1094,13 +1097,13 @@ func (context *VMHooksImpl) ScalarMultEC(
 	metering.StartGasTracing(scalarMultECName)
 
 	if length < 0 {
-		_ = context.WithFault(vmhost.ErrNegativeLength, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNegativeLength, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	curveMultiplier := managedType.GetScalarMult100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
@@ -1235,7 +1238,7 @@ func (context *VMHooksImpl) MarshalEC(
 	host := context.GetVMHost()
 	result, err := commonMarshalEC(host, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
-		_ = context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(err, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1340,7 +1343,7 @@ func (context *VMHooksImpl) MarshalCompressedEC(
 	host := context.GetVMHost()
 	result, err := commonMarshalCompressedEC(host, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
-		_ = context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(err, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1449,7 +1452,7 @@ func (context *VMHooksImpl) UnmarshalEC(
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
@@ -1574,7 +1577,7 @@ func (context *VMHooksImpl) UnmarshalCompressedEC(
 
 	curveMultiplier := managedType.GetUCompressed100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
@@ -1806,7 +1809,7 @@ func (context *VMHooksImpl) CreateEC(dataOffset executor.MemPtr, dataLength exec
 	}
 
 	if dataLength != curveNameLength {
-		_ = context.WithFault(vmhost.ErrBadBounds, runtime.CryptoAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBadBounds, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 	data, err := context.MemLoad(dataOffset, dataLength)
@@ -1889,7 +1892,7 @@ func (context *VMHooksImpl) GetCurveLengthEC(ecHandle int32) int32 {
 
 	ecLength := managedType.GetEllipticCurveSizeOfField(ecHandle)
 	if ecLength == -1 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 	}
 
 	return ecLength
@@ -1910,7 +1913,7 @@ func (context *VMHooksImpl) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 
 	byteLength := managedType.GetPrivateKeyByteLengthEC(ecHandle)
 	if byteLength == -1 {
-		_ = context.WithFault(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle, runtime.BigIntAPIErrorShouldFailExecution())
 	}
 
 	return byteLength

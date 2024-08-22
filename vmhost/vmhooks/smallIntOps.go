@@ -37,14 +37,14 @@ func (context *VMHooksImpl) SmallIntGetUnsignedArgument(id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 	return int64(argBigInt.Uint64())
@@ -64,14 +64,14 @@ func (context *VMHooksImpl) SmallIntGetSignedArgument(id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 	return argBigInt.Int64()
@@ -202,7 +202,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
-		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
@@ -240,7 +240,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
-		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
