@@ -43,6 +43,8 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation(t *testing.T) {
+	panic(fmt.Sprintf("Let's check value of flag fuzz: %v", *fuzz))
+
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
