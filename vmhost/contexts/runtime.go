@@ -28,9 +28,6 @@ var mapNewCryptoAPI = map[string]struct{}{
 
 const warmCacheSize = 100
 
-// WarmInstancesEnabled controls the usage of warm instances
-const WarmInstancesEnabled = true
-
 type runtimeContext struct {
 	host                 vmhost.VMHost
 	vmInput              *vmcommon.ContractCallInput
@@ -270,10 +267,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) (bool, error) {
-	if !WarmInstancesEnabled {
-		return false, nil
-	}
-
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
 		return false, nil
@@ -337,10 +330,6 @@ func (context *runtimeContext) saveCompiledCode() {
 }
 
 func (context *runtimeContext) saveWarmInstance() {
-	if !WarmInstancesEnabled {
-		return
-	}
-
 	codeHash := context.iTracker.CodeHash()
 	if context.iTracker.IsCodeHashOnTheStack(codeHash) {
 		return
@@ -868,10 +857,6 @@ func (context *runtimeContext) EndExecution() {
 
 // ValidateInstances checks the state of the instances after execution
 func (context *runtimeContext) ValidateInstances() error {
-	if !WarmInstancesEnabled {
-		return nil
-	}
-
 	err := context.iTracker.CheckInstances()
 	if err != nil {
 		return err
