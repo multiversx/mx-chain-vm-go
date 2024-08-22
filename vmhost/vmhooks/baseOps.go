@@ -1166,7 +1166,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		SenderForExec:  sender,
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
-	if err != nil {
+	if executeErr != nil {
 		FailExecution(host, executeErr)
 		return 1
 	}
