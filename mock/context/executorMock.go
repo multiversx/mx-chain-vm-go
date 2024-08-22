@@ -7,7 +7,7 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
 // ExecutorMockFactory is the factory for the ExecutorRecorderMock.
@@ -40,15 +40,18 @@ func (emf *ExecutorMockFactory) IsInterfaceNil() bool {
 // ExecutorMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type ExecutorMock struct {
-	InstanceMap map[string]InstanceMock
-	World       *worldmock.MockWorld
+	InstanceMap    map[string]InstanceMock
+	World          *worldmock.MockWorld
+	WasmerExecutor *wasmer2.Wasmer2Executor
 }
 
 // NewExecutorMock constructs a new InstanceBuilderMock
 func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
+	exec, _ := wasmer2.CreateExecutor()
 	return &ExecutorMock{
-		InstanceMap: make(map[string]InstanceMock),
-		World:       world,
+		InstanceMap:    make(map[string]InstanceMock),
+		World:          world,
+		WasmerExecutor: exec,
 	}
 }
 
@@ -106,7 +109,7 @@ func (executorMock *ExecutorMock) NewInstanceWithOptions(
 	if ok {
 		return instance, nil
 	}
-	return wasmer.NewInstanceWithOptions(contractCode, options)
+	return executorMock.WasmerExecutor.NewInstanceWithOptions(contractCode, options)
 }
 
 // NewInstanceFromCompiledCodeWithOptions attempts to load a prepared instance
@@ -120,7 +123,7 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 	if ok {
 		return instance, nil
 	}
-	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	return executorMock.WasmerExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
