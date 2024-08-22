@@ -43,11 +43,13 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation(t *testing.T) {
-	panic(fmt.Sprintf("Let's check value of flag fuzz: %v", *fuzz))
+	fmt.Printf("Let's check value of flag fuzz: %v", *fuzz)
 
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
+
+	panic("Should not run these tests")
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 

@@ -2,6 +2,7 @@ package dex
 
 import (
 	"flag"
+	"fmt"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -44,9 +45,13 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 }
 
 func TestFuzzDex_v0_1(t *testing.T) {
+	fmt.Printf("Let's check value of flag fuzz: %v", *fuzz)
+
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
+
+	panic("Should not run these tests")
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()

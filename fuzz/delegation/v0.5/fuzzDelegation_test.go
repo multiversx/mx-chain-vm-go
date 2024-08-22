@@ -2,6 +2,7 @@ package delegation
 
 import (
 	"flag"
+	"fmt"
 	"math/big"
 	"math/rand"
 	"os"
@@ -47,9 +48,13 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation_v0_5(t *testing.T) {
+	fmt.Printf("Let's check value of flag fuzz: %v", *fuzz)
+
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
+
+	panic("Should not run these tests")
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
