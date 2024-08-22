@@ -85,7 +85,8 @@ func (context *VMHooksImpl) SmallIntFinishUnsigned(value int64) {
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
-	if context.WithFault(err, context.GetRuntimeContext().BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -101,7 +102,8 @@ func (context *VMHooksImpl) SmallIntFinishSigned(value int64) {
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntFinishSignedName, gasToUse)
-	if context.WithFault(err, context.GetRuntimeContext().BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -118,18 +120,21 @@ func (context *VMHooksImpl) SmallIntStorageStoreUnsigned(keyOffset executor.MemP
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
 	storageStatus, err := storage.SetStorage(key, valueBytes)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -145,18 +150,21 @@ func (context *VMHooksImpl) SmallIntStorageStoreSigned(keyOffset executor.MemPtr
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
 	storageStatus, err := storage.SetStorage(key, valueBytes)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -171,12 +179,14 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 	metering := context.GetMeteringContext()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
 	data, trieDepth, usedCache, err := storage.GetStorage(key)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
@@ -185,7 +195,8 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 		int64(trieDepth),
 		metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -206,12 +217,14 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 	metering := context.GetMeteringContext()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
 	data, trieDepth, usedCache, err := storage.GetStorage(key)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
@@ -220,7 +233,8 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 		int64(trieDepth),
 		metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 

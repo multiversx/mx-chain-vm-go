@@ -148,13 +148,6 @@ type RuntimeContext interface {
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
-	BaseOpsErrorShouldFailExecution() bool
-	SyncExecAPIErrorShouldFailExecution() bool
-	CryptoAPIErrorShouldFailExecution() bool
-	BigIntAPIErrorShouldFailExecution() bool
-	BigFloatAPIErrorShouldFailExecution() bool
-	ManagedBufferAPIErrorShouldFailExecution() bool
-	ManagedMapAPIErrorShouldFailExecution() bool
 	UseGasBoundedShouldFailExecution() bool
 	CleanInstance()
 
@@ -162,7 +155,7 @@ type RuntimeContext interface {
 	GetAllErrors() error
 
 	ValidateCallbackName(callbackName string) error
-	
+
 	IsReservedFunctionName(functionName string) bool
 
 	HasFunction(functionName string) bool

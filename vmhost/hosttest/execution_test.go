@@ -1322,11 +1322,6 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
-	executionCostBeforeExecuteAPI := uint64(156)
-	executeAPICost := uint64(39)
-	gasLostOnFailure := uint64(50000)
-	finalCost := uint64(44)
-
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -1338,34 +1333,9 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if !host.Runtime().SyncExecAPIErrorShouldFailExecution() {
-				verify.Ok().
-					GasUsed(test.ParentAddress, 3405).
-					Balance(test.ParentAddress, 1000).
-					BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
-					BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
-					GasRemaining(test.GasProvided-
-						test.ParentCompilationCostSameCtx-
-						executionCostBeforeExecuteAPI-
-						executeAPICost-
-						gasLostOnFailure-
-						finalCost).
-					ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ"), []byte("fail")).
-					Storage(
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-						test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
-					).
-					Transfers(
-						test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 0).
-							WithData(test.ParentTransferData).
-							WithValue(big.NewInt(test.ParentTransferValue)),
-					)
-			} else {
-				verify.ExecutionFailed().
-					ReturnMessage("account not found").
-					GasRemaining(0)
-			}
+			verify.ExecutionFailed().
+				ReturnMessage("account not found").
+				GasRemaining(0)
 		})
 }
 
@@ -1386,11 +1356,6 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	// compilation and starting, but the child starts an infinite loop which will
 	// end in OutOfGas.
 
-	executionCostBeforeExecuteAPI := uint64(90)
-	executeAPICost := uint64(1)
-	gasLostOnFailure := uint64(3500)
-	finalCost := uint64(54)
-
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -1405,27 +1370,10 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if !host.Runtime().SyncExecAPIErrorShouldFailExecution() {
-				verify.Ok().
-					Balance(test.ParentAddress, 1000).
-					BalanceDelta(test.ParentAddress, 0).
-					GasRemaining(test.GasProvided-
-						test.ParentCompilationCostSameCtx-
-						executionCostBeforeExecuteAPI-
-						executeAPICost-
-						gasLostOnFailure-
-						finalCost).
-					ReturnData(test.ParentFinishA, []byte("fail")).
-					Storage(
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-					)
-			} else {
-				verify.OutOfGas().
-					ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
-					GasRemaining(0)
-			}
+			verify.OutOfGas().
+				ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
+				HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
+				GasRemaining(0)
 		})
 }
 
@@ -1617,26 +1565,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
-				verify.Ok().
-					Balance(test.ParentAddress, 1000).
-					BalanceDelta(test.ParentAddress, 0).
-					ReturnData(
-						[]byte(fmt.Sprintf("Rfinish%03d", recursiveCalls)),
-						[]byte("fail"),
-					).
-					Storage(
-						test.CreateStoreEntry(test.ParentAddress).
-							WithKey([]byte(fmt.Sprintf("Rkey%03d.........................", recursiveCalls))).
-							WithValue([]byte(fmt.Sprintf("Rvalue%03d", recursiveCalls))),
-					)
-				require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
-			} else {
-				verify.ExecutionFailed().
-					ReturnMessage(vmhost.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(vmhost.ErrMaxInstancesReached.Error(), vmhost.ErrExecutionFailed.Error()).
-					GasRemaining(0)
-			}
+			verify.ExecutionFailed().
+				ReturnMessage(vmhost.ErrExecutionFailed.Error()).
+				HasRuntimeErrors(vmhost.ErrMaxInstancesReached.Error(), vmhost.ErrExecutionFailed.Error()).
+				GasRemaining(0)
 		})
 }
 
@@ -1815,16 +1747,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
-				verify.OutOfGas().
-					ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
-					GasRemaining(0)
-			} else {
-				verify.OutOfGas().
-					ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
-					GasRemaining(0)
-			}
+			verify.OutOfGas().
+				ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
+				HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
+				GasRemaining(0)
 		})
 }
 
@@ -1871,11 +1797,6 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
 
-	executionCostBeforeExecuteAPI := uint64(156)
-	executeAPICost := uint64(42)
-	gasLostOnFailure := uint64(10000)
-	finalCost := uint64(44)
-
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -1887,38 +1808,9 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
-				verify.Ok().
-					Balance(test.ParentAddress, 1000).
-					BalanceDelta(test.ParentAddress, -42).
-					GasUsed(test.ParentAddress, 3612).
-					BalanceDelta(test.ChildTransferReceiver, 96).
-					BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
-					GasRemaining(test.GasProvided-
-						test.ParentCompilationCostDestCtx-
-						executionCostBeforeExecuteAPI-
-						executeAPICost-
-						gasLostOnFailure-
-						finalCost).
-					ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ"), []byte("fail")).
-					Storage(
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
-					).
-					Transfers(
-						test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver, 0).
-							WithData([]byte("qwerty")).
-							WithValue(big.NewInt(96)),
-						test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver, 1).
-							WithData(test.ParentTransferData).
-							WithValue(big.NewInt(test.ParentTransferValue)),
-					)
-			} else {
-				verify.ExecutionFailed().
-					ReturnMessage("account not found").
-					GasRemaining(0)
-			}
+			verify.ExecutionFailed().
+				ReturnMessage("account not found").
+				GasRemaining(0)
 		})
 }
 
@@ -1939,11 +1831,6 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	// compilation and starting, but the child starts an infinite loop which will
 	// end in OutOfGas.
 
-	executionCostBeforeExecuteAPI := uint64(90)
-	executeAPICost := uint64(1)
-	gasLostOnFailure := uint64(3500)
-	finalCost := uint64(54)
-
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -1959,27 +1846,10 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
-				verify.Ok().
-					Balance(test.ParentAddress, 1000).
-					GasRemaining(test.GasProvided-
-						test.ParentCompilationCostDestCtx-
-						executionCostBeforeExecuteAPI-
-						executeAPICost-
-						gasLostOnFailure-
-						finalCost).
-					ReturnData(test.ParentFinishA, []byte("fail")).
-					Storage(
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
-						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-					)
-				require.Equal(t, int64(42), host.ManagedTypes().GetBigIntOrCreate(12).Int64())
-			} else {
-				verify.OutOfGas().
-					ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
-					GasRemaining(0)
-			}
+			verify.OutOfGas().
+				ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
+				HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
+				GasRemaining(0)
 		})
 }
 
@@ -2424,15 +2294,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
-				verify.OutOfGas().
-					ReturnMessage(vmhost.ErrNotEnoughGas.Error())
-			} else {
-				verify.OutOfGas().
-					ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
-					GasRemaining(0)
-			}
+			verify.OutOfGas().
+				ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
+				HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
+				GasRemaining(0)
 		})
 }
 
@@ -3242,7 +3107,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 						host := parentInstance.Host
 						instance := contextmock.GetMockInstance(host)
 
-						vmhooks.WithFaultAndHost(host, vmhost.ErrNotEnoughGas, true)
+						vmhooks.FailExecution(host, vmhost.ErrNotEnoughGas)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
@@ -3285,7 +3150,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 						host := parentInstance.Host
 						instance := contextmock.GetMockInstance(host)
 
-						vmhooks.WithFaultAndHost(host, vmhost.ErrNotEnoughGas, true)
+						vmhooks.FailExecution(host, vmhost.ErrNotEnoughGas)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress

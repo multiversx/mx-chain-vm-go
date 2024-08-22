@@ -46,18 +46,18 @@ func setResultIfNotInfinity(host vmhost.VMHost, result *big.Float, destinationHa
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
 	if result.IsInf() {
-		_ = WithFaultAndHost(host, vmhost.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = FailExecution(host, vmhost.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
 
 	exponent := result.MantExp(nil)
 	if managedType.BigFloatExpIsNotValid(exponent) {
-		_ = WithFaultAndHost(host, vmhost.ErrExponentTooBigOrTooSmall, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = FailExecution(host, vmhost.ErrExponentTooBigOrTooSmall, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
-	if WithFaultAndHost(host, err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	if FailExecution(host, err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
 

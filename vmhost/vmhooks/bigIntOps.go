@@ -152,7 +152,8 @@ func (context *VMHooksImpl) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr,
 		int64(trieDepth),
 		metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -1216,12 +1217,12 @@ func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationH
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntToStringName, gasToUse)
-	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if FailExecution(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	value, err := managedType.GetBigInt(bigIntHandle)
-	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if FailExecution(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -1229,7 +1230,7 @@ func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationH
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(resultStr)))
 	err = metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if FailExecution(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 
