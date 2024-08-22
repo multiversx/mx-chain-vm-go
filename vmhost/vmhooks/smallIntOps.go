@@ -31,20 +31,21 @@ func (context *VMHooksImpl) SmallIntGetUnsignedArgument(id int32) int64 {
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
-	if context.WithFault(err, runtime.ManagedMapAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		context.FailExecution(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
-		context.FailExecution(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgOutOfRange)
 		return 0
 	}
 	return int64(argBigInt.Uint64())
@@ -58,20 +59,21 @@ func (context *VMHooksImpl) SmallIntGetSignedArgument(id int32) int64 {
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
-	if context.WithFault(err, runtime.ManagedMapAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		context.FailExecution(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		context.FailExecution(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrArgOutOfRange)
 		return 0
 	}
 	return argBigInt.Int64()
@@ -114,7 +116,6 @@ func (context *VMHooksImpl) SmallIntFinishSigned(value int64) {
 // SmallIntStorageStoreUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) SmallIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
@@ -144,7 +145,6 @@ func (context *VMHooksImpl) SmallIntStorageStoreUnsigned(keyOffset executor.MemP
 // SmallIntStorageStoreSigned VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) SmallIntStorageStoreSigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
@@ -174,7 +174,6 @@ func (context *VMHooksImpl) SmallIntStorageStoreSigned(keyOffset executor.MemPtr
 // SmallIntStorageLoadUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
@@ -202,7 +201,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
-		context.FailExecution(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrStorageValueOutOfRange)
 		return 0
 	}
 
@@ -212,7 +211,6 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 // SmallIntStorageLoadSigned VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
@@ -240,7 +238,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
-		context.FailExecution(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrStorageValueOutOfRange)
 		return 0
 	}
 
