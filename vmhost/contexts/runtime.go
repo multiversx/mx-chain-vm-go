@@ -691,44 +691,6 @@ func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
 	return nil
 }
 
-// BaseOpsErrorShouldFailExecution returns true
-func (context *runtimeContext) BaseOpsErrorShouldFailExecution() bool {
-	return true
-}
-
-// SyncExecAPIErrorShouldFailExecution specifies whether an error in the
-// EEI functions for synchronous execution should abort contract execution.
-func (context *runtimeContext) SyncExecAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// BigIntAPIErrorShouldFailExecution specifies whether an error in the EEI
-// functions for BigInt operations should abort contract execution.
-func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// BigFloatAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) BigFloatAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// CryptoAPIErrorShouldFailExecution specifies whether an error in the EEI
-// functions for crypto operations should abort contract execution.
-func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// ManagedBufferAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// ManagedMapAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
-	return true
-}
-
 // UseGasBoundedShouldFailExecution returns true when flag activated
 func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
 	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag)
