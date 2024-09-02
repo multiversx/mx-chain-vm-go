@@ -1,6 +1,4 @@
 {
-    "name": "log2-function",
-    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
@@ -8,85 +6,102 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "mxsc:../output/basic-features.mxsc.json"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
         {
             "step": "scCall",
-            "id": "log2",
+            "id": "managed_decimal_ln(23)",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
-                "function": "log2_big_uint",
+                "function": "managed_decimal_ln",
                 "arguments": [
-                    "33"
+                    "23,000000000"
                 ],
-                "gasLimit": "50,000,000",
+                "gasLimit": "25,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "5"
+                    "+3,135553845"
                 ],
-                "status": "0",
-                "logs": "*",
+                "status": "",
+                "message": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "id": "log2 from 1",
+            "id": "managed_decimal_ln(378,298)",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
-                "function": "log2_big_uint",
+                "function": "managed_decimal_ln",
                 "arguments": [
-                    "1"
+                    "378,298000000"
                 ],
-                "gasLimit": "50,000,000",
+                "gasLimit": "1,000,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0"
+                    "0x0161cc16aa"
                 ],
-                "status": "0",
-                "logs": "*",
+                "status": "",
+                "message": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "id": "log2 from 0",
+            "id": "managed_decimal_log2(23)",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
-                "function": "log2_big_uint",
+                "function": "managed_decimal_log2",
                 "arguments": [
-                    "0"
+                    "23,000000000"
                 ],
-                "gasLimit": "50,000,000",
+                "gasLimit": "1,000,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0"
+                    "4,523648008"
                 ],
-                "status": "0",
-                "logs": "*",
+                "status": "",
+                "message": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "managed_decimal_log2(218,345)",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "managed_decimal_log2",
+                "arguments": [
+                    "218,345000000"
+                ],
+                "gasLimit": "1,000,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "7,770385327"
+                ],
+                "status": "",
+                "message": "*",
                 "gas": "*",
                 "refund": "*"
             }
