@@ -266,6 +266,49 @@ const (
     MBufferFinish = 1000
     MBufferSetRandom = 6000
 
+[EVMOpcodeCost]
+    QuickStep = 2
+    FastestStep = 3
+    FastStep = 5
+    MidStep = 8
+    SlowStep = 10
+    ExtStep = 10000
+    Ecrecover = 3000
+    Sha256PerWord = 1000
+    Sha256Base = 1000000
+    Ripemd160PerWord = 1000
+    Ripemd160Base = 1000000
+    IdentityPerWord = 3
+    IdentityBase = 15
+    Bn256Add = 150
+    Bn256ScalarMul = 6000
+    Bn256PairingBase = 45000
+    Bn256PairingPerPoint = 34000
+    BlobTxPointEvaluation = 50000
+    Keccak256 = 1000000
+    Balance = 7000
+    ExtcodeSize = 2500
+    ExtcodeCopy = 3000
+    ExtcodeHash = 2500
+    Sload = 1
+    Sstore = 250000
+    Jumpdest = 1
+    Tload = 100
+    Tstore = 100
+    Create = 300000
+    Call = 160000
+    Create2 = 300000
+    Selfdestruct = 5000000
+    Memory = 3
+    Copy = 3
+    Log = 3750
+    LogTopic = 320000
+    LogData = 10000
+    Keccak256Word = 1000
+    InitCodeWord = 1000
+    ExpByte = 50
+    Exp = 10
+
 [WASMOpcodeCost]
     AtomicFence = 10
     AtomicNotify = 10
@@ -1070,9 +1113,9 @@ const (
     UnmarshalCompressedECC = 270000
     GenerateKeyECC = 7000000
     EncodeDERSig = 10000000
-VerifySecp256r1 = 2000000
-VerifyBLSSignatureShare = 2000000
-VerifyBLSMultiSig = 2000000
+    VerifySecp256r1 = 2000000
+    VerifyBLSSignatureShare = 2000000
+    VerifyBLSMultiSig = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000
@@ -1095,6 +1138,49 @@ VerifyBLSMultiSig = 2000000
     MBufferGetArgument = 1000
     MBufferFinish = 1000
     MBufferSetRandom = 6000
+
+[EVMOpcodeCost]
+    QuickStep = 2
+    FastestStep = 3
+    FastStep = 5
+    MidStep = 8
+    SlowStep = 10
+    ExtStep = 10000
+    Ecrecover = 3000
+    Sha256PerWord = 100
+    Sha256Base = 1000000
+    Ripemd160PerWord = 100
+    Ripemd160Base = 1000000
+    IdentityPerWord = 3
+    IdentityBase = 15
+    Bn256Add = 150
+    Bn256ScalarMul = 6000
+    Bn256PairingBase = 45000
+    Bn256PairingPerPoint = 34000
+    BlobTxPointEvaluation = 50000
+    Keccak256 = 1000000
+    Balance = 7000
+    ExtcodeSize = 2500
+    ExtcodeCopy = 3000
+    ExtcodeHash = 2500
+    Sload = 1
+    Sstore = 75000
+    Jumpdest = 1
+    Tload = 100
+    Tstore = 100
+    Create = 300000
+    Call = 100000
+    Create2 = 300000
+    Selfdestruct = 5000000
+    Memory = 3
+    Copy = 3
+    Log = 3750
+    LogTopic = 32000
+    LogData = 1000
+    Keccak256Word = 100
+    InitCodeWord = 100
+    ExpByte = 50
+    Exp = 10
 
 [WASMOpcodeCost]
     AtomicFence = 10

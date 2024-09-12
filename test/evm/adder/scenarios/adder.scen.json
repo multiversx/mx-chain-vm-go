@@ -1,0 +1,104 @@
+{
+    "name": "adder",
+    "comment": "add then check",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "1",
+                    "balance": "5,000,000"
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "1",
+                    "newAddress": "sc:adder"
+                }
+            ],
+            "currentBlockInfo": {
+                "blockTimestamp": "1",
+                "blockNonce": "1",
+                "blockRound": "1",
+                "blockEpoch": "1",
+                "blockRandomSeed": "0x42BA9AE77C08604DD7EB9D209488B88DD5A301D9C9F3D4A6B4B40E95AA6F4A1E20519698D3F774052F475B6877449CF3"
+            }
+        },
+        {
+            "step": "scDeploy",
+            "id": "1",
+            "tx": {
+                "from": "address:owner",
+                "contractCode": "mxsc:../output/adder.mxsc.json",
+                "arguments": [],
+                "gasLimit": "5,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": "*",
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "2",
+            "tx": {
+                "to": "sc:adder",
+                "function": "569c5f6d",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000005"
+                ],
+                "status": "",
+                "logs": []
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "3",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:adder",
+                "function": "1003e2d2",
+                "arguments": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000003"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "sc:adder": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0x08"
+                    },
+                    "code": "mxsc:../output/adder-compiled.mxsc.json"
+                }
+            }
+        }
+    ]
+}

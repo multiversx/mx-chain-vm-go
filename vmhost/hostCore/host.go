@@ -2,6 +2,7 @@ package hostCore
 
 import (
 	"context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/evmhooks"
 	"math"
 	"runtime/debug"
 	"sync"
@@ -199,6 +200,7 @@ func NewVMHost(
 
 // Creates a new executor instance. Should only be called once per VM host instantiation.
 func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.Executor, error) {
+	evmHooks := evmhooks.NewEVMHooksImpl(host)
 	vmHooks := vmhooks.NewVMHooksImpl(host)
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
@@ -212,9 +214,11 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	} else {
 		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
+		EvmHooks:                 evmHooks,
 		VMHooks:                  vmHooks,
-		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
+		OpcodeCosts:              opcodeCosts,
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
 	}
@@ -352,7 +356,8 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 		return
 	}
 
-	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
+	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 	host.runtimeContext.ClearWarmInstanceCache()

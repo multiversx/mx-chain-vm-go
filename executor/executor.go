@@ -22,7 +22,7 @@ type Executor interface {
 	check.NilInterfaceChecker
 
 	// SetOpcodeCosts sets gas costs globally inside an executor.
-	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
+	SetOpcodeCosts(opcodeCosts VMOpcodeCost)
 
 	// HasFunctionNameChecks returns true if the instance requires function name checks.
 	HasFunctionNameChecks() bool

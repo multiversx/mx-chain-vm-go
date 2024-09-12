@@ -31,8 +31,8 @@ func CreateExecutor() (*WasmerExecutor, error) {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
-	SetOpcodeCosts(opcodeCosts)
+func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts executor.VMOpcodeCost) {
+	SetOpcodeCosts(opcodeCosts.WASMOpcodeCost)
 }
 
 // HasFunctionNameChecks returns true if the instance requires function name checks.

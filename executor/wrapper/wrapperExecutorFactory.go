@@ -31,6 +31,7 @@ func SimpleWrappedExecutorFactory(wrappedFactory executor.ExecutorAbstractFactor
 // CreateExecutor creates a new Executor instance.
 func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
 	wrappedExecutor, err := factory.wrappedFactory.CreateExecutor(executor.ExecutorFactoryArgs{
+		EvmHooks: args.EvmHooks,
 		VMHooks: &WrapperVMHooks{
 			logger:         factory.logger,
 			wrappedVMHooks: args.VMHooks,
