@@ -24,6 +24,7 @@ type BlockchainHookStub struct {
 	CurrentRoundCalled                      func() uint64
 	CurrentTimeStampCalled                  func() uint64
 	CurrentRandomSeedCalled                 func() []byte
+	ChainIDCalled                           func() []byte
 	CurrentEpochCalled                      func() uint32
 	ProcessBuiltInFunctionCalled            func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetBuiltinFunctionNamesCalled           func() vmcommon.FunctionNames
@@ -39,6 +40,8 @@ type BlockchainHookStub struct {
 	GetSnapshotCalled                       func() int
 	RevertToSnapshotCalled                  func(snapshot int) error
 	ExecuteSmartContractCallOnOtherVMCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	SaveAliasAddressCalled                  func(request *vmcommon.AliasSaveRequest) error
+	RequestAddressCalled                    func(request *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error)
 }
 
 // NewAddress mocked method
@@ -143,6 +146,15 @@ func (b *BlockchainHookStub) CurrentRandomSeed() []byte {
 		return b.CurrentRandomSeedCalled()
 	}
 	return []byte("seed")
+}
+
+// ChainID mocked method
+func (b *BlockchainHookStub) ChainID() []byte {
+	if b.ChainIDCalled != nil {
+		return b.ChainIDCalled()
+	}
+
+	return nil
 }
 
 // CurrentEpoch mocked method
@@ -275,6 +287,24 @@ func (b *BlockchainHookStub) ExecuteSmartContractCallOnOtherVM(input *vmcommon.C
 	if b.ExecuteSmartContractCallOnOtherVMCalled != nil {
 		return b.ExecuteSmartContractCallOnOtherVMCalled(input)
 	}
+	return nil, nil
+}
+
+// SaveAliasAddress -
+func (b *BlockchainHookStub) SaveAliasAddress(request *vmcommon.AliasSaveRequest) error {
+	if b.SaveAliasAddressCalled != nil {
+		return b.SaveAliasAddressCalled(request)
+	}
+
+	return nil
+}
+
+// RequestAddress -
+func (b *BlockchainHookStub) RequestAddress(request *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error) {
+	if b.RequestAddressCalled != nil {
+		return b.RequestAddressCalled(request)
+	}
+
 	return nil, nil
 }
 

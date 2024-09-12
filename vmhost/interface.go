@@ -74,6 +74,7 @@ type BlockchainContext interface {
 	GetBalance(addr []byte) []byte
 	GetBalanceBigInt(addr []byte) *big.Int
 	GetNonce(addr []byte) (uint64, error)
+	ChainID() []byte
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
 	LastTimeStamp() uint64
@@ -105,6 +106,8 @@ type BlockchainContext interface {
 	RevertToSnapshot(snapshot int)
 	ClearCompiledCodes()
 	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	SaveAliasAddress(request *vmcommon.AliasSaveRequest) error
+	RequestAddress(request *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context

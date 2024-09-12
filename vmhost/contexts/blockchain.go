@@ -192,6 +192,11 @@ func (context *blockchainContext) BlockHash(number uint64) []byte {
 	return block
 }
 
+// ChainID returns the chain ID.
+func (context *blockchainContext) ChainID() []byte {
+	return context.blockChainHook.ChainID()
+}
+
 // CurrentEpoch returns the number of the current epoch.
 func (context *blockchainContext) CurrentEpoch() uint32 {
 	return context.blockChainHook.CurrentEpoch()
@@ -364,4 +369,14 @@ func (context *blockchainContext) ClearCompiledCodes() {
 // ExecuteSmartContractCallOnOtherVM runs contract on another VM
 func (context *blockchainContext) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return context.blockChainHook.ExecuteSmartContractCallOnOtherVM(input)
+}
+
+// SaveAliasAddress saves the given alias address
+func (context *blockchainContext) SaveAliasAddress(request *vmcommon.AliasSaveRequest) error {
+	return context.blockChainHook.SaveAliasAddress(request)
+}
+
+// RequestAddress returns the requested address
+func (context *blockchainContext) RequestAddress(request *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error) {
+	return context.blockChainHook.RequestAddress(request)
 }

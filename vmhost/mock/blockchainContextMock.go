@@ -60,6 +60,11 @@ func (b *BlockchainContextMock) GetNonce(_ []byte) (uint64, error) {
 	return 0, nil
 }
 
+// ChainID -
+func (b *BlockchainContextMock) ChainID() []byte {
+	return make([]byte, 0)
+}
+
 // CurrentEpoch -
 func (b *BlockchainContextMock) CurrentEpoch() uint32 {
 	return 0
@@ -208,5 +213,15 @@ func (b *BlockchainContextMock) ClearCompiledCodes() {
 
 // ExecuteSmartContractCallOnOtherVM -
 func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
+}
+
+// SaveAliasAddress -
+func (b *BlockchainContextMock) SaveAliasAddress(_ *vmcommon.AliasSaveRequest) error {
+	return nil
+}
+
+// RequestAddress -
+func (b *BlockchainContextMock) RequestAddress(_ *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error) {
 	return nil, nil
 }
