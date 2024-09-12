@@ -31,7 +31,7 @@ type VMHostStub struct {
 
 	ExecuteESDTTransferCalled   func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
-	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
+	ExecuteOnSameContextCalled  func(input *vmcommon.ContractSameContextCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	IsBuiltinFunctionNameCalled func(functionName string) bool
 	IsBuiltinFunctionCallCalled func(data []byte) bool
@@ -193,7 +193,7 @@ func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput, cr
 }
 
 // ExecuteOnSameContext mocked method
-func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractSameContextCallInput) error {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}

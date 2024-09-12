@@ -118,7 +118,7 @@ func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput, _ int
 }
 
 // ExecuteOnSameContext mocked method
-func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) error {
+func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractSameContextCallInput) error {
 	return nil
 }
 

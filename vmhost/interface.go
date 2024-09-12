@@ -44,7 +44,7 @@ type VMHost interface {
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnSameContext(input *vmcommon.ContractSameContextCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool

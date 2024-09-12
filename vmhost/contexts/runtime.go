@@ -491,9 +491,10 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		ReturnCallAfterError: vmInput.ReturnCallAfterError,
 	}
 	context.vmInput = &vmcommon.ContractCallInput{
-		VMInput:       internalVMInput,
-		RecipientAddr: vmInput.RecipientAddr,
-		Function:      vmInput.Function,
+		VMInput:            internalVMInput,
+		RecipientAddr:      vmInput.RecipientAddr,
+		RecipientAliasAddr: vmInput.RecipientAliasAddr,
+		Function:           vmInput.Function,
 	}
 
 	if vmInput.CallValue != nil {

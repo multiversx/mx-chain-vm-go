@@ -564,7 +564,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 // ExecuteOnSameContext executes the contract call with the given input
 // on the same runtime context. Some other contexts are backed up.
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) ExecuteOnSameContext(sameContextCallInput *vmcommon.ContractSameContextCallInput) error {
+	input := &sameContextCallInput.ContractCallInput
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
@@ -579,14 +580,10 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	managedTypes.InitState()
 	output.PushState()
 
-	librarySCAddress := make([]byte, len(input.RecipientAddr))
-	copy(librarySCAddress, input.RecipientAddr)
-
-	input.RecipientAddr = input.CallerAddr
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
-	runtime.SetCodeAddress(librarySCAddress)
+	runtime.SetCodeAddress(sameContextCallInput.CodeAddress)
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -595,14 +592,18 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	var err error
 
-	defer host.finishExecuteOnSameContext(err)
+	defer func() {
+		host.finishExecuteOnSameContext(err)
+	}()
 
-	// Perform a value transfer to the called SC. If the execution fails, this
-	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
-	if err != nil {
-		runtime.AddError(err, input.Function)
-		return err
+	if sameContextCallInput.DoTransfer {
+		// Perform a value transfer to the called SC. If the execution fails, this
+		// transfer will not persist.
+		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
+		if err != nil {
+			runtime.AddError(err, input.Function)
+			return err
+		}
 	}
 	output.WriteLogWithIdentifier(
 		input.CallerAddr,
@@ -730,10 +731,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	runtime.MustVerifyNextContractCode()
 
 	initCallInput := &vmcommon.ContractCallInput{
-		RecipientAddr:     newContractAddress,
-		Function:          vmhost.InitFunctionName,
-		AllowInitFunction: true,
-		VMInput:           input.VMInput,
+		RecipientAddr:      newContractAddress,
+		RecipientAliasAddr: input.AliasAddress,
+		Function:           vmhost.InitFunctionName,
+		AllowInitFunction:  true,
+		VMInput:            input.VMInput,
 	}
 
 	var isChildComplete bool
