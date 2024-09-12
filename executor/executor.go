@@ -24,6 +24,9 @@ type Executor interface {
 	// SetOpcodeCosts sets gas costs globally inside an executor.
 	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
 
+	// HasFunctionNameChecks returns true if the instance requires function name checks.
+	HasFunctionNameChecks() bool
+
 	// FunctionNames return the low-level function names provided to contracts.
 	FunctionNames() vmcommon.FunctionNames
 

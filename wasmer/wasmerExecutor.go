@@ -35,6 +35,11 @@ func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMO
 	SetOpcodeCosts(opcodeCosts)
 }
 
+// HasFunctionNameChecks returns true if the instance requires function name checks.
+func (wasmerExecutor *WasmerExecutor) HasFunctionNameChecks() bool {
+	return true
+}
+
 // FunctionNames returns the function names
 func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
 	return wasmerExecutor.eiFunctionNames

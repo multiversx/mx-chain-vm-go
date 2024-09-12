@@ -56,6 +56,11 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 func (executorMock *ExecutorMock) SetOpcodeCosts(_ *executor.WASMOpcodeCost) {
 }
 
+// HasFunctionNameChecks mocked method
+func (executorMock *ExecutorMock) HasFunctionNameChecks() bool {
+	return true
+}
+
 // FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
 	return functionNames

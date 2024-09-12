@@ -84,7 +84,7 @@ func NewRuntimeContext(
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
+		validator:  newWASMValidator(vmExecutor.HasFunctionNameChecks(), scAPINames, builtInFuncContainer),
 		hasher:     hasher,
 		errors:     nil,
 	}
@@ -334,6 +334,9 @@ func (context *runtimeContext) GetSCCodeHash() []byte {
 }
 
 func (context *runtimeContext) SaveCompiledCode() {
+	if !context.iTracker.Instance().HasCompiledCode() {
+		return
+	}
 	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
@@ -828,7 +831,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	functionName := context.FunctionName()
-	err := verifyCallFunction(functionName)
+	err := context.validator.verifyCallFunction(functionName)
 	if err != nil {
 		return "", executor.ErrFuncNotFound
 	}
