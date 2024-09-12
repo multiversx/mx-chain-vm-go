@@ -699,10 +699,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 		ContractAddress:      nil,
 		CodeDeployerAddress:  input.CallerAddr,
 	}
-	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
+	initialCost, err := metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
 		return
 	}
+	input.GasProvided -= initialCost
 
 	if runtime.ReadOnly() {
 		err = vmhost.ErrInvalidCallOnReadOnlyMode

@@ -291,7 +291,7 @@ type MeteringContext interface {
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
-	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
+	DeductInitialGasForIndirectDeployment(input CodeDeployInput) (uint64, error)
 	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
