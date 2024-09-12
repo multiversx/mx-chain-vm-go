@@ -147,6 +147,11 @@ func (host *VMHostMock) PopState() {
 func (host *VMHostMock) ClearStateStack() {
 }
 
+// IsOutOfVMFunctionExecution mocked method
+func (host *VMHostMock) IsOutOfVMFunctionExecution(_ *vmcommon.ContractCallInput) bool {
+	return false
+}
+
 // IsBuiltinFunctionName mocked method
 func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc

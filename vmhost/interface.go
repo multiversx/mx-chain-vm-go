@@ -46,6 +46,7 @@ type VMHost interface {
 	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractSameContextCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+	IsOutOfVMFunctionExecution(input *vmcommon.ContractCallInput) bool
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool

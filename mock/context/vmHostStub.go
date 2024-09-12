@@ -29,14 +29,15 @@ type VMHostStub struct {
 	GetContextsCalled         func() (vmhost.ManagedTypesContext, vmhost.BlockchainContext, vmhost.MeteringContext, vmhost.OutputContext, vmhost.RuntimeContext, vmhost.AsyncContext, vmhost.StorageContext)
 	ManagedTypesCalled        func() vmhost.ManagedTypesContext
 
-	ExecuteESDTTransferCalled   func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
-	ExecuteOnSameContextCalled  func(input *vmcommon.ContractSameContextCallInput) error
-	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
-	IsBuiltinFunctionNameCalled func(functionName string) bool
-	IsBuiltinFunctionCallCalled func(data []byte) bool
-	AreInSameShardCalled        func(left []byte, right []byte) bool
-	IsAllowedToExecuteCalled    func(opcode string) bool
+	ExecuteESDTTransferCalled        func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
+	CreateNewContractCalled          func(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
+	ExecuteOnSameContextCalled       func(input *vmcommon.ContractSameContextCallInput) error
+	ExecuteOnDestContextCalled       func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+	IsOutOfVMFunctionExecutionCalled func(input *vmcommon.ContractCallInput) bool
+	IsBuiltinFunctionNameCalled      func(functionName string) bool
+	IsBuiltinFunctionCallCalled      func(data []byte) bool
+	AreInSameShardCalled             func(left []byte, right []byte) bool
+	IsAllowedToExecuteCalled         func(opcode string) bool
 
 	RunSmartContractCallCalled           func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
 	RunSmartContractCreateCalled         func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -222,6 +223,14 @@ func (vhs *VMHostStub) IsAllowedToExecute(opcode string) bool {
 		return vhs.IsAllowedToExecuteCalled(opcode)
 	}
 	return true
+}
+
+// IsOutOfVMFunctionExecution mocked method
+func (vhs *VMHostStub) IsOutOfVMFunctionExecution(input *vmcommon.ContractCallInput) bool {
+	if vhs.IsOutOfVMFunctionExecutionCalled != nil {
+		return vhs.IsOutOfVMFunctionExecutionCalled(input)
+	}
+	return false
 }
 
 // IsBuiltinFunctionName mocked method
