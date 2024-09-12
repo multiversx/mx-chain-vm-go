@@ -35,6 +35,11 @@ func (b *BlockchainContextMock) PopDiscard() {
 func (b *BlockchainContextMock) ClearStateStack() {
 }
 
+// GetNonceForNewAddress -
+func (b *BlockchainContextMock) GetNonceForNewAddress(_ []byte) (uint64, error) {
+	return 0, nil
+}
+
 // NewAddress -
 func (b *BlockchainContextMock) NewAddress(creatorAddress []byte) ([]byte, error) {
 	return creatorAddress, nil

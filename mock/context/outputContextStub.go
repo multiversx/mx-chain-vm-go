@@ -12,44 +12,47 @@ var _ vmhost.OutputContext = (*OutputContextStub)(nil)
 
 // OutputContextStub is used in tests to check the OutputContext interface method calls
 type OutputContextStub struct {
-	InitStateCalled                   func()
-	PushStateCalled                   func()
-	PopSetActiveStateCalled           func()
-	PopMergeActiveStateCalled         func()
-	PopDiscardCalled                  func()
-	ClearStateStackCalled             func()
-	CopyTopOfStackToActiveStateCalled func()
-	CensorVMOutputCalled              func()
-	GetOutputAccountsCalled           func() map[string]*vmcommon.OutputAccount
-	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
-	DeleteOutputAccountCalled         func(address []byte)
-	WriteLogCalled                    func(address []byte, topics [][]byte, data [][]byte)
-	WriteLogWithIdentifierCalled      func(address []byte, topics [][]byte, data [][]byte, identifier []byte)
-	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
-	TransferESDTCalled                func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
-	GetRefundCalled                   func() uint64
-	SetRefundCalled                   func(refund uint64)
-	ReturnCodeCalled                  func() vmcommon.ReturnCode
-	SetReturnCodeCalled               func(returnCode vmcommon.ReturnCode)
-	ReturnMessageCalled               func() string
-	SetReturnMessageCalled            func(message string)
-	ReturnDataCalled                  func() [][]byte
-	ClearReturnDataCalled             func()
-	RemoveReturnDataCalled            func(index uint32)
-	FinishCalled                      func(data []byte)
-	PrependFinishCalled               func(data []byte)
-	DeleteFirstReturnDataCalled       func()
-	GetVMOutputCalled                 func() *vmcommon.VMOutput
-	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
-	DeployCodeCalled                  func(input vmhost.CodeDeployInput)
-	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
-	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
-	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
-	RemoveNonUpdatedStorageCalled     func()
-	NextOutputTransferIndexCalled     func() uint32
-	GetCrtTransferIndexCalled         func() uint32
-	SetCrtTransferIndexCalled         func(index uint32)
-	IsInterfaceNilCalled              func() bool
+	InitStateCalled                     func()
+	PushStateCalled                     func()
+	PopSetActiveStateCalled             func()
+	PopMergeActiveStateCalled           func()
+	PopDiscardCalled                    func()
+	ClearStateStackCalled               func()
+	CopyTopOfStackToActiveStateCalled   func()
+	CensorVMOutputCalled                func()
+	GetOutputAccountsCalled             func() map[string]*vmcommon.OutputAccount
+	GetOutputAccountCalled              func(address []byte) (*vmcommon.OutputAccount, bool)
+	DeleteAccountCalled                 func(address []byte)
+	DeleteOutputAccountCalled           func(address []byte)
+	WriteLogCalled                      func(address []byte, topics [][]byte, data [][]byte)
+	WriteLogWithIdentifierCalled        func(address []byte, topics [][]byte, data [][]byte, identifier []byte)
+	TransferCalled                      func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
+	TransferESDTCalled                  func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
+	GetRefundCalled                     func() uint64
+	SetRefundCalled                     func(refund uint64)
+	ReturnCodeCalled                    func() vmcommon.ReturnCode
+	SetReturnCodeCalled                 func(returnCode vmcommon.ReturnCode)
+	ReturnMessageCalled                 func() string
+	SetReturnMessageCalled              func(message string)
+	ReturnDataCalled                    func() [][]byte
+	ClearReturnDataCalled               func()
+	RemoveReturnDataCalled              func(index uint32)
+	FinishCalled                        func(data []byte)
+	PrependFinishCalled                 func(data []byte)
+	DeleteFirstReturnDataCalled         func()
+	GetVMOutputCalled                   func() *vmcommon.VMOutput
+	AddTxValueToAccountCalled           func(address []byte, value *big.Int)
+	DeployCodeCalled                    func(input vmhost.CodeDeployInput)
+	ChangeAccountCodeCalled             func(address []byte, contract []byte)
+	SetIsCreatedInTransactionFlagCalled func(address []byte)
+	CreateVMOutputInCaseOfErrorCalled   func(err error) *vmcommon.VMOutput
+	AddToActiveStateCalled              func(vmOutput *vmcommon.VMOutput)
+	TransferValueOnlyCalled             func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
+	RemoveNonUpdatedStorageCalled       func()
+	NextOutputTransferIndexCalled       func() uint32
+	GetCrtTransferIndexCalled           func() uint32
+	SetCrtTransferIndexCalled           func(index uint32)
+	IsInterfaceNilCalled                func() bool
 }
 
 // AddToActiveState mocked method
@@ -129,6 +132,13 @@ func (o *OutputContextStub) GetOutputAccount(address []byte) (*vmcommon.OutputAc
 		return o.GetOutputAccountCalled(address)
 	}
 	return nil, false
+}
+
+// DeleteAccount mocked method
+func (o *OutputContextStub) DeleteAccount(address []byte) {
+	if o.DeleteAccountCalled != nil {
+		o.DeleteAccountCalled(address)
+	}
 }
 
 // DeleteOutputAccount mocked method
@@ -292,6 +302,20 @@ func (o *OutputContextStub) AddTxValueToAccount(address []byte, value *big.Int) 
 func (o *OutputContextStub) DeployCode(input vmhost.CodeDeployInput) {
 	if o.DeployCodeCalled != nil {
 		o.DeployCodeCalled(input)
+	}
+}
+
+// ChangeAccountCode mocked method
+func (o *OutputContextStub) ChangeAccountCode(address []byte, contract []byte) {
+	if o.ChangeAccountCodeCalled != nil {
+		o.ChangeAccountCodeCalled(address, contract)
+	}
+}
+
+// SetIsCreatedInTransactionFlag mocked method
+func (o *OutputContextStub) SetIsCreatedInTransactionFlag(address []byte) {
+	if o.SetIsCreatedInTransactionFlagCalled != nil {
+		o.SetIsCreatedInTransactionFlagCalled(address)
 	}
 }
 

@@ -180,6 +180,11 @@ func (context *outputContext) GetOutputAccounts() map[string]*vmcommon.OutputAcc
 	return context.outputState.OutputAccounts
 }
 
+// DeleteAccount add an account to DeletedAccounts
+func (context *outputContext) DeleteAccount(address []byte) {
+	context.outputState.DeletedAccounts = append(context.outputState.DeletedAccounts, address)
+}
+
 // DeleteOutputAccount removes the given address from the output accounts and code updates
 func (context *outputContext) DeleteOutputAccount(address []byte) {
 	delete(context.outputState.OutputAccounts, string(address))
@@ -555,12 +560,29 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
 func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
-	newSCAccount.Code = input.ContractCode
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
 	newSCAccount.CodeDeployerAddress = input.CodeDeployerAddress
 
+	_, updated := context.codeUpdates[string(input.ContractAddress)]
+	if !updated {
+		context.ChangeAccountCode(input.ContractAddress, input.ContractCode)
+	}
+}
+
+// ChangeAccountCode sets the given code to an account, and creates a new codeUpdates entry at the accounts address.
+func (context *outputContext) ChangeAccountCode(address []byte, contract []byte) {
+	newSCAccount, _ := context.GetOutputAccount(address)
+	newSCAccount.Code = contract
+	newSCAccount.CodeHash = context.host.Runtime().ComputeCodeHash(contract)
+
 	var empty struct{}
-	context.codeUpdates[string(input.ContractAddress)] = empty
+	context.codeUpdates[string(address)] = empty
+}
+
+// SetIsCreatedInTransactionFlag sets the IsContractCreatedInTransaction flag.
+func (context *outputContext) SetIsCreatedInTransactionFlag(address []byte) {
+	account, _ := context.GetOutputAccount(address)
+	account.IsContractCreatedInTransaction = true
 }
 
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
@@ -588,6 +610,7 @@ func (context *outputContext) removeNonUpdatedCode() {
 		_, ok := context.codeUpdates[address]
 		if !ok {
 			account.Code = nil
+			account.CodeHash = nil
 			account.CodeMetadata = nil
 			account.CodeDeployerAddress = nil
 		}
@@ -744,11 +767,17 @@ func mergeOutputAccounts(
 	if len(rightAccount.Code) > 0 {
 		leftAccount.Code = rightAccount.Code
 	}
+	if len(rightAccount.CodeHash) > 0 {
+		leftAccount.CodeHash = rightAccount.CodeHash
+	}
 	if len(rightAccount.CodeMetadata) > 0 {
 		leftAccount.CodeMetadata = rightAccount.CodeMetadata
 	}
 	if rightAccount.Nonce > leftAccount.Nonce {
 		leftAccount.Nonce = rightAccount.Nonce
+	}
+	if rightAccount.IsContractCreatedInTransaction {
+		leftAccount.IsContractCreatedInTransaction = rightAccount.IsContractCreatedInTransaction
 	}
 
 	mergeTransfers(leftAccount, rightAccount, mergeAllTransfers)

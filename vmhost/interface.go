@@ -70,6 +70,7 @@ type VMHost interface {
 type BlockchainContext interface {
 	StateStack
 
+	GetNonceForNewAddress(creatorAddress []byte) (uint64, error)
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
@@ -124,8 +125,12 @@ type RuntimeContext interface {
 	GetContextAddress() []byte
 	GetOriginalCallerAddress() []byte
 	SetCodeAddress(scAddress []byte)
+	ComputeCodeHash(contract []byte) []byte
+	SetTrackerCode(contract []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
+	GetSCCodeHash() []byte
+	SaveCompiledCode()
 	GetVMType() []byte
 	FunctionName() string
 	Arguments() [][]byte
@@ -238,6 +243,7 @@ type OutputContext interface {
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
+	DeleteAccount(address []byte)
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data [][]byte)
 	WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte)
@@ -260,6 +266,8 @@ type OutputContext interface {
 	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
+	ChangeAccountCode(address []byte, contract []byte)
+	SetIsCreatedInTransactionFlag(address []byte)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 	NextOutputTransferIndex() uint32
 	GetCrtTransferIndex() uint32

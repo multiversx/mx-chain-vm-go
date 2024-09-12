@@ -36,16 +36,26 @@ func NewBlockchainContext(
 	return context, nil
 }
 
-// NewAddress returns a new address created using the provided creator address and its nonce.
-func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, error) {
+// GetNonceForNewAddress returns the nonce for the provided creator address.
+func (context *blockchainContext) GetNonceForNewAddress(creatorAddress []byte) (uint64, error) {
 	nonce, err := context.GetNonce(creatorAddress)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	isIndirectDeployment := context.IsSmartContract(creatorAddress)
 	if !isIndirectDeployment && nonce > 0 {
 		nonce--
+	}
+
+	return nonce, nil
+}
+
+// NewAddress returns a new address created using the provided creator address and its nonce.
+func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, error) {
+	nonce, err := context.GetNonceForNewAddress(creatorAddress)
+	if err != nil {
+		return nil, err
 	}
 
 	vmType := context.host.Runtime().GetVMType()
@@ -77,7 +87,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 		if outputAccount.Balance == nil {
 			account, err := context.blockChainHook.GetUserAccount(address)
 			if err != nil || vmhost.IfNil(account) {
-				return big.NewInt(0)
+				return outputAccount.BalanceDelta
 			}
 
 			outputAccount.Balance = account.GetBalance()
@@ -102,7 +112,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 
-	readNonceFromBlockChain := isNew || outputAccount.Nonce == 0
+	readNonceFromBlockChain := isNew || (outputAccount.Nonce == 0 && !outputAccount.IsContractCreatedInTransaction)
 	if !readNonceFromBlockChain {
 		return outputAccount.Nonce, nil
 	}
@@ -132,6 +142,12 @@ func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, n
 
 // GetCodeHash retrieves the hash of the code stored under the given address.
 func (context *blockchainContext) GetCodeHash(address []byte) []byte {
+	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+	hasCodeHash := !isNew && len(outputAccount.CodeHash) > 0
+	if hasCodeHash {
+		return outputAccount.CodeHash
+	}
+
 	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil {
 		return nil
@@ -141,6 +157,7 @@ func (context *blockchainContext) GetCodeHash(address []byte) []byte {
 	}
 
 	codeHash := account.GetCodeHash()
+	outputAccount.CodeHash = codeHash
 	return codeHash
 }
 

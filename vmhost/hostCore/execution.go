@@ -52,6 +52,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	output.AddTxValueToAccount(address, input.CallValue)
+	output.SetIsCreatedInTransactionFlag(address)
 	storage.SetAddress(runtime.GetContextAddress())
 
 	codeDeployInput := vmhost.CodeDeployInput{
@@ -722,6 +723,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 
 	codeDeployInput.ContractAddress = newContractAddress
 	output.DeployCode(codeDeployInput)
+	output.SetIsCreatedInTransactionFlag(newContractAddress)
 
 	defer func() {
 		if err != nil {
