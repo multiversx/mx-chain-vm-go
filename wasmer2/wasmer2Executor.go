@@ -66,11 +66,6 @@ func (wasmerExecutor *Wasmer2Executor) SetRkyvSerializationEnabled(enabled bool)
 func (wasmerExecutor *Wasmer2Executor) SetSIGSEGVPassthrough() {
 }
 
-// HasFunctionNameChecks returns true if the instance requires function name checks.
-func (wasmerExecutor *Wasmer2Executor) HasFunctionNameChecks() bool {
-	return true
-}
-
 func (wasmerExecutor *Wasmer2Executor) FunctionNames() vmcommon.FunctionNames {
 	return functionNames
 }

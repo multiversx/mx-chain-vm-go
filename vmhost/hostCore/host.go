@@ -134,7 +134,7 @@ func NewVMHost(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
+	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook, hostParameters.UsePseudoAddresses)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +150,7 @@ func NewVMHost(
 		host.builtInFuncContainer,
 		vmExecutor,
 		hostParameters.Hasher,
+		hostParameters.OmitFunctionNameChecks,
 	)
 	if err != nil {
 		return nil, err

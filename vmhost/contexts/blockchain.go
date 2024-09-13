@@ -1,6 +1,8 @@
 package contexts
 
 import (
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-crypto-go/address"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -17,12 +19,15 @@ type blockchainContext struct {
 	host           vmhost.VMHost
 	blockChainHook vmcommon.BlockchainHook
 	stateStack     []int
+
+	usePseudoAddresses bool
 }
 
 // NewBlockchainContext creates a new blockchainContext
 func NewBlockchainContext(
 	host vmhost.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
+	usePseudoAddresses bool,
 ) (*blockchainContext, error) {
 	if check.IfNil(host) {
 		return nil, vmhost.ErrNilVMHost
@@ -31,6 +36,8 @@ func NewBlockchainContext(
 	context := &blockchainContext{
 		blockChainHook: blockChainHook,
 		host:           host,
+
+		usePseudoAddresses: usePseudoAddresses,
 	}
 
 	return context, nil
@@ -59,7 +66,15 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 	}
 
 	vmType := context.host.Runtime().GetVMType()
-	return context.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
+	newAddress, err := context.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
+	if err != nil {
+		return nil, err
+	}
+
+	if !context.usePseudoAddresses {
+		return newAddress, nil
+	}
+	return address.ConvertAddressToPseudoAddress(newAddress, core.MVXAddressIdentifier)
 }
 
 // AccountExists verifies if the provided address exists.

@@ -29,11 +29,6 @@ func (evmExecutor *EVMExecutor) SetOpcodeCosts(opcodeCost executor.VMOpcodeCost)
 	}
 }
 
-// HasFunctionNameChecks returns true if the instance requires function name checks.
-func (evmExecutor *EVMExecutor) HasFunctionNameChecks() bool {
-	return false
-}
-
 func (evmExecutor *EVMExecutor) FunctionNames() vmcommon.FunctionNames {
 	return map[string]struct{}{}
 }

@@ -50,7 +50,7 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 			return []byte{0xf, 0xf, 0xf, 0xf, 0xa, 0xb}
 		},
 	}
-	blockchainCtx, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainCtx, _ := NewBlockchainContext(host, mockBlockchain, false)
 	host.BlockchainContext = blockchainCtx
 	copyHost := host
 

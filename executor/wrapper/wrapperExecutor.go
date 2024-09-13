@@ -20,11 +20,6 @@ func (wexec *WrapperExecutor) SetOpcodeCosts(opcodeCosts executor.VMOpcodeCost) 
 	wexec.wrappedExecutor.SetOpcodeCosts(opcodeCosts)
 }
 
-// HasFunctionNameChecks wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) HasFunctionNameChecks() bool {
-	return wexec.wrappedExecutor.HasFunctionNameChecks()
-}
-
 // FunctionNames wraps the call to the underlying executor.
 func (wexec *WrapperExecutor) FunctionNames() vmcommon.FunctionNames {
 	functionNames := wexec.wrappedExecutor.FunctionNames()

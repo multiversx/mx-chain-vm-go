@@ -60,6 +60,7 @@ func NewRuntimeContext(
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	vmExecutor executor.Executor,
 	hasher vmhost.HashComputer,
+	omitFunctionNameChecks bool,
 ) (*runtimeContext, error) {
 
 	if check.IfNil(host) {
@@ -84,7 +85,7 @@ func NewRuntimeContext(
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(vmExecutor.HasFunctionNameChecks(), scAPINames, builtInFuncContainer),
+		validator:  newWASMValidator(!omitFunctionNameChecks, scAPINames, builtInFuncContainer),
 		hasher:     hasher,
 		errors:     nil,
 	}

@@ -21,10 +21,15 @@ var _ scenexec.VMBuilder = (*ScenarioVMHostBuilder)(nil)
 // DefaultVMType is the VM type argument we use in tests.
 var DefaultVMType = []byte{5, 0}
 
+// EVMType is the VM type argument we use in tests for EVM.
+var EVMType = []byte{6, 0}
+
 // VMTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with VM.
 type ScenarioVMHostBuilder struct {
 	OverrideVMExecutor executor.ExecutorAbstractFactory
 	VMType             []byte
+
+	OmitFunctionNameChecks bool
 }
 
 // NewScenarioVMHostBuilder creates a default ScenarioVMHostBuilder.
@@ -90,6 +95,7 @@ func (svb *ScenarioVMHostBuilder) NewVM(
 			WasmerSIGSEGVPassthrough:  false,
 			Hasher:                    worldmock.DefaultHasher,
 			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
+			OmitFunctionNameChecks:    svb.OmitFunctionNameChecks,
 		})
 
 }
