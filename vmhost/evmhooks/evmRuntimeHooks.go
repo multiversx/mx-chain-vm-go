@@ -15,11 +15,7 @@ func (context *EVMHooksImpl) ReadOnly() bool {
 }
 
 func (context *EVMHooksImpl) Origin() common.Address {
-	originalCallerAddress := context.GetRuntimeContext().GetOriginalCallerAddress()
-	if len(originalCallerAddress) > 0 {
-		return context.toEVMAddress(originalCallerAddress)
-	}
-	return common.Address{}
+	return context.toEVMAddress(context.GetRuntimeContext().GetOriginalCallerAddress())
 }
 
 func (context *EVMHooksImpl) GasPrice() *big.Int {
@@ -47,11 +43,7 @@ func (context *EVMHooksImpl) ContractAddress() common.Address {
 }
 
 func (context *EVMHooksImpl) ContractAliasAddress() common.Address {
-	address := context.GetRuntimeContext().GetVMInput().RecipientAliasAddr
-	if len(address) > 0 {
-		return common.BytesToAddress(address)
-	}
-	return common.Address{}
+	return common.BytesToAddress(context.GetRuntimeContext().GetVMInput().RecipientAliasAddr)
 }
 
 func (context *EVMHooksImpl) Arguments() [][]byte {

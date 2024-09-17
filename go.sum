@@ -95,10 +95,10 @@ github.com/buidly/mx-evm-chain-core-go v0.0.0-20240912061415-6accab87a6f8 h1:C1E
 github.com/buidly/mx-evm-chain-core-go v0.0.0-20240912061415-6accab87a6f8/go.mod h1:uTeQAMCx/VGbOtqSQ3RE+sIGUTgoemdftGAdAjr24RI=
 github.com/buidly/mx-evm-chain-crypto-go v0.0.0-20240912063737-78e64569c8c9 h1:8+BYbs7fT2yDIgyn+0GtUxP/keHBgZL7FeiBcOp8iuE=
 github.com/buidly/mx-evm-chain-crypto-go v0.0.0-20240912063737-78e64569c8c9/go.mod h1:TV0IYQw0wtb2P/hws/Gfcjkt/HdT0qVVFcWo7ZMfJ48=
-github.com/buidly/mx-evm-chain-scenario-go v0.0.0-20240912100235-4d4f0deb79ba h1:nqZc1NMLVnqKNXXPR+V83yMvoBFsd58OG7ceWbxPlmA=
-github.com/buidly/mx-evm-chain-scenario-go v0.0.0-20240912100235-4d4f0deb79ba/go.mod h1:u0TiBqLlOjA52YsnMmciIScr2/cB/up7G7XcL+mxoug=
-github.com/buidly/mx-evm-chain-vm-common-go v0.0.0-20240912094510-8885cc5d6774 h1:l54fTJejS3Tk10hBKTYq66AZdfHgoEd1wtsYuTNmSus=
-github.com/buidly/mx-evm-chain-vm-common-go v0.0.0-20240912094510-8885cc5d6774/go.mod h1:7MQBf5DkBT1zkIPvDzltW6OnlF9O7XCPVJvWMi3WXBk=
+github.com/buidly/mx-evm-chain-scenario-go v0.0.0-20240917101914-439d5ca6d888 h1:aVxqvPNGOsCT1+3n82i5YC1Y4pPaBnvIt/o5jxi9cgs=
+github.com/buidly/mx-evm-chain-scenario-go v0.0.0-20240917101914-439d5ca6d888/go.mod h1:MWyIL7x6wLKMWBHyMiWrVLLm1okFPd+AjDIvda4Xtdw=
+github.com/buidly/mx-evm-chain-vm-common-go v0.0.0-20240917101244-c5e02189a20a h1:wmXXyHj44Y1rbwsjuZobvOFLi5AeDWLFJu3vglTF9rY=
+github.com/buidly/mx-evm-chain-vm-common-go v0.0.0-20240917101244-c5e02189a20a/go.mod h1:7MQBf5DkBT1zkIPvDzltW6OnlF9O7XCPVJvWMi3WXBk=
 github.com/buidly/mx-evm-sdk-abi-go v0.0.0-20240912062928-8502f4c3b37c h1:Xg15iusEuPNoenuwNO8/PA6Wz9mU0fIKKFL7HITDhnY=
 github.com/buidly/mx-evm-sdk-abi-go v0.0.0-20240912062928-8502f4c3b37c/go.mod h1:++ds6BB47LrXl8a9N2VGRBzHCfl6kkxRCHb31a5z61g=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

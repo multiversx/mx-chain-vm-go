@@ -1,6 +1,7 @@
 package evmhooks
 
 import (
+	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"
@@ -192,5 +193,10 @@ func parseInput(input []byte, isNonEvmCall bool) ([]byte, [][]byte, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return functionName, [][]byte{arguments}, nil
+
+	functionNameHex := []byte(hex.EncodeToString(functionName))
+	if len(arguments) > 0 {
+		return functionNameHex, [][]byte{arguments}, nil
+	}
+	return functionNameHex, nil, nil
 }

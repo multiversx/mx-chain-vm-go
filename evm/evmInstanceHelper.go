@@ -1,6 +1,7 @@
 package evm
 
 import (
+	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	interpreter "github.com/multiversx/mx-chain-vm-go/evm/interpreter"
@@ -110,5 +111,9 @@ func (instance *EVMInstance) buildChainConfig() *params.ChainConfig {
 }
 
 func functionNameToSelector(functionName string) []byte {
-	return common.Hex2Bytes(functionName)
+	selector, err := hex.DecodeString(functionName)
+	if err != nil {
+		return nil
+	}
+	return selector
 }

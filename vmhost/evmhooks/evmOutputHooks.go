@@ -32,12 +32,18 @@ func (context *EVMHooksImpl) SelfDestruct(destination common.Address) {
 }
 
 func (context *EVMHooksImpl) AddLog(log *types.Log) {
+	var data [][]byte
+	if len(log.Data) > 0 {
+		data = [][]byte{log.Data}
+	}
+
 	topics := make([][]byte, len(log.Topics))
 	for i, topic := range log.Topics {
 		topics[i] = topic.Bytes()
 	}
+
 	contract := context.ContractMvxAddress()
-	context.GetOutputContext().WriteLog(contract, topics, [][]byte{log.Data})
+	context.GetOutputContext().WriteLog(contract, topics, data)
 }
 
 func (context *EVMHooksImpl) saveCompiledCode(contract []byte) {
