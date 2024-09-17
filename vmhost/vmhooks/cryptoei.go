@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
+
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -401,7 +402,7 @@ func ManagedVerifyBLSWithHost(
 	}
 
 	if invalidSigErr != nil {
-		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidSignature, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -659,7 +660,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	}
 
 	if invalidSigErr != nil {
-		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidSignature, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
