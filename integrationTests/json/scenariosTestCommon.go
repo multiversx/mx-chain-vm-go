@@ -47,6 +47,7 @@ type ScenariosTestBuilder struct {
 	overrideVMType      []byte
 
 	OmitFunctionNameChecks bool
+	OmitDefaultCodeChanges bool
 }
 
 // ScenariosTest will create a new ScenariosTestBuilder instance
@@ -115,6 +116,12 @@ func (mtb *ScenariosTestBuilder) WithOmitFunctionNameChecks(omitFunctionNameChec
 	return mtb
 }
 
+// WithOmitDefaultCodeChanges overrides the OmitDefaultCodeChanges
+func (mtb *ScenariosTestBuilder) WithOmitDefaultCodeChanges(omitDefaultCodeChanges bool) *ScenariosTestBuilder {
+	mtb.OmitDefaultCodeChanges = omitDefaultCodeChanges
+	return mtb
+}
+
 // Run will start the testing process
 func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	if check.IfNil(mtb.executorFactory) {
@@ -123,6 +130,7 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 
 	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
 	vmBuilder.OmitFunctionNameChecks = mtb.OmitFunctionNameChecks
+	vmBuilder.OmitDefaultCodeChanges = mtb.OmitDefaultCodeChanges
 	vmBuilder.OverrideVMExecutor = mtb.executorFactory
 	if mtb.overrideVMType != nil {
 		vmBuilder.VMType = mtb.overrideVMType

@@ -563,10 +563,10 @@ func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
 	newSCAccount.CodeDeployerAddress = input.CodeDeployerAddress
 
-	_, updated := context.codeUpdates[string(input.ContractAddress)]
-	if !updated {
-		context.ChangeAccountCode(input.ContractAddress, input.ContractCode)
+	if input.OmitDefaultCodeChanges {
+		return
 	}
+	context.ChangeAccountCode(input.ContractAddress, input.ContractCode)
 }
 
 // ChangeAccountCode sets the given code to an account, and creates a new codeUpdates entry at the accounts address.

@@ -56,10 +56,11 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	storage.SetAddress(runtime.GetContextAddress())
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
-		ContractCodeMetadata: input.ContractCodeMetadata,
-		ContractAddress:      address,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           input.ContractCode,
+		ContractCodeMetadata:   input.ContractCodeMetadata,
+		ContractAddress:        address,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: host.omitDefaultCodeChanges,
 	}
 
 	vmOutput, err = host.performCodeDeploymentAtContractCreate(codeDeployInput)
@@ -154,10 +155,11 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	}
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         code,
-		ContractCodeMetadata: codeMetadata,
-		ContractAddress:      input.RecipientAddr,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           code,
+		ContractCodeMetadata:   codeMetadata,
+		ContractAddress:        input.RecipientAddr,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: host.omitDefaultCodeChanges,
 	}
 
 	vmOutput, err = host.performCodeDeploymentAtContractUpgrade(codeDeployInput)
@@ -695,10 +697,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
-		ContractCodeMetadata: input.ContractCodeMetadata,
-		ContractAddress:      nil,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           input.ContractCode,
+		ContractCodeMetadata:   input.ContractCodeMetadata,
+		ContractAddress:        nil,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: false,
 	}
 	initialCost, err := metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
@@ -802,10 +805,11 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	}
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         code,
-		ContractCodeMetadata: codeMetadata,
-		ContractAddress:      input.RecipientAddr,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           code,
+		ContractCodeMetadata:   codeMetadata,
+		ContractAddress:        input.RecipientAddr,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: host.omitDefaultCodeChanges,
 	}
 
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)

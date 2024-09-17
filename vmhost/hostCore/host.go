@@ -69,6 +69,8 @@ type vmHost struct {
 
 	transferLogIdentifiers    map[string]bool
 	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
+
+	omitDefaultCodeChanges bool
 }
 
 // NewVMHost creates a new VM vmHost
@@ -128,6 +130,7 @@ func NewVMHost(
 		executionTimeout:          minExecutionTimeout,
 		enableEpochsHandler:       hostParameters.EnableEpochsHandler,
 		mapOpcodeAddressIsAllowed: hostParameters.MapOpcodeAddressIsAllowed,
+		omitDefaultCodeChanges:    hostParameters.OmitDefaultCodeChanges,
 	}
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {

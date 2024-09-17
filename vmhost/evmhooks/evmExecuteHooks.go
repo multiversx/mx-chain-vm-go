@@ -100,13 +100,14 @@ func (context *EVMHooksImpl) DelegateCall(address common.Address, input []byte, 
 func (context *EVMHooksImpl) createContract(code []byte, gas uint64, value *uint256.Int, aliasAddress common.Address) ([]byte, common.Address, error) {
 	sender := context.ContractMvxAddress()
 	returnDataLength := context.returnDataLength()
+	codeMetadata := vmcommon.GetEVMContractCodeMetadata()
 	_, err := vmhooks.CreateContractWithAddress(
 		sender,
 		[][]byte{},
 		value.ToBig(),
 		int64(gas),
 		code,
-		nil,
+		codeMetadata.ToBytes(),
 		context.host,
 		vmhooks.CreateContract,
 		aliasAddress.Bytes(),

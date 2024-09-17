@@ -12,6 +12,7 @@ func TestAdderEVM(t *testing.T) {
 		WithExecutorFactory(evm.ExecutorFactory()).
 		WithVMType(scenario.EVMType).
 		WithOmitFunctionNameChecks(true).
+		WithOmitDefaultCodeChanges(true).
 		Run().
 		CheckNoError()
 }

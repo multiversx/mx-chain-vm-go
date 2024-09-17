@@ -30,6 +30,7 @@ type ScenarioVMHostBuilder struct {
 	VMType             []byte
 
 	OmitFunctionNameChecks bool
+	OmitDefaultCodeChanges bool
 }
 
 // NewScenarioVMHostBuilder creates a default ScenarioVMHostBuilder.
@@ -96,6 +97,7 @@ func (svb *ScenarioVMHostBuilder) NewVM(
 			Hasher:                    worldmock.DefaultHasher,
 			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 			OmitFunctionNameChecks:    svb.OmitFunctionNameChecks,
+			OmitDefaultCodeChanges:    svb.OmitDefaultCodeChanges,
 		})
 
 }
