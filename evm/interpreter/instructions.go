@@ -553,7 +553,6 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 		input        = scope.Memory.GetCopy(int64(offset.Uint64()), int64(size.Uint64()))
 		gas          = interpreter.evm.StateDB.GasLeft()
 	)
-	gas -= gas / 64
 	// reuse size int for stackvalue
 	stackvalue := size
 
@@ -581,8 +580,6 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 		input        = scope.Memory.GetCopy(int64(offset.Uint64()), int64(size.Uint64()))
 		gas          = interpreter.evm.StateDB.GasLeft()
 	)
-	// Apply EIP150
-	gas -= gas / 64
 	// reuse size int for stackvalue
 	stackvalue := size
 	_, addr, suberr := interpreter.evm.StateDB.Create2(input, gas, &endowment, &salt)

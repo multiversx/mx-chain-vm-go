@@ -94,7 +94,7 @@ type EVM struct {
 	// abort is used to abort the EVM calling operations
 	abort atomic.Bool
 	// callGasTemp holds the gas available for the current call. This is needed because the
-	// available gas is calculated in gasCall* according to the 63/64 rule and later
+	// available gas is calculated in gasCall* and later
 	// applied in opCall*.
 	callGasTemp uint64
 }
