@@ -50,17 +50,18 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	vm, err := hostCore.NewVMHost(
 		world,
 		&vmhost.VMHostParameters{
-			VMType:                   testVMType,
-			OverrideVMExecutor:       nil,
-			BlockGasLimit:            blockGasLimit,
-			GasSchedule:              gasSchedule,
-			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
-			WasmerSIGSEGVPassthrough: false,
-			Hasher:                   defaultHasher,
+			VMType:                    testVMType,
+			OverrideVMExecutor:        nil,
+			BlockGasLimit:             blockGasLimit,
+			GasSchedule:               gasSchedule,
+			BuiltInFuncContainer:      builtInFunctions.NewBuiltInFunctionContainer(),
+			ProtectedKeyPrefix:        []byte("E" + "L" + "R" + "O" + "N" + "D"),
+			ESDTTransferParser:        esdtTransferParser,
+			EpochNotifier:             &mock.EpochNotifierStub{},
+			EnableEpochsHandler:       worldmock.EnableEpochsHandlerStubNoFlags(),
+			WasmerSIGSEGVPassthrough:  false,
+			Hasher:                    defaultHasher,
+			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 		})
 	if err != nil {
 		return nil, err
