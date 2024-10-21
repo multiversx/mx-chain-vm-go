@@ -2920,7 +2920,11 @@ func (context *VMHooksImpl) GetRoundTime() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetRoundTime
-	metering.UseGasBoundedAndAddTracedGas(getRoundTimeName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getRoundTimeName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.RoundTime())
 }
@@ -2932,7 +2936,11 @@ func (context *VMHooksImpl) EpochStartBlockTimeStamp() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockTimeStamp
-	metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimeStampName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimeStampName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.EpochStartBlockTimeStamp())
 }
@@ -2944,7 +2952,11 @@ func (context *VMHooksImpl) EpochStartBlockNonce() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockNonce
-	metering.UseGasBoundedAndAddTracedGas(epochStartBlockNonceName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockNonceName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.EpochStartBlockNonce())
 }
@@ -2956,7 +2968,12 @@ func (context *VMHooksImpl) EpochStartBlockRound() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockRound
-	metering.UseGasBoundedAndAddTracedGas(epochStartBlockRoundName, gasToUse)
+
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockRoundName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.EpochStartBlockRound())
 }
