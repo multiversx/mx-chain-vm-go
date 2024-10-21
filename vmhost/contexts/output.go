@@ -482,7 +482,11 @@ func (context *outputContext) TransferESDT(
 		}
 
 		if !sameShard {
-			context.host.Metering().UseGas(gasRemaining)
+			err = context.host.Metering().UseGasBounded(gasRemaining)
+			if err != nil {
+				logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
+				return 0, vmhost.ErrNotEnoughGas
+			}
 		}
 	}
 
