@@ -100,6 +100,10 @@ const (
 	getOriginalTxHashName            = "getOriginalTxHash"
 	getCurrentTxHashName             = "getCurrentTxHash"
 	getPrevTxHashName                = "getPrevTxHash"
+	getRoundTimeName                 = "getRoundTime"
+	epochStartBlockTimeStampName     = "epochStartBlockTimeStamp"
+	epochStartBlockNonceName         = "epochStartBlockNonce"
+	epochStartBlockRoundName         = "epochStartBlockRound"
 )
 
 type CreateContractCallType int
@@ -2916,7 +2920,7 @@ func (context *VMHooksImpl) GetRoundTime() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetRoundTime
-	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+	metering.UseGasBoundedAndAddTracedGas(getRoundTimeName, gasToUse)
 
 	return int64(blockchain.RoundTime())
 }
@@ -2928,7 +2932,7 @@ func (context *VMHooksImpl) EpochStartBlockTimeStamp() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockTimeStamp
-	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+	metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimeStampName, gasToUse)
 
 	return int64(blockchain.EpochStartBlockTimeStamp())
 }
@@ -2940,7 +2944,7 @@ func (context *VMHooksImpl) EpochStartBlockNonce() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockNonce
-	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+	metering.UseGasBoundedAndAddTracedGas(epochStartBlockNonceName, gasToUse)
 
 	return int64(blockchain.EpochStartBlockNonce())
 }
@@ -2952,7 +2956,7 @@ func (context *VMHooksImpl) EpochStartBlockRound() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockRound
-	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+	metering.UseGasBoundedAndAddTracedGas(epochStartBlockRoundName, gasToUse)
 
 	return int64(blockchain.EpochStartBlockRound())
 }
