@@ -91,6 +91,7 @@ typedef struct {
   int32_t (*get_num_esdt_transfers_func_ptr)(void *context);
   int32_t (*get_call_value_token_name_func_ptr)(void *context, int32_t call_value_offset, int32_t token_name_offset);
   int32_t (*get_call_value_token_name_by_index_func_ptr)(void *context, int32_t call_value_offset, int32_t token_name_offset, int32_t index);
+  int32_t (*is_reserved_function_name_func_ptr)(void *context, int32_t name_handle);
   void (*write_log_func_ptr)(void *context, int32_t data_pointer, int32_t data_length, int32_t topic_ptr, int32_t num_topics);
   void (*write_event_log_func_ptr)(void *context, int32_t num_topics, int32_t topic_lengths_offset, int32_t topic_offset, int32_t data_offset, int32_t data_length);
   int64_t (*get_block_timestamp_func_ptr)(void *context);
@@ -104,6 +105,10 @@ typedef struct {
   int64_t (*get_prev_block_round_func_ptr)(void *context);
   int64_t (*get_prev_block_epoch_func_ptr)(void *context);
   void (*get_prev_block_random_seed_func_ptr)(void *context, int32_t pointer);
+  int64_t (*get_round_time_func_ptr)(void *context);
+  int64_t (*epoch_start_block_time_stamp_func_ptr)(void *context);
+  int64_t (*epoch_start_block_nonce_func_ptr)(void *context);
+  int64_t (*epoch_start_block_round_func_ptr)(void *context);
   void (*finish_func_ptr)(void *context, int32_t pointer, int32_t length);
   int32_t (*execute_on_same_context_func_ptr)(void *context, int64_t gas_limit, int32_t address_offset, int32_t value_offset, int32_t function_offset, int32_t function_length, int32_t num_arguments, int32_t arguments_length_offset, int32_t data_offset);
   int32_t (*execute_on_dest_context_func_ptr)(void *context, int64_t gas_limit, int32_t address_offset, int32_t value_offset, int32_t function_offset, int32_t function_length, int32_t num_arguments, int32_t arguments_length_offset, int32_t data_offset);
@@ -121,6 +126,8 @@ typedef struct {
   void (*managed_sc_address_func_ptr)(void *context, int32_t destination_handle);
   void (*managed_owner_address_func_ptr)(void *context, int32_t destination_handle);
   void (*managed_caller_func_ptr)(void *context, int32_t destination_handle);
+  void (*managed_get_original_caller_addr_func_ptr)(void *context, int32_t destination_handle);
+  void (*managed_get_relayer_addr_func_ptr)(void *context, int32_t destination_handle);
   void (*managed_signal_error_func_ptr)(void *context, int32_t err_handle);
   void (*managed_write_log_func_ptr)(void *context, int32_t topics_handle, int32_t data_handle);
   void (*managed_get_original_tx_hash_func_ptr)(void *context, int32_t result_handle);
@@ -129,7 +136,7 @@ typedef struct {
   void (*managed_get_prev_block_random_seed_func_ptr)(void *context, int32_t result_handle);
   void (*managed_get_return_data_func_ptr)(void *context, int32_t result_id, int32_t result_handle);
   void (*managed_get_multi_esdt_call_value_func_ptr)(void *context, int32_t multi_call_value_handle);
-  void (*managed_get_back_transfers_func_ptr)(void *context, int32_t esdt_transfers_value_handle, int32_t call_value_handle);
+  void (*managed_get_back_transfers_func_ptr)(void *context, int32_t esdt_transfers_value_handle, int32_t egld_value_handle);
   void (*managed_get_esdt_balance_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce, int32_t value_handle);
   void (*managed_get_esdt_token_data_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce, int32_t value_handle, int32_t properties_handle, int32_t hash_handle, int32_t name_handle, int32_t attributes_handle, int32_t creator_handle, int32_t royalties_handle, int32_t uris_handle);
   void (*managed_async_call_func_ptr)(void *context, int32_t dest_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle);
@@ -144,6 +151,7 @@ typedef struct {
   int32_t (*managed_execute_on_same_context_func_ptr)(void *context, int64_t gas, int32_t address_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle, int32_t result_handle);
   int32_t (*managed_execute_on_dest_context_func_ptr)(void *context, int64_t gas, int32_t address_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle, int32_t result_handle);
   int32_t (*managed_multi_transfer_esdt_nft_execute_func_ptr)(void *context, int32_t dst_handle, int32_t token_transfers_handle, int64_t gas_limit, int32_t function_handle, int32_t arguments_handle);
+  int32_t (*managed_multi_transfer_esdt_nft_execute_by_user_func_ptr)(void *context, int32_t user_handle, int32_t dst_handle, int32_t token_transfers_handle, int64_t gas_limit, int32_t function_handle, int32_t arguments_handle);
   int32_t (*managed_transfer_value_execute_func_ptr)(void *context, int32_t dst_handle, int32_t value_handle, int64_t gas_limit, int32_t function_handle, int32_t arguments_handle);
   int32_t (*managed_is_esdt_frozen_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce);
   int32_t (*managed_is_esdt_limited_transfer_func_ptr)(void *context, int32_t token_id_handle);
@@ -230,6 +238,10 @@ typedef struct {
   int32_t (*mbuffer_to_big_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
   int32_t (*mbuffer_from_big_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
   int32_t (*mbuffer_from_big_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_int_handle);
+  int64_t (*mbuffer_to_small_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle);
+  int64_t (*mbuffer_to_small_int_signed_func_ptr)(void *context, int32_t m_buffer_handle);
+  void (*mbuffer_from_small_int_unsigned_func_ptr)(void *context, int32_t m_buffer_handle, int64_t value);
+  void (*mbuffer_from_small_int_signed_func_ptr)(void *context, int32_t m_buffer_handle, int64_t value);
   int32_t (*mbuffer_to_big_float_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_float_handle);
   int32_t (*mbuffer_from_big_float_func_ptr)(void *context, int32_t m_buffer_handle, int32_t big_float_handle);
   int32_t (*mbuffer_storage_store_func_ptr)(void *context, int32_t key_handle, int32_t source_handle);
@@ -293,6 +305,9 @@ typedef struct {
   int32_t (*get_curve_length_ec_func_ptr)(void *context, int32_t ec_handle);
   int32_t (*get_priv_key_byte_length_ec_func_ptr)(void *context, int32_t ec_handle);
   int32_t (*elliptic_curve_get_values_func_ptr)(void *context, int32_t ec_handle, int32_t field_order_handle, int32_t base_point_order_handle, int32_t eq_constant_handle, int32_t x_base_point_handle, int32_t y_base_point_handle);
+  int32_t (*managed_verify_secp256r1_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
+  int32_t (*managed_verify_blssignature_share_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
+  int32_t (*managed_verify_blsaggregated_signature_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
 typedef struct {

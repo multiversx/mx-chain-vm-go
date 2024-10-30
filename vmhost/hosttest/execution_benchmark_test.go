@@ -16,7 +16,6 @@ import (
 	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenario/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/assert"
@@ -49,9 +48,6 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 }
 
 func Test_WarmInstancesMemoryUsage(t *testing.T) {
-	if !contexts.WarmInstancesEnabled {
-		t.Skip("this test is only relevant with warm instances")
-	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -60,9 +56,6 @@ func Test_WarmInstancesMemoryUsage(t *testing.T) {
 }
 
 func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
-	if !contexts.WarmInstancesEnabled {
-		t.Skip("this test is only relevant with warm instances")
-	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -251,16 +244,17 @@ func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmo
 	host, err := hostCore.NewVMHost(
 		mockWorld,
 		&vmhost.VMHostParameters{
-			VMType:                   testcommon.DefaultVMType,
-			BlockGasLimit:            uint64(1000),
-			GasSchedule:              gasMap,
-			BuiltInFuncContainer:     mockWorld.BuiltinFuncs.Container,
-			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
-			WasmerSIGSEGVPassthrough: false,
-			Hasher:                   worldmock.DefaultHasher,
+			VMType:                    testcommon.DefaultVMType,
+			BlockGasLimit:             uint64(1000),
+			GasSchedule:               gasMap,
+			BuiltInFuncContainer:      mockWorld.BuiltinFuncs.Container,
+			ProtectedKeyPrefix:        []byte("E" + "L" + "R" + "O" + "N" + "D"),
+			ESDTTransferParser:        esdtTransferParser,
+			EpochNotifier:             &mock.EpochNotifierStub{},
+			EnableEpochsHandler:       worldmock.EnableEpochsHandlerStubNoFlags(),
+			WasmerSIGSEGVPassthrough:  false,
+			Hasher:                    worldmock.DefaultHasher,
+			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 		})
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err

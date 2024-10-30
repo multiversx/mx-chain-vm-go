@@ -83,6 +83,7 @@ type BaseOpsAPICost struct {
 	DeleteFromReturnData    uint64
 	GetCodeMetadata         uint64
 	IsBuiltinFunction       uint64
+	IsReservedFunctionName  uint64
 }
 
 // DynamicStorageLoadCostCoefficients holds the signed coefficients of the func that will compute the gas cost
@@ -174,47 +175,54 @@ type BigFloatAPICost struct {
 
 // CryptoAPICost defines the crypto operations gas cost config structure
 type CryptoAPICost struct {
-	SHA256                 uint64
-	Keccak256              uint64
-	Ripemd160              uint64
-	VerifyBLS              uint64
-	VerifyEd25519          uint64
-	VerifySecp256k1        uint64
-	EllipticCurveNew       uint64
-	AddECC                 uint64
-	DoubleECC              uint64
-	IsOnCurveECC           uint64
-	ScalarMultECC          uint64
-	MarshalECC             uint64
-	MarshalCompressedECC   uint64
-	UnmarshalECC           uint64
-	UnmarshalCompressedECC uint64
-	GenerateKeyECC         uint64
-	EncodeDERSig           uint64
+	SHA256                  uint64
+	Keccak256               uint64
+	Ripemd160               uint64
+	VerifyBLS               uint64
+	VerifyEd25519           uint64
+	VerifySecp256k1         uint64
+	EllipticCurveNew        uint64
+	AddECC                  uint64
+	DoubleECC               uint64
+	IsOnCurveECC            uint64
+	ScalarMultECC           uint64
+	MarshalECC              uint64
+	MarshalCompressedECC    uint64
+	UnmarshalECC            uint64
+	UnmarshalCompressedECC  uint64
+	GenerateKeyECC          uint64
+	EncodeDERSig            uint64
+	VerifySecp256r1         uint64
+	VerifyBLSSignatureShare uint64
+	VerifyBLSMultiSig       uint64
 }
 
 // ManagedBufferAPICost defines the managed buffer operations gas cost config structure
 type ManagedBufferAPICost struct {
-	MBufferNew                uint64
-	MBufferNewFromBytes       uint64
-	MBufferGetLength          uint64
-	MBufferGetBytes           uint64
-	MBufferGetByteSlice       uint64
-	MBufferCopyByteSlice      uint64
-	MBufferSetBytes           uint64
-	MBufferAppend             uint64
-	MBufferAppendBytes        uint64
-	MBufferToBigIntUnsigned   uint64
-	MBufferToBigIntSigned     uint64
-	MBufferFromBigIntUnsigned uint64
-	MBufferFromBigIntSigned   uint64
-	MBufferToBigFloat         uint64
-	MBufferFromBigFloat       uint64
-	MBufferStorageStore       uint64
-	MBufferStorageLoad        uint64
-	MBufferGetArgument        uint64
-	MBufferFinish             uint64
-	MBufferSetRandom          uint64
+	MBufferNew                  uint64
+	MBufferNewFromBytes         uint64
+	MBufferGetLength            uint64
+	MBufferGetBytes             uint64
+	MBufferGetByteSlice         uint64
+	MBufferCopyByteSlice        uint64
+	MBufferSetBytes             uint64
+	MBufferAppend               uint64
+	MBufferAppendBytes          uint64
+	MBufferToBigIntUnsigned     uint64
+	MBufferToBigIntSigned       uint64
+	MBufferFromBigIntUnsigned   uint64
+	MBufferFromBigIntSigned     uint64
+	MBufferToSmallIntUnsigned   uint64
+	MBufferToSmallIntSigned     uint64
+	MBufferFromSmallIntUnsigned uint64
+	MBufferFromSmallIntSigned   uint64
+	MBufferToBigFloat           uint64
+	MBufferFromBigFloat         uint64
+	MBufferStorageStore         uint64
+	MBufferStorageLoad          uint64
+	MBufferGetArgument          uint64
+	MBufferFinish               uint64
+	MBufferSetRandom            uint64
 }
 
 // ManagedMapAPICost defines the managed map operations gas cost config structure

@@ -494,6 +494,15 @@ func (w *WrapperVMHooks) GetCallValueTokenNameByIndex(callValueOffset executor.M
 	return result
 }
 
+// IsReservedFunctionName VM hook wrapper
+func (w *WrapperVMHooks) IsReservedFunctionName(nameHandle int32) int32 {
+	callInfo := fmt.Sprintf("IsReservedFunctionName(%d)", nameHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.IsReservedFunctionName(nameHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // WriteLog VM hook wrapper
 func (w *WrapperVMHooks) WriteLog(dataPointer executor.MemPtr, dataLength executor.MemLength, topicPtr executor.MemPtr, numTopics int32) {
 	callInfo := fmt.Sprintf("WriteLog(%d, %d, %d, %d)", dataPointer, dataLength, topicPtr, numTopics)
@@ -750,6 +759,22 @@ func (w *WrapperVMHooks) ManagedCaller(destinationHandle int32) {
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetOriginalCallerAddr VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetOriginalCallerAddr(destinationHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetOriginalCallerAddr(%d)", destinationHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetRelayerAddr VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetRelayerAddr(destinationHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetRelayerAddr(%d)", destinationHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetRelayerAddr(destinationHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedSignalError VM hook wrapper
 func (w *WrapperVMHooks) ManagedSignalError(errHandle int32) {
 	callInfo := fmt.Sprintf("ManagedSignalError(%d)", errHandle)
@@ -937,6 +962,15 @@ func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tok
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecute(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMultiTransferESDTNFTExecuteByUser VM hook wrapper
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteByUser(%d, %d, %d, %d, %d, %d)", userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
@@ -1667,6 +1701,40 @@ func (w *WrapperVMHooks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHand
 	return result
 }
 
+// MBufferToSmallIntUnsigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferToSmallIntUnsigned(mBufferHandle int32) int64 {
+	callInfo := fmt.Sprintf("MBufferToSmallIntUnsigned(%d)", mBufferHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// MBufferToSmallIntSigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
+	callInfo := fmt.Sprintf("MBufferToSmallIntSigned(%d)", mBufferHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.MBufferToSmallIntSigned(mBufferHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// MBufferFromSmallIntUnsigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) {
+	callInfo := fmt.Sprintf("MBufferFromSmallIntUnsigned(%d, %d)", mBufferHandle, value)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// MBufferFromSmallIntSigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) {
+	callInfo := fmt.Sprintf("MBufferFromSmallIntSigned(%d, %d)", mBufferHandle, value)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // MBufferToBigFloat VM hook wrapper
 func (w *WrapperVMHooks) MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32 {
 	callInfo := fmt.Sprintf("MBufferToBigFloat(%d, %d)", mBufferHandle, bigFloatHandle)
@@ -2224,6 +2292,33 @@ func (w *WrapperVMHooks) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle
 	callInfo := fmt.Sprintf("EllipticCurveGetValues(%d, %d, %d, %d, %d, %d)", ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifySecp256r1 VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifySecp256r1(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifyBLSSignatureShare VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifyBLSSignatureShare(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifyBLSAggregatedSignature VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifyBLSAggregatedSignature(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }

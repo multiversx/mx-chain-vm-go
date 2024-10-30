@@ -4,24 +4,29 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	builtinMath "math"
-	"math/big"
-
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	builtinMath "math"
+	"math/big"
 )
 
 var logRuntime = logger.GetOrCreate("vm/runtime")
 
 var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
-const warmCacheSize = 100
+var mapNewCryptoAPI = map[string]struct{}{
+	"managedVerifyBLSSignatureShare":           {},
+	"managedVerifyBLSAggregatedSignature":      {},
+	"managedVerifySecp256r1":                   {},
+	"managedGetOriginalCallerAddr":             {},
+	"managedGetRelayerAddr":                    {},
+	"managedMultiTransferESDTNFTExecuteByUser": {},
+}
 
-// WarmInstancesEnabled controls the usage of warm instances
-const WarmInstancesEnabled = true
+const warmCacheSize = 100
 
 type runtimeContext struct {
 	host                 vmhost.VMHost
@@ -262,10 +267,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) (bool, error) {
-	if !WarmInstancesEnabled {
-		return false, nil
-	}
-
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
 		return false, nil
@@ -329,10 +330,6 @@ func (context *runtimeContext) saveCompiledCode() {
 }
 
 func (context *runtimeContext) saveWarmInstance() {
-	if !WarmInstancesEnabled {
-		return
-	}
-
 	codeHash := context.iTracker.CodeHash()
 	if context.iTracker.IsCodeHashOnTheStack(codeHash) {
 		return
@@ -496,6 +493,10 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
 		context.vmInput.OriginalCallerAddr = make([]byte, len(vmInput.OriginalCallerAddr))
 		copy(context.vmInput.OriginalCallerAddr, vmInput.OriginalCallerAddr)
+	}
+	if len(vmInput.RelayerAddr) > 0 {
+		context.vmInput.RelayerAddr = make([]byte, len(vmInput.RelayerAddr))
+		copy(context.vmInput.RelayerAddr, vmInput.RelayerAddr)
 	}
 
 	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
@@ -668,8 +669,8 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsFlagEnabled(vmhost.ManagedCryptoAPIsFlag) {
-		err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag) {
+		err = context.checkIfContainsNewCryptoApi()
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
 			return err
@@ -681,42 +682,18 @@ func (context *runtimeContext) VerifyContractCode() error {
 	return nil
 }
 
-// BaseOpsErrorShouldFailExecution returns true
-func (context *runtimeContext) BaseOpsErrorShouldFailExecution() bool {
-	return true
+func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
+	for funcName := range mapNewCryptoAPI {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
+	return nil
 }
 
-// SyncExecAPIErrorShouldFailExecution specifies whether an error in the
-// EEI functions for synchronous execution should abort contract execution.
-func (context *runtimeContext) SyncExecAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// BigIntAPIErrorShouldFailExecution specifies whether an error in the EEI
-// functions for BigInt operations should abort contract execution.
-func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// BigFloatAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) BigFloatAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// CryptoAPIErrorShouldFailExecution specifies whether an error in the EEI
-// functions for crypto operations should abort contract execution.
-func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// ManagedBufferAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
-	return true
-}
-
-// ManagedMapAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
-	return true
+// UseGasBoundedShouldFailExecution returns true when flag activated
+func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
+	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag)
 }
 
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
@@ -842,10 +819,6 @@ func (context *runtimeContext) EndExecution() {
 
 // ValidateInstances checks the state of the instances after execution
 func (context *runtimeContext) ValidateInstances() error {
-	if !WarmInstancesEnabled {
-		return nil
-	}
-
 	err := context.iTracker.CheckInstances()
 	if err != nil {
 		return err
@@ -885,6 +858,11 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	}
 
 	return nil
+}
+
+// IsReservedFunctionName checks if the function name is reserved
+func (context *runtimeContext) IsReservedFunctionName(functionName string) bool {
+	return context.validator.reserved.IsReserved(functionName)
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.

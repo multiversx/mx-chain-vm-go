@@ -73,6 +73,7 @@ type MainVMHooks interface {
 	GetNumESDTTransfers() int32
 	GetCallValueTokenName(callValueOffset MemPtr, tokenNameOffset MemPtr) int32
 	GetCallValueTokenNameByIndex(callValueOffset MemPtr, tokenNameOffset MemPtr, index int32) int32
+	IsReservedFunctionName(nameHandle int32) int32
 	WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32)
 	WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength)
 	GetBlockTimestamp() int64
@@ -106,6 +107,8 @@ type ManagedVMHooks interface {
 	ManagedSCAddress(destinationHandle int32)
 	ManagedOwnerAddress(destinationHandle int32)
 	ManagedCaller(destinationHandle int32)
+	ManagedGetOriginalCallerAddr(destinationHandle int32)
+	ManagedGetRelayerAddr(destinationHandle int32)
 	ManagedSignalError(errHandle int32)
 	ManagedWriteLog(topicsHandle int32, dataHandle int32)
 	ManagedGetOriginalTxHash(resultHandle int32)
@@ -129,6 +132,7 @@ type ManagedVMHooks interface {
 	ManagedExecuteOnSameContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32
 	ManagedExecuteOnDestContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32
 	ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
+	ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
 	ManagedTransferValueExecute(dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
 	ManagedIsESDTFrozen(addressHandle int32, tokenIDHandle int32, nonce int64) int32
 	ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32
@@ -224,6 +228,10 @@ type ManagedBufferVMHooks interface {
 	MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
 	MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32
 	MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
+	MBufferToSmallIntUnsigned(mBufferHandle int32) int64
+	MBufferToSmallIntSigned(mBufferHandle int32) int64
+	MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64)
+	MBufferFromSmallIntSigned(mBufferHandle int32, value int64)
 	MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
 	MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
 	MBufferStorageStore(keyHandle int32, sourceHandle int32) int32
@@ -296,4 +304,7 @@ type CryptoVMHooks interface {
 	GetCurveLengthEC(ecHandle int32) int32
 	GetPrivKeyByteLengthEC(ecHandle int32) int32
 	EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32
+	ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32
+	ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32
+	ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32
 }

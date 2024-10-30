@@ -114,7 +114,7 @@ var logEEI = logger.GetOrCreate("vm/eei")
 func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index || index < 0 {
-		WithFaultAndHost(host, vmhost.ErrInvalidTokenIndex, host.Runtime().BaseOpsErrorShouldFailExecution())
+		FailExecution(host, vmhost.ErrInvalidTokenIndex)
 		return nil
 	}
 	return esdtTransfers[index]
@@ -123,7 +123,8 @@ func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *
 func failIfMoreThanOneESDTTransfer(context *VMHooksImpl) bool {
 	runtime := context.GetRuntimeContext()
 	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
-		return context.WithFault(vmhost.ErrTooManyESDTTransfers, true)
+		FailExecution(context.GetVMHost(), vmhost.ErrTooManyESDTTransfers)
+		return true
 	}
 	return false
 }
@@ -134,7 +135,11 @@ func (context *VMHooksImpl) GetGasLeft() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetGasLeft
-	metering.UseGasAndAddTracedGas(getGasLeftName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getGasLeftName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return 0
+	}
 
 	return int64(metering.GasLeft())
 }
@@ -146,11 +151,16 @@ func (context *VMHooksImpl) GetSCAddress(resultOffset executor.MemPtr) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetSCAddress
-	metering.UseGasAndAddTracedGas(getSCAddressName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getSCAddressName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	owner := runtime.GetContextAddress()
-	err := context.MemStore(resultOffset, owner)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(resultOffset, owner)
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -159,19 +169,24 @@ func (context *VMHooksImpl) GetSCAddress(resultOffset executor.MemPtr) {
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetOwnerAddress(resultOffset executor.MemPtr) {
 	blockchain := context.GetBlockchainContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetOwnerAddress
-	metering.UseGasAndAddTracedGas(getOwnerAddressName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getOwnerAddressName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	owner, err := blockchain.GetOwnerAddress()
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = context.MemStore(resultOffset, owner)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -180,14 +195,18 @@ func (context *VMHooksImpl) GetOwnerAddress(resultOffset executor.MemPtr) {
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetShardOfAddress(addressOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetShardOfAddress
-	metering.UseGasAndAddTracedGas(getShardOfAddressName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getShardOfAddressName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -198,14 +217,18 @@ func (context *VMHooksImpl) GetShardOfAddress(addressOffset executor.MemPtr) int
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) IsSmartContract(addressOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsSmartContract
-	metering.UseGasAndAddTracedGas(isSmartContractName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(isSmartContractName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -225,15 +248,17 @@ func (context *VMHooksImpl) SignalError(messageOffset executor.MemPtr, messageLe
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(messageLength)
 
 	err := metering.UseGasBounded(gasToUse)
-	if err != nil {
-		_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		context.FailExecution(err)
 		return
 	}
 
 	message, err := context.MemLoad(messageOffset, messageLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
+
 	runtime.SignalUserError(string(message))
 }
 
@@ -241,21 +266,26 @@ func (context *VMHooksImpl) SignalError(messageOffset executor.MemPtr, messageLe
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetExternalBalance(addressOffset executor.MemPtr, resultOffset executor.MemPtr) {
 	blockchain := context.GetBlockchainContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(getExternalBalanceName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getExternalBalanceName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	balance := blockchain.GetBalance(address)
 
 	err = context.MemStore(resultOffset, balance)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -264,15 +294,19 @@ func (context *VMHooksImpl) GetExternalBalance(addressOffset executor.MemPtr, re
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetBlockHash(nonce int64, resultOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockHash
-	metering.UseGasAndAddTracedGas(blockHashName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(blockHashName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return 1
+	}
 
 	hash := blockchain.BlockHash(uint64(nonce))
-	err := context.MemStore(resultOffset, hash)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(resultOffset, hash)
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -290,7 +324,10 @@ func getESDTDataFromBlockchainHook(
 	blockchain := context.GetBlockchainContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, err
+	}
 
 	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if err != nil {
@@ -319,17 +356,18 @@ func (context *VMHooksImpl) GetESDTBalance(
 	nonce int64,
 	resultOffset executor.MemPtr,
 ) int32 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(getESDTBalanceName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -344,17 +382,17 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 ) int32 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(getESDTNFTNameLengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		context.WithFault(vmhost.ErrNilESDTData, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 
@@ -369,17 +407,17 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 ) int32 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(getESDTNFTAttributeLengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		context.WithFault(vmhost.ErrNilESDTData, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 
@@ -394,17 +432,17 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 ) int32 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(getESDTNFTURILengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		context.WithFault(vmhost.ErrNilESDTData, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
@@ -431,13 +469,13 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	urisOffset executor.MemPtr,
 ) int32 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(getESDTTokenDataName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -445,25 +483,30 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	value.Set(esdtData.Value)
 
 	err = context.MemStore(propertiesOffset, esdtData.Properties)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	if esdtData.TokenMetaData != nil {
 		err = context.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
-		if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		if err != nil {
+			context.FailExecution(err)
 			return -1
 		}
 		err = context.MemStore(nameOffset, esdtData.TokenMetaData.Name)
-		if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		if err != nil {
+			context.FailExecution(err)
 			return -1
 		}
 		err = context.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
-		if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		if err != nil {
+			context.FailExecution(err)
 			return -1
 		}
 		err = context.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
-		if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		if err != nil {
+			context.FailExecution(err)
 			return -1
 		}
 
@@ -472,7 +515,8 @@ func (context *VMHooksImpl) GetESDTTokenData(
 
 		if len(esdtData.TokenMetaData.URIs) > 0 {
 			err = context.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
-			if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+			if err != nil {
+				context.FailExecution(err)
 				return -1
 			}
 		}
@@ -484,12 +528,12 @@ func (context *VMHooksImpl) GetESDTTokenData(
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -497,7 +541,8 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
 	data, trieDepth, usedCache, err := storage.GetStorage(key)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -506,11 +551,13 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 		int64(trieDepth),
 		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
-	return getESDTRoles(data)
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	return getESDTRoles(data, enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag))
 }
 
 // ValidateTokenIdentifier VMHooks implementation.
@@ -519,14 +566,18 @@ func (context *VMHooksImpl) ValidateTokenIdentifier(
 	tokenIdHandle int32,
 ) int32 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument
-	metering.UseGasAndAddTracedGas(validateTokenIdentifierName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(validateTokenIdentifierName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -553,34 +604,46 @@ func (context *VMHooksImpl) TransferValue(
 	metering.StartGasTracing(transferValueName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		context.FailExecution(err)
+		return 1
+	}
 
 	sender := runtime.GetContextAddress()
 	dest, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	valueBytes, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		context.FailExecution(err)
+		return 1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	if host.IsBuiltinFunctionCall(data) {
-		context.WithFault(vmhost.ErrTransferValueOnESDTCall, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrTransferValueOnESDTCall)
 		return 1
 	}
 
 	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, data, vm.DirectCall)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -684,7 +747,10 @@ func (context *VMHooksImpl) extractIndirectContractCallArguments(
 	}
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
+		return nil, err
+	}
 
 	return &indirectContractCallArguments{
 		dest:      dest,
@@ -738,11 +804,16 @@ func (context *VMHooksImpl) TransferValueExecuteWithHost(
 	metering.StartGasTracing(transferValueExecuteName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		context.FailExecution(err)
+		return 1
+	}
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, destOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -770,13 +841,16 @@ func TransferValueExecuteWithTypedArgs(
 	output := host.Output()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	sender := runtime.GetContextAddress()
 
-	var err error
 	var contractCallInput *vmcommon.ContractCallInput
-
 	if len(function) > 0 {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
@@ -789,14 +863,15 @@ func TransferValueExecuteWithTypedArgs(
 			gasToUse,
 			false,
 		)
-		if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		if err != nil {
+			FailExecution(host, err)
 			return 1
 		}
 	}
 
 	if contractCallInput != nil {
 		if host.IsBuiltinFunctionName(contractCallInput.Function) {
-			WithFaultAndHost(host, vmhost.ErrNilESDTData, runtime.BaseOpsErrorShouldFailExecution())
+			FailExecution(host, vmhost.ErrNilESDTData)
 			return 1
 		}
 	}
@@ -806,7 +881,7 @@ func TransferValueExecuteWithTypedArgs(
 		vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
-			WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
+			FailExecution(host, err)
 			return 1
 		}
 		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.TransferAndExecuteString)
@@ -819,9 +894,15 @@ func TransferValueExecuteWithTypedArgs(
 		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
 	}
 
-	metering.UseAndTraceGas(uint64(gasLimit))
+	err = metering.UseGasBounded(uint64(gasLimit))
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
+
 	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, nil, []byte(data), vm.DirectCall)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -909,18 +990,23 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 	metering.StartGasTracing(multiTransferESDTNFTExecuteName)
 
 	if numTokenTransfers == 0 {
-		_ = WithFaultAndHost(host, vmhost.ErrFailedTransfer, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(host, vmhost.ErrFailedTransfer)
 		return 1
 	}
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithoutValue(
 		host, destOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(callArgs.actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	transferArgs, actualLen, err := context.getArgumentsFromMemory(
 		host,
@@ -929,12 +1015,17 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 		tokenTransferDataOffset,
 	)
 
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	transfers := make([]*vmcommon.ESDTTransfer, numTokenTransfers)
 	for i := int32(0); i < numTokenTransfers; i++ {
@@ -980,18 +1071,24 @@ func (context *VMHooksImpl) TransferESDTNFTExecuteWithHost(
 	metering := host.Metering()
 
 	tokenIdentifier, executeErr := context.MemLoad(tokenIDOffset, tokenIDLen)
-	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
+	if executeErr != nil {
+		FailExecution(host, executeErr)
 		return 1
 	}
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, destOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(callArgs.actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	transfer := &vmcommon.ESDTTransfer{
 		ESDTValue:      callArgs.value,
@@ -1029,7 +1126,11 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	output := host.Output()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	sender := runtime.GetContextAddress()
 
@@ -1046,7 +1147,8 @@ func TransferESDTNFTExecuteWithTypedArgs(
 			gasToUse,
 			false,
 		)
-		if WithFaultAndHost(host, executeErr, runtime.SyncExecAPIErrorShouldFailExecution()) {
+		if executeErr != nil {
+			FailExecution(host, executeErr)
 			return 1
 		}
 
@@ -1061,20 +1163,117 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		OriginalCaller: originalCaller,
 		Sender:         sender,
 		Transfers:      transfers,
+		SenderForExec:  sender,
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
-	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
+	if executeErr != nil {
+		FailExecution(host, executeErr)
 		return 1
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
+		contractCallInput.CallerAddr = sender
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
-			WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution())
+			FailExecution(host, executeErr)
+			return 1
+		}
+
+		return 0
+	}
+
+	return 0
+
+}
+
+// TransferESDTNFTExecuteByUserWithTypedArgs defines the actual transfer ESDT execute logic and execution
+func TransferESDTNFTExecuteByUserWithTypedArgs(
+	host vmhost.VMHost,
+	callerForExecution []byte,
+	dest []byte,
+	transfers []*vmcommon.ESDTTransfer,
+	gasLimit int64,
+	function []byte,
+	data [][]byte,
+) int32 {
+	var executeErr error
+
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	output := host.Output()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return 1
+	}
+
+	sender := runtime.GetContextAddress()
+
+	var contractCallInput *vmcommon.ContractCallInput
+	if len(function) > 0 {
+		contractCallInput, executeErr = prepareIndirectContractCallInput(
+			host,
+			sender,
+			big.NewInt(0),
+			gasLimit,
+			dest,
+			function,
+			data,
+			gasToUse,
+			false,
+		)
+		if executeErr != nil {
+			FailExecution(host, executeErr)
+			return 1
+		}
+
+		contractCallInput.ESDTTransfers = transfers
+	}
+
+	originalCaller := host.Runtime().GetOriginalCallerAddress()
+	transfersArgs := &vmhost.ESDTTransfersArgs{
+		Destination:    dest,
+		OriginalCaller: originalCaller,
+		Sender:         sender,
+		Transfers:      transfers,
+		SenderForExec:  callerForExecution,
+	}
+	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
+	if err != nil {
+		FailExecution(host, executeErr)
+		return 1
+	}
+
+	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
+		contractCallInput.GasProvided = gasLimitForExec
+		contractCallInput.CallerAddr = callerForExecution
+		logEEI.Trace("ESDT post-transfer execution begin")
+		_, executeErr = executeOnDestContextFromAPI(host, contractCallInput)
+		if executeErr != nil {
+			logEEI.Trace("ESDT post-transfer execution failed, started transfer to user", "error", executeErr)
+
+			// in case of failed execution, the funds have to be moved to the user
+			returnTransferArgs := &vmhost.ESDTTransfersArgs{
+				Destination:      callerForExecution,
+				OriginalCaller:   originalCaller,
+				Sender:           dest,
+				Transfers:        transfers,
+				SenderForExec:    dest,
+				ReturnAfterError: true,
+			}
+			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
+			if err != nil {
+				FailExecution(host, executeErr)
+				return 1
+			}
+
 			return 1
 		}
 
@@ -1126,30 +1325,34 @@ func (context *VMHooksImpl) CreateAsyncCallWithHost(host vmhost.VMHost,
 	gas int64,
 	extraGasForCallback int64,
 ) int32 {
-	runtime := host.Runtime()
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	successFunc, err := context.MemLoad(successOffset, successLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	errorFunc, err := context.MemLoad(errorOffset, errorLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -1182,7 +1385,11 @@ func CreateAsyncCallWithTypedArgs(host vmhost.VMHost,
 	metering.StartGasTracing(createAsyncCallName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateAsyncCall
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	asyncCall := &vmhost.AsyncCall{
 		Status:          vmhost.AsyncCallPending,
@@ -1197,12 +1404,17 @@ func CreateAsyncCallWithTypedArgs(host vmhost.VMHost,
 	}
 
 	if asyncCall.HasDefinedAnyCallback() {
-		gasToUse := metering.GasSchedule().BaseOpsAPICost.SetAsyncCallback
-		metering.UseAndTraceGas(gasToUse)
+		gasToUse = metering.GasSchedule().BaseOpsAPICost.SetAsyncCallback
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+			FailExecution(host, err)
+			return 1
+		}
 	}
 
-	err := async.RegisterAsyncCall("", asyncCall)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = async.RegisterAsyncCall("", asyncCall)
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -1351,15 +1563,21 @@ func (context *VMHooksImpl) SetAsyncContextCallback(
 	metering.StartGasTracing(setAsyncContextCallbackName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.SetAsyncContextCallback
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	callbackNameBytes, err := context.MemLoad(callback, callbackLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	dataBytes, err := context.MemLoad(data, dataLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -1367,7 +1585,8 @@ func (context *VMHooksImpl) SetAsyncContextCallback(
 		string(callbackNameBytes),
 		dataBytes,
 		uint64(gas))
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -1394,20 +1613,27 @@ func (context *VMHooksImpl) UpgradeContract(
 	metering.StartGasTracing(upgradeContractName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	code, err := context.MemLoad(codeOffset, length)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -1417,22 +1643,36 @@ func (context *VMHooksImpl) UpgradeContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	gasSchedule := metering.GasSchedule()
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(length))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	upgradeContract(host, calledSCAddress, code, codeMetadata, value, data, gasLimit)
 }
@@ -1455,20 +1695,27 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 	metering.StartGasTracing(upgradeFromSourceContractName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
 	sourceContractAddress, err := context.MemLoad(sourceContractAddressOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -1478,16 +1725,26 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
@@ -1512,11 +1769,11 @@ func UpgradeFromSourceContractWithTypedArgs(
 	gasLimit int64,
 	codeMetadata []byte,
 ) {
-	runtime := host.Runtime()
 	blockchain := host.Blockchain()
 
 	code, err := blockchain.GetCode(sourceContractAddress)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
@@ -1563,7 +1820,8 @@ func upgradeContract(
 		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 }
@@ -1583,7 +1841,11 @@ func (context *VMHooksImpl) DeleteContract(
 	metering.StartGasTracing(deleteContractName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	data, actualLen, err := context.getArgumentsFromMemory(
 		host,
@@ -1591,16 +1853,26 @@ func (context *VMHooksImpl) DeleteContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
@@ -1646,7 +1918,8 @@ func deleteContract(
 		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 }
@@ -1667,23 +1940,34 @@ func (context *VMHooksImpl) AsyncCall(
 
 	gasSchedule := metering.GasSchedule()
 	gasToUse := gasSchedule.BaseOpsAPICost.AsyncCallStep
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(length))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -1692,7 +1976,8 @@ func (context *VMHooksImpl) AsyncCall(
 		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -1704,11 +1989,15 @@ func (context *VMHooksImpl) GetArgumentLength(id int32) int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument
-	metering.UseGasAndAddTracedGas(getArgumentLengthName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getArgumentLengthName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.WithFault(vmhost.ErrInvalidArgument, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -1722,16 +2011,21 @@ func (context *VMHooksImpl) GetArgument(id int32, argOffset executor.MemPtr) int
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument
-	metering.UseGasAndAddTracedGas(getArgumentName, gasToUse)
-
-	args := runtime.Arguments()
-	if id < 0 || int32(len(args)) <= id {
-		context.WithFault(vmhost.ErrInvalidArgument, runtime.BaseOpsErrorShouldFailExecution())
+	err := metering.UseGasBoundedAndAddTracedGas(getArgumentName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
-	err := context.MemStore(argOffset, args[id])
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	args := runtime.Arguments()
+	if id < 0 || int32(len(args)) <= id {
+		context.FailExecution(vmhost.ErrInvalidArgument)
+		return -1
+	}
+
+	err = context.MemStore(argOffset, args[id])
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -1745,11 +2039,16 @@ func (context *VMHooksImpl) GetFunction(functionOffset executor.MemPtr) int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetFunction
-	metering.UseGasAndAddTracedGas(getFunctionName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getFunctionName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	function := runtime.FunctionName()
-	err := context.MemStore(functionOffset, []byte(function))
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(functionOffset, []byte(function))
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -1763,7 +2062,11 @@ func (context *VMHooksImpl) GetNumArguments() int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetNumArguments
-	metering.UseGasAndAddTracedGas(getNumArgumentsName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getNumArgumentsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	args := runtime.Arguments()
 	return int32(len(args))
@@ -1795,15 +2098,15 @@ func (context *VMHooksImpl) StorageStoreWithHost(
 	dataOffset executor.MemPtr,
 	dataLength executor.MemLength) int32 {
 
-	runtime := host.Runtime()
-
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -1812,15 +2115,19 @@ func (context *VMHooksImpl) StorageStoreWithHost(
 
 // StorageStoreWithTypedArgs - storageStore with args already read from memory
 func StorageStoreWithTypedArgs(host vmhost.VMHost, key []byte, data []byte) int32 {
-	runtime := host.Runtime()
 	storage := host.Storage()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.StorageStore
-	metering.UseGasAndAddTracedGas(storageStoreName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(storageStoreName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
 
 	storageStatus, err := storage.SetStorage(key, data)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -1830,17 +2137,18 @@ func StorageStoreWithTypedArgs(host vmhost.VMHost, key []byte, data []byte) int3
 // StorageLoadLength VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) StorageLoadLength(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	data, trieDepth, usedCache, err := storage.GetStorageUnmetered(key)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -1849,7 +2157,8 @@ func (context *VMHooksImpl) StorageLoadLength(keyOffset executor.MemPtr, keyLeng
 		int64(trieDepth),
 		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -1882,25 +2191,27 @@ func (context *VMHooksImpl) StorageLoadFromAddressWithHost(
 	keyLength executor.MemLength,
 	dataOffset executor.MemPtr) int32 {
 
-	runtime := host.Runtime()
-
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	data, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	err = context.MemStore(dataOffset, data)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -1941,20 +2252,22 @@ func (context *VMHooksImpl) StorageLoad(keyOffset executor.MemPtr, keyLength exe
 
 // StorageLoadWithHost - storageLoad with host instead of pointer context
 func (context *VMHooksImpl) StorageLoadWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
-	runtime := host.Runtime()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	data, err := StorageLoadWithWithTypedArgs(host, key)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	err = context.MemStore(dataOffset, data)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -1996,14 +2309,18 @@ func (context *VMHooksImpl) SetStorageLock(keyOffset executor.MemPtr, keyLength 
 
 // SetStorageLockWithHost - setStorageLock with host instead of pointer context
 func (context *VMHooksImpl) SetStorageLockWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
-	runtime := host.Runtime()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
-	metering.UseGasAndAddTracedGas(setStorageLockName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(setStorageLockName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -2012,13 +2329,13 @@ func (context *VMHooksImpl) SetStorageLockWithHost(host vmhost.VMHost, keyOffset
 
 // SetStorageLockWithTypedArgs - setStorageLock with args already read from memory
 func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp int64) int32 {
-	runtime := host.Runtime()
 	storage := host.Storage()
 	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(vmhost.TimeLockKeyPrefix))
 	timeLockKey := vmhost.CustomStorageKey(timeLockKeyPrefix, key)
 	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
 	storageStatus, err := storage.SetProtectedStorage(timeLockKey, bigTimestamp.Bytes())
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 	return int32(storageStatus)
@@ -2027,15 +2344,19 @@ func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp i
 // GetStorageLock VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	storage := context.GetStorageContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(getStorageLockName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getStorageLockName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -2043,7 +2364,8 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 	timeLockKey := vmhost.CustomStorageKey(timeLockKeyPrefix, key)
 
 	data, trieDepth, usedCache, err := storage.GetStorage(timeLockKey)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -2052,7 +2374,8 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 		int64(trieDepth),
 		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -2092,12 +2415,17 @@ func (context *VMHooksImpl) GetCaller(resultOffset executor.MemPtr) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
-	metering.UseGasAndAddTracedGas(getCallerName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getCallerName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	caller := runtime.GetVMInput().CallerAddr
 
-	err := context.MemStore(resultOffset, caller)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(resultOffset, caller)
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -2109,15 +2437,19 @@ func (context *VMHooksImpl) CheckNoPayment() {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(checkNoPaymentName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(checkNoPaymentName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	vmInput := runtime.GetVMInput()
 	if vmInput.CallValue.Sign() > 0 {
-		_ = context.WithFault(vmhost.ErrNonPayableFunctionEgld, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNonPayableFunctionEgld)
 		return
 	}
 	if len(vmInput.ESDTTransfers) > 0 {
-		_ = context.WithFault(vmhost.ErrNonPayableFunctionEsdt, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrNonPayableFunctionEsdt)
 		return
 	}
 }
@@ -2129,13 +2461,18 @@ func (context *VMHooksImpl) GetCallValue(resultOffset executor.MemPtr) int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(callValueName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(callValueName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	value := runtime.GetVMInput().CallValue.Bytes()
 	value = vmhost.PadBytesLeft(value, vmhost.BalanceLen)
 
-	err := context.MemStore(resultOffset, value)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(resultOffset, value)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -2155,11 +2492,14 @@ func (context *VMHooksImpl) GetESDTValue(resultOffset executor.MemPtr) int32 {
 // GetESDTValueByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, index int32) int32 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTValueByIndexName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getESDTValueByIndexName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	var value []byte
 
@@ -2169,8 +2509,9 @@ func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, in
 		value = vmhost.PadBytesLeft(value, vmhost.BalanceLen)
 	}
 
-	err := context.MemStore(resultOffset, value)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(resultOffset, value)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -2190,11 +2531,14 @@ func (context *VMHooksImpl) GetESDTTokenName(resultOffset executor.MemPtr) int32
 // GetESDTTokenNameByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, index int32) int32 {
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTTokenNameByIndexName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getESDTTokenNameByIndexName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
 	var tokenName []byte
@@ -2202,8 +2546,9 @@ func (context *VMHooksImpl) GetESDTTokenNameByIndex(resultOffset executor.MemPtr
 		tokenName = esdtTransfer.ESDTTokenName
 	}
 
-	err := context.MemStore(resultOffset, tokenName)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(resultOffset, tokenName)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -2226,7 +2571,11 @@ func (context *VMHooksImpl) GetESDTTokenNonceByIndex(index int32) int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTTokenNonceByIndexName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getESDTTokenNonceByIndexName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
 	nonce := uint64(0)
@@ -2243,23 +2592,25 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength) int64 {
 
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	storage := context.GetStorageContext()
 
 	destination, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
 	tokenID, err := context.MemLoad(tokenIDOffset, tokenIDLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
 	key := []byte(core.ProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data, trieDepth, _, err := storage.GetStorageFromAddress(destination, key)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
@@ -2268,7 +2619,8 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 		int64(trieDepth),
 		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
 		false)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
@@ -2292,7 +2644,11 @@ func (context *VMHooksImpl) GetESDTTokenTypeByIndex(index int32) int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTTokenTypeByIndexName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getESDTTokenTypeByIndexName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
 	if esdtTransfer != nil {
@@ -2308,7 +2664,11 @@ func (context *VMHooksImpl) GetNumESDTTransfers() int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getNumESDTTransfersName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getNumESDTTransfersName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int32(len(runtime.GetVMInput().ESDTTransfers))
 }
@@ -2334,7 +2694,11 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getCallValueTokenNameByIndexName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getCallValueTokenNameByIndexName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	callValue := runtime.GetVMInput().CallValue.Bytes()
 	tokenName := make([]byte, 0)
@@ -2347,17 +2711,47 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 	}
 	callValue = vmhost.PadBytesLeft(callValue, vmhost.BalanceLen)
 
-	err := context.MemStore(tokenNameOffset, tokenName)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = context.MemStore(tokenNameOffset, tokenName)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	err = context.MemStore(callValueOffset, callValue)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	return int32(len(tokenName))
+}
+
+// IsReservedFunctionName VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) IsReservedFunctionName(nameHandle int32) int32 {
+	host := context.host
+	managedTypes := context.GetManagedTypesContext()
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsReservedFunctionName
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	name, err := managedTypes.GetBytes(nameHandle)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	if runtime.IsReservedFunctionName(string(name)) {
+		return 1
+	}
+
+	return 0
 }
 
 // WriteLog VMHooks implementation.
@@ -2376,23 +2770,30 @@ func (context *VMHooksImpl) WriteLog(
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
 	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*vmhost.HashLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
-	metering.UseGasAndAddTracedGas(writeLogName, gasToUse)
 
 	if numTopics < 0 || dataLength < 0 {
 		err := vmhost.ErrNegativeLength
-		context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(err)
+		return
+	}
+
+	err := metering.UseGasBoundedAndAddTracedGas(writeLogName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	log, err := context.MemLoad(dataPointer, dataLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	topics := make([][]byte, numTopics)
 	for i := int32(0); i < numTopics; i++ {
 		topics[i], err = context.MemLoad(topicPtr.Offset(i*vmhost.HashLen), vmhost.HashLen)
-		if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		if err != nil {
+			context.FailExecution(err)
 			return
 		}
 	}
@@ -2421,12 +2822,14 @@ func (context *VMHooksImpl) WriteEventLog(
 		topicLengthsOffset,
 		topicOffset,
 	)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -2435,7 +2838,11 @@ func (context *VMHooksImpl) WriteEventLog(
 		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
 		uint64(topicDataTotalLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gasForData)
-	metering.UseGasAndAddTracedGas(writeEventLogName, gasToUse)
+	err = metering.UseGasBoundedAndAddTracedGas(writeEventLogName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	output.WriteLog(runtime.GetContextAddress(), topics, [][]byte{data})
 }
@@ -2447,7 +2854,11 @@ func (context *VMHooksImpl) GetBlockTimestamp() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockTimeStamp
-	metering.UseGasAndAddTracedGas(getBlockTimestampName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockTimestampName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.CurrentTimeStamp())
 }
@@ -2459,7 +2870,11 @@ func (context *VMHooksImpl) GetBlockNonce() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockNonce
-	metering.UseGasAndAddTracedGas(getBlockNonceName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockNonceName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.CurrentNonce())
 }
@@ -2471,7 +2886,11 @@ func (context *VMHooksImpl) GetBlockRound() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockRound
-	metering.UseGasAndAddTracedGas(getBlockRoundName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockRoundName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.CurrentRound())
 }
@@ -2483,7 +2902,11 @@ func (context *VMHooksImpl) GetBlockEpoch() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockEpoch
-	metering.UseGasAndAddTracedGas(getBlockEpochName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockEpochName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.CurrentEpoch())
 }
@@ -2491,31 +2914,41 @@ func (context *VMHooksImpl) GetBlockEpoch() int64 {
 // GetBlockRandomSeed VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetBlockRandomSeed(pointer executor.MemPtr) {
-	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockRandomSeed
-	metering.UseGasAndAddTracedGas(getBlockRandomSeedName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockRandomSeedName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	randomSeed := blockchain.CurrentRandomSeed()
-	err := context.MemStore(pointer, randomSeed)
-	context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	err = context.MemStore(pointer, randomSeed)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetStateRootHash VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetStateRootHash(pointer executor.MemPtr) {
-	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetStateRootHash
-	metering.UseGasAndAddTracedGas(getStateRootHashName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getStateRootHashName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	stateRootHash := blockchain.GetStateRootHash()
-	err := context.MemStore(pointer, stateRootHash)
-	context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	err = context.MemStore(pointer, stateRootHash)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetPrevBlockTimestamp VMHooks implementation.
@@ -2525,7 +2958,11 @@ func (context *VMHooksImpl) GetPrevBlockTimestamp() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockTimeStamp
-	metering.UseGasAndAddTracedGas(getPrevBlockTimestampName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockTimestampName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.LastTimeStamp())
 }
@@ -2537,7 +2974,11 @@ func (context *VMHooksImpl) GetPrevBlockNonce() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockNonce
-	metering.UseGasAndAddTracedGas(getPrevBlockNonceName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockNonceName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.LastNonce())
 }
@@ -2549,7 +2990,11 @@ func (context *VMHooksImpl) GetPrevBlockRound() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockRound
-	metering.UseGasAndAddTracedGas(getPrevBlockRoundName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockRoundName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.LastRound())
 }
@@ -2561,7 +3006,11 @@ func (context *VMHooksImpl) GetPrevBlockEpoch() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockEpoch
-	metering.UseGasAndAddTracedGas(getPrevBlockEpochName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockEpochName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	return int64(blockchain.LastEpoch())
 }
@@ -2569,22 +3018,26 @@ func (context *VMHooksImpl) GetPrevBlockEpoch() int64 {
 // GetPrevBlockRandomSeed VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
-	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockRandomSeed
-	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
 	randomSeed := blockchain.LastRandomSeed()
-	err := context.MemStore(pointer, randomSeed)
-	context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	err = context.MemStore(pointer, randomSeed)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // Finish VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) Finish(pointer executor.MemPtr, length executor.MemLength) {
-	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(returnDataName)
@@ -2593,14 +3046,14 @@ func (context *VMHooksImpl) Finish(pointer executor.MemPtr, length executor.MemL
 	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
 	gasToUse = math.AddUint64(gasToUse, gas)
 	err := metering.UseGasBounded(gasToUse)
-
 	if err != nil {
-		_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(err)
 		return
 	}
 
 	data, err := context.MemLoad(pointer, length)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -2648,11 +3101,11 @@ func (context *VMHooksImpl) ExecuteOnSameContextWithHost(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) int32 {
-	runtime := host.Runtime()
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -2679,7 +3132,11 @@ func ExecuteOnSameContextWithTypedArgs(
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.ExecuteOnSameContext
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return -1
+	}
 
 	sender := runtime.GetContextAddress()
 
@@ -2694,17 +3151,19 @@ func ExecuteOnSameContextWithTypedArgs(
 		gasToUse,
 		true,
 	)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		WithFaultAndHost(host, vmhost.ErrInvalidBuiltInFunctionCall, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -2752,11 +3211,11 @@ func (context *VMHooksImpl) ExecuteOnDestContextWithHost(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) int32 {
-	runtime := host.Runtime()
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -2783,7 +3242,11 @@ func ExecuteOnDestContextWithTypedArgs(
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.ExecuteOnDestContext
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return -1
+	}
 
 	sender := runtime.GetContextAddress()
 
@@ -2798,12 +3261,14 @@ func ExecuteOnDestContextWithTypedArgs(
 		gasToUse,
 		true,
 	)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -2850,11 +3315,11 @@ func (context *VMHooksImpl) ExecuteReadOnlyWithHost(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) int32 {
-	runtime := host.Runtime()
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithoutValue(
 		host, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -2879,7 +3344,11 @@ func ExecuteReadOnlyWithTypedArguments(
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.ExecuteReadOnly
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
 
 	sender := runtime.GetContextAddress()
 
@@ -2894,12 +3363,13 @@ func ExecuteReadOnlyWithTypedArguments(
 		gasToUse,
 		true,
 	)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		WithFaultAndHost(host, vmhost.ErrInvalidBuiltInFunctionCall, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
@@ -2908,7 +3378,8 @@ func ExecuteReadOnlyWithTypedArguments(
 	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	runtime.SetReadOnly(wasReadOnly)
 
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return -1
 	}
 
@@ -2961,21 +3432,28 @@ func (context *VMHooksImpl) createContractWithHost(
 	metering.StartGasTracing(createContractName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return -1
+	}
 
 	sender := runtime.GetContextAddress()
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	code, err := context.MemLoad(codeOffset, length)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -2985,23 +3463,29 @@ func (context *VMHooksImpl) createContractWithHost(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if err != nil {
+		FailExecution(host, err)
+		return 1
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
-
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
 		return 1
 	}
 
 	valueAsInt := big.NewInt(0).SetBytes(value)
 	newAddress, err := createContract(sender, data, valueAsInt, gasLimit, code, codeMetadata, host, CreateContract)
 
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	err = context.MemStore(resultOffset, newAddress)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -3026,20 +3510,27 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 	metering.StartGasTracing(deployFromSourceContractName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	sourceContractAddress, err := context.MemLoad(sourceContractAddressOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -3049,11 +3540,15 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if err != nil {
+		FailExecution(host, err)
+		return 1
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	metering.UseAndTraceGas(gasToUse)
-
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -3066,12 +3561,14 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 		gasLimit,
 	)
 
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
 	err = context.MemStore(resultAddressOffset, newAddress)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 1
 	}
 
@@ -3092,7 +3589,8 @@ func DeployFromSourceContractWithTypedArgs(
 
 	blockchain := host.Blockchain()
 	code, err := blockchain.GetCode(sourceContractAddress)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return nil, err
 	}
 
@@ -3124,6 +3622,12 @@ func createContract(
 		ContractCodeMetadata: codeMetadata,
 	}
 
+	currentVMInput := host.Runtime().GetVMInput()
+	if len(currentVMInput.RelayerAddr) > 0 {
+		contractCreate.RelayerAddr = make([]byte, len(currentVMInput.RelayerAddr))
+		copy(contractCreate.RelayerAddr, currentVMInput.RelayerAddr)
+	}
+
 	return host.CreateNewContract(contractCreate, int(createContractCallType))
 }
 
@@ -3134,7 +3638,11 @@ func (context *VMHooksImpl) GetNumReturnData() int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetNumReturnData
-	metering.UseGasAndAddTracedGas(getNumReturnDataName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getNumReturnDataName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	returnData := output.ReturnData()
 	return int32(len(returnData))
@@ -3143,16 +3651,19 @@ func (context *VMHooksImpl) GetNumReturnData() int32 {
 // GetReturnDataSize VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetReturnDataSize(resultID int32) int32 {
-	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetReturnDataSize
-	metering.UseGasAndAddTracedGas(getReturnDataSizeName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getReturnDataSizeName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.WithFault(vmhost.ErrInvalidArgument, runtime.BaseOpsErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrInvalidArgument)
 		return 0
 	}
 
@@ -3169,9 +3680,9 @@ func (context *VMHooksImpl) GetReturnData(resultID int32, dataOffset executor.Me
 		return 0
 	}
 
-	runtime := context.GetRuntimeContext()
 	err := context.MemStore(dataOffset, result)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return 0
 	}
 
@@ -3183,11 +3694,15 @@ func GetReturnDataWithHostAndTypedArgs(host vmhost.VMHost, resultID int32) []byt
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetReturnData
-	metering.UseGasAndAddTracedGas(getReturnDataName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getReturnDataName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return nil
+	}
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		WithFaultAndHost(host, vmhost.ErrInvalidArgument, host.Runtime().BaseOpsErrorShouldFailExecution())
+		FailExecution(host, vmhost.ErrInvalidArgument)
 		return nil
 	}
 
@@ -3207,7 +3722,11 @@ func CleanReturnDataWithHost(host vmhost.VMHost) {
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CleanReturnData
-	metering.UseGasAndAddTracedGas(cleanReturnDataName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(cleanReturnDataName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
 
 	output.ClearReturnData()
 }
@@ -3225,7 +3744,11 @@ func DeleteFromReturnDataWithHost(host vmhost.VMHost, resultID int32) {
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.DeleteFromReturnData
-	metering.UseGasAndAddTracedGas(deleteFromReturnDataName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(deleteFromReturnDataName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
 
 	returnData := output.ReturnData()
 	if resultID < int32(len(returnData)) {
@@ -3240,10 +3763,16 @@ func (context *VMHooksImpl) GetOriginalTxHash(dataOffset executor.MemPtr) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetOriginalTxHash
-	metering.UseGasAndAddTracedGas(getOriginalTxHashName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getOriginalTxHashName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
-	err := context.MemStore(dataOffset, runtime.GetOriginalTxHash())
-	_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	err = context.MemStore(dataOffset, runtime.GetOriginalTxHash())
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetCurrentTxHash VMHooks implementation.
@@ -3253,10 +3782,16 @@ func (context *VMHooksImpl) GetCurrentTxHash(dataOffset executor.MemPtr) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCurrentTxHash
-	metering.UseGasAndAddTracedGas(getCurrentTxHashName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getCurrentTxHashName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
-	err := context.MemStore(dataOffset, runtime.GetCurrentTxHash())
-	_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	err = context.MemStore(dataOffset, runtime.GetCurrentTxHash())
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 // GetPrevTxHash VMHooks implementation.
@@ -3266,10 +3801,16 @@ func (context *VMHooksImpl) GetPrevTxHash(dataOffset executor.MemPtr) {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetPrevTxHash
-	metering.UseGasAndAddTracedGas(getPrevTxHashName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevTxHashName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
 
-	err := context.MemStore(dataOffset, runtime.GetPrevTxHash())
-	_ = context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution())
+	err = context.MemStore(dataOffset, runtime.GetPrevTxHash())
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 func prepareIndirectContractCallInput(
@@ -3302,6 +3843,12 @@ func prepareIndirectContractCallInput(
 		},
 		RecipientAddr: destination,
 		Function:      string(function),
+	}
+
+	currentVMInput := runtime.GetVMInput()
+	if len(currentVMInput.RelayerAddr) > 0 {
+		contractCallInput.RelayerAddr = make([]byte, len(currentVMInput.RelayerAddr))
+		copy(contractCallInput.RelayerAddr, currentVMInput.RelayerAddr)
 	}
 
 	return contractCallInput, nil

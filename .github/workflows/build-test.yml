@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.20.7]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Go
@@ -21,6 +21,14 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Test
-      run: |
-          make test
+
+    - name: Test (Linux)
+      if: runner.os == 'Linux'
+      run: | 
+        make test
+
+    - name: Test (MacOS ARM64)
+      if: runner.os == 'macOS'
+      run: | 
+        make test-w2
+

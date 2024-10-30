@@ -482,7 +482,11 @@ func (context *outputContext) TransferESDT(
 		}
 
 		if !sameShard {
-			context.host.Metering().UseGas(gasRemaining)
+			err = context.host.Metering().UseGasBounded(gasRemaining)
+			if err != nil {
+				logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
+				return 0, vmhost.ErrNotEnoughGas
+			}
 		}
 	}
 
@@ -493,6 +497,7 @@ func (context *outputContext) TransferESDT(
 		esdtOutTransfer := outputAcc.OutputTransfers[0]
 		esdtOutTransfer.GasLimit = gasRemaining
 		esdtOutTransfer.CallType = callType
+		esdtOutTransfer.SenderAddress = transfersArgs.SenderForExec
 		if sameShard {
 			esdtOutTransfer.GasLimit = 0
 		}
@@ -844,6 +849,7 @@ func mergeStorageUpdates(
 	if leftAccount.StorageUpdates == nil {
 		leftAccount.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
 	}
+
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
 	}

@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -8,7 +9,6 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 var logBlockchain = logger.GetOrCreate("vm/blockchainContext")
@@ -317,7 +317,8 @@ func (context *blockchainContext) PopSetActiveState() {
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
-	if vmhooks.WithFaultAndHost(context.host, err, true) {
+	if err != nil {
+		vmhooks.FailExecution(context.host, err)
 		context.host.Runtime().AddError(err, "RevertToSnapshot")
 		logBlockchain.Error("PopSetActiveState RevertToSnapshot", "error", err)
 		return

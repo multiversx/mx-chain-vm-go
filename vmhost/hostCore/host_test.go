@@ -24,12 +24,13 @@ func TestNewVMHost(t *testing.T) {
 
 	makeHostParameters := func() *vmhost.VMHostParameters {
 		return &vmhost.VMHostParameters{
-			VMType:               vmType,
-			ESDTTransferParser:   esdtTransferParser,
-			BuiltInFuncContainer: bfc,
-			EpochNotifier:        epochNotifier,
-			EnableEpochsHandler:  epochsHandler,
-			Hasher:               worldmock.DefaultHasher,
+			VMType:                    vmType,
+			ESDTTransferParser:        esdtTransferParser,
+			BuiltInFuncContainer:      bfc,
+			EpochNotifier:             epochNotifier,
+			EnableEpochsHandler:       epochsHandler,
+			Hasher:                    worldmock.DefaultHasher,
+			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 		}
 	}
 

@@ -231,6 +231,11 @@ func FillGasMapBuiltInCosts(value uint64) map[string]uint64 {
 	gasMap["ESDTNFTAddUri"] = value
 	gasMap["ESDTNFTUpdateAttributes"] = value
 	gasMap["ESDTNFTMultiTransfer"] = value
+	gasMap["ESDTModifyRoyalties"] = value
+	gasMap["ESDTModifyCreator"] = value
+	gasMap["ESDTNFTRecreate"] = value
+	gasMap["ESDTNFTUpdate"] = value
+	gasMap["ESDTNFTSetNewURIs"] = value
 	gasMap["SetGuardian"] = value
 	gasMap["GuardAccount"] = value
 	gasMap["UnGuardAccount"] = value
@@ -309,6 +314,7 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["DeleteFromReturnData"] = value
 	gasMap["GetCodeMetadata"] = value
 	gasMap["IsBuiltinFunction"] = value
+	gasMap["IsReservedFunctionName"] = value
 
 	return gasMap
 }
@@ -444,6 +450,9 @@ func FillGasMapCryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap["UnmarshalCompressedECC"] = value
 	gasMap["GenerateKeyECC"] = value
 	gasMap["EncodeDERSig"] = value
+	gasMap["VerifySecp256r1"] = value
+	gasMap["VerifyBLSSignatureShare"] = value
+	gasMap["VerifyBLSMultiSig"] = value
 
 	return gasMap
 }
@@ -461,6 +470,10 @@ func FillGasMapManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferAppend"] = value
 	gasMap["MBufferAppendBytes"] = value
 	gasMap["MBufferToBigIntUnsigned"] = value
+	gasMap["MBufferToSmallIntUnsigned"] = value
+	gasMap["MBufferToSmallIntSigned"] = value
+	gasMap["MBufferFromSmallIntUnsigned"] = value
+	gasMap["MBufferFromSmallIntSigned"] = value
 	gasMap["MBufferToBigIntSigned"] = value
 	gasMap["MBufferFromBigIntUnsigned"] = value
 	gasMap["MBufferFromBigIntSigned"] = value
