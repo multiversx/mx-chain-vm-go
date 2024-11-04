@@ -64,6 +64,7 @@ package wasmer2
 // extern int32_t   w2_getNumESDTTransfers(void* context);
 // extern int32_t   w2_getCallValueTokenName(void* context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern int32_t   w2_getCallValueTokenNameByIndex(void* context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
+// extern int32_t   w2_isReservedFunctionName(void* context, int32_t nameHandle);
 // extern void      w2_writeLog(void* context, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
 // extern void      w2_writeEventLog(void* context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern long long w2_getBlockTimestamp(void* context);
@@ -336,6 +337,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		get_num_esdt_transfers_func_ptr:                          funcPointer(C.w2_getNumESDTTransfers),
 		get_call_value_token_name_func_ptr:                       funcPointer(C.w2_getCallValueTokenName),
 		get_call_value_token_name_by_index_func_ptr:              funcPointer(C.w2_getCallValueTokenNameByIndex),
+		is_reserved_function_name_func_ptr:                       funcPointer(C.w2_isReservedFunctionName),
 		write_log_func_ptr:                                       funcPointer(C.w2_writeLog),
 		write_event_log_func_ptr:                                 funcPointer(C.w2_writeEventLog),
 		get_block_timestamp_func_ptr:                             funcPointer(C.w2_getBlockTimestamp),
@@ -863,6 +865,12 @@ func w2_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tok
 func w2_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.GetCallValueTokenNameByIndex(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset), index)
+}
+
+//export w2_isReservedFunctionName
+func w2_isReservedFunctionName(context unsafe.Pointer, nameHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.IsReservedFunctionName(nameHandle)
 }
 
 //export w2_writeLog

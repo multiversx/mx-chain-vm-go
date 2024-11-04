@@ -58,7 +58,7 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	gasProvided := uint64(1001)
 	meteringCtx.gasForExecution = gasProvided
 	gasUsed := uint64(1000)
-	meteringCtx.UseGas(gasUsed)
+	_ = meteringCtx.UseGasBounded(gasUsed)
 	require.Equal(t, mockRuntime.GetPointsUsed(), gasUsed)
 	require.Equal(t, gasProvided-gasUsed, meteringCtx.GasLeft())
 
@@ -68,7 +68,7 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	meteringCtx.gasForExecution = gasProvided
 
 	require.Equal(t, gasProvided, meteringCtx.GasLeft())
-	meteringCtx.UseGas(gasUsed)
+	_ = meteringCtx.UseGasBounded(gasUsed)
 	require.Equal(t, gasProvided-gasUsed, meteringCtx.GasLeft())
 }
 
@@ -289,7 +289,7 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 	require.Equal(t, gasAfterDeductingInitial, metering.GasLeft())
 
 	gasUsed := uint64(400)
-	metering.UseGas(gasUsed)
+	_ = metering.UseGasBounded(gasUsed)
 	require.Equal(t, gasAfterDeductingInitial-gasUsed, metering.GasLeft())
 
 	totalGasUsed := metering.initialGasProvided - metering.GasLeft()
@@ -336,14 +336,14 @@ func initStateFromChildGetParentPointsBeforeStacking(t *testing.T, host *context
 	require.Equal(t, parentGasProvided-parentExecutionGas, host.MeteringContext.GasLeft())
 
 	parentUsedGas := uint64(400)
-	host.MeteringContext.UseGas(parentUsedGas)
+	_ = host.MeteringContext.UseGasBounded(parentUsedGas)
 	require.Equal(t, parentGasProvided-parentExecutionGas-parentUsedGas, host.MeteringContext.GasLeft())
 
 	gasSpentByContract := host.MeteringContext.GasSpentByContract()
 	require.Equal(t, parentExecutionGas+parentUsedGas, gasSpentByContract)
 
 	childProvidedGas := childInput.GasProvided
-	host.MeteringContext.UseGas(childProvidedGas)
+	_ = host.MeteringContext.UseGasBounded(childProvidedGas)
 	parentPointsBeforeStacking := host.RuntimeContext.GetPointsUsed()
 	require.Equal(t, childProvidedGas+parentUsedGas, parentPointsBeforeStacking)
 	require.Equal(t, parentGasProvided-parentExecutionGas-parentPointsBeforeStacking, host.MeteringContext.GasLeft())
@@ -379,7 +379,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	require.Equal(t, childInput.GasProvided-childExecutionGas, metering.GasLeft())
 
 	childUsedGas := uint64(50)
-	metering.UseGas(childUsedGas)
+	_ = metering.UseGasBounded(childUsedGas)
 	gasRemaining := metering.GasLeft()
 	require.Equal(t, childInput.GasProvided-childExecutionGas-childUsedGas, metering.GasLeft())
 
@@ -400,7 +400,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	gasSpentByContract = metering.GasSpentByContract()
 	require.Equal(t, parentExecutionGas+parentUsedGas+childUsedGas+childExecutionGas, gasSpentByContract)
 
-	metering.UseGas(50)
+	_ = metering.UseGasBounded(50)
 	parentUsedGas += 50
 	require.Equal(t, parentInput.GasProvided-parentExecutionGas-parentUsedGas-childExecutionGas-childUsedGas, metering.GasLeft())
 
@@ -549,7 +549,7 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 	meteringCtx.StartGasTracing("function1")
 	gasTrace := meteringCtx.GetGasTrace()
 	require.Equal(t, 0, len(gasTrace))
-	meteringCtx.UseGasAndAddTracedGas("function2", gasUsed2)
+	_ = meteringCtx.UseGasBoundedAndAddTracedGas("function2", gasUsed2)
 	gasTrace = meteringCtx.GetGasTrace()
 	require.Equal(t, 0, len(gasTrace))
 
@@ -560,12 +560,12 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 	require.Equal(t, 1, len(gasTrace["scAddress1"]))
 	require.Equal(t, 1, len(gasTrace["scAddress1"]["function1"]))
 	require.Equal(t, uint64(0), gasTrace["scAddress1"]["function1"][0])
-	meteringCtx.UseAndTraceGas(gasUsed1)
+	_ = meteringCtx.UseGasBounded(gasUsed1)
 	gasTrace = meteringCtx.GetGasTrace()
 	require.Equal(t, gasUsed1, gasTrace["scAddress1"]["function1"][0])
 
 	host.RuntimeContext.SetCodeAddress([]byte("scAddress2"))
-	meteringCtx.UseGasAndAddTracedGas("function2", gasUsed2)
+	_ = meteringCtx.UseGasBoundedAndAddTracedGas("function2", gasUsed2)
 	gasTrace = meteringCtx.GetGasTrace()
 	require.Equal(t, 2, len(gasTrace))
 	require.Equal(t, gasUsed2, gasTrace["scAddress2"]["function2"][0])

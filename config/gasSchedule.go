@@ -326,6 +326,7 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["DeleteFromReturnData"] = value
 	gasMap["GetCodeMetadata"] = value
 	gasMap["IsBuiltinFunction"] = value
+	gasMap["IsReservedFunctionName"] = value
 
 	return gasMap
 }

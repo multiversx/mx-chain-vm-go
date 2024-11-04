@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	builtinMath "math"
-	"math/big"
-
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	builtinMath "math"
+	"math/big"
 )
 
 var logRuntime = logger.GetOrCreate("vm/runtime")
@@ -762,6 +761,11 @@ func (context *runtimeContext) ManagedMapAPIErrorShouldFailExecution() bool {
 	return true
 }
 
+// UseGasBoundedShouldFailExecution returns true when flag activated
+func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
+	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag)
+}
+
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
 	if check.IfNil(context.iTracker.Instance()) {
@@ -928,6 +932,11 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	}
 
 	return nil
+}
+
+// IsReservedFunctionName checks if the function name is reserved
+func (context *runtimeContext) IsReservedFunctionName(functionName string) bool {
+	return context.validator.reserved.IsReserved(functionName)
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.

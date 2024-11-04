@@ -485,6 +485,15 @@ func (w *WrapperVMHooks) GetCallValueTokenNameByIndex(callValueOffset executor.M
 	return result
 }
 
+// IsReservedFunctionName VM hook wrapper
+func (w *WrapperVMHooks) IsReservedFunctionName(nameHandle int32) int32 {
+	callInfo := fmt.Sprintf("IsReservedFunctionName(%d)", nameHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.IsReservedFunctionName(nameHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // WriteLog VM hook wrapper
 func (w *WrapperVMHooks) WriteLog(dataPointer executor.MemPtr, dataLength executor.MemLength, topicPtr executor.MemPtr, numTopics int32) {
 	callInfo := fmt.Sprintf("WriteLog(%d, %d, %d, %d)", dataPointer, dataLength, topicPtr, numTopics)

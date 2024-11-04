@@ -577,6 +577,11 @@ func (contextWrapper *RuntimeContextWrapper) ManagedMapAPIErrorShouldFailExecuti
 	return contextWrapper.runtimeContext.ManagedMapAPIErrorShouldFailExecution()
 }
 
+// UseGasBoundedShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) UseGasBoundedShouldFailExecution() bool {
+	return contextWrapper.runtimeContext.UseGasBoundedShouldFailExecution()
+}
+
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()
@@ -624,6 +629,11 @@ func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 // ValidateCallbackName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ValidateCallbackName(callbackName string) error {
 	return contextWrapper.runtimeContext.ValidateCallbackName(callbackName)
+}
+
+// IsReservedFunctionName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) IsReservedFunctionName(functionName string) bool {
+	return contextWrapper.runtimeContext.IsReservedFunctionName(functionName)
 }
 
 // HasFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

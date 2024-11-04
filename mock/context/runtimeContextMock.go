@@ -333,6 +333,11 @@ func (r *RuntimeContextMock) ManagedMapAPIErrorShouldFailExecution() bool {
 	return r.FailManagedMapAPI
 }
 
+// UseGasBoundedShouldFailExecution mocked method
+func (r *RuntimeContextMock) UseGasBoundedShouldFailExecution() bool {
+	return true
+}
+
 // FailExecution mocked method
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
@@ -372,6 +377,11 @@ func (r *RuntimeContextMock) ValidateInstances() error {
 // ValidateCallbackName mocked method
 func (r *RuntimeContextMock) ValidateCallbackName(_ string) error {
 	return nil
+}
+
+// IsReservedFunctionName moked method
+func (r *RuntimeContextMock) IsReservedFunctionName(_ string) bool {
+	return false
 }
 
 // HasFunction mocked method

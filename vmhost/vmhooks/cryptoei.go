@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
+
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -56,7 +57,10 @@ func (context *VMHooksImpl) Sha256(
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.SHA256, memLoadGas)
-	metering.UseGasAndAddTracedGas(sha256Name, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(sha256Name, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -85,13 +89,20 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
 
-	metering.UseGasAndAddTracedGas(sha256Name, metering.GasSchedule().CryptoAPICost.SHA256)
+	err := metering.UseGasBoundedAndAddTracedGas(sha256Name, metering.GasSchedule().CryptoAPICost.SHA256)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	inputBytes, err := managedType.GetBytes(inputHandle)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(inputBytes)
+
+	err = managedType.ConsumeGasForBytes(inputBytes)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	resultBytes, err := crypto.Sha256(inputBytes)
 	if err != nil {
@@ -113,7 +124,10 @@ func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executo
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Keccak256, memLoadGas)
-	metering.UseGasAndAddTracedGas(keccak256Name, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(keccak256Name, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -142,13 +156,20 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) in
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
 
-	metering.UseGasAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.Keccak256)
+	err := metering.UseGasBoundedAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.Keccak256)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	inputBytes, err := managedType.GetBytes(inputHandle)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(inputBytes)
+
+	err = managedType.ConsumeGasForBytes(inputBytes)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	resultBytes, err := crypto.Keccak256(inputBytes)
 	if err != nil {
@@ -170,7 +191,10 @@ func (context *VMHooksImpl) Ripemd160(dataOffset executor.MemPtr, length executo
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Ripemd160, memLoadGas)
-	metering.UseGasAndAddTracedGas(ripemd160Name, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(ripemd160Name, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -205,13 +229,20 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
 
-	metering.UseGasAndAddTracedGas(ripemd160Name, metering.GasSchedule().CryptoAPICost.Ripemd160)
+	err := metering.UseGasBoundedAndAddTracedGas(ripemd160Name, metering.GasSchedule().CryptoAPICost.Ripemd160)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	inputBytes, err := managedType.GetBytes(inputHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(inputBytes)
+
+	err = managedType.ConsumeGasForBytes(inputBytes)
+	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	result, err := crypto.Ripemd160(inputBytes)
 	if err != nil {
@@ -238,7 +269,10 @@ func (context *VMHooksImpl) VerifyBLS(
 	metering.StartGasTracing(verifyBLSName)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	key, err := context.MemLoad(keyOffset, blsPublicKeyLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -246,7 +280,10 @@ func (context *VMHooksImpl) VerifyBLS(
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	message, err := context.MemLoad(messageOffset, messageLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -281,7 +318,7 @@ func (context *VMHooksImpl) ManagedVerifyBLS(
 func useGasForCryptoVerify(
 	metering vmhost.MeteringContext,
 	sigVerificationType string,
-) {
+) error {
 	metering.StartGasTracing(sigVerificationType)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
@@ -297,7 +334,8 @@ func useGasForCryptoVerify(
 	case verifyBLSAggregatedSignature:
 		gasToUse = metering.GasSchedule().CryptoAPICost.VerifyBLSMultiSig
 	}
-	metering.UseAndTraceGas(gasToUse)
+
+	return metering.UseGasBounded(gasToUse)
 }
 
 // ManagedVerifyBLSWithHost VMHooks implementation.
@@ -312,25 +350,40 @@ func ManagedVerifyBLSWithHost(
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
-	useGasForCryptoVerify(metering, sigVerificationType)
+	err := useGasForCryptoVerify(metering, sigVerificationType)
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
+		return 1
+	}
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(keyBytes)
+
+	err = managedType.ConsumeGasForBytes(keyBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(msgBytes)
+
+	err = managedType.ConsumeGasForBytes(msgBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sigBytes)
+
+	err = managedType.ConsumeGasForBytes(sigBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	invalidSigErr := vmhost.ErrInvalidArgument
 	switch sigVerificationType {
@@ -349,7 +402,7 @@ func ManagedVerifyBLSWithHost(
 	}
 
 	if invalidSigErr != nil {
-		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidSignature, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -370,7 +423,10 @@ func (context *VMHooksImpl) VerifyEd25519(
 	metering.StartGasTracing(verifyEd25519Name)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	key, err := context.MemLoad(keyOffset, ed25519PublicKeyLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -378,7 +434,10 @@ func (context *VMHooksImpl) VerifyEd25519(
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	message, err := context.MemLoad(messageOffset, messageLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -420,25 +479,40 @@ func ManagedVerifyEd25519WithHost(
 	metering.StartGasTracing(verifyEd25519Name)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(keyBytes)
+
+	err = managedType.ConsumeGasForBytes(keyBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(msgBytes)
+
+	err = managedType.ConsumeGasForBytes(msgBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sigBytes)
+
+	err = managedType.ConsumeGasForBytes(sigBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
@@ -465,7 +539,10 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	metering.StartGasTracing(verifyCustomSecp256k1Name)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256k1
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	if keyLength != secp256k1CompressedPublicKeyLength && keyLength != secp256k1UncompressedPublicKeyLength {
 		_ = context.WithFault(vmhost.ErrInvalidPublicKeySize, runtime.BaseOpsErrorShouldFailExecution())
@@ -478,7 +555,10 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	message, err := context.MemLoad(messageOffset, messageLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -536,25 +616,40 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
 
-	useGasForCryptoVerify(metering, verifyCryptoFunc)
+	err := useGasForCryptoVerify(metering, verifyCryptoFunc)
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
+		return 1
+	}
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(keyBytes)
+
+	err = managedType.ConsumeGasForBytes(keyBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(msgBytes)
+
+	err = managedType.ConsumeGasForBytes(msgBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBytes(sigBytes)
+
+	err = managedType.ConsumeGasForBytes(sigBytes)
+	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	invalidSigErr := vmhost.ErrInvalidArgument
 	switch verifyCryptoFunc {
@@ -565,7 +660,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	}
 
 	if invalidSigErr != nil {
-		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidSignature, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -629,7 +724,10 @@ func (context *VMHooksImpl) EncodeSecp256k1DerSignature(
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
-	metering.UseGasAndAddTracedGas(encodeSecp256k1DerSignatureName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(encodeSecp256k1DerSignatureName, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	r, err := context.MemLoad(rOffset, rLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -670,7 +768,10 @@ func ManagedEncodeSecp256k1DerSignatureWithHost(
 	crypto := host.Crypto()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
-	metering.UseGasAndAddTracedGas(encodeSecp256k1DerSignatureName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(encodeSecp256k1DerSignatureName, gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	r, err := managedType.GetBytes(rHandle)
 	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -710,7 +811,10 @@ func (context *VMHooksImpl) AddEC(
 		return
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.AddECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
 	if context.WithFault(err1, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -738,7 +842,10 @@ func (context *VMHooksImpl) AddEC(
 		return
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
+	err = managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
 	xResultAdd, yResultAdd := ec.Add(x1, y1, x2, y2)
 	xResult.Set(xResultAdd)
 	yResult.Set(yResultAdd)
@@ -764,7 +871,10 @@ func (context *VMHooksImpl) DoubleEC(
 		return
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.DoubleECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
 	if context.WithFault(err1, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -782,7 +892,10 @@ func (context *VMHooksImpl) DoubleEC(
 		return
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	xResultDouble, yResultDouble := ec.Double(x, y)
 	xResult.Set(xResultDouble)
@@ -807,7 +920,10 @@ func (context *VMHooksImpl) IsOnCurveEC(
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.IsOnCurveECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -820,7 +936,11 @@ func (context *VMHooksImpl) IsOnCurveEC(
 		return -1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
 	if ec.IsOnCurve(x, y) {
 		return 1
 	}
@@ -854,7 +974,10 @@ func (context *VMHooksImpl) ScalarBaseMultEC(
 	}
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
 	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -909,7 +1032,10 @@ func ManagedScalarBaseMultECWithHost(
 
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
 	gasToUse := oneByteScalarGasCost + uint64(len(data))*oneByteScalarGasCost
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	return commonScalarBaseMultEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
@@ -934,7 +1060,10 @@ func commonScalarBaseMultEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
 	if !ec.IsOnCurve(xResultSBM, yResultSBM) {
@@ -975,7 +1104,10 @@ func (context *VMHooksImpl) ScalarMultEC(
 	}
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
 	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -1036,7 +1168,10 @@ func ManagedScalarMultECWithHost(
 
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
 	gasToUse := oneByteScalarGasCost + uint64(len(data))*oneByteScalarGasCost
-	metering.UseAndTraceGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	return commonScalarMultEC(host, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
 }
@@ -1071,7 +1206,11 @@ func commonScalarMultEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err := managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
 	if !ec.IsOnCurve(xResultSM, yResultSM) {
 		_ = WithFaultAndHost(host, vmhost.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
@@ -1158,7 +1297,10 @@ func commonMarshalEC(
 		return nil, vmhost.ErrNoEllipticCurveUnderThisHandle
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, err
+	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if err != nil {
@@ -1176,7 +1318,10 @@ func commonMarshalEC(
 		return nil, vmhost.ErrLengthOfBufferNotCorrect
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if err != nil {
+		return nil, err
+	}
 
 	result := elliptic.Marshal(ec, x, y)
 	return result, nil
@@ -1257,7 +1402,10 @@ func commonMarshalCompressedEC(host vmhost.VMHost,
 		return nil, vmhost.ErrNoEllipticCurveUnderThisHandle
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalCompressedECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, err
+	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if err != nil {
@@ -1275,7 +1423,10 @@ func commonMarshalCompressedEC(host vmhost.VMHost,
 		return nil, vmhost.ErrLengthOfBufferNotCorrect
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	if err != nil {
+		return nil, err
+	}
 
 	result := elliptic.MarshalCompressed(ec, x, y)
 	return result, nil
@@ -1301,7 +1452,10 @@ func (context *VMHooksImpl) UnmarshalEC(
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -1349,7 +1503,10 @@ func ManagedUnmarshalECWithHost(
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := managedType.GetBytes(dataHandle)
 	if err != nil {
@@ -1384,7 +1541,10 @@ func commonUnmarshalEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	xResultU, yResultU := elliptic.Unmarshal(ec, data)
 	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
@@ -1417,7 +1577,10 @@ func (context *VMHooksImpl) UnmarshalCompressedEC(
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -1465,7 +1628,10 @@ func ManagedUnmarshalCompressedECWithHost(
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := managedType.GetBytes(dataHandle)
 	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -1500,7 +1666,10 @@ func commonUnmarshalCompressedEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
 	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
@@ -1590,7 +1759,10 @@ func commonGenerateEC(
 		curveMultiplier = 500
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.GenerateKeyECC * uint64(curveMultiplier) / 100
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, err
+	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if err != nil {
@@ -1601,7 +1773,11 @@ func commonGenerateEC(
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
+
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
+	if err != nil {
+		return nil, err
+	}
 
 	ioReader := managedType.GetRandReader()
 	result, xPubKeyGK, yPubKeyGK, err := elliptic.GenerateKey(ec, ioReader)
@@ -1623,7 +1799,10 @@ func (context *VMHooksImpl) CreateEC(dataOffset executor.MemPtr, dataLength exec
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
-	metering.UseGasAndAddTracedGas(createECName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(createECName, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	if dataLength != curveNameLength {
 		_ = context.WithFault(vmhost.ErrBadBounds, runtime.CryptoAPIErrorShouldFailExecution())
@@ -1665,7 +1844,10 @@ func ManagedCreateECWithHost(host vmhost.VMHost, dataHandle int32) int32 {
 	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
-	metering.UseGasAndAddTracedGas(createECName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(createECName, gasToUse)
+	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	data, err := managedType.GetBytes(dataHandle)
 	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -1699,7 +1881,10 @@ func (context *VMHooksImpl) GetCurveLengthEC(ecHandle int32) int32 {
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
-	metering.UseGasAndAddTracedGas(getCurveLengthECName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getCurveLengthECName, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	ecLength := managedType.GetEllipticCurveSizeOfField(ecHandle)
 	if ecLength == -1 {
@@ -1717,7 +1902,10 @@ func (context *VMHooksImpl) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
-	metering.UseGasAndAddTracedGas(getPrivKeyByteLengthECName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(getPrivKeyByteLengthECName, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	byteLength := managedType.GetPrivateKeyByteLengthEC(ecHandle)
 	if byteLength == -1 {
@@ -1735,7 +1923,10 @@ func (context *VMHooksImpl) EllipticCurveGetValues(ecHandle int32, fieldOrderHan
 	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64 * 5
-	metering.UseGasAndAddTracedGas(ellipticCurveGetValuesName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(ellipticCurveGetValuesName, gasToUse)
+	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {

@@ -2140,7 +2140,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	require.Nil(t, err)
 
 	// Use a lot of gas on the parent contract
-	metering.UseGas(500000)
+	_ = metering.UseGasBounded(500000)
 	require.Equal(t, input.GasProvided-500001, metering.GasLeft())
 
 	// Create a second ContractCallInput, used to call the child SC using
@@ -3182,7 +3182,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
-						host.Metering().UseGas(500)
+						_ = host.Metering().UseGasBounded(500)
 						_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
 						require.Nil(t, err)
 						childInput := test.DefaultTestContractCallInput()
@@ -3206,7 +3206,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 					childInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
-						host.Metering().UseGas(100)
+						_ = host.Metering().UseGasBounded(100)
 						_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
 						require.Nil(t, err)
 						return childInstance
@@ -3347,12 +3347,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						assert.Equal(t, int32(0), returnValue)
 
 						instance.BreakpointValue = 0
-						returnData := vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
-						assert.Nil(t, returnData)
-
-						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						returnData := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, zero, string(returnData))
 
@@ -3378,11 +3373,6 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
-						assert.Nil(t, returnData)
-
-						instance.BreakpointValue = 0
 						vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						remainingReturnData := host.Output().ReturnData()
@@ -3394,13 +3384,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
 						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
 						assert.Nil(t, returnData)
+
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
-						assert.Nil(t, returnData)
-						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
+						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
+						assert.Equal(t, vmhost.BreakpointOutOfGas, instance.BreakpointValue)
 						assert.Nil(t, returnData)
 
 						return instance
@@ -3649,7 +3636,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
-						host.Metering().UseGas(500)
+						_ = host.Metering().UseGasBounded(500)
 						vmhooks.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
 						return parentInstance
 					})
@@ -3660,7 +3647,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 					childInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
-						host.Metering().UseGas(100)
+						_ = host.Metering().UseGasBounded(100)
 						vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2))
 						return childInstance
 					})

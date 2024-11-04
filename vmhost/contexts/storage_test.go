@@ -3,6 +3,7 @@ package contexts
 import (
 	"bytes"
 	"errors"
+	"github.com/multiversx/mx-chain-core-go/core"
 	"math/big"
 	"testing"
 
@@ -444,11 +445,20 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Parallel()
 
-	scAddress := []byte("account")
-	readable := []byte("readable")
-	nonreadable := []byte("nonreadable")
+	scAddress := bytes.Repeat([]byte{0}, 32)
+	readable := bytes.Repeat([]byte{0}, 32)
+	readable[31] = 1
+	nonreadable := bytes.Repeat([]byte{0}, 32)
+	nonreadable[31] = 2
 
-	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
+	userAddress := bytes.Repeat([]byte{1}, 32)
+
+	isEnabled := false
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsFlagEnabledCalled: func(_ core.EnableEpochFlag) bool {
+			return isEnabled
+		},
+	}
 
 	mockOutput := &contextmock.OutputContextMock{}
 	account := mockOutput.NewVMOutputAccount(scAddress)
@@ -459,6 +469,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
+	mockMetering.GasLeftMock = uint64(15000)
 
 	host := &contextmock.VMHostMock{
 		OutputContext:            mockOutput,
@@ -470,9 +481,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Run("blockchain hook errors", func(t *testing.T) {
 		errTooManyRequests := errors.New("too many requests")
 		bcHook := makeBcHookStub(
-			scAddress,
 			readable,
-			nonreadable,
 			nil,
 			errTooManyRequests)
 
@@ -491,14 +500,22 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		data, _, _, _ = storageCtx.GetStorageFromAddress(nonreadable, key)
 		require.Nil(t, data)
 		require.Equal(t, errTooManyRequests, err)
+
+		isEnabled = false
+		data, _, _, _ = storageCtx.GetStorageFromAddress(userAddress, key)
+		require.Nil(t, data)
+		require.Equal(t, errTooManyRequests, err)
+
+		isEnabled = true
+		data, _, _, _ = storageCtx.GetStorageFromAddress(userAddress, key)
+		require.Nil(t, data)
+		require.Equal(t, errTooManyRequests, err)
 	})
 	t.Run("should work when blockchain hook does not error", func(t *testing.T) {
 		internalData := []byte("internalData")
 
 		bcHook := makeBcHookStub(
-			scAddress,
 			readable,
-			nonreadable,
 			internalData,
 			nil)
 
@@ -517,13 +534,21 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		data, _, _, err = storageCtx.GetStorageFromAddress(nonreadable, key)
 		require.Nil(t, err)
 		require.Nil(t, data)
+
+		isEnabled = false
+		data, _, _, err = storageCtx.GetStorageFromAddress(userAddress, key)
+		require.Nil(t, err)
+		require.Nil(t, data)
+
+		isEnabled = true
+		data, _, _, err = storageCtx.GetStorageFromAddress(userAddress, key)
+		require.Nil(t, err)
+		require.Equal(t, data, internalData)
 	})
 }
 
 func makeBcHookStub(
-	scAddress []byte,
 	readable []byte,
-	nonreadable []byte,
 	internalData []byte,
 	getStorageErr error,
 ) *contextmock.BlockchainHookStub {
@@ -532,10 +557,7 @@ func makeBcHookStub(
 			if bytes.Equal(readable, address) {
 				return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
 			}
-			if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-				return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
-			}
-			return nil, nil
+			return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
 		},
 		GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
 			return internalData, 0, getStorageErr

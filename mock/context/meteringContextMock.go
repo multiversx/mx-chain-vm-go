@@ -50,7 +50,7 @@ func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 }
 
 // UseGas mocked method
-func (m *MeteringContextMock) UseGas(gas uint64) {
+func (m *MeteringContextMock) useGas(gas uint64) {
 	if gas > m.GasLeftMock {
 		m.GasLeftMock = 0
 		return
@@ -58,12 +58,6 @@ func (m *MeteringContextMock) UseGas(gas uint64) {
 
 	m.GasLeftMock -= gas
 }
-
-// UseAndTraceGas mocked method
-func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {}
-
-// UseGasAndAddTracedGas mocked method
-func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {}
 
 // UseGasBoundedAndAddTracedGas -
 func (m *MeteringContextMock) UseGasBoundedAndAddTracedGas(_ string, _ uint64) error {
@@ -151,6 +145,11 @@ func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
 	return m.Err
 }
 
+// UseGasForContractInit mocked method
+func (m *MeteringContextMock) UseGasForContractInit(gasToUse uint64) {
+	m.useGas(gasToUse)
+}
+
 // UseGasBounded mocked method
 func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
 	if m.Err != nil {
@@ -159,7 +158,7 @@ func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
 	if m.GasLeft() <= gas {
 		return vmhost.ErrNotEnoughGas
 	}
-	m.UseGas(gas)
+	m.useGas(gas)
 	return nil
 }
 
