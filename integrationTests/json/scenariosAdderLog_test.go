@@ -8,7 +8,6 @@ const expectedAdderLog = `starting log:
 GetFunctionNames: [add callBack getSum init upgrade]
 ValidateFunctionArities: true
 GetFunctionNames: [add callBack getSum init upgrade]
-GetFunctionNames: [add callBack getSum init upgrade]
 HasFunction(init): true
 CallFunction(init):
 VM hook begin: CheckNoPayment()

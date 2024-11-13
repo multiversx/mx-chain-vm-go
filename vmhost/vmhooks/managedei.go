@@ -13,38 +13,39 @@ import (
 )
 
 const (
-	managedSCAddressName                    = "managedSCAddress"
-	managedOwnerAddressName                 = "managedOwnerAddress"
-	managedCallerName                       = "managedCaller"
-	managedSignalErrorName                  = "managedSignalError"
-	managedWriteLogName                     = "managedWriteLog"
-	managedMultiTransferESDTNFTExecuteName  = "managedMultiTransferESDTNFTExecute"
-	managedTransferValueExecuteName         = "managedTransferValueExecute"
-	managedExecuteOnDestContextName         = "managedExecuteOnDestContext"
-	managedExecuteOnDestContextByCallerName = "managedExecuteOnDestContextByCaller"
-	managedExecuteOnSameContextName         = "managedExecuteOnSameContext"
-	managedExecuteReadOnlyName              = "managedExecuteReadOnly"
-	managedCreateContractName               = "managedCreateContract"
-	managedDeployFromSourceContractName     = "managedDeployFromSourceContract"
-	managedUpgradeContractName              = "managedUpgradeContract"
-	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
-	managedAsyncCallName                    = "managedAsyncCall"
-	managedCreateAsyncCallName              = "managedCreateAsyncCall"
-	managedGetCallbackClosure               = "managedGetCallbackClosure"
-	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
-	managedGetESDTBalanceName               = "managedGetESDTBalance"
-	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
-	managedGetReturnDataName                = "managedGetReturnData"
-	managedGetPrevBlockRandomSeedName       = "managedGetPrevBlockRandomSeed"
-	managedGetBlockRandomSeedName           = "managedGetBlockRandomSeed"
-	managedGetStateRootHashName             = "managedGetStateRootHash"
-	managedGetOriginalTxHashName            = "managedGetOriginalTxHash"
-	managedIsESDTFrozenName                 = "managedIsESDTFrozen"
-	managedIsESDTLimitedTransferName        = "managedIsESDTLimitedTransfer"
-	managedIsESDTPausedName                 = "managedIsESDTPaused"
-	managedBufferToHexName                  = "managedBufferToHex"
-	managedGetCodeMetadataName              = "managedGetCodeMetadata"
-	managedIsBuiltinFunction                = "managedIsBuiltinFunction"
+	managedSCAddressName                     = "managedSCAddress"
+	managedOwnerAddressName                  = "managedOwnerAddress"
+	managedCallerName                        = "managedCaller"
+	managedSignalErrorName                   = "managedSignalError"
+	managedWriteLogName                      = "managedWriteLog"
+	managedMultiTransferESDTNFTExecuteName   = "managedMultiTransferESDTNFTExecute"
+	managedTransferValueExecuteName          = "managedTransferValueExecute"
+	managedExecuteOnDestContextName          = "managedExecuteOnDestContext"
+	managedExecuteOnDestContextByCallerName  = "managedExecuteOnDestContextByCaller"
+	managedExecuteOnSameContextName          = "managedExecuteOnSameContext"
+	managedExecuteReadOnlyName               = "managedExecuteReadOnly"
+	managedCreateContractName                = "managedCreateContract"
+	managedDeployFromSourceContractName      = "managedDeployFromSourceContract"
+	managedUpgradeContractName               = "managedUpgradeContract"
+	managedUpgradeFromSourceContractName     = "managedUpgradeFromSourceContract"
+	managedAsyncCallName                     = "managedAsyncCall"
+	managedCreateAsyncCallName               = "managedCreateAsyncCall"
+	managedGetCallbackClosure                = "managedGetCallbackClosure"
+	managedGetMultiESDTCallValueName         = "managedGetMultiESDTCallValue"
+	managedGetESDTBalanceName                = "managedGetESDTBalance"
+	managedGetESDTTokenDataName              = "managedGetESDTTokenData"
+	managedGetReturnDataName                 = "managedGetReturnData"
+	managedGetPrevBlockRandomSeedName        = "managedGetPrevBlockRandomSeed"
+	managedGetBlockRandomSeedName            = "managedGetBlockRandomSeed"
+	managedGetStateRootHashName              = "managedGetStateRootHash"
+	managedGetOriginalTxHashName             = "managedGetOriginalTxHash"
+	managedIsESDTFrozenName                  = "managedIsESDTFrozen"
+	managedIsESDTLimitedTransferName         = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                  = "managedIsESDTPaused"
+	managedBufferToHexName                   = "managedBufferToHex"
+	managedGetCodeMetadataName               = "managedGetCodeMetadata"
+	managedIsBuiltinFunction                 = "managedIsBuiltinFunction"
+	managedMultiTransferESDTNFTExecuteByUser = "managedMultiTransferESDTNFTExecuteByUser"
 )
 
 // ManagedSCAddress VMHooks implementation.
@@ -101,6 +102,40 @@ func (context *VMHooksImpl) ManagedCaller(destinationHandle int32) {
 	}
 
 	caller := runtime.GetVMInput().CallerAddr
+	managedType.SetBytes(destinationHandle, caller)
+}
+
+// ManagedGetOriginalCallerAddr VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetOriginalCallerAddr(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
+	err := metering.UseGasBoundedAndAddTracedGas(managedCallerName, gasToUse)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	caller := runtime.GetVMInput().OriginalCallerAddr
+	managedType.SetBytes(destinationHandle, caller)
+}
+
+// ManagedGetRelayerAddr VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetRelayerAddr(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
+	err := metering.UseGasBoundedAndAddTracedGas(managedCallerName, gasToUse)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	caller := runtime.GetVMInput().RelayerAddr
 	managedType.SetBytes(destinationHandle, caller)
 }
 
@@ -1018,6 +1053,53 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 
 	return TransferESDTNFTExecuteWithTypedArgs(
 		host,
+		vmInput.destination,
+		transfers,
+		gasLimit,
+		[]byte(vmInput.function),
+		vmInput.arguments,
+	)
+}
+
+// ManagedMultiTransferESDTNFTExecuteByUser VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
+	userHandle int32,
+	dstHandle int32,
+	tokenTransfersHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteByUser)
+
+	if !host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
+		_ = WithFaultAndHost(host, vmhost.ErrOpcodeIsNotAllowed, runtime.BaseOpsErrorShouldFailExecution())
+		return -1
+	}
+
+	user, err := managedType.GetBytes(userHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
+	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return TransferESDTNFTExecuteByUserWithTypedArgs(
+		host,
+		user,
 		vmInput.destination,
 		transfers,
 		gasLimit,

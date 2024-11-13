@@ -27,6 +27,11 @@ const (
     ESDTNFTAddUri = 500000
     ESDTNFTUpdateAttributes = 500000
     ESDTNFTMultiTransfer = 1000000
+    ESDTModifyRoyalties = 500000
+    ESDTModifyCreator = 500000
+    ESDTNFTRecreate = 1000000
+    ESDTNFTUpdate = 1000000
+    ESDTNFTSetNewURIs = 500000
     SetGuardian              = 250000
     GuardAccount             = 250000
     UnGuardAccount           = 250000
@@ -116,6 +121,7 @@ const (
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
     IsBuiltinFunction = 100
+    IsReservedFunctionName = 100
 
 [EthAPICost]
     UseGas = 100
@@ -235,6 +241,9 @@ const (
     UnmarshalCompressedECC = 270000
     GenerateKeyECC = 7000000
     EncodeDERSig = 10000000
+    VerifySecp256r1 = 2000000
+    VerifyBLSSignatureShare = 2000000
+    VerifyBLSMultiSig = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000
@@ -847,6 +856,11 @@ const (
     ESDTNFTAddUri = 50000
     ESDTNFTUpdateAttributes = 50000
     ESDTNFTMultiTransfer = 200000
+    ESDTModifyRoyalties = 100000
+    ESDTModifyCreator = 100000
+    ESDTNFTRecreate = 1000000
+    ESDTNFTUpdate = 1000000
+    ESDTNFTSetNewURIs = 500000
     SetGuardian              = 250000
     GuardAccount             = 250000
     UnGuardAccount           = 250000
@@ -938,6 +952,7 @@ const (
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
     IsBuiltinFunction = 100
+    IsReservedFunctionName = 100
 
 [EthAPICost]
     UseGas = 100
@@ -1057,6 +1072,9 @@ const (
     UnmarshalCompressedECC = 270000
     GenerateKeyECC = 7000000
     EncodeDERSig = 10000000
+VerifySecp256r1 = 2000000
+VerifyBLSSignatureShare = 2000000
+VerifyBLSMultiSig = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000

@@ -3,7 +3,7 @@ package vmhooks
 import (
 	"crypto/elliptic"
 
-	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
+	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -39,6 +39,9 @@ const (
 	getCurveLengthECName            = "getCurveLengthEC"
 	getPrivKeyByteLengthECName      = "getPrivKeyByteLengthEC"
 	ellipticCurveGetValuesName      = "ellipticCurveGetValues"
+	verifyBLSSignatureShare         = "verifyBLSSignatureShare"
+	verifyBLSAggregatedSignature    = "verifyBLSAggregatedSignature"
+	verifySecp256R1Signature        = "verifySecp256R1Signature"
 )
 
 // Sha256 VMHooks implementation.
@@ -309,7 +312,30 @@ func (context *VMHooksImpl) ManagedVerifyBLS(
 	sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
-	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle)
+	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle, verifyBLSName)
+}
+
+func useGasForCryptoVerify(
+	metering vmhost.MeteringContext,
+	sigVerificationType string,
+) error {
+	metering.StartGasTracing(sigVerificationType)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
+	switch sigVerificationType {
+	case verifyCustomSecp256k1Name:
+		gasToUse = metering.GasSchedule().CryptoAPICost.VerifySecp256k1
+	case verifySecp256R1Signature:
+		gasToUse = metering.GasSchedule().CryptoAPICost.VerifySecp256r1
+	case verifyBLSName:
+		gasToUse = metering.GasSchedule().CryptoAPICost.VerifyBLS
+	case verifyBLSSignatureShare:
+		gasToUse = metering.GasSchedule().CryptoAPICost.VerifyBLSSignatureShare
+	case verifyBLSAggregatedSignature:
+		gasToUse = metering.GasSchedule().CryptoAPICost.VerifyBLSMultiSig
+	}
+
+	return metering.UseGasBounded(gasToUse)
 }
 
 // ManagedVerifyBLSWithHost VMHooks implementation.
@@ -318,16 +344,14 @@ func ManagedVerifyBLSWithHost(
 	keyHandle int32,
 	messageHandle int32,
 	sigHandle int32,
+	sigVerificationType string,
 ) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
-	metering.StartGasTracing(verifyBLSName)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
-	err := metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+	err := useGasForCryptoVerify(metering, sigVerificationType)
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return 1
 	}
 
@@ -361,9 +385,24 @@ func ManagedVerifyBLSWithHost(
 		return 1
 	}
 
-	invalidSigErr := crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
+	invalidSigErr := vmhost.ErrInvalidArgument
+	switch sigVerificationType {
+	case verifyBLSName:
+		invalidSigErr = crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
+	case verifyBLSSignatureShare:
+		invalidSigErr = crypto.VerifySignatureShare(keyBytes, msgBytes, sigBytes)
+	case verifyBLSAggregatedSignature:
+		var pubKeyBytes [][]byte
+		pubKeyBytes, _, invalidSigErr = managedType.ReadManagedVecOfManagedBuffers(keyHandle)
+		if invalidSigErr != nil {
+			break
+		}
+
+		invalidSigErr = crypto.VerifyAggregatedSig(pubKeyBytes, msgBytes, sigBytes)
+	}
+
 	if invalidSigErr != nil {
-		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidSignature, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -561,7 +600,8 @@ func (context *VMHooksImpl) ManagedVerifyCustomSecp256k1(
 		keyHandle,
 		messageHandle,
 		sigHandle,
-		hashType)
+		hashType,
+		verifyCustomSecp256k1Name)
 }
 
 // ManagedVerifyCustomSecp256k1WithHost VMHooks implementation.
@@ -569,16 +609,15 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	host vmhost.VMHost,
 	keyHandle, messageHandle, sigHandle int32,
 	hashType int32,
+	verifyCryptoFunc string,
 ) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
-	metering.StartGasTracing(verifyCustomSecp256k1Name)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256k1
-	err := metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
+	err := useGasForCryptoVerify(metering, verifyCryptoFunc)
+	if WithFaultAndHost(host, err, runtime.UseGasBoundedShouldFailExecution()) {
 		return 1
 	}
 
@@ -612,9 +651,16 @@ func ManagedVerifyCustomSecp256k1WithHost(
 		return 1
 	}
 
-	invalidSigErr := crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
+	invalidSigErr := vmhost.ErrInvalidArgument
+	switch verifyCryptoFunc {
+	case verifyCustomSecp256k1Name:
+		invalidSigErr = crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
+	case verifySecp256R1Signature:
+		invalidSigErr = crypto.VerifySecp256r1(keyBytes, msgBytes, sigBytes)
+	}
+
 	if invalidSigErr != nil {
-		WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidSignature, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -636,7 +682,7 @@ func (context *VMHooksImpl) VerifySecp256k1(
 		messageOffset,
 		messageLength,
 		sigOffset,
-		int32(secp256k1.ECDSADoubleSha256),
+		int32(secp256.ECDSADoubleSha256),
 	)
 }
 
@@ -659,7 +705,8 @@ func ManagedVerifySecp256k1WithHost(
 		keyHandle,
 		messageHandle,
 		sigHandle,
-		int32(secp256k1.ECDSADoubleSha256),
+		int32(secp256.ECDSADoubleSha256),
+		verifyCustomSecp256k1Name,
 	)
 }
 
@@ -1903,4 +1950,41 @@ func (context *VMHooksImpl) EllipticCurveGetValues(ecHandle int32, fieldOrderHan
 	xBasePoint.Set(ec.Gx)
 	yBasePoint.Set(ec.Gy)
 	return ecHandle
+}
+
+// ManagedVerifySecp256r1 VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedVerifySecp256r1(
+	keyHandle, messageHandle, sigHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	return ManagedVerifyCustomSecp256k1WithHost(
+		host,
+		keyHandle,
+		messageHandle,
+		sigHandle,
+		0,
+		verifySecp256R1Signature)
+}
+
+// ManagedVerifyBLSSignatureShare VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedVerifyBLSSignatureShare(
+	keyHandle int32,
+	messageHandle int32,
+	sigHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle, verifyBLSSignatureShare)
+}
+
+// ManagedVerifyBLSAggregatedSignature VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedVerifyBLSAggregatedSignature(
+	keyHandle int32,
+	messageHandle int32,
+	sigHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle, verifyBLSAggregatedSignature)
 }

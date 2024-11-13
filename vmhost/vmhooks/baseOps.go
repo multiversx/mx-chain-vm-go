@@ -533,7 +533,8 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 		return -1
 	}
 
-	return getESDTRoles(data)
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	return getESDTRoles(data, enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag))
 }
 
 // ValidateTokenIdentifier VMHooks implementation.
@@ -1116,6 +1117,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		OriginalCaller: originalCaller,
 		Sender:         sender,
 		Transfers:      transfers,
+		SenderForExec:  sender,
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
@@ -1124,12 +1126,103 @@ func TransferESDTNFTExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
+		contractCallInput.CallerAddr = sender
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 			WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution())
+			return 1
+		}
+
+		return 0
+	}
+
+	return 0
+
+}
+
+// TransferESDTNFTExecuteByUserWithTypedArgs defines the actual transfer ESDT execute logic and execution
+func TransferESDTNFTExecuteByUserWithTypedArgs(
+	host vmhost.VMHost,
+	callerForExecution []byte,
+	dest []byte,
+	transfers []*vmcommon.ESDTTransfer,
+	gasLimit int64,
+	function []byte,
+	data [][]byte,
+) int32 {
+	var executeErr error
+
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	output := host.Output()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
+	err := metering.UseGasBounded(gasToUse)
+	if WithFaultAndHost(host, err, runtime.SyncExecAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	sender := runtime.GetContextAddress()
+
+	var contractCallInput *vmcommon.ContractCallInput
+	if len(function) > 0 {
+		contractCallInput, executeErr = prepareIndirectContractCallInput(
+			host,
+			sender,
+			big.NewInt(0),
+			gasLimit,
+			dest,
+			function,
+			data,
+			gasToUse,
+			false,
+		)
+		if WithFaultAndHost(host, executeErr, runtime.SyncExecAPIErrorShouldFailExecution()) {
+			return 1
+		}
+
+		contractCallInput.ESDTTransfers = transfers
+	}
+
+	originalCaller := host.Runtime().GetOriginalCallerAddress()
+	transfersArgs := &vmhost.ESDTTransfersArgs{
+		Destination:    dest,
+		OriginalCaller: originalCaller,
+		Sender:         sender,
+		Transfers:      transfers,
+		SenderForExec:  callerForExecution,
+	}
+	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
+	if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
+		contractCallInput.GasProvided = gasLimitForExec
+		contractCallInput.CallerAddr = callerForExecution
+		logEEI.Trace("ESDT post-transfer execution begin")
+		_, executeErr = executeOnDestContextFromAPI(host, contractCallInput)
+		if executeErr != nil {
+			logEEI.Trace("ESDT post-transfer execution failed, started transfer to user", "error", executeErr)
+
+			// in case of failed execution, the funds have to be moved to the user
+			returnTransferArgs := &vmhost.ESDTTransfersArgs{
+				Destination:      callerForExecution,
+				OriginalCaller:   originalCaller,
+				Sender:           dest,
+				Transfers:        transfers,
+				SenderForExec:    dest,
+				ReturnAfterError: true,
+			}
+			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
+			if WithFaultAndHost(host, executeErr, runtime.BaseOpsErrorShouldFailExecution()) {
+				return 1
+			}
+
 			return 1
 		}
 
@@ -2382,6 +2475,32 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 	return int32(len(tokenName))
 }
 
+// IsReservedFunctionName VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) IsReservedFunctionName(nameHandle int32) int32 {
+	host := context.host
+	managedTypes := context.GetManagedTypesContext()
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.IsReservedFunctionName
+	err := metering.UseGasBounded(gasToUse)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	name, err := managedTypes.GetBytes(nameHandle)
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+		return -1
+	}
+
+	if runtime.IsReservedFunctionName(string(name)) {
+		return 1
+	}
+
+	return 0
+}
+
 // WriteLog VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) WriteLog(
@@ -3204,6 +3323,12 @@ func createContract(
 		ContractCodeMetadata: codeMetadata,
 	}
 
+	currentVMInput := host.Runtime().GetVMInput()
+	if len(currentVMInput.RelayerAddr) > 0 {
+		contractCreate.RelayerAddr = make([]byte, len(currentVMInput.RelayerAddr))
+		copy(contractCreate.RelayerAddr, currentVMInput.RelayerAddr)
+	}
+
 	return host.CreateNewContract(contractCreate, int(createContractCallType))
 }
 
@@ -3406,6 +3531,12 @@ func prepareIndirectContractCallInput(
 		},
 		RecipientAddr: destination,
 		Function:      string(function),
+	}
+
+	currentVMInput := runtime.GetVMInput()
+	if len(currentVMInput.RelayerAddr) > 0 {
+		contractCallInput.RelayerAddr = make([]byte, len(currentVMInput.RelayerAddr))
+		copy(contractCallInput.RelayerAddr, currentVMInput.RelayerAddr)
 	}
 
 	return contractCallInput, nil

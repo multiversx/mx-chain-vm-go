@@ -49,6 +49,7 @@ type VMHost interface {
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
+	IsAllowedToExecute(opcode string) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
 	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, AsyncContext, StorageContext)
@@ -161,6 +162,9 @@ type RuntimeContext interface {
 	GetAllErrors() error
 
 	ValidateCallbackName(callbackName string) error
+	
+	IsReservedFunctionName(functionName string) bool
+
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
 	EndExecution()
@@ -332,7 +336,6 @@ type StorageContext interface {
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, blockchainLoadCost uint64, usedCache bool) error
-	IsUseDifferentGasCostFlagSet() bool
 	GetVmProtectedPrefix(prefix string) []byte
 }
 

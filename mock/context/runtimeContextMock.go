@@ -361,6 +361,11 @@ func (r *RuntimeContextMock) ValidateCallbackName(_ string) error {
 	return nil
 }
 
+// IsReservedFunctionName moked method
+func (r *RuntimeContextMock) IsReservedFunctionName(_ string) bool {
+	return false
+}
+
 // HasFunction mocked method
 func (r *RuntimeContextMock) HasFunction(_ string) bool {
 	return r.HasFunctionResult
