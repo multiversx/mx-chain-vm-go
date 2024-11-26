@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.80.1",
-            "commitHash": "3f5fd8dd41153bc5fdca9427e9e05be2c767ba23",
-            "commitDate": "2024-08-06",
+            "version": "1.82.0",
+            "commitHash": "f6e511eec7342f59a25f7c0534f1dbea00d01b14",
+            "commitDate": "2024-10-15",
             "channel": "Stable",
-            "short": "rustc 1.80.1 (3f5fd8dd4 2024-08-06)"
+            "short": "rustc 1.82.0 (f6e511eec 2024-10-15)"
         },
         "contractCrate": {
             "name": "basic-features",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.52.3"
+            "version": "0.54.4"
         }
     },
     "abi": {
@@ -267,7 +267,7 @@
             "path": "../output/basic-features-storage-bytes.wasm",
             "size": 538,
             "hasAllocator": false,
-            "hasPanic": "none"
+            "hasPanic": "None"
         }
     }
 }
