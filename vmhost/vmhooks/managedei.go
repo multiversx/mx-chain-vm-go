@@ -383,20 +383,21 @@ func ManagedGetAllTransfersCallValueTyped(
 	}
 
 	input := runtime.GetVMInput()
-	allTransfers := input.ESDTTransfers
 	egldCallValue := input.CallValue
 	hasCallValue := egldCallValue.Cmp(vmhost.Zero) > 0
 
 	if hasCallValue {
-		allTransfers = append(allTransfers, &vmcommon.ESDTTransfer{
-			ESDTValue:      egldCallValue,
-			ESDTTokenName:  []byte(EGLDTokenName),
-			ESDTTokenType:  uint32(core.Fungible),
-			ESDTTokenNonce: 0,
-		})
+		return []*vmcommon.ESDTTransfer{
+			{
+				ESDTValue:      egldCallValue,
+				ESDTTokenName:  []byte(EGLDTokenName),
+				ESDTTokenType:  uint32(core.Fungible),
+				ESDTTokenNonce: 0,
+			},
+		}, nil
 	}
 
-	return allTransfers, nil
+	return input.ESDTTransfers, nil
 }
 
 // ManagedGetBackTransfers VMHooks implementation.
