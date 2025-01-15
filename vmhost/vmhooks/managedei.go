@@ -384,7 +384,7 @@ func ManagedGetAllTransfersCallValueTyped(
 
 	input := runtime.GetVMInput()
 	egldCallValue := input.CallValue
-	hasCallValue := egldCallValue.Cmp(vmhost.Zero) > 0
+	hasCallValue := egldCallValue.Sign() > 0
 
 	if hasCallValue {
 		return []*vmcommon.ESDTTransfer{
