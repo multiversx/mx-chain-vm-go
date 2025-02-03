@@ -669,8 +669,7 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	err = bigFloat.GobDecode(managedBuffer)
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrBigFloatDecode)
-			return 1
+			err = vmhost.ErrBigFloatDecode
 		}
 
 		context.FailExecution(err)
@@ -709,7 +708,7 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 	encodedFloat, err := value.GobEncode()
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrBigFloatEncode)
+			err = vmhost.ErrBigFloatEncode
 		}
 		context.FailExecution(err)
 		return 1

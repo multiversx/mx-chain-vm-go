@@ -73,8 +73,7 @@ func (context *VMHooksImpl) Sha256(
 	if err != nil {
 
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrSha256Hash)
-			return 1
+			err = vmhost.ErrSha256Hash
 		}
 
 		context.FailExecution(err)
@@ -119,8 +118,7 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32
 	resultBytes, err := crypto.Sha256(inputBytes)
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrSha256Hash)
-			return 1
+			err = vmhost.ErrSha256Hash
 		}
 
 		context.FailExecution(err)
@@ -156,8 +154,7 @@ func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executo
 	result, err := crypto.Keccak256(data)
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrKeccak256Hash)
-			return 1
+			err = vmhost.ErrKeccak256Hash
 		}
 
 		context.FailExecution(err)
@@ -202,8 +199,7 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) in
 	resultBytes, err := crypto.Keccak256(inputBytes)
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrKeccak256Hash)
-			return 1
+			err = vmhost.ErrKeccak256Hash
 		}
 
 		context.FailExecution(err)
@@ -239,8 +235,7 @@ func (context *VMHooksImpl) Ripemd160(dataOffset executor.MemPtr, length executo
 	result, err := crypto.Ripemd160(data)
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrRipemd160Hash)
-			return 1
+			err = vmhost.ErrRipemd160Hash
 		}
 
 		context.FailExecution(err)
@@ -291,8 +286,7 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 	result, err := crypto.Ripemd160(inputBytes)
 	if err != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			FailExecution(host, vmhost.ErrRipemd160Hash)
-			return 1
+			err = vmhost.ErrRipemd160Hash
 		}
 
 		FailExecution(host, err)
@@ -352,8 +346,7 @@ func (context *VMHooksImpl) VerifyBLS(
 	invalidSigErr := crypto.VerifyBLS(key, message, sig)
 	if invalidSigErr != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrBlsVerify)
-			return -1
+			invalidSigErr = vmhost.ErrBlsVerify
 		}
 
 		context.FailExecution(invalidSigErr)
@@ -470,8 +463,7 @@ func ManagedVerifyBLSWithHost(
 
 	if invalidSigErr != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			FailExecution(host, vmhost.ErrBlsVerify)
-			return -1
+			invalidSigErr = vmhost.ErrBlsVerify
 		}
 
 		FailExecution(host, invalidSigErr)
@@ -529,8 +521,7 @@ func (context *VMHooksImpl) VerifyEd25519(
 	invalidSigErr := crypto.VerifyEd25519(key, message, sig)
 	if invalidSigErr != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrEd25519Verify)
-			return -1
+			invalidSigErr = vmhost.ErrEd25519Verify
 		}
 
 		context.FailExecution(invalidSigErr)
@@ -606,8 +597,7 @@ func ManagedVerifyEd25519WithHost(
 	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			FailExecution(host, vmhost.ErrEd25519Verify)
-			return -1
+			invalidSigErr = vmhost.ErrEd25519Verify
 		}
 
 		FailExecution(host, invalidSigErr)
@@ -682,8 +672,7 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	invalidSigErr := crypto.VerifySecp256k1(key, message, sig, uint8(hashType))
 	if invalidSigErr != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			context.FailExecution(vmhost.ErrSecp256k1Verify)
-			return -1
+			invalidSigErr = vmhost.ErrSecp256k1Verify
 		}
 
 		context.FailExecution(invalidSigErr)
@@ -774,8 +763,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 
 	if invalidSigErr != nil {
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			FailExecution(host, vmhost.ErrSecp256k1Verify)
-			return -1
+			invalidSigErr = vmhost.ErrSecp256k1Verify
 		}
 
 		FailExecution(host, invalidSigErr)
