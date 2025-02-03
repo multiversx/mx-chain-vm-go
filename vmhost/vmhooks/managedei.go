@@ -370,6 +370,7 @@ func (context *VMHooksImpl) ManagedGetAllTransfersCallValue(transferCallValuesLi
 	managedType.SetBytes(transferCallValuesListHandle, allTransfersBytes)
 }
 
+// ManagedGetAllTransfersCallValueTyped returns a combined list of all transfers (ESDT and EGLD)
 func ManagedGetAllTransfersCallValueTyped(
 	host vmhost.VMHost,
 ) ([]*vmcommon.ESDTTransfer, error) {
