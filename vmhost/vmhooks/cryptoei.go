@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
+
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -51,6 +52,7 @@ func (context *VMHooksImpl) Sha256(
 	resultOffset executor.MemPtr) int32 {
 
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
@@ -69,6 +71,11 @@ func (context *VMHooksImpl) Sha256(
 
 	result, err := crypto.Sha256(data)
 	if err != nil {
+
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrSha256Hash
+		}
+
 		context.FailExecution(err)
 		return 1
 	}
@@ -87,6 +94,7 @@ func (context *VMHooksImpl) Sha256(
 func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
 	err := metering.UseGasBoundedAndAddTracedGas(sha256Name, metering.GasSchedule().CryptoAPICost.SHA256)
@@ -109,6 +117,10 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32
 
 	resultBytes, err := crypto.Sha256(inputBytes)
 	if err != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrSha256Hash
+		}
+
 		context.FailExecution(err)
 		return 1
 	}
@@ -122,6 +134,7 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
@@ -140,6 +153,10 @@ func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executo
 
 	result, err := crypto.Keccak256(data)
 	if err != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrKeccak256Hash
+		}
+
 		context.FailExecution(err)
 		return 1
 	}
@@ -158,6 +175,7 @@ func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executo
 func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
 	err := metering.UseGasBoundedAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.Keccak256)
@@ -180,6 +198,10 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) in
 
 	resultBytes, err := crypto.Keccak256(inputBytes)
 	if err != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrKeccak256Hash
+		}
+
 		context.FailExecution(err)
 		return 1
 	}
@@ -193,6 +215,7 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) in
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
@@ -211,6 +234,10 @@ func (context *VMHooksImpl) Ripemd160(dataOffset executor.MemPtr, length executo
 
 	result, err := crypto.Ripemd160(data)
 	if err != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrRipemd160Hash
+		}
+
 		context.FailExecution(err)
 		return 1
 	}
@@ -236,6 +263,7 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
+	enableEpochsHandler := host.EnableEpochsHandler()
 
 	err := metering.UseGasBoundedAndAddTracedGas(ripemd160Name, metering.GasSchedule().CryptoAPICost.Ripemd160)
 	if err != nil {
@@ -257,6 +285,10 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 
 	result, err := crypto.Ripemd160(inputBytes)
 	if err != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrRipemd160Hash
+		}
+
 		FailExecution(host, err)
 		return 1
 	}
@@ -275,6 +307,7 @@ func (context *VMHooksImpl) VerifyBLS(
 	sigOffset executor.MemPtr,
 ) int32 {
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(verifyBLSName)
 
@@ -312,6 +345,10 @@ func (context *VMHooksImpl) VerifyBLS(
 
 	invalidSigErr := crypto.VerifyBLS(key, message, sig)
 	if invalidSigErr != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			invalidSigErr = vmhost.ErrBlsVerify
+		}
+
 		context.FailExecution(invalidSigErr)
 		return -1
 	}
@@ -365,6 +402,7 @@ func ManagedVerifyBLSWithHost(
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
+	enableEpochsHandler := host.EnableEpochsHandler()
 	err := useGasForCryptoVerify(metering, sigVerificationType)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
@@ -424,6 +462,10 @@ func ManagedVerifyBLSWithHost(
 	}
 
 	if invalidSigErr != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			invalidSigErr = vmhost.ErrBlsVerify
+		}
+
 		FailExecution(host, invalidSigErr)
 		return -1
 	}
@@ -440,6 +482,7 @@ func (context *VMHooksImpl) VerifyEd25519(
 	sigOffset executor.MemPtr,
 ) int32 {
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(verifyEd25519Name)
 
@@ -477,6 +520,10 @@ func (context *VMHooksImpl) VerifyEd25519(
 
 	invalidSigErr := crypto.VerifyEd25519(key, message, sig)
 	if invalidSigErr != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			invalidSigErr = vmhost.ErrEd25519Verify
+		}
+
 		context.FailExecution(invalidSigErr)
 		return -1
 	}
@@ -500,6 +547,7 @@ func ManagedVerifyEd25519WithHost(
 ) int32 {
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
+	enableEpochsHandler := host.EnableEpochsHandler()
 	crypto := host.Crypto()
 	metering.StartGasTracing(verifyEd25519Name)
 
@@ -548,6 +596,10 @@ func ManagedVerifyEd25519WithHost(
 
 	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			invalidSigErr = vmhost.ErrEd25519Verify
+		}
+
 		FailExecution(host, invalidSigErr)
 		return -1
 	}
@@ -566,6 +618,7 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	hashType int32,
 ) int32 {
 	crypto := context.GetCryptoContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(verifyCustomSecp256k1Name)
 
@@ -618,6 +671,10 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 
 	invalidSigErr := crypto.VerifySecp256k1(key, message, sig, uint8(hashType))
 	if invalidSigErr != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			invalidSigErr = vmhost.ErrSecp256k1Verify
+		}
+
 		context.FailExecution(invalidSigErr)
 		return -1
 	}
@@ -649,6 +706,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	verifyCryptoFunc string,
 ) int32 {
 	runtime := host.Runtime()
+	enableEpochsHandler := host.EnableEpochsHandler()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	crypto := host.Crypto()
@@ -704,6 +762,10 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	}
 
 	if invalidSigErr != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			invalidSigErr = vmhost.ErrSecp256k1Verify
+		}
+
 		FailExecution(host, invalidSigErr)
 		return -1
 	}
