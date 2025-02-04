@@ -867,10 +867,10 @@ func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32
 }
 
 // ManagedGetAllTransfersCallValue VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetAllTransfersCallValue(valueHandle int32) {
-	callInfo := fmt.Sprintf("ManagedGetAllTransfersCallValue(%d)", valueHandle)
+func (w *WrapperVMHooks) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetAllTransfersCallValue(%d)", transferCallValuesListHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetAllTransfersCallValue(valueHandle)
+	w.wrappedVMHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
@@ -1059,6 +1059,14 @@ func (w *WrapperVMHooks) ManagedGetCodeMetadata(addressHandle int32, responseHan
 	callInfo := fmt.Sprintf("ManagedGetCodeMetadata(%d, %d)", addressHandle, responseHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetCodeHash VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetCodeHash(%d, %d)", addressHandle, codeHashHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
