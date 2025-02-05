@@ -47,6 +47,7 @@ const (
 	managedIsESDTPausedName                  = "managedIsESDTPaused"
 	managedBufferToHexName                   = "managedBufferToHex"
 	managedGetCodeMetadataName               = "managedGetCodeMetadata"
+	managedGetCodeHashName                   = "managedGetCodeHash"
 	managedIsBuiltinFunction                 = "managedIsBuiltinFunction"
 	managedMultiTransferESDTNFTExecuteByUser = "managedMultiTransferESDTNFTExecuteByUser"
 )
@@ -1449,6 +1450,46 @@ func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, res
 	codeMetadata := contract.GetCodeMetadata()
 
 	managedType.SetBytes(responseHandle, codeMetadata)
+}
+
+// ManagedGetCodeHash VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+
+	codeHash, err := ManagedGetCodeHashTyped(host, address)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
+
+	managedType.SetBytes(codeHashHandle, codeHash)
+}
+
+// ManagedGetCodeHashWithHost returns the code hash at some address
+func ManagedGetCodeHashTyped(
+	host vmhost.VMHost,
+	address []byte,
+) ([]byte, error) {
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCodeHash
+	err := metering.UseGasBoundedAndAddTracedGas(managedGetCodeHashName, gasToUse)
+	if err != nil {
+		return nil, err
+	}
+
+	codeHash := blockchain.GetCodeHash(address)
+
+	return codeHash, nil
 }
 
 // ManagedIsBuiltinFunction VMHooks implementation.

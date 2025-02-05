@@ -120,6 +120,7 @@ const (
     CleanReturnData = 100
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
+    GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
     GetRoundTime = 100
@@ -959,6 +960,7 @@ const (
     CleanReturnData = 100
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
+    GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
     GetRoundTime = 100

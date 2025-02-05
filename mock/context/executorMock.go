@@ -78,6 +78,9 @@ func (executorMock *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host 
 		account.SetBalance(balance)
 		account.ShardID = shardID
 		account.CodeMetadata = codeMetadata
+		if codeHash != nil {
+			account.CodeHash = codeHash
+		}
 		account.OwnerAddress = ownerAddress
 	}
 

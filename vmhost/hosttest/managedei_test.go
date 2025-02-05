@@ -1514,6 +1514,42 @@ func Test_ManagedGetCodeMetadata(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func Test_ManagedGetCodeHash(t *testing.T) {
+	testConfig := baseTestConfig
+
+	codeHash := []byte("hash")
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeHash(codeHash).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						output, err := vmhooks.ManagedGetCodeHashTyped(host, test.ParentAddress)
+						require.Nil(t, err, "failed to call GetCodeHash")
+
+						require.Equal(t, output, codeHash, "code hash value is incorrect")
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
 func Test_ManagedIsBuiltinFunction(t *testing.T) {
 	testConfig := baseTestConfig
 

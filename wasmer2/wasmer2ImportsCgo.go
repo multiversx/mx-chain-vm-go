@@ -109,7 +109,7 @@ package wasmer2
 // extern void      w2_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      w2_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      w2_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
-// extern void      w2_managedGetAllTransfersCallValue(void* context, int32_t valueHandle);
+// extern void      w2_managedGetAllTransfersCallValue(void* context, int32_t transferCallValuesListHandle);
 // extern void      w2_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      w2_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      w2_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
@@ -132,6 +132,7 @@ package wasmer2
 // extern int32_t   w2_managedIsESDTPaused(void* context, int32_t tokenIDHandle);
 // extern void      w2_managedBufferToHex(void* context, int32_t sourceHandle, int32_t destHandle);
 // extern void      w2_managedGetCodeMetadata(void* context, int32_t addressHandle, int32_t responseHandle);
+// extern void      w2_managedGetCodeHash(void* context, int32_t addressHandle, int32_t codeHashHandle);
 // extern int32_t   w2_managedIsBuiltinFunction(void* context, int32_t functionNameHandle);
 // extern int32_t   w2_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
 // extern int32_t   w2_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
@@ -414,6 +415,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_is_esdt_paused_func_ptr:                          funcPointer(C.w2_managedIsESDTPaused),
 		managed_buffer_to_hex_func_ptr:                           funcPointer(C.w2_managedBufferToHex),
 		managed_get_code_metadata_func_ptr:                       funcPointer(C.w2_managedGetCodeMetadata),
+		managed_get_code_hash_func_ptr:                           funcPointer(C.w2_managedGetCodeHash),
 		managed_is_builtin_function_func_ptr:                     funcPointer(C.w2_managedIsBuiltinFunction),
 		big_float_new_from_parts_func_ptr:                        funcPointer(C.w2_bigFloatNewFromParts),
 		big_float_new_from_frac_func_ptr:                         funcPointer(C.w2_bigFloatNewFromFrac),
@@ -1156,9 +1158,9 @@ func w2_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandl
 }
 
 //export w2_managedGetAllTransfersCallValue
-func w2_managedGetAllTransfersCallValue(context unsafe.Pointer, valueHandle int32) {
+func w2_managedGetAllTransfersCallValue(context unsafe.Pointer, transferCallValuesListHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetAllTransfersCallValue(valueHandle)
+	vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
 }
 
 //export w2_managedGetBackTransfers
@@ -1291,6 +1293,12 @@ func w2_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandl
 func w2_managedGetCodeMetadata(context unsafe.Pointer, addressHandle int32, responseHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+}
+
+//export w2_managedGetCodeHash
+func w2_managedGetCodeHash(context unsafe.Pointer, addressHandle int32, codeHashHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 }
 
 //export w2_managedIsBuiltinFunction

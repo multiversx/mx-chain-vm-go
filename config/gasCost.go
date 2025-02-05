@@ -81,6 +81,7 @@ type BaseOpsAPICost struct {
 	CleanReturnData          uint64
 	DeleteFromReturnData     uint64
 	GetCodeMetadata          uint64
+	GetCodeHash              uint64
 	IsBuiltinFunction        uint64
 	IsReservedFunctionName   uint64
 	GetRoundTime             uint64
