@@ -64,6 +64,7 @@ type managedTypesContext struct {
 type backTransfers struct {
 	ESDTTransfers []*vmcommon.ESDTTransfer
 	CallValue     *big.Int
+	LastIndex     uint32
 }
 
 type managedTypesState struct {
@@ -833,13 +834,12 @@ func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, 
 }
 
 // AddBackTransfers add transfers to back transfers structure
-func (context *managedTypesContext) AddBackTransfers(transfers []*vmcommon.ESDTTransfer) {
-	context.managedTypesValues.backTransfers.ESDTTransfers = append(context.managedTypesValues.backTransfers.ESDTTransfers, transfers...)
-}
-
-// AddValueOnlyBackTransfer add to back transfer value
-func (context *managedTypesContext) AddValueOnlyBackTransfer(value *big.Int) {
+func (context *managedTypesContext) AddBackTransfers(value *big.Int, transfers []*vmcommon.ESDTTransfer, index uint32) {
 	context.managedTypesValues.backTransfers.CallValue.Add(context.managedTypesValues.backTransfers.CallValue, value)
+	context.managedTypesValues.backTransfers.ESDTTransfers = append(context.managedTypesValues.backTransfers.ESDTTransfers, transfers...)
+	if context.managedTypesValues.backTransfers.LastIndex < index && context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixBackTransferOPCODE) {
+		context.managedTypesValues.backTransfers.LastIndex = index
+	}
 }
 
 // GetBackTransfers returns all ESDT transfers and accumulated value as well, will clean accumulated values

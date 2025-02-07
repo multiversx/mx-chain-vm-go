@@ -14,4 +14,7 @@ const (
 
 	// MaskInternalDependenciesErrorsFlag defines the flag that activates masking of internal dependencies errors
 	MaskInternalDependenciesErrorsFlag core.EnableEpochFlag = "MaskInternalDependenciesErrorsFlag"
+
+	// FixBackTransferOPCODE defines the flag that activates the fix for get back transfer opcode
+	FixBackTransferOPCODE core.EnableEpochFlag = "FixBackTransferOPCODEFlag"
 )
