@@ -835,10 +835,18 @@ func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, 
 
 // AddBackTransfers add transfers to back transfers structure
 func (context *managedTypesContext) AddBackTransfers(value *big.Int, transfers []*vmcommon.ESDTTransfer, index uint32) {
-	context.managedTypesValues.backTransfers.CallValue.Add(context.managedTypesValues.backTransfers.CallValue, value)
-	context.managedTypesValues.backTransfers.ESDTTransfers = append(context.managedTypesValues.backTransfers.ESDTTransfers, transfers...)
-	if context.managedTypesValues.backTransfers.LastIndex < index && context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixBackTransferOPCODE) {
-		context.managedTypesValues.backTransfers.LastIndex = index
+	backTrs := &context.managedTypesValues.backTransfers
+	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixBackTransferOPCODE) && backTrs.LastIndex >= index {
+		return
+	}
+
+	if backTrs.LastIndex < index {
+		backTrs.LastIndex = index
+	}
+
+	backTrs.CallValue.Add(backTrs.CallValue, value)
+	if len(transfers) > 0 {
+		backTrs.ESDTTransfers = append(backTrs.ESDTTransfers, transfers...)
 	}
 }
 
@@ -848,6 +856,7 @@ func (context *managedTypesContext) GetBackTransfers() ([]*vmcommon.ESDTTransfer
 	context.managedTypesValues.backTransfers = backTransfers{
 		ESDTTransfers: make([]*vmcommon.ESDTTransfer, 0),
 		CallValue:     big.NewInt(0),
+		LastIndex:     clonedTransfers.LastIndex,
 	}
 
 	return clonedTransfers.ESDTTransfers, clonedTransfers.CallValue
@@ -857,6 +866,7 @@ func cloneBackTransfers(currentBackTransfers backTransfers) backTransfers {
 	newBackTransfers := backTransfers{
 		ESDTTransfers: make([]*vmcommon.ESDTTransfer, len(currentBackTransfers.ESDTTransfers)),
 		CallValue:     big.NewInt(0).Set(currentBackTransfers.CallValue),
+		LastIndex:     currentBackTransfers.LastIndex,
 	}
 
 	for index, transfer := range currentBackTransfers.ESDTTransfers {
