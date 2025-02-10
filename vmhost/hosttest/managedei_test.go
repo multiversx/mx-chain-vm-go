@@ -1693,6 +1693,8 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 	testConfig := makeTestConfig()
 	egldBalance := big.NewInt(10)
 	egldTransfer := big.NewInt(1)
+	initialESDTTokenBalance := uint64(100)
+	testConfig.ESDTTokensToTransfer = 5
 	callsNumber := 2
 
 	_, err := test.BuildMockInstanceCallTest(t).
@@ -1715,7 +1717,12 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 						}
 
 						managedTypes := host.ManagedTypes()
-						_, egld := managedTypes.GetBackTransfers()
+						esdtTransfers, egld := managedTypes.GetBackTransfers()
+						assert.Equal(t, callsNumber, len(esdtTransfers))
+						for i := 0; i < callsNumber; i++ {
+							assert.Equal(t, test.ESDTTestTokenName, esdtTransfers[i].ESDTTokenName)
+							assert.Equal(t, big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer), esdtTransfers[i].ESDTValue)
+						}
 						assert.Equal(t, big.NewInt(egldTransfer.Int64()*int64(callsNumber)), egld)
 						return parentInstance
 					})
@@ -1733,6 +1740,22 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 							test.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
 						assert.Nil(t, err)
 
+						transfer := &vmcommon.ESDTTransfer{
+							ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+							ESDTTokenName:  test.ESDTTestTokenName,
+							ESDTTokenType:  0,
+							ESDTTokenNonce: 0,
+						}
+
+						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+							host,
+							test.ParentAddress,
+							[]*vmcommon.ESDTTransfer{transfer},
+							int64(testConfig.GasProvidedToChild),
+							nil,
+							nil)
+						assert.Equal(t, ret, int32(0))
+
 						return parentInstance
 					})
 				}),
@@ -1740,6 +1763,7 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			childAccount.SetBalance(egldBalance.Int64())
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -1759,6 +1783,8 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 	testConfig := makeTestConfig()
 	egldBalance := big.NewInt(10)
 	egldTransfer := big.NewInt(1)
+	initialESDTTokenBalance := uint64(100)
+	testConfig.ESDTTokensToTransfer = 5
 	callsNumber := 2
 
 	_, err := test.BuildMockInstanceCallTest(t).
@@ -1780,7 +1806,10 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 							assert.Equal(t, int32(0), returnValue)
 
 							managedTypes := host.ManagedTypes()
-							_, egld := managedTypes.GetBackTransfers()
+							esdtTransfers, egld := managedTypes.GetBackTransfers()
+							assert.Equal(t, 1, len(esdtTransfers))
+							assert.Equal(t, test.ESDTTestTokenName, esdtTransfers[0].ESDTTokenName)
+							assert.Equal(t, big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer), esdtTransfers[0].ESDTValue)
 							assert.Equal(t, egldTransfer, egld)
 						}
 
@@ -1800,6 +1829,22 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 							test.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
 						assert.Nil(t, err)
 
+						transfer := &vmcommon.ESDTTransfer{
+							ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+							ESDTTokenName:  test.ESDTTestTokenName,
+							ESDTTokenType:  0,
+							ESDTTokenNonce: 0,
+						}
+
+						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+							host,
+							test.ParentAddress,
+							[]*vmcommon.ESDTTransfer{transfer},
+							int64(testConfig.GasProvidedToChild),
+							nil,
+							nil)
+						assert.Equal(t, ret, int32(0))
+						
 						return parentInstance
 					})
 				}),
@@ -1807,6 +1852,7 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			childAccount.SetBalance(egldBalance.Int64())
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
