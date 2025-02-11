@@ -1689,6 +1689,185 @@ func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
+	testConfig := makeTestConfig()
+	egldBalance := big.NewInt(10)
+	egldTransfer := big.NewInt(1)
+	initialESDTTokenBalance := uint64(100)
+	testConfig.ESDTTokensToTransfer = 5
+	callsNumber := 2
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						for i := 0; i < callsNumber; i++ {
+							input := test.DefaultTestContractCallInput()
+							input.GasProvided = testConfig.GasProvidedToChild
+							input.CallerAddr = test.ParentAddress
+							input.RecipientAddr = test.ChildAddress
+							input.Function = "childFunction"
+							returnValue := contracts.ExecuteOnDestContextInMockContracts(host, input)
+							assert.Equal(t, int32(0), returnValue)
+						}
+
+						managedTypes := host.ManagedTypes()
+						esdtTransfers, egld := managedTypes.GetBackTransfers()
+						assert.Equal(t, callsNumber, len(esdtTransfers))
+						for i := 0; i < callsNumber; i++ {
+							assert.Equal(t, test.ESDTTestTokenName, esdtTransfers[i].ESDTTokenName)
+							assert.Equal(t, big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer), esdtTransfers[i].ESDTValue)
+						}
+						assert.Equal(t, big.NewInt(egldTransfer.Int64()*int64(callsNumber)), egld)
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						valueBytes := egldTransfer.Bytes()
+						err := host.Output().Transfer(
+							test.ParentAddress,
+							test.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
+						assert.Nil(t, err)
+
+						transfer := &vmcommon.ESDTTransfer{
+							ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+							ESDTTokenName:  test.ESDTTestTokenName,
+							ESDTTokenType:  0,
+							ESDTTokenNonce: 0,
+						}
+
+						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+							host,
+							test.ParentAddress,
+							[]*vmcommon.ESDTTransfer{transfer},
+							int64(testConfig.GasProvidedToChild),
+							nil,
+							nil)
+						assert.Equal(t, ret, int32(0))
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childAccount.SetBalance(egldBalance.Int64())
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
+	testConfig := makeTestConfig()
+	egldBalance := big.NewInt(10)
+	egldTransfer := big.NewInt(1)
+	initialESDTTokenBalance := uint64(100)
+	testConfig.ESDTTokensToTransfer = 5
+	callsNumber := 2
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						for i := 0; i < callsNumber; i++ {
+							input := test.DefaultTestContractCallInput()
+							input.GasProvided = testConfig.GasProvidedToChild
+							input.CallerAddr = test.ParentAddress
+							input.RecipientAddr = test.ChildAddress
+							input.Function = "childFunction"
+							returnValue := contracts.ExecuteOnDestContextInMockContracts(host, input)
+							assert.Equal(t, int32(0), returnValue)
+
+							managedTypes := host.ManagedTypes()
+							esdtTransfers, egld := managedTypes.GetBackTransfers()
+							assert.Equal(t, 1, len(esdtTransfers))
+							assert.Equal(t, test.ESDTTestTokenName, esdtTransfers[0].ESDTTokenName)
+							assert.Equal(t, big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer), esdtTransfers[0].ESDTValue)
+							assert.Equal(t, egldTransfer, egld)
+						}
+
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						valueBytes := egldTransfer.Bytes()
+						err := host.Output().Transfer(
+							test.ParentAddress,
+							test.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
+						assert.Nil(t, err)
+
+						transfer := &vmcommon.ESDTTransfer{
+							ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+							ESDTTokenName:  test.ESDTTestTokenName,
+							ESDTTokenType:  0,
+							ESDTTokenNonce: 0,
+						}
+
+						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+							host,
+							test.ParentAddress,
+							[]*vmcommon.ESDTTransfer{transfer},
+							int64(testConfig.GasProvidedToChild),
+							nil,
+							nil)
+						assert.Equal(t, ret, int32(0))
+						
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childAccount.SetBalance(egldBalance.Int64())
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
 func Test_Async_ManagedGetBackTransfers(t *testing.T) {
 	testConfig := makeTestConfig()
 	initialESDTTokenBalance := uint64(100)
