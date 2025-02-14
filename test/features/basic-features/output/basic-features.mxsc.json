@@ -2018,11 +2018,7 @@
                         "type": "bytes"
                     }
                 ],
-                "outputs": [
-                    {
-                        "type": "bool"
-                    }
-                ]
+                "outputs": []
             },
             {
                 "name": "verify_ed25519_signature",
@@ -2487,6 +2483,24 @@
             },
             {
                 "docs": [
+                    "This tests how is generated type name in proxy"
+                ],
+                "name": "echo_managed_option",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "mo",
+                        "type": "Option<BigUint>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "Option<BigUint>"
+                    }
+                ]
+            },
+            {
+                "docs": [
                     "This tests that nested serialization of big ints within unmanaged types works."
                 ],
                 "name": "echo_big_int_managed_vec",
@@ -2635,6 +2649,74 @@
                 "outputs": [
                     {
                         "type": "variadic<multi<u32,u32,u32>>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "echo_varags_vec_with_counted",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "m",
+                        "type": "variadic<multi<bytes,counted-variadic<u32>>>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "variadic<multi<bytes,counted-variadic<u32>>>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "echo_varags_vec_with_counted_pairs",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "m",
+                        "type": "variadic<multi<bytes,counted-variadic<multi<u32,Address>>>>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "variadic<multi<bytes,counted-variadic<multi<u32,Address>>>>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "convert_varags_vec_with_counted_pairs_1",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "address_number_pairs",
+                        "type": "variadic<multi<Address,u32,counted-variadic<multi<u32,u32>>>>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "variadic<multi<Address,u32,counted-variadic<multi<u32,u32>>>>",
+                        "multi_result": true
+                    }
+                ]
+            },
+            {
+                "name": "convert_varags_vec_with_counted_pairs_2",
+                "mutability": "mutable",
+                "inputs": [
+                    {
+                        "name": "address_number_pairs",
+                        "type": "variadic<multi<Address,u32,counted-variadic<multi<u32,u32>>>>",
+                        "multi_arg": true
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "variadic<multi<Address,u32,counted-variadic<multi<u32,u32>>>>",
                         "multi_result": true
                     }
                 ]

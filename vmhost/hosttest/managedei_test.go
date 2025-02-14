@@ -822,7 +822,7 @@ func Test_ManagedVerifyBLSMultiSig(t *testing.T) {
 						managedTypes := host.ManagedTypes()
 
 						keysHandle := managedTypes.NewManagedBuffer()
-						managedTypes.WriteManagedVecOfManagedBuffers(keys, keysHandle)
+						_ = managedTypes.WriteManagedVecOfManagedBuffers(keys, keysHandle)
 
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
