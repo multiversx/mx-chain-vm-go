@@ -606,6 +606,42 @@ func (w *WrapperVMHooks) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// GetRoundTime VM hook wrapper
+func (w *WrapperVMHooks) GetRoundTime() int64 {
+	callInfo := "GetRoundTime()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetRoundTime()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// EpochStartBlockTimeStamp VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockTimeStamp() int64 {
+	callInfo := "EpochStartBlockTimeStamp()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.EpochStartBlockTimeStamp()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// EpochStartBlockNonce VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockNonce() int64 {
+	callInfo := "EpochStartBlockNonce()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.EpochStartBlockNonce()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// EpochStartBlockRound VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockRound() int64 {
+	callInfo := "EpochStartBlockRound()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.EpochStartBlockRound()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // Finish VM hook wrapper
 func (w *WrapperVMHooks) Finish(pointer executor.MemPtr, length executor.MemLength) {
 	callInfo := fmt.Sprintf("Finish(%d, %d)", pointer, length)
@@ -830,6 +866,14 @@ func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetAllTransfersCallValue VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetAllTransfersCallValue(%d)", transferCallValuesListHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedGetBackTransfers VM hook wrapper
 func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
 	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, egldValueHandle)
@@ -1015,6 +1059,14 @@ func (w *WrapperVMHooks) ManagedGetCodeMetadata(addressHandle int32, responseHan
 	callInfo := fmt.Sprintf("ManagedGetCodeMetadata(%d, %d)", addressHandle, responseHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetCodeHash VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetCodeHash(%d, %d)", addressHandle, codeHashHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
@@ -1690,6 +1742,40 @@ func (w *WrapperVMHooks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHand
 	result := w.wrappedVMHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
+}
+
+// MBufferToSmallIntUnsigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferToSmallIntUnsigned(mBufferHandle int32) int64 {
+	callInfo := fmt.Sprintf("MBufferToSmallIntUnsigned(%d)", mBufferHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// MBufferToSmallIntSigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
+	callInfo := fmt.Sprintf("MBufferToSmallIntSigned(%d)", mBufferHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.MBufferToSmallIntSigned(mBufferHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// MBufferFromSmallIntUnsigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) {
+	callInfo := fmt.Sprintf("MBufferFromSmallIntUnsigned(%d, %d)", mBufferHandle, value)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// MBufferFromSmallIntSigned VM hook wrapper
+func (w *WrapperVMHooks) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) {
+	callInfo := fmt.Sprintf("MBufferFromSmallIntSigned(%d, %d)", mBufferHandle, value)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	w.logger.LogVMHookCallAfter(callInfo)
 }
 
 // MBufferToBigFloat VM hook wrapper

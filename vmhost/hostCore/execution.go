@@ -359,7 +359,7 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 
 		if transfer.Value.Cmp(vmhost.Zero) > 0 {
 			if len(transfer.Data) == 0 {
-				host.managedTypesContext.AddValueOnlyBackTransfer(transfer.Value)
+				host.managedTypesContext.AddBackTransfers(transfer.Value, nil, transfer.Index)
 			}
 			continue
 		}
@@ -369,7 +369,7 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 			continue
 		}
 
-		host.managedTypesContext.AddBackTransfers(esdtTransfers.ESDTTransfers)
+		host.managedTypesContext.AddBackTransfers(vmhost.Zero, esdtTransfers.ESDTTransfers, transfer.Index)
 	}
 }
 
@@ -858,7 +858,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	// Use all gas initially, on the Wasmer instance of the caller. In case of
 	// successful execution, the unused gas will be restored.
-	metering.UseGas(input.GasProvided)
+	metering.UseGasForContractInit(input.GasProvided)
 
 	isUpgrade := input.Function == vmhost.UpgradeFunctionName
 	if isUpgrade {
@@ -1007,7 +1007,11 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 			log.Trace("ESDT transfer", "error", vmhost.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, vmhost.ErrNotEnoughGas
 		}
-		metering.UseGas(gasConsumed)
+		err = metering.UseGasBounded(gasConsumed)
+		if err != nil {
+			log.Trace("ESDT transfer", "error", vmhost.ErrNotEnoughGas)
+			return vmOutput, esdtTransferInput.GasProvided, vmhost.ErrNotEnoughGas
+		}
 	}
 
 	return vmOutput, gasConsumed, nil
@@ -1018,7 +1022,7 @@ func (host *vmHost) callFunctionOnOtherVM(input *vmcommon.ContractCallInput) (*v
 
 	vmOutput, err := host.Blockchain().ExecuteSmartContractCallOnOtherVM(input)
 	if err != nil {
-		metering.UseGas(input.GasProvided)
+		_ = metering.UseGasBounded(input.GasProvided)
 		return nil, err
 	}
 
@@ -1043,13 +1047,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(input)
 	if err != nil {
-		metering.UseGas(input.GasProvided)
+		_ = metering.UseGasBounded(input.GasProvided)
 		return nil, nil, err
 	}
 
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
-		metering.UseGas(input.GasProvided)
+		_ = metering.UseGasBounded(input.GasProvided)
 		return nil, nil, err
 	}
 
@@ -1226,7 +1230,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 
 		if callbackErr != nil {
 			metering := host.Metering()
-			metering.UseGas(metering.GasLeft())
+			_ = metering.UseGasBounded(metering.GasLeft())
 		}
 
 		// TODO matei-p R2 Returning an error here will cause the VMOutput to be

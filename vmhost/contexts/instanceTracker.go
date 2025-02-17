@@ -59,11 +59,7 @@ func NewInstanceTracker() (*instanceTracker, error) {
 
 	var err error
 	instanceEvictedCallback := tracker.makeInstanceEvictionCallback()
-	if WarmInstancesEnabled {
-		tracker.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvictedCallback)
-	} else {
-		tracker.warmInstanceCache = nil
-	}
+	tracker.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvictedCallback)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +96,7 @@ func (tracker *instanceTracker) PopSetActiveState() {
 
 	onStack := tracker.IsCodeHashOnTheStack(activeCodeHash)
 	activeInstanceIsTopOfStack := stackedPrevInstance == activeInstance
-	cold := !WarmInstancesEnabled
-
-	if !activeInstanceIsTopOfStack && (onStack || cold) {
+	if !activeInstanceIsTopOfStack && onStack {
 		tracker.cleanPoppedInstance(activeInstance, activeCodeHash)
 	}
 
@@ -169,9 +163,7 @@ func (tracker *instanceTracker) CodeHash() []byte {
 
 // ClearWarmInstanceCache clears the internal warm instance cache
 func (tracker *instanceTracker) ClearWarmInstanceCache() {
-	if WarmInstancesEnabled {
-		tracker.warmInstanceCache.Clear()
-	}
+	tracker.warmInstanceCache.Clear()
 }
 
 // TrackedInstances returns the internal map of tracked instances
@@ -227,8 +219,7 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 	}
 
 	onStack := tracker.IsCodeHashOnTheStack(tracker.codeHash)
-	coldOnlyEnabled := !WarmInstancesEnabled
-	if onStack || coldOnlyEnabled {
+	if onStack {
 		if tracker.instance.Clean() {
 			tracker.updateNumRunningInstances(-1)
 		}
@@ -348,10 +339,7 @@ func (tracker *instanceTracker) LogCounts() {
 // NumRunningInstances returns the number of currently running instances (cold and warm)
 func (tracker *instanceTracker) NumRunningInstances() (int, int) {
 	numWarmInstances := 0
-	if WarmInstancesEnabled {
-		numWarmInstances = tracker.warmInstanceCache.Len()
-	}
-
+	numWarmInstances = tracker.warmInstanceCache.Len()
 	numColdInstances := tracker.numRunningInstances - numWarmInstances
 	return numWarmInstances, numColdInstances
 }

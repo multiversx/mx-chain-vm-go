@@ -130,13 +130,13 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 			mtb.executorFactory)
 	}
 
-	executor := scenexec.NewScenarioExecutor(vmBuilder)
-	defer executor.Close()
+	scenarioExecutor := scenexec.NewScenarioExecutor(vmBuilder)
+	defer scenarioExecutor.Close()
 
-	executor.World.EnableEpochsHandler = mtb.enableEpochsHandler
+	scenarioExecutor.World.EnableEpochsHandler = mtb.enableEpochsHandler
 
 	runner := scenio.NewScenarioController(
-		executor,
+		scenarioExecutor,
 		scenio.NewDefaultFileResolver(),
 		vmBuilder.GetVMType(),
 	)

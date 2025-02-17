@@ -78,6 +78,10 @@ package wasmer2
 // extern long long w2_getPrevBlockRound(void* context);
 // extern long long w2_getPrevBlockEpoch(void* context);
 // extern void      w2_getPrevBlockRandomSeed(void* context, int32_t pointer);
+// extern long long w2_getRoundTime(void* context);
+// extern long long w2_epochStartBlockTimeStamp(void* context);
+// extern long long w2_epochStartBlockNonce(void* context);
+// extern long long w2_epochStartBlockRound(void* context);
 // extern void      w2_finish(void* context, int32_t pointer, int32_t length);
 // extern int32_t   w2_executeOnSameContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   w2_executeOnDestContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -105,6 +109,7 @@ package wasmer2
 // extern void      w2_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      w2_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      w2_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
+// extern void      w2_managedGetAllTransfersCallValue(void* context, int32_t transferCallValuesListHandle);
 // extern void      w2_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      w2_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      w2_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
@@ -127,6 +132,7 @@ package wasmer2
 // extern int32_t   w2_managedIsESDTPaused(void* context, int32_t tokenIDHandle);
 // extern void      w2_managedBufferToHex(void* context, int32_t sourceHandle, int32_t destHandle);
 // extern void      w2_managedGetCodeMetadata(void* context, int32_t addressHandle, int32_t responseHandle);
+// extern void      w2_managedGetCodeHash(void* context, int32_t addressHandle, int32_t codeHashHandle);
 // extern int32_t   w2_managedIsBuiltinFunction(void* context, int32_t functionNameHandle);
 // extern int32_t   w2_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
 // extern int32_t   w2_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
@@ -207,6 +213,10 @@ package wasmer2
 // extern int32_t   w2_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   w2_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   w2_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern long long w2_mBufferToSmallIntUnsigned(void* context, int32_t mBufferHandle);
+// extern long long w2_mBufferToSmallIntSigned(void* context, int32_t mBufferHandle);
+// extern void      w2_mBufferFromSmallIntUnsigned(void* context, int32_t mBufferHandle, long long value);
+// extern void      w2_mBufferFromSmallIntSigned(void* context, int32_t mBufferHandle, long long value);
 // extern int32_t   w2_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   w2_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   w2_mBufferStorageStore(void* context, int32_t keyHandle, int32_t sourceHandle);
@@ -351,6 +361,10 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		get_prev_block_round_func_ptr:                            funcPointer(C.w2_getPrevBlockRound),
 		get_prev_block_epoch_func_ptr:                            funcPointer(C.w2_getPrevBlockEpoch),
 		get_prev_block_random_seed_func_ptr:                      funcPointer(C.w2_getPrevBlockRandomSeed),
+		get_round_time_func_ptr:                                  funcPointer(C.w2_getRoundTime),
+		epoch_start_block_time_stamp_func_ptr:                    funcPointer(C.w2_epochStartBlockTimeStamp),
+		epoch_start_block_nonce_func_ptr:                         funcPointer(C.w2_epochStartBlockNonce),
+		epoch_start_block_round_func_ptr:                         funcPointer(C.w2_epochStartBlockRound),
 		finish_func_ptr:                                          funcPointer(C.w2_finish),
 		execute_on_same_context_func_ptr:                         funcPointer(C.w2_executeOnSameContext),
 		execute_on_dest_context_func_ptr:                         funcPointer(C.w2_executeOnDestContext),
@@ -378,6 +392,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_get_prev_block_random_seed_func_ptr:              funcPointer(C.w2_managedGetPrevBlockRandomSeed),
 		managed_get_return_data_func_ptr:                         funcPointer(C.w2_managedGetReturnData),
 		managed_get_multi_esdt_call_value_func_ptr:               funcPointer(C.w2_managedGetMultiESDTCallValue),
+		managed_get_all_transfers_call_value_func_ptr:            funcPointer(C.w2_managedGetAllTransfersCallValue),
 		managed_get_back_transfers_func_ptr:                      funcPointer(C.w2_managedGetBackTransfers),
 		managed_get_esdt_balance_func_ptr:                        funcPointer(C.w2_managedGetESDTBalance),
 		managed_get_esdt_token_data_func_ptr:                     funcPointer(C.w2_managedGetESDTTokenData),
@@ -400,6 +415,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_is_esdt_paused_func_ptr:                          funcPointer(C.w2_managedIsESDTPaused),
 		managed_buffer_to_hex_func_ptr:                           funcPointer(C.w2_managedBufferToHex),
 		managed_get_code_metadata_func_ptr:                       funcPointer(C.w2_managedGetCodeMetadata),
+		managed_get_code_hash_func_ptr:                           funcPointer(C.w2_managedGetCodeHash),
 		managed_is_builtin_function_func_ptr:                     funcPointer(C.w2_managedIsBuiltinFunction),
 		big_float_new_from_parts_func_ptr:                        funcPointer(C.w2_bigFloatNewFromParts),
 		big_float_new_from_frac_func_ptr:                         funcPointer(C.w2_bigFloatNewFromFrac),
@@ -480,6 +496,10 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		mbuffer_to_big_int_signed_func_ptr:                       funcPointer(C.w2_mBufferToBigIntSigned),
 		mbuffer_from_big_int_unsigned_func_ptr:                   funcPointer(C.w2_mBufferFromBigIntUnsigned),
 		mbuffer_from_big_int_signed_func_ptr:                     funcPointer(C.w2_mBufferFromBigIntSigned),
+		mbuffer_to_small_int_unsigned_func_ptr:                   funcPointer(C.w2_mBufferToSmallIntUnsigned),
+		mbuffer_to_small_int_signed_func_ptr:                     funcPointer(C.w2_mBufferToSmallIntSigned),
+		mbuffer_from_small_int_unsigned_func_ptr:                 funcPointer(C.w2_mBufferFromSmallIntUnsigned),
+		mbuffer_from_small_int_signed_func_ptr:                   funcPointer(C.w2_mBufferFromSmallIntSigned),
 		mbuffer_to_big_float_func_ptr:                            funcPointer(C.w2_mBufferToBigFloat),
 		mbuffer_from_big_float_func_ptr:                          funcPointer(C.w2_mBufferFromBigFloat),
 		mbuffer_storage_store_func_ptr:                           funcPointer(C.w2_mBufferStorageStore),
@@ -951,6 +971,30 @@ func w2_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
 }
 
+//export w2_getRoundTime
+func w2_getRoundTime(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetRoundTime()
+}
+
+//export w2_epochStartBlockTimeStamp
+func w2_epochStartBlockTimeStamp(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockTimeStamp()
+}
+
+//export w2_epochStartBlockNonce
+func w2_epochStartBlockNonce(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockNonce()
+}
+
+//export w2_epochStartBlockRound
+func w2_epochStartBlockRound(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockRound()
+}
+
 //export w2_finish
 func w2_finish(context unsafe.Pointer, pointer int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -1113,6 +1157,12 @@ func w2_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandl
 	vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 }
 
+//export w2_managedGetAllTransfersCallValue
+func w2_managedGetAllTransfersCallValue(context unsafe.Pointer, transferCallValuesListHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+}
+
 //export w2_managedGetBackTransfers
 func w2_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -1243,6 +1293,12 @@ func w2_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandl
 func w2_managedGetCodeMetadata(context unsafe.Pointer, addressHandle int32, responseHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+}
+
+//export w2_managedGetCodeHash
+func w2_managedGetCodeHash(context unsafe.Pointer, addressHandle int32, codeHashHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 }
 
 //export w2_managedIsBuiltinFunction
@@ -1723,6 +1779,30 @@ func w2_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, b
 func w2_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+}
+
+//export w2_mBufferToSmallIntUnsigned
+func w2_mBufferToSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+}
+
+//export w2_mBufferToSmallIntSigned
+func w2_mBufferToSmallIntSigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+}
+
+//export w2_mBufferFromSmallIntUnsigned
+func w2_mBufferFromSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+}
+
+//export w2_mBufferFromSmallIntSigned
+func w2_mBufferFromSmallIntSigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 }
 
 //export w2_mBufferToBigFloat

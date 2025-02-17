@@ -469,6 +469,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
+	mockMetering.GasLeftMock = uint64(15000)
 
 	host := &contextmock.VMHostMock{
 		OutputContext:            mockOutput,

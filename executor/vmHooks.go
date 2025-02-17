@@ -86,6 +86,10 @@ type MainVMHooks interface {
 	GetPrevBlockRound() int64
 	GetPrevBlockEpoch() int64
 	GetPrevBlockRandomSeed(pointer MemPtr)
+	GetRoundTime() int64
+	EpochStartBlockTimeStamp() int64
+	EpochStartBlockNonce() int64
+	EpochStartBlockRound() int64
 	Finish(pointer MemPtr, length MemLength)
 	ExecuteOnSameContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
 	ExecuteOnDestContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
@@ -116,6 +120,7 @@ type ManagedVMHooks interface {
 	ManagedGetPrevBlockRandomSeed(resultHandle int32)
 	ManagedGetReturnData(resultID int32, resultHandle int32)
 	ManagedGetMultiESDTCallValue(multiCallValueHandle int32)
+	ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32)
 	ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32)
 	ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32)
 	ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32)
@@ -138,6 +143,7 @@ type ManagedVMHooks interface {
 	ManagedIsESDTPaused(tokenIDHandle int32) int32
 	ManagedBufferToHex(sourceHandle int32, destHandle int32)
 	ManagedGetCodeMetadata(addressHandle int32, responseHandle int32)
+	ManagedGetCodeHash(addressHandle int32, codeHashHandle int32)
 	ManagedIsBuiltinFunction(functionNameHandle int32) int32
 }
 
@@ -227,6 +233,10 @@ type ManagedBufferVMHooks interface {
 	MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
 	MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32
 	MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
+	MBufferToSmallIntUnsigned(mBufferHandle int32) int64
+	MBufferToSmallIntSigned(mBufferHandle int32) int64
+	MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64)
+	MBufferFromSmallIntSigned(mBufferHandle int32, value int64)
 	MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
 	MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
 	MBufferStorageStore(keyHandle int32, sourceHandle int32) int32

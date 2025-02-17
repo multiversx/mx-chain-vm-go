@@ -92,29 +92,24 @@ func (context *VMHooksImpl) GetStorageContext() vmhost.StorageContext {
 	return context.host.Storage()
 }
 
+// FailExecution fails the execution with the provided error
+func (context *VMHooksImpl) FailExecution(err error) {
+	FailExecution(context.host, err)
+}
+
 // GetEnableEpochsHandler returns the enable epochs handler
 func (context *VMHooksImpl) GetEnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return context.host.EnableEpochsHandler()
 }
 
-// WithFault handles an error, taking into account whether it should completely
-// fail the execution of a contract or not.
-func (context *VMHooksImpl) WithFault(err error, failExecution bool) bool {
-	return WithFaultAndHost(context.host, err, failExecution)
-}
-
-// WithFaultAndHost fails the execution with the provided error
-func WithFaultAndHost(host vmhost.VMHost, err error, failExecution bool) bool {
+// FailExecution fails the execution with the provided error
+func FailExecution(host vmhost.VMHost, err error) {
 	if err == nil {
-		return false
+		return
 	}
 
-	if failExecution {
-		runtime := host.Runtime()
-		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
-	}
-
-	return true
+	runtime := host.Runtime()
+	metering := host.Metering()
+	_ = metering.UseGasBounded(metering.GasLeft())
+	runtime.FailExecution(err)
 }

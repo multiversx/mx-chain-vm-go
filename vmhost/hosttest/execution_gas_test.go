@@ -2440,6 +2440,10 @@ func setZeroCodeCosts(host vmhost.VMHost) {
 	host.Metering().GasSchedule().BaseOpsAPICost.StorageStore = 0
 	host.Metering().GasSchedule().BaseOpsAPICost.TransferValue = 0
 	host.Metering().GasSchedule().BaseOpsAPICost.CreateContract = 0
+	host.Metering().GasSchedule().DynamicStorageLoad.MinGasCost = 0
+	host.Metering().GasSchedule().DynamicStorageLoad.Linear = 0
+	host.Metering().GasSchedule().DynamicStorageLoad.Constant = 0
+	host.Metering().GasSchedule().DynamicStorageLoad.Quadratic = 0
 }
 
 func setAsyncCosts(host vmhost.VMHost, gasLockCost uint64) {

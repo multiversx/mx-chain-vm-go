@@ -23,7 +23,7 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		_ = host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 
 		arguments := host.Runtime().Arguments()
 		noOfTransfers := int(big.NewInt(0).SetBytes(arguments[0]).Int64())
@@ -50,7 +50,7 @@ func TransferEGLDToParent(instanceMock *mock.InstanceMock, config interface{}) {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		_ = host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 
 		vmhooks.TransferValueExecuteWithTypedArgs(host,
 			test.ParentAddress,
