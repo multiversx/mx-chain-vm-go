@@ -669,24 +669,17 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	bigFloat := new(big.Float)
 	err = bigFloat.GobDecode(managedBuffer)
 	if err != nil {
-		isValidationOnFlagEnabled := enableEpochsHandler.IsFlagEnabled(vmhost.ValidationOnGobDecodeFlag)
+		if !enableEpochsHandler.IsFlagEnabled(vmhost.ValidationOnGobDecodeFlag) &&
+			isGobDecodeValidationError(err) {
 
-		if !isValidationOnFlagEnabled {
-			hasSpecificError := isGobDecodeValidationError(err)
-			if hasSpecificError {
-
+		} else {
+			if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+				err = vmhost.ErrBigFloatDecode
 			}
-		}
-		hasSpecificErrorBeforeFlag := hasSpecificError && !isFlagEnabled
-		if !hasSpecificErrorBeforeFlag {
-		}
 
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			err = vmhost.ErrBigFloatDecode
+			context.FailExecution(err)
+			return 1
 		}
-
-		context.FailExecution(err)
-		return 1
 	}
 
 	if bigFloat.IsInf() {
