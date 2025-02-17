@@ -1,6 +1,8 @@
 package vmhookstest
 
 import (
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	"math"
 	"math/big"
 	"testing"
@@ -113,7 +115,38 @@ func TestBigFloats_Add(t *testing.T) {
 func TestBigFloats_Panic_FailExecution_Add(t *testing.T) {
 	floatArgument1 := []byte{1, 10, 0, 0, 0, 53, 0, 0, 0, 58, 0, 31, 28, 26, 150, 254, 14, 45}
 	floatArgument2 := []byte{1, 11, 0, 0, 0, 53, 0, 0, 0, 52, 222, 212, 49, 108, 64, 122, 107, 100}
+
 	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("big-floats", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("BigFloatAddTest").
+			WithArguments([]byte{0, 0, 0, byte(10)},
+				floatArgument1, floatArgument2).
+			Build()).
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				ReturnCode(10).
+				ReturnMessage("this big Float operation is not permitted while doing float.Add")
+		})
+}
+
+func TestBigFloats_Panic_FailExecution_AddIgnoreFlag(t *testing.T) {
+	floatArgument1 := []byte{1, 10, 0, 0, 0, 53, 0, 0, 0, 58, 0, 31, 28, 26, 150, 254, 14, 45}
+	floatArgument2 := []byte{1, 11, 0, 0, 0, 53, 0, 0, 0, 52, 222, 212, 49, 108, 64, 122, 107, 100}
+
+	enableEpochsHander := &worldmock.EnableEpochsHandlerStub{
+		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+			if flag == vmhost.DoNotIgnoreGobDecodeErrorFlag {
+				return false
+			}
+			return true
+		},
+	}
+	test.BuildInstanceCallTest(t).
+		WithEnableEpochsHandler(enableEpochsHander).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("big-floats", "../../"))).

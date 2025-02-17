@@ -17,4 +17,7 @@ const (
 
 	// FixBackTransferOPCODE defines the flag that activates the fix for get back transfer opcode
 	FixBackTransferOPCODE core.EnableEpochFlag = "FixBackTransferOPCODEFlag"
+
+	// DoNotIgnoreGobDecodeErrorFlag defines the flag that activates the error return of gobDecode validate function
+	DoNotIgnoreGobDecodeErrorFlag core.EnableEpochFlag = "DoNotIgnoreGobDecodeErrorFlag"
 )

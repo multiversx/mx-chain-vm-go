@@ -69,6 +69,12 @@ func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.Blockchai
 	return thb
 }
 
+// WithEnableEpochsHandler sets a pre-built blockchain hook for the VM to work with.
+func (thb *TestHostBuilder) WithEnableEpochsHandler(enableEpochHandler vmcommon.EnableEpochsHandler) *TestHostBuilder {
+	thb.vmHostParameters.EnableEpochsHandler = enableEpochHandler
+	return thb
+}
+
 // WithBuiltinFunctions sets up builtin functions in the blockchain hook.
 // Only works if the blockchain hook is of type worldmock.MockWorld.
 func (thb *TestHostBuilder) WithBuiltinFunctions() *TestHostBuilder {

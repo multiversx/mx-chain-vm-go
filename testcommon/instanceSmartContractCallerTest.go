@@ -123,6 +123,12 @@ func (template *InstanceCallTestTemplate) WithWasmerSIGSEGVPassthrough(passthrou
 	return template
 }
 
+// WithEnableEpochsHandler sets a pre-built blockchain hook for the VM to work with.
+func (template *InstanceCallTestTemplate) WithEnableEpochsHandler(enableEpochHandler vmcommon.EnableEpochsHandler) *InstanceCallTestTemplate {
+	template.hostBuilder.WithEnableEpochsHandler(enableEpochHandler)
+	return template
+}
+
 // GetVMHost returns the inner VMHost
 func (template *InstanceCallTestTemplate) GetVMHost() vmhost.VMHost {
 	return template.host

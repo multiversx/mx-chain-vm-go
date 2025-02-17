@@ -3,6 +3,7 @@ package vmhooks
 import (
 	"bytes"
 	"math/big"
+	"strings"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -668,12 +669,17 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	bigFloat := new(big.Float)
 	err = bigFloat.GobDecode(managedBuffer)
 	if err != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			err = vmhost.ErrBigFloatDecode
-		}
+		isMaskInternalErrorsEnabled := enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag)
+		if !enableEpochsHandler.IsFlagEnabled(vmhost.DoNotIgnoreGobDecodeErrorFlag) && isErrorFromFloatValidate0(err) {
+			logEEI.Warn("ignored gobDecode error on bigFloat")
+		} else {
+			if isMaskInternalErrorsEnabled {
+				err = vmhost.ErrBigFloatDecode
+			}
 
-		context.FailExecution(err)
-		return 1
+			context.FailExecution(err)
+			return 1
+		}
 	}
 	if bigFloat.IsInf() {
 		context.FailExecution(vmhost.ErrInfinityFloatOperation)
@@ -682,6 +688,30 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 
 	value.Set(bigFloat)
 	return 0
+}
+
+// go1.22 brought in a new function to bigFloats GobDecode. It calls an extra validate0() function vs bigFloat implementations of before
+// the fix to make this independent on the go compiler it is to ignore
+func isErrorFromFloatValidate0(err error) bool {
+	errStr := err.Error()
+
+	if !strings.Contains(errStr, "Float.GobDecode: ") {
+		return false
+	}
+
+	if strings.Contains(errStr, "nonzero finite number with empty mantissa") {
+		return true
+	}
+
+	if strings.Contains(errStr, "msb not set") {
+		return true
+	}
+
+	if strings.Contains(errStr, "zero precision") {
+		return true
+	}
+
+	return false
 }
 
 // MBufferFromBigFloat VMHooks implementation.
