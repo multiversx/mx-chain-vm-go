@@ -202,7 +202,7 @@ func TestBigFloats_Panic_FailExecution_Sub(t *testing.T) {
 				Build()).
 			WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
 				IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
-					return flag == vmhost.CryptoOpcodesV2Flag
+					return flag != vmhost.ValidationOnGobDecodeFlag
 				},
 			}).
 			AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -226,7 +226,7 @@ func TestBigFloats_Panic_FailExecution_Sub(t *testing.T) {
 			AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 				verify.
 					ReturnCode(10).
-					ReturnMessage("Float.GobDecode: msb not set in last word 0x1f1c1a96fe0e2d of 0x.1f1c1a96fe0e2dp+58")
+					ReturnMessage("big float decode error")
 			})
 	})
 }
