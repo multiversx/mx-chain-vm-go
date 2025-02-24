@@ -122,6 +122,7 @@ var functionNames = map[string]struct{}{
 	"managedExecuteReadOnly":                       empty,
 	"managedExecuteOnSameContext":                  empty,
 	"managedExecuteOnDestContext":                  empty,
+	"managedExecuteOnDestContextWithErrorReturn":   empty,
 	"managedMultiTransferESDTNFTExecute":           empty,
 	"managedMultiTransferESDTNFTExecuteWithReturn": empty,
 	"managedMultiTransferESDTNFTExecuteByUser":     empty,

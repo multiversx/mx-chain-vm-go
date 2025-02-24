@@ -124,6 +124,7 @@ package wasmer2
 // extern int32_t   w2_managedExecuteReadOnly(void* context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteOnSameContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteOnDestContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t   w2_managedExecuteOnDestContextWithErrorReturn(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedMultiTransferESDTNFTExecute(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedMultiTransferESDTNFTExecuteWithReturn(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedMultiTransferESDTNFTExecuteByUser(void* context, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
@@ -408,6 +409,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_execute_read_only_func_ptr:                           funcPointer(C.w2_managedExecuteReadOnly),
 		managed_execute_on_same_context_func_ptr:                     funcPointer(C.w2_managedExecuteOnSameContext),
 		managed_execute_on_dest_context_func_ptr:                     funcPointer(C.w2_managedExecuteOnDestContext),
+		managed_execute_on_dest_context_with_error_return_func_ptr:   funcPointer(C.w2_managedExecuteOnDestContextWithErrorReturn),
 		managed_multi_transfer_esdt_nft_execute_func_ptr:             funcPointer(C.w2_managedMultiTransferESDTNFTExecute),
 		managed_multi_transfer_esdt_nft_execute_with_return_func_ptr: funcPointer(C.w2_managedMultiTransferESDTNFTExecuteWithReturn),
 		managed_multi_transfer_esdt_nft_execute_by_user_func_ptr:     funcPointer(C.w2_managedMultiTransferESDTNFTExecuteByUser),
@@ -1247,6 +1249,12 @@ func w2_managedExecuteOnSameContext(context unsafe.Pointer, gas int64, addressHa
 func w2_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+}
+
+//export w2_managedExecuteOnDestContextWithErrorReturn
+func w2_managedExecuteOnDestContextWithErrorReturn(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedMultiTransferESDTNFTExecute

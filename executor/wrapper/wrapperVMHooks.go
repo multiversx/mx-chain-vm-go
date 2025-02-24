@@ -992,6 +992,15 @@ func (w *WrapperVMHooks) ManagedExecuteOnDestContext(gas int64, addressHandle in
 	return result
 }
 
+// ManagedExecuteOnDestContextWithErrorReturn VM hook wrapper
+func (w *WrapperVMHooks) ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedExecuteOnDestContextWithErrorReturn(%d, %d, %d, %d, %d, %d)", gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // ManagedMultiTransferESDTNFTExecute VM hook wrapper
 func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecute(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
