@@ -1001,6 +1001,15 @@ func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tok
 	return result
 }
 
+// ManagedMultiTransferESDTNFTExecuteWithReturn VM hook wrapper
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteWithReturn(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // ManagedMultiTransferESDTNFTExecuteByUser VM hook wrapper
 func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteByUser(%d, %d, %d, %d, %d, %d)", userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)

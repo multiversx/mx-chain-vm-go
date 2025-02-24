@@ -3500,7 +3500,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
 						_ = host.Metering().UseGasBounded(100)
-						vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2))
+						vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2), true)
 						return childInstance
 					})
 				}),
