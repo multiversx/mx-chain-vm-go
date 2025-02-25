@@ -1122,7 +1122,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
-	return TransferESDTNFTExecuteWithTypedArgsWithFailure(host, dest, transfers, gasLimit, function, data, false)
+	return TransferESDTNFTExecuteWithTypedArgsWithFailure(host, dest, transfers, gasLimit, function, data, true)
 }
 
 // TransferESDTNFTExecuteWithTypedArgsWithFailure defines the actual transfer ESDT execute logic
