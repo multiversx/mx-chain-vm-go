@@ -18,6 +18,7 @@ import (
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	vmMath "github.com/multiversx/mx-chain-vm-go/math"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
@@ -1842,6 +1843,125 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 				HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 				GasRemaining(0)
 		})
+}
+
+func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						bufHandle := host.ManagedTypes().NewManagedBuffer()
+
+						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+							host,
+							int64(testConfig.GasProvidedToChild),
+							big.NewInt(0),
+							"childFunction",
+							[]byte(test.ChildAddress),
+							[][]byte{},
+							bufHandle,
+						)
+
+						require.Equal(t, int32(0), returnVal)
+
+						results, _, err := host.ManagedTypes().ReadManagedVecOfManagedBuffers(bufHandle)
+						require.Nil(t, err)
+						require.Equal(t, 1, len(results))
+						require.Equal(t, []byte("child ok"), results[0])
+
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						host.Output().Finish([]byte("child ok"))
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+							host,
+							int64(testConfig.GasProvidedToChild),
+							big.NewInt(0),
+							"childFunction",
+							[]byte(test.ChildAddress),
+							[][]byte{},
+							0,
+						)
+
+						require.Equal(t, int32(1), returnVal)
+
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						host.Runtime().FailExecution(errors.New("child failed"))
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {

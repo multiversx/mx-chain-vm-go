@@ -3,6 +3,7 @@ package vmhooks
 import (
 	"encoding/hex"
 	"errors"
+	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -1166,8 +1167,6 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContextWithErrorReturn(
 	resultHandle int32,
 ) int32 {
 	host := context.GetVMHost()
-	metering := host.Metering()
-	metering.StartGasTracing(managedExecuteOnDestContextWithReturnName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
@@ -1175,17 +1174,34 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContextWithErrorReturn(
 		return -1
 	}
 
+	return ManagedExecuteOnDestContextWithErrorReturnWithHost(host, gas, vmInput.value, vmInput.function, vmInput.destination, vmInput.arguments, resultHandle)
+}
+
+// ManagedExecuteOnDestContextWithErrorReturnWithHost - execute on dest context and return error instead of failing execution
+func ManagedExecuteOnDestContextWithErrorReturnWithHost(
+	host vmhost.VMHost,
+	gas int64,
+	value *big.Int,
+	function string,
+	destination []byte,
+	arguments [][]byte,
+	resultHandle int32,
+) int32 {
+	metering := host.Metering()
+	metering.StartGasTracing(managedExecuteOnDestContextWithReturnName)
+
 	lenReturnData := len(host.Output().ReturnData())
 	returnVal := ExecuteOnDestContextWithTypedArgs(
 		host,
 		gas,
-		vmInput.value,
-		[]byte(vmInput.function),
-		vmInput.destination,
-		vmInput.arguments,
+		value,
+		[]byte(function),
+		destination,
+		arguments,
 		false,
 	)
-	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
+
+	err := setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
