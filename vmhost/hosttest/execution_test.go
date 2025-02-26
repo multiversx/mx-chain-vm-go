@@ -1964,6 +1964,128 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 	assert.Nil(t, err)
 }
 
+func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *testing.T) {
+	testConfig := makeTestConfig()
+	testConfig.ESDTTokensToTransfer = 100
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+							host,
+							[]byte(test.ChildAddress),
+							[]*vmcommon.ESDTTransfer{
+								&vmcommon.ESDTTransfer{
+									ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+									ESDTTokenName:  test.ESDTTestTokenName,
+									ESDTTokenType:  0,
+									ESDTTokenNonce: 0,
+								},
+							},
+							int64(testConfig.GasProvidedToChild),
+							[]byte("childFunction"),
+							[][]byte{},
+							false,
+						)
+
+						require.Equal(t, int32(0), returnVal)
+
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						host.Output().Finish([]byte("child ok"))
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			childAccount := world.AcctMap.GetAccount(test.ParentAddress)
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, testConfig.ESDTTokensToTransfer)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+							host,
+							[]byte(test.ChildAddress),
+							[]*vmcommon.ESDTTransfer{},
+							int64(testConfig.GasProvidedToChild),
+							[]byte("childFunction"),
+							[][]byte{},
+							false,
+						)
+
+						require.Equal(t, int32(1), returnVal)
+
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						host.Runtime().FailExecution(errors.New("child failed"))
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
