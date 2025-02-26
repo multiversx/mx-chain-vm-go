@@ -126,7 +126,7 @@ func TestBigFloats_Panic_FailExecution_Add(t *testing.T) {
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(10).
-				ReturnMessage("this big Float operation is not permitted while doing float.Add")
+				ReturnMessage("big float decode error")
 		})
 }
 
@@ -173,7 +173,7 @@ func TestBigFloats_Panic_FailExecution_Sub(t *testing.T) {
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(10).
-				ReturnMessage("this big Float operation is not permitted while doing float.Sub")
+				ReturnMessage("big float decode error")
 		})
 }
 
