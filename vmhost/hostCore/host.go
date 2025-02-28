@@ -42,6 +42,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.CryptoOpcodesV2Flag,
 	vmhost.MultiESDTNFTTransferAndExecuteByUserFlag,
 	vmhost.UseGasBoundedShouldFailExecutionFlag,
+	vmhost.ValidationOnGobDecodeFlag,
 }
 
 // vmHost implements HostContext interface.

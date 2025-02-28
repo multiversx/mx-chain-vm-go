@@ -17,4 +17,8 @@ const (
 
 	// FixBackTransferOPCODE defines the flag that activates the fix for get back transfer opcode
 	FixBackTransferOPCODE core.EnableEpochFlag = "FixBackTransferOPCODEFlag"
+
+	// ValidationOnGobDecodeFlag defines the flag that allows the GobDecode validation added on go1.21
+	ValidationOnGobDecodeFlag core.EnableEpochFlag = "ValidationOnGobDecodeFlag"
+	// all new flags must be added to allFlags slice from hostCore/host
 )
