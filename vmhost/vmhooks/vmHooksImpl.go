@@ -97,6 +97,11 @@ func (context *VMHooksImpl) FailExecution(err error) {
 	FailExecution(context.host, err)
 }
 
+// GetEnableEpochsHandler returns the enable epochs handler
+func (context *VMHooksImpl) GetEnableEpochsHandler() vmhost.EnableEpochsHandler {
+	return context.host.EnableEpochsHandler()
+}
+
 // FailExecution fails the execution with the provided error
 func FailExecution(host vmhost.VMHost, err error) {
 	if err == nil {
