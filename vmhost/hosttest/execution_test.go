@@ -2748,6 +2748,30 @@ func TestExecution_AsyncCall_GasLimitConsumed_Ok(t *testing.T) {
 		})
 }
 
+func TestExecution_ManagedTransferAndExecuteWithReturnError(t *testing.T) {
+	parentCode := test.GetTestSCCode("transfer-with-return-error", "../../")
+	childCode := test.GetTestSCCode("transfer-with-return-error", "../../")
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(parentCode).
+				WithBalance(1000),
+			test.CreateInstanceContract(test.ChildAddress).
+				WithCode(childCode).
+				WithBalance(1000),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithFunction("do_test").
+			WithArguments(test.ChildAddress).
+			WithGasProvided(10000000000).
+			Build()).
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ReturnCode(vmcommon.Ok)
+		})
+}
+
 func TestExecution_AsyncCall(t *testing.T) {
 	// Scenario
 	// Parent SC calls Child SC
