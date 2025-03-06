@@ -39,6 +39,7 @@ const (
 	managedGetAllTransfersCallValue              = "managedGetAllTransfersCallValue"
 	managedGetESDTBalanceName                    = "managedGetESDTBalance"
 	managedGetESDTTokenDataName                  = "managedGetESDTTokenData"
+	managedGetESDTTokenTypeName                  = "managedGetESDTTokenType"
 	managedGetReturnDataName                     = "managedGetReturnData"
 	managedGetPrevBlockRandomSeedName            = "managedGetPrevBlockRandomSeed"
 	managedGetBlockRandomSeedName                = "managedGetBlockRandomSeed"
@@ -557,6 +558,61 @@ func ManagedGetESDTTokenDataWithHost(
 		}
 	}
 
+}
+
+// ManagedGetESDTTokenData VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetESDTTokenType(
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	typeHandle int32) {
+	host := context.GetVMHost()
+	ManagedGetESDTTokenTypeWithHost(
+		host,
+		addressHandle,
+		tokenIDHandle,
+		nonce,
+		typeHandle)
+}
+
+func ManagedGetESDTTokenTypeWithHost(
+	host vmhost.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	typeHandle int32) {
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(managedGetESDTTokenTypeName)
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+	tokenID, err := managedType.GetBytes(tokenIDHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+
+	esdtType := managedType.GetBigIntOrCreate(typeHandle)
+	esdtType.SetUint64(uint64(esdtToken.Type))
 }
 
 // ManagedAsyncCall VMHooks implementation.

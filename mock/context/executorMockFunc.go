@@ -111,6 +111,7 @@ var functionNames = map[string]struct{}{
 	"managedGetBackTransfers":                      empty,
 	"managedGetESDTBalance":                        empty,
 	"managedGetESDTTokenData":                      empty,
+	"managedGetESDTTokenType":                      empty,
 	"managedAsyncCall":                             empty,
 	"managedCreateAsyncCall":                       empty,
 	"managedGetCallbackClosure":                    empty,

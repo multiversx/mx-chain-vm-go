@@ -898,6 +898,14 @@ func (w *WrapperVMHooks) ManagedGetESDTTokenData(addressHandle int32, tokenIDHan
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetESDTTokenType VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetESDTTokenType(%d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, typeHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedAsyncCall VM hook wrapper
 func (w *WrapperVMHooks) ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
 	callInfo := fmt.Sprintf("ManagedAsyncCall(%d, %d, %d, %d)", destHandle, valueHandle, functionHandle, argumentsHandle)

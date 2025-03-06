@@ -124,6 +124,7 @@ type ManagedVMHooks interface {
 	ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32)
 	ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32)
 	ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32)
+	ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32)
 	ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32)
 	ManagedCreateAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32
 	ManagedGetCallbackClosure(callbackClosureHandle int32)
