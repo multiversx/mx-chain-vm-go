@@ -2763,7 +2763,7 @@ func TestExecution_ManagedTransferAndExecuteWithReturnError(t *testing.T) {
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
-			WithFunction("do_test").
+			WithFunction("test_execute_on_dest_context_with_error_return").
 			WithArguments(test.ChildAddress).
 			WithGasProvided(10000000000).
 			Build()).
