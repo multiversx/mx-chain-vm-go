@@ -1468,6 +1468,71 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestBaseOpsAPI_GetESDTTokenType(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	tokenValue := int64(100)
+	nonce := uint64(0)
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						managed := host.ManagedTypes()
+
+						addressHandle := managed.NewManagedBufferFromBytes(test.ParentAddress)
+						tokenIDHandle := managed.NewManagedBufferFromBytes(test.ESDTTestTokenName)
+
+						typeHandle := managed.NewBigIntFromInt64(0)
+
+						vmhooks.ManagedGetESDTTokenTypeWithHost(host,
+							addressHandle,
+							tokenIDHandle,
+							int64(nonce),
+							typeHandle)
+
+						typeValue, err := managed.GetBigInt(typeHandle)
+						if err != nil {
+							host.Runtime().SignalUserError(err.Error())
+							return parentInstance
+						}
+
+						require.Equal(t, uint64(core.NonFungible), typeValue.Uint64())
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			err := world.BuiltinFuncs.SetTokenData(
+				test.ParentAddress,
+				test.ESDTTestTokenName,
+				nonce,
+				&esdt.ESDigitalToken{
+					Value:      big.NewInt(tokenValue),
+					Type:       uint32(core.NonFungible),
+					Properties: esdtconvert.MakeESDTUserMetadataBytes(false),
+				})
+			assert.Nil(t, err)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
 func Test_ManagedGetCodeMetadata(t *testing.T) {
 	testConfig := baseTestConfig
 
@@ -1844,7 +1909,7 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 							nil,
 							nil)
 						assert.Equal(t, ret, int32(0))
-						
+
 						return parentInstance
 					})
 				}),
