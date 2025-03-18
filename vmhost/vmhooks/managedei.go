@@ -3,6 +3,7 @@ package vmhooks
 import (
 	"encoding/hex"
 	"errors"
+	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -15,41 +16,43 @@ import (
 )
 
 const (
-	managedSCAddressName                     = "managedSCAddress"
-	managedOwnerAddressName                  = "managedOwnerAddress"
-	managedCallerName                        = "managedCaller"
-	managedSignalErrorName                   = "managedSignalError"
-	managedWriteLogName                      = "managedWriteLog"
-	managedMultiTransferESDTNFTExecuteName   = "managedMultiTransferESDTNFTExecute"
-	managedTransferValueExecuteName          = "managedTransferValueExecute"
-	managedExecuteOnDestContextName          = "managedExecuteOnDestContext"
-	managedExecuteOnDestContextByCallerName  = "managedExecuteOnDestContextByCaller"
-	managedExecuteOnSameContextName          = "managedExecuteOnSameContext"
-	managedExecuteReadOnlyName               = "managedExecuteReadOnly"
-	managedCreateContractName                = "managedCreateContract"
-	managedDeployFromSourceContractName      = "managedDeployFromSourceContract"
-	managedUpgradeContractName               = "managedUpgradeContract"
-	managedUpgradeFromSourceContractName     = "managedUpgradeFromSourceContract"
-	managedAsyncCallName                     = "managedAsyncCall"
-	managedCreateAsyncCallName               = "managedCreateAsyncCall"
-	managedGetCallbackClosure                = "managedGetCallbackClosure"
-	managedGetMultiESDTCallValueName         = "managedGetMultiESDTCallValue"
-	managedGetAllTransfersCallValue          = "managedGetAllTransfersCallValue"
-	managedGetESDTBalanceName                = "managedGetESDTBalance"
-	managedGetESDTTokenDataName              = "managedGetESDTTokenData"
-	managedGetReturnDataName                 = "managedGetReturnData"
-	managedGetPrevBlockRandomSeedName        = "managedGetPrevBlockRandomSeed"
-	managedGetBlockRandomSeedName            = "managedGetBlockRandomSeed"
-	managedGetStateRootHashName              = "managedGetStateRootHash"
-	managedGetOriginalTxHashName             = "managedGetOriginalTxHash"
-	managedIsESDTFrozenName                  = "managedIsESDTFrozen"
-	managedIsESDTLimitedTransferName         = "managedIsESDTLimitedTransfer"
-	managedIsESDTPausedName                  = "managedIsESDTPaused"
-	managedBufferToHexName                   = "managedBufferToHex"
-	managedGetCodeMetadataName               = "managedGetCodeMetadata"
-	managedGetCodeHashName                   = "managedGetCodeHash"
-	managedIsBuiltinFunction                 = "managedIsBuiltinFunction"
-	managedMultiTransferESDTNFTExecuteByUser = "managedMultiTransferESDTNFTExecuteByUser"
+	managedSCAddressName                         = "managedSCAddress"
+	managedOwnerAddressName                      = "managedOwnerAddress"
+	managedCallerName                            = "managedCaller"
+	managedSignalErrorName                       = "managedSignalError"
+	managedWriteLogName                          = "managedWriteLog"
+	managedMultiTransferESDTNFTExecuteName       = "managedMultiTransferESDTNFTExecute"
+	managedTransferValueExecuteName              = "managedTransferValueExecute"
+	managedExecuteOnDestContextName              = "managedExecuteOnDestContext"
+	managedExecuteOnDestContextWithReturnName    = "managedExecuteOnDestContextWithReturn"
+	managedExecuteOnDestContextByCallerName      = "managedExecuteOnDestContextByCaller"
+	managedExecuteOnSameContextName              = "managedExecuteOnSameContext"
+	managedExecuteReadOnlyName                   = "managedExecuteReadOnly"
+	managedCreateContractName                    = "managedCreateContract"
+	managedDeployFromSourceContractName          = "managedDeployFromSourceContract"
+	managedUpgradeContractName                   = "managedUpgradeContract"
+	managedUpgradeFromSourceContractName         = "managedUpgradeFromSourceContract"
+	managedAsyncCallName                         = "managedAsyncCall"
+	managedCreateAsyncCallName                   = "managedCreateAsyncCall"
+	managedGetCallbackClosure                    = "managedGetCallbackClosure"
+	managedGetMultiESDTCallValueName             = "managedGetMultiESDTCallValue"
+	managedGetAllTransfersCallValue              = "managedGetAllTransfersCallValue"
+	managedGetESDTBalanceName                    = "managedGetESDTBalance"
+	managedGetESDTTokenDataName                  = "managedGetESDTTokenData"
+	managedGetReturnDataName                     = "managedGetReturnData"
+	managedGetPrevBlockRandomSeedName            = "managedGetPrevBlockRandomSeed"
+	managedGetBlockRandomSeedName                = "managedGetBlockRandomSeed"
+	managedGetStateRootHashName                  = "managedGetStateRootHash"
+	managedGetOriginalTxHashName                 = "managedGetOriginalTxHash"
+	managedIsESDTFrozenName                      = "managedIsESDTFrozen"
+	managedIsESDTLimitedTransferName             = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                      = "managedIsESDTPaused"
+	managedBufferToHexName                       = "managedBufferToHex"
+	managedGetCodeMetadataName                   = "managedGetCodeMetadata"
+	managedGetCodeHashName                       = "managedGetCodeHash"
+	managedIsBuiltinFunction                     = "managedIsBuiltinFunction"
+	managedMultiTransferESDTNFTExecuteByUser     = "managedMultiTransferESDTNFTExecuteByUser"
+	managedMultiTransferESDTNFTExecuteWithReturn = "managedMultiTransferESDTNFTExecuteByWithReturn"
 )
 
 const EGLDTokenName = "EGLD-000000" // TODO: maybe move to core?
@@ -1142,9 +1145,64 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 		[]byte(vmInput.function),
 		vmInput.destination,
 		vmInput.arguments,
+		true,
 	)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return returnVal
+}
+
+// ManagedExecuteOnDestContextWithErrorReturn VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedExecuteOnDestContextWithErrorReturn(
+	gas int64,
+	addressHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := context.GetVMHost()
+
+	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return ManagedExecuteOnDestContextWithErrorReturnWithHost(host, gas, vmInput.value, vmInput.function, vmInput.destination, vmInput.arguments, resultHandle)
+}
+
+// ManagedExecuteOnDestContextWithErrorReturnWithHost - execute on dest context and return error instead of failing execution
+func ManagedExecuteOnDestContextWithErrorReturnWithHost(
+	host vmhost.VMHost,
+	gas int64,
+	value *big.Int,
+	function string,
+	destination []byte,
+	arguments [][]byte,
+	resultHandle int32,
+) int32 {
+	metering := host.Metering()
+	metering.StartGasTracing(managedExecuteOnDestContextWithReturnName)
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := ExecuteOnDestContextWithTypedArgs(
+		host,
+		gas,
+		value,
+		[]byte(function),
+		destination,
+		arguments,
+		false,
+	)
+
+	err := setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
@@ -1186,6 +1244,44 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
+	)
+}
+
+// ManagedMultiTransferESDTNFTExecuteWithReturn VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithReturn(
+	dstHandle int32,
+	tokenTransfersHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteWithReturn)
+
+	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return TransferESDTNFTExecuteWithTypedArgsWithFailure(
+		host,
+		vmInput.destination,
+		transfers,
+		gasLimit,
+		[]byte(vmInput.function),
+		vmInput.arguments,
+		false,
 	)
 }
 
