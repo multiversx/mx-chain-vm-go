@@ -576,6 +576,7 @@ func (context *VMHooksImpl) ManagedGetESDTTokenType(
 		typeHandle)
 }
 
+// ManagedGetESDTTokenTypeWithHost implements the ManagedGetESDTTokenType VMHook logic.
 func ManagedGetESDTTokenTypeWithHost(
 	host vmhost.VMHost,
 	addressHandle int32,
