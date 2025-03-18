@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"math/big"
 	"testing"
+
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
