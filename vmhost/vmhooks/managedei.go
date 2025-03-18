@@ -1337,7 +1337,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithReturn(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
-		true,
+		false,
 	)
 }
 
