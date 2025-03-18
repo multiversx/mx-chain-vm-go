@@ -174,7 +174,6 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
-	t.Skip()
 	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()

@@ -445,6 +445,16 @@ uint64_t vm_exec_instance_get_points_used(const vm_exec_instance_t *instance_ptr
 int vm_exec_instance_has_function(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
 
 /**
+ * Checks whether SC has an endpoint with given name.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+int vm_exec_instance_has_imported_function(vm_exec_instance_t *instance_ptr,
+                                           const char *func_name_ptr);
+
+/**
  * Gets a pointer to the beginning of the contiguous memory data
  * bytes.
  *
