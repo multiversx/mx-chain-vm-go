@@ -140,6 +140,7 @@ typedef struct {
   void (*managed_get_back_transfers_func_ptr)(void *context, int32_t esdt_transfers_value_handle, int32_t egld_value_handle);
   void (*managed_get_esdt_balance_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce, int32_t value_handle);
   void (*managed_get_esdt_token_data_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce, int32_t value_handle, int32_t properties_handle, int32_t hash_handle, int32_t name_handle, int32_t attributes_handle, int32_t creator_handle, int32_t royalties_handle, int32_t uris_handle);
+  void (*managed_get_esdt_token_type_func_ptr)(void *context, int32_t address_handle, int32_t token_id_handle, int64_t nonce, int32_t type_handle);
   void (*managed_async_call_func_ptr)(void *context, int32_t dest_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle);
   int32_t (*managed_create_async_call_func_ptr)(void *context, int32_t dest_handle, int32_t value_handle, int32_t function_handle, int32_t arguments_handle, int32_t success_offset, int32_t success_length, int32_t error_offset, int32_t error_length, int64_t gas, int64_t extra_gas_for_callback, int32_t callback_closure_handle);
   void (*managed_get_callback_closure_func_ptr)(void *context, int32_t callback_closure_handle);
@@ -442,6 +443,16 @@ uint64_t vm_exec_instance_get_points_used(const vm_exec_instance_t *instance_ptr
  * C API function, works with raw object pointers.
  */
 int vm_exec_instance_has_function(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
+
+/**
+ * Checks whether SC has an endpoint with given name.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+int vm_exec_instance_has_imported_function(vm_exec_instance_t *instance_ptr,
+                                           const char *func_name_ptr);
 
 /**
  * Gets a pointer to the beginning of the contiguous memory data

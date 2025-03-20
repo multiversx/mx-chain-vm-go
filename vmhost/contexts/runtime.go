@@ -27,6 +27,22 @@ var mapNewCryptoAPI = map[string]struct{}{
 	"managedMultiTransferESDTNFTExecuteByUser": {},
 }
 
+var mapBarnardOpcodes = map[string]struct{}{
+	"mbufferToSmallIntUnsigned":                    {},
+	"mbufferToSmallIntSigned":                      {},
+	"mbufferFromSmallIntUnsigned":                  {},
+	"mbufferFromSmallIntSigned":                    {},
+	"getRoundTime":                                 {},
+	"epochStartBlockTimeStamp":                     {},
+	"epochStartBlockNonce":                         {},
+	"epochStartBlockRound":                         {},
+	"managedGetAllTransfersCallValue":              {},
+	"managedExecuteOnDestContextWithErrorReturn":   {},
+	"managedMultiTransferESDTNFTExecuteWithReturn": {},
+	"managedGetCodeHash":                           {},
+	"managedGetESDTTokenType":                      {},
+}
+
 const warmCacheSize = 100
 
 type runtimeContext struct {
@@ -678,6 +694,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		err = context.checkIfContainsBarnardOpcodes()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -685,6 +709,15 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
 	for funcName := range mapNewCryptoAPI {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
+	for funcName := range mapBarnardOpcodes {
 		if context.iTracker.Instance().IsFunctionImported(funcName) {
 			return vmhost.ErrContractInvalid
 		}

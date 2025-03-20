@@ -158,6 +158,16 @@ func cWasmerInstanceHasFunction(
 	))
 }
 
+func cWasmerInstanceHasImportedFunction(
+	instance *cWasmerInstanceT,
+	name *cChar,
+) cInt {
+	return (cInt)(C.vm_exec_instance_has_imported_function(
+		(*C.vm_exec_instance_t)(instance),
+		(*C.char)(name),
+	))
+}
+
 func cWasmerInstanceExportedFunctionNamesLength(instance *cWasmerInstanceT) cInt {
 	return (cInt)(C.vm_exported_function_names_length(
 		(*C.vm_exec_instance_t)(instance),

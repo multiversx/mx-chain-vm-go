@@ -113,6 +113,7 @@ package wasmer2
 // extern void      w2_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      w2_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      w2_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
+// extern void      w2_managedGetESDTTokenType(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t typeHandle);
 // extern void      w2_managedAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedCreateAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback, int32_t callbackClosureHandle);
 // extern void      w2_managedGetCallbackClosure(void* context, int32_t callbackClosureHandle);
@@ -398,6 +399,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_get_back_transfers_func_ptr:                          funcPointer(C.w2_managedGetBackTransfers),
 		managed_get_esdt_balance_func_ptr:                            funcPointer(C.w2_managedGetESDTBalance),
 		managed_get_esdt_token_data_func_ptr:                         funcPointer(C.w2_managedGetESDTTokenData),
+		managed_get_esdt_token_type_func_ptr:                         funcPointer(C.w2_managedGetESDTTokenType),
 		managed_async_call_func_ptr:                                  funcPointer(C.w2_managedAsyncCall),
 		managed_create_async_call_func_ptr:                           funcPointer(C.w2_managedCreateAsyncCall),
 		managed_get_callback_closure_func_ptr:                        funcPointer(C.w2_managedGetCallbackClosure),
@@ -1183,6 +1185,12 @@ func w2_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, token
 func w2_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+}
+
+//export w2_managedGetESDTTokenType
+func w2_managedGetESDTTokenType(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 }
 
 //export w2_managedAsyncCall

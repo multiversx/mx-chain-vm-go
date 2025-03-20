@@ -20,5 +20,9 @@ const (
 
 	// ValidationOnGobDecodeFlag defines the flag that allows the GobDecode validation added on go1.21
 	ValidationOnGobDecodeFlag core.EnableEpochFlag = "ValidationOnGobDecodeFlag"
+
+	// BarnardOpcodesFlag defines the flag that activates the new opcodes from the Barnard release
+	BarnardOpcodesFlag core.EnableEpochFlag = "BarnardOpcodesFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )
