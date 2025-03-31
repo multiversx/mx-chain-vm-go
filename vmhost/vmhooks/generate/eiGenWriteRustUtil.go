@@ -39,13 +39,25 @@ func rustWasmerType(eiType EIType) string {
 	return rustCapiType(eiType)
 }
 
-func rustWasmerConvertArg(arg *EIFunctionArg) string {
+func rustWasmerProdConvertArg(arg *EIFunctionArg) string {
 	argRustName := snakeCase(arg.Name)
 	switch arg.Type {
 	case EITypeMemPtr:
 		return fmt.Sprintf("env.convert_mem_ptr(%s)", argRustName)
 	case EITypeMemLength:
 		return fmt.Sprintf("env.convert_mem_length(%s)", argRustName)
+	default:
+		return argRustName
+	}
+}
+
+func rustWasmerExperimentalConvertArg(arg *EIFunctionArg) string {
+	argRustName := snakeCase(arg.Name)
+	switch arg.Type {
+	case EITypeMemPtr:
+		return fmt.Sprintf("convert_mem_ptr(%s)", argRustName)
+	case EITypeMemLength:
+		return fmt.Sprintf("convert_mem_length(%s)", argRustName)
 	default:
 		return argRustName
 	}
