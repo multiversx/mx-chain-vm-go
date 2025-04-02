@@ -606,11 +606,11 @@ func (w *WrapperVMHooks) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
-// GetRoundTime VM hook wrapper
-func (w *WrapperVMHooks) GetRoundTime() int64 {
-	callInfo := "GetRoundTime()"
+// GetBlockRoundTimeInMilliseconds VM hook wrapper
+func (w *WrapperVMHooks) GetBlockRoundTimeInMilliseconds() int64 {
+	callInfo := "GetBlockRoundTimeInMilliseconds()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetRoundTime()
+	result := w.wrappedVMHooks.GetBlockRoundTimeInMilliseconds()
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
