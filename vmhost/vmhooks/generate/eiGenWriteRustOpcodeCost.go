@@ -23,13 +23,21 @@ struct Config {
 `
 
 const implBlock = `impl OpcodeCost {
+    pub fn new(gas_schedule: GasSchedule) -> Self {
+        let schedule_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("schedules")
+            .join(gas_schedule.to_string());
+
+        Self::from_file(schedule_path).unwrap()
+    }
+
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, std::io::Error> {
         let content = fs::read_to_string(path)?;
-        Self::from_str(&content)
+        Self::from_toml_str(&content)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e.to_string()))
     }
 
-    pub fn from_str(content: &str) -> Result<Self, toml::de::Error> {
+    pub fn from_toml_str(content: &str) -> Result<Self, toml::de::Error> {
         let config: Config = toml::from_str(content)?;
         Ok(config.wasm_opcode_cost)
     }
