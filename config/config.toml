@@ -56,8 +56,13 @@
     CleanReturnData = 10
     DeleteFromReturnData = 10
     GetCodeMetadata = 10
+    GetCodeHash = 10
     IsBuiltinFunction = 10
     IsReservedFunctionName = 10
+    GetRoundTime = 10
+    EpochStartBlockTimeStamp = 10
+    EpochStartBlockNonce = 10
+    EpochStartBlockRound = 10
 
 [EthAPICost]
     UseGas = 10
@@ -184,6 +189,10 @@
     MBufferToBigIntSigned = 10
     MBufferFromBigIntUnsigned = 10
     MBufferFromBigIntSigned = 10
+    MBufferToSmallIntUnsigned = 10
+    MBufferToSmallIntSigned = 10
+    MBufferFromSmallIntUnsigned = 10
+    MBufferFromSmallIntSigned = 10
     MBufferToBigFloat = 10
     MBufferFromBigFloat = 10
     MBufferStorageStore = 10

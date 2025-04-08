@@ -87,5 +87,5 @@ func ExecuteOnSameContextInMockContracts(host vmhost.VMHost, input *vmcommon.Con
 
 // ExecuteOnDestContextInMockContracts - calls the corresponding method in VM hooks
 func ExecuteOnDestContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
-	return vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
+	return vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments, true)
 }

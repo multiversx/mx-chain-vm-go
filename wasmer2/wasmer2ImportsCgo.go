@@ -78,6 +78,10 @@ package wasmer2
 // extern long long w2_getPrevBlockRound(void* context);
 // extern long long w2_getPrevBlockEpoch(void* context);
 // extern void      w2_getPrevBlockRandomSeed(void* context, int32_t pointer);
+// extern long long w2_getBlockRoundTimeInMilliseconds(void* context);
+// extern long long w2_epochStartBlockTimeStamp(void* context);
+// extern long long w2_epochStartBlockNonce(void* context);
+// extern long long w2_epochStartBlockRound(void* context);
 // extern void      w2_finish(void* context, int32_t pointer, int32_t length);
 // extern int32_t   w2_executeOnSameContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   w2_executeOnDestContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -105,9 +109,11 @@ package wasmer2
 // extern void      w2_managedGetPrevBlockRandomSeed(void* context, int32_t resultHandle);
 // extern void      w2_managedGetReturnData(void* context, int32_t resultID, int32_t resultHandle);
 // extern void      w2_managedGetMultiESDTCallValue(void* context, int32_t multiCallValueHandle);
+// extern void      w2_managedGetAllTransfersCallValue(void* context, int32_t transferCallValuesListHandle);
 // extern void      w2_managedGetBackTransfers(void* context, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
 // extern void      w2_managedGetESDTBalance(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void      w2_managedGetESDTTokenData(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
+// extern void      w2_managedGetESDTTokenType(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t typeHandle);
 // extern void      w2_managedAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedCreateAsyncCall(void* context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback, int32_t callbackClosureHandle);
 // extern void      w2_managedGetCallbackClosure(void* context, int32_t callbackClosureHandle);
@@ -119,7 +125,9 @@ package wasmer2
 // extern int32_t   w2_managedExecuteReadOnly(void* context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteOnSameContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteOnDestContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t   w2_managedExecuteOnDestContextWithErrorReturn(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedMultiTransferESDTNFTExecute(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t   w2_managedMultiTransferESDTNFTExecuteWithReturn(void* context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedMultiTransferESDTNFTExecuteByUser(void* context, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedTransferValueExecute(void* context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t   w2_managedIsESDTFrozen(void* context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
@@ -127,6 +135,7 @@ package wasmer2
 // extern int32_t   w2_managedIsESDTPaused(void* context, int32_t tokenIDHandle);
 // extern void      w2_managedBufferToHex(void* context, int32_t sourceHandle, int32_t destHandle);
 // extern void      w2_managedGetCodeMetadata(void* context, int32_t addressHandle, int32_t responseHandle);
+// extern void      w2_managedGetCodeHash(void* context, int32_t addressHandle, int32_t codeHashHandle);
 // extern int32_t   w2_managedIsBuiltinFunction(void* context, int32_t functionNameHandle);
 // extern int32_t   w2_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
 // extern int32_t   w2_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
@@ -207,6 +216,10 @@ package wasmer2
 // extern int32_t   w2_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   w2_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t   w2_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern long long w2_mBufferToSmallIntUnsigned(void* context, int32_t mBufferHandle);
+// extern long long w2_mBufferToSmallIntSigned(void* context, int32_t mBufferHandle);
+// extern void      w2_mBufferFromSmallIntUnsigned(void* context, int32_t mBufferHandle, long long value);
+// extern void      w2_mBufferFromSmallIntSigned(void* context, int32_t mBufferHandle, long long value);
 // extern int32_t   w2_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   w2_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 // extern int32_t   w2_mBufferStorageStore(void* context, int32_t keyHandle, int32_t sourceHandle);
@@ -284,268 +297,281 @@ import (
 // populateCgoFunctionPointers populates imports with the BaseOpsAPI API methods
 func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 	return &cWasmerVmHookPointers{
-		get_gas_left_func_ptr:                                    funcPointer(C.w2_getGasLeft),
-		get_sc_address_func_ptr:                                  funcPointer(C.w2_getSCAddress),
-		get_owner_address_func_ptr:                               funcPointer(C.w2_getOwnerAddress),
-		get_shard_of_address_func_ptr:                            funcPointer(C.w2_getShardOfAddress),
-		is_smart_contract_func_ptr:                               funcPointer(C.w2_isSmartContract),
-		signal_error_func_ptr:                                    funcPointer(C.w2_signalError),
-		get_external_balance_func_ptr:                            funcPointer(C.w2_getExternalBalance),
-		get_block_hash_func_ptr:                                  funcPointer(C.w2_getBlockHash),
-		get_esdt_balance_func_ptr:                                funcPointer(C.w2_getESDTBalance),
-		get_esdt_nft_name_length_func_ptr:                        funcPointer(C.w2_getESDTNFTNameLength),
-		get_esdt_nft_attribute_length_func_ptr:                   funcPointer(C.w2_getESDTNFTAttributeLength),
-		get_esdt_nft_uri_length_func_ptr:                         funcPointer(C.w2_getESDTNFTURILength),
-		get_esdt_token_data_func_ptr:                             funcPointer(C.w2_getESDTTokenData),
-		get_esdt_local_roles_func_ptr:                            funcPointer(C.w2_getESDTLocalRoles),
-		validate_token_identifier_func_ptr:                       funcPointer(C.w2_validateTokenIdentifier),
-		transfer_value_func_ptr:                                  funcPointer(C.w2_transferValue),
-		transfer_value_execute_func_ptr:                          funcPointer(C.w2_transferValueExecute),
-		transfer_esdt_execute_func_ptr:                           funcPointer(C.w2_transferESDTExecute),
-		transfer_esdt_nft_execute_func_ptr:                       funcPointer(C.w2_transferESDTNFTExecute),
-		multi_transfer_esdt_nft_execute_func_ptr:                 funcPointer(C.w2_multiTransferESDTNFTExecute),
-		create_async_call_func_ptr:                               funcPointer(C.w2_createAsyncCall),
-		set_async_context_callback_func_ptr:                      funcPointer(C.w2_setAsyncContextCallback),
-		upgrade_contract_func_ptr:                                funcPointer(C.w2_upgradeContract),
-		upgrade_from_source_contract_func_ptr:                    funcPointer(C.w2_upgradeFromSourceContract),
-		delete_contract_func_ptr:                                 funcPointer(C.w2_deleteContract),
-		async_call_func_ptr:                                      funcPointer(C.w2_asyncCall),
-		get_argument_length_func_ptr:                             funcPointer(C.w2_getArgumentLength),
-		get_argument_func_ptr:                                    funcPointer(C.w2_getArgument),
-		get_function_func_ptr:                                    funcPointer(C.w2_getFunction),
-		get_num_arguments_func_ptr:                               funcPointer(C.w2_getNumArguments),
-		storage_store_func_ptr:                                   funcPointer(C.w2_storageStore),
-		storage_load_length_func_ptr:                             funcPointer(C.w2_storageLoadLength),
-		storage_load_from_address_func_ptr:                       funcPointer(C.w2_storageLoadFromAddress),
-		storage_load_func_ptr:                                    funcPointer(C.w2_storageLoad),
-		set_storage_lock_func_ptr:                                funcPointer(C.w2_setStorageLock),
-		get_storage_lock_func_ptr:                                funcPointer(C.w2_getStorageLock),
-		is_storage_locked_func_ptr:                               funcPointer(C.w2_isStorageLocked),
-		clear_storage_lock_func_ptr:                              funcPointer(C.w2_clearStorageLock),
-		get_caller_func_ptr:                                      funcPointer(C.w2_getCaller),
-		check_no_payment_func_ptr:                                funcPointer(C.w2_checkNoPayment),
-		get_call_value_func_ptr:                                  funcPointer(C.w2_getCallValue),
-		get_esdt_value_func_ptr:                                  funcPointer(C.w2_getESDTValue),
-		get_esdt_value_by_index_func_ptr:                         funcPointer(C.w2_getESDTValueByIndex),
-		get_esdt_token_name_func_ptr:                             funcPointer(C.w2_getESDTTokenName),
-		get_esdt_token_name_by_index_func_ptr:                    funcPointer(C.w2_getESDTTokenNameByIndex),
-		get_esdt_token_nonce_func_ptr:                            funcPointer(C.w2_getESDTTokenNonce),
-		get_esdt_token_nonce_by_index_func_ptr:                   funcPointer(C.w2_getESDTTokenNonceByIndex),
-		get_current_esdt_nft_nonce_func_ptr:                      funcPointer(C.w2_getCurrentESDTNFTNonce),
-		get_esdt_token_type_func_ptr:                             funcPointer(C.w2_getESDTTokenType),
-		get_esdt_token_type_by_index_func_ptr:                    funcPointer(C.w2_getESDTTokenTypeByIndex),
-		get_num_esdt_transfers_func_ptr:                          funcPointer(C.w2_getNumESDTTransfers),
-		get_call_value_token_name_func_ptr:                       funcPointer(C.w2_getCallValueTokenName),
-		get_call_value_token_name_by_index_func_ptr:              funcPointer(C.w2_getCallValueTokenNameByIndex),
-		is_reserved_function_name_func_ptr:                       funcPointer(C.w2_isReservedFunctionName),
-		write_log_func_ptr:                                       funcPointer(C.w2_writeLog),
-		write_event_log_func_ptr:                                 funcPointer(C.w2_writeEventLog),
-		get_block_timestamp_func_ptr:                             funcPointer(C.w2_getBlockTimestamp),
-		get_block_nonce_func_ptr:                                 funcPointer(C.w2_getBlockNonce),
-		get_block_round_func_ptr:                                 funcPointer(C.w2_getBlockRound),
-		get_block_epoch_func_ptr:                                 funcPointer(C.w2_getBlockEpoch),
-		get_block_random_seed_func_ptr:                           funcPointer(C.w2_getBlockRandomSeed),
-		get_state_root_hash_func_ptr:                             funcPointer(C.w2_getStateRootHash),
-		get_prev_block_timestamp_func_ptr:                        funcPointer(C.w2_getPrevBlockTimestamp),
-		get_prev_block_nonce_func_ptr:                            funcPointer(C.w2_getPrevBlockNonce),
-		get_prev_block_round_func_ptr:                            funcPointer(C.w2_getPrevBlockRound),
-		get_prev_block_epoch_func_ptr:                            funcPointer(C.w2_getPrevBlockEpoch),
-		get_prev_block_random_seed_func_ptr:                      funcPointer(C.w2_getPrevBlockRandomSeed),
-		finish_func_ptr:                                          funcPointer(C.w2_finish),
-		execute_on_same_context_func_ptr:                         funcPointer(C.w2_executeOnSameContext),
-		execute_on_dest_context_func_ptr:                         funcPointer(C.w2_executeOnDestContext),
-		execute_read_only_func_ptr:                               funcPointer(C.w2_executeReadOnly),
-		create_contract_func_ptr:                                 funcPointer(C.w2_createContract),
-		deploy_from_source_contract_func_ptr:                     funcPointer(C.w2_deployFromSourceContract),
-		get_num_return_data_func_ptr:                             funcPointer(C.w2_getNumReturnData),
-		get_return_data_size_func_ptr:                            funcPointer(C.w2_getReturnDataSize),
-		get_return_data_func_ptr:                                 funcPointer(C.w2_getReturnData),
-		clean_return_data_func_ptr:                               funcPointer(C.w2_cleanReturnData),
-		delete_from_return_data_func_ptr:                         funcPointer(C.w2_deleteFromReturnData),
-		get_original_tx_hash_func_ptr:                            funcPointer(C.w2_getOriginalTxHash),
-		get_current_tx_hash_func_ptr:                             funcPointer(C.w2_getCurrentTxHash),
-		get_prev_tx_hash_func_ptr:                                funcPointer(C.w2_getPrevTxHash),
-		managed_sc_address_func_ptr:                              funcPointer(C.w2_managedSCAddress),
-		managed_owner_address_func_ptr:                           funcPointer(C.w2_managedOwnerAddress),
-		managed_caller_func_ptr:                                  funcPointer(C.w2_managedCaller),
-		managed_get_original_caller_addr_func_ptr:                funcPointer(C.w2_managedGetOriginalCallerAddr),
-		managed_get_relayer_addr_func_ptr:                        funcPointer(C.w2_managedGetRelayerAddr),
-		managed_signal_error_func_ptr:                            funcPointer(C.w2_managedSignalError),
-		managed_write_log_func_ptr:                               funcPointer(C.w2_managedWriteLog),
-		managed_get_original_tx_hash_func_ptr:                    funcPointer(C.w2_managedGetOriginalTxHash),
-		managed_get_state_root_hash_func_ptr:                     funcPointer(C.w2_managedGetStateRootHash),
-		managed_get_block_random_seed_func_ptr:                   funcPointer(C.w2_managedGetBlockRandomSeed),
-		managed_get_prev_block_random_seed_func_ptr:              funcPointer(C.w2_managedGetPrevBlockRandomSeed),
-		managed_get_return_data_func_ptr:                         funcPointer(C.w2_managedGetReturnData),
-		managed_get_multi_esdt_call_value_func_ptr:               funcPointer(C.w2_managedGetMultiESDTCallValue),
-		managed_get_back_transfers_func_ptr:                      funcPointer(C.w2_managedGetBackTransfers),
-		managed_get_esdt_balance_func_ptr:                        funcPointer(C.w2_managedGetESDTBalance),
-		managed_get_esdt_token_data_func_ptr:                     funcPointer(C.w2_managedGetESDTTokenData),
-		managed_async_call_func_ptr:                              funcPointer(C.w2_managedAsyncCall),
-		managed_create_async_call_func_ptr:                       funcPointer(C.w2_managedCreateAsyncCall),
-		managed_get_callback_closure_func_ptr:                    funcPointer(C.w2_managedGetCallbackClosure),
-		managed_upgrade_from_source_contract_func_ptr:            funcPointer(C.w2_managedUpgradeFromSourceContract),
-		managed_upgrade_contract_func_ptr:                        funcPointer(C.w2_managedUpgradeContract),
-		managed_delete_contract_func_ptr:                         funcPointer(C.w2_managedDeleteContract),
-		managed_deploy_from_source_contract_func_ptr:             funcPointer(C.w2_managedDeployFromSourceContract),
-		managed_create_contract_func_ptr:                         funcPointer(C.w2_managedCreateContract),
-		managed_execute_read_only_func_ptr:                       funcPointer(C.w2_managedExecuteReadOnly),
-		managed_execute_on_same_context_func_ptr:                 funcPointer(C.w2_managedExecuteOnSameContext),
-		managed_execute_on_dest_context_func_ptr:                 funcPointer(C.w2_managedExecuteOnDestContext),
-		managed_multi_transfer_esdt_nft_execute_func_ptr:         funcPointer(C.w2_managedMultiTransferESDTNFTExecute),
-		managed_multi_transfer_esdt_nft_execute_by_user_func_ptr: funcPointer(C.w2_managedMultiTransferESDTNFTExecuteByUser),
-		managed_transfer_value_execute_func_ptr:                  funcPointer(C.w2_managedTransferValueExecute),
-		managed_is_esdt_frozen_func_ptr:                          funcPointer(C.w2_managedIsESDTFrozen),
-		managed_is_esdt_limited_transfer_func_ptr:                funcPointer(C.w2_managedIsESDTLimitedTransfer),
-		managed_is_esdt_paused_func_ptr:                          funcPointer(C.w2_managedIsESDTPaused),
-		managed_buffer_to_hex_func_ptr:                           funcPointer(C.w2_managedBufferToHex),
-		managed_get_code_metadata_func_ptr:                       funcPointer(C.w2_managedGetCodeMetadata),
-		managed_is_builtin_function_func_ptr:                     funcPointer(C.w2_managedIsBuiltinFunction),
-		big_float_new_from_parts_func_ptr:                        funcPointer(C.w2_bigFloatNewFromParts),
-		big_float_new_from_frac_func_ptr:                         funcPointer(C.w2_bigFloatNewFromFrac),
-		big_float_new_from_sci_func_ptr:                          funcPointer(C.w2_bigFloatNewFromSci),
-		big_float_add_func_ptr:                                   funcPointer(C.w2_bigFloatAdd),
-		big_float_sub_func_ptr:                                   funcPointer(C.w2_bigFloatSub),
-		big_float_mul_func_ptr:                                   funcPointer(C.w2_bigFloatMul),
-		big_float_div_func_ptr:                                   funcPointer(C.w2_bigFloatDiv),
-		big_float_neg_func_ptr:                                   funcPointer(C.w2_bigFloatNeg),
-		big_float_clone_func_ptr:                                 funcPointer(C.w2_bigFloatClone),
-		big_float_cmp_func_ptr:                                   funcPointer(C.w2_bigFloatCmp),
-		big_float_abs_func_ptr:                                   funcPointer(C.w2_bigFloatAbs),
-		big_float_sign_func_ptr:                                  funcPointer(C.w2_bigFloatSign),
-		big_float_sqrt_func_ptr:                                  funcPointer(C.w2_bigFloatSqrt),
-		big_float_pow_func_ptr:                                   funcPointer(C.w2_bigFloatPow),
-		big_float_floor_func_ptr:                                 funcPointer(C.w2_bigFloatFloor),
-		big_float_ceil_func_ptr:                                  funcPointer(C.w2_bigFloatCeil),
-		big_float_truncate_func_ptr:                              funcPointer(C.w2_bigFloatTruncate),
-		big_float_set_int64_func_ptr:                             funcPointer(C.w2_bigFloatSetInt64),
-		big_float_is_int_func_ptr:                                funcPointer(C.w2_bigFloatIsInt),
-		big_float_set_big_int_func_ptr:                           funcPointer(C.w2_bigFloatSetBigInt),
-		big_float_get_const_pi_func_ptr:                          funcPointer(C.w2_bigFloatGetConstPi),
-		big_float_get_const_e_func_ptr:                           funcPointer(C.w2_bigFloatGetConstE),
-		big_int_get_unsigned_argument_func_ptr:                   funcPointer(C.w2_bigIntGetUnsignedArgument),
-		big_int_get_signed_argument_func_ptr:                     funcPointer(C.w2_bigIntGetSignedArgument),
-		big_int_storage_store_unsigned_func_ptr:                  funcPointer(C.w2_bigIntStorageStoreUnsigned),
-		big_int_storage_load_unsigned_func_ptr:                   funcPointer(C.w2_bigIntStorageLoadUnsigned),
-		big_int_get_call_value_func_ptr:                          funcPointer(C.w2_bigIntGetCallValue),
-		big_int_get_esdt_call_value_func_ptr:                     funcPointer(C.w2_bigIntGetESDTCallValue),
-		big_int_get_esdt_call_value_by_index_func_ptr:            funcPointer(C.w2_bigIntGetESDTCallValueByIndex),
-		big_int_get_external_balance_func_ptr:                    funcPointer(C.w2_bigIntGetExternalBalance),
-		big_int_get_esdt_external_balance_func_ptr:               funcPointer(C.w2_bigIntGetESDTExternalBalance),
-		big_int_new_func_ptr:                                     funcPointer(C.w2_bigIntNew),
-		big_int_unsigned_byte_length_func_ptr:                    funcPointer(C.w2_bigIntUnsignedByteLength),
-		big_int_signed_byte_length_func_ptr:                      funcPointer(C.w2_bigIntSignedByteLength),
-		big_int_get_unsigned_bytes_func_ptr:                      funcPointer(C.w2_bigIntGetUnsignedBytes),
-		big_int_get_signed_bytes_func_ptr:                        funcPointer(C.w2_bigIntGetSignedBytes),
-		big_int_set_unsigned_bytes_func_ptr:                      funcPointer(C.w2_bigIntSetUnsignedBytes),
-		big_int_set_signed_bytes_func_ptr:                        funcPointer(C.w2_bigIntSetSignedBytes),
-		big_int_is_int64_func_ptr:                                funcPointer(C.w2_bigIntIsInt64),
-		big_int_get_int64_func_ptr:                               funcPointer(C.w2_bigIntGetInt64),
-		big_int_set_int64_func_ptr:                               funcPointer(C.w2_bigIntSetInt64),
-		big_int_add_func_ptr:                                     funcPointer(C.w2_bigIntAdd),
-		big_int_sub_func_ptr:                                     funcPointer(C.w2_bigIntSub),
-		big_int_mul_func_ptr:                                     funcPointer(C.w2_bigIntMul),
-		big_int_tdiv_func_ptr:                                    funcPointer(C.w2_bigIntTDiv),
-		big_int_tmod_func_ptr:                                    funcPointer(C.w2_bigIntTMod),
-		big_int_ediv_func_ptr:                                    funcPointer(C.w2_bigIntEDiv),
-		big_int_emod_func_ptr:                                    funcPointer(C.w2_bigIntEMod),
-		big_int_sqrt_func_ptr:                                    funcPointer(C.w2_bigIntSqrt),
-		big_int_pow_func_ptr:                                     funcPointer(C.w2_bigIntPow),
-		big_int_log2_func_ptr:                                    funcPointer(C.w2_bigIntLog2),
-		big_int_abs_func_ptr:                                     funcPointer(C.w2_bigIntAbs),
-		big_int_neg_func_ptr:                                     funcPointer(C.w2_bigIntNeg),
-		big_int_sign_func_ptr:                                    funcPointer(C.w2_bigIntSign),
-		big_int_cmp_func_ptr:                                     funcPointer(C.w2_bigIntCmp),
-		big_int_not_func_ptr:                                     funcPointer(C.w2_bigIntNot),
-		big_int_and_func_ptr:                                     funcPointer(C.w2_bigIntAnd),
-		big_int_or_func_ptr:                                      funcPointer(C.w2_bigIntOr),
-		big_int_xor_func_ptr:                                     funcPointer(C.w2_bigIntXor),
-		big_int_shr_func_ptr:                                     funcPointer(C.w2_bigIntShr),
-		big_int_shl_func_ptr:                                     funcPointer(C.w2_bigIntShl),
-		big_int_finish_unsigned_func_ptr:                         funcPointer(C.w2_bigIntFinishUnsigned),
-		big_int_finish_signed_func_ptr:                           funcPointer(C.w2_bigIntFinishSigned),
-		big_int_to_string_func_ptr:                               funcPointer(C.w2_bigIntToString),
-		mbuffer_new_func_ptr:                                     funcPointer(C.w2_mBufferNew),
-		mbuffer_new_from_bytes_func_ptr:                          funcPointer(C.w2_mBufferNewFromBytes),
-		mbuffer_get_length_func_ptr:                              funcPointer(C.w2_mBufferGetLength),
-		mbuffer_get_bytes_func_ptr:                               funcPointer(C.w2_mBufferGetBytes),
-		mbuffer_get_byte_slice_func_ptr:                          funcPointer(C.w2_mBufferGetByteSlice),
-		mbuffer_copy_byte_slice_func_ptr:                         funcPointer(C.w2_mBufferCopyByteSlice),
-		mbuffer_eq_func_ptr:                                      funcPointer(C.w2_mBufferEq),
-		mbuffer_set_bytes_func_ptr:                               funcPointer(C.w2_mBufferSetBytes),
-		mbuffer_set_byte_slice_func_ptr:                          funcPointer(C.w2_mBufferSetByteSlice),
-		mbuffer_append_func_ptr:                                  funcPointer(C.w2_mBufferAppend),
-		mbuffer_append_bytes_func_ptr:                            funcPointer(C.w2_mBufferAppendBytes),
-		mbuffer_to_big_int_unsigned_func_ptr:                     funcPointer(C.w2_mBufferToBigIntUnsigned),
-		mbuffer_to_big_int_signed_func_ptr:                       funcPointer(C.w2_mBufferToBigIntSigned),
-		mbuffer_from_big_int_unsigned_func_ptr:                   funcPointer(C.w2_mBufferFromBigIntUnsigned),
-		mbuffer_from_big_int_signed_func_ptr:                     funcPointer(C.w2_mBufferFromBigIntSigned),
-		mbuffer_to_big_float_func_ptr:                            funcPointer(C.w2_mBufferToBigFloat),
-		mbuffer_from_big_float_func_ptr:                          funcPointer(C.w2_mBufferFromBigFloat),
-		mbuffer_storage_store_func_ptr:                           funcPointer(C.w2_mBufferStorageStore),
-		mbuffer_storage_load_func_ptr:                            funcPointer(C.w2_mBufferStorageLoad),
-		mbuffer_storage_load_from_address_func_ptr:               funcPointer(C.w2_mBufferStorageLoadFromAddress),
-		mbuffer_get_argument_func_ptr:                            funcPointer(C.w2_mBufferGetArgument),
-		mbuffer_finish_func_ptr:                                  funcPointer(C.w2_mBufferFinish),
-		mbuffer_set_random_func_ptr:                              funcPointer(C.w2_mBufferSetRandom),
-		managed_map_new_func_ptr:                                 funcPointer(C.w2_managedMapNew),
-		managed_map_put_func_ptr:                                 funcPointer(C.w2_managedMapPut),
-		managed_map_get_func_ptr:                                 funcPointer(C.w2_managedMapGet),
-		managed_map_remove_func_ptr:                              funcPointer(C.w2_managedMapRemove),
-		managed_map_contains_func_ptr:                            funcPointer(C.w2_managedMapContains),
-		small_int_get_unsigned_argument_func_ptr:                 funcPointer(C.w2_smallIntGetUnsignedArgument),
-		small_int_get_signed_argument_func_ptr:                   funcPointer(C.w2_smallIntGetSignedArgument),
-		small_int_finish_unsigned_func_ptr:                       funcPointer(C.w2_smallIntFinishUnsigned),
-		small_int_finish_signed_func_ptr:                         funcPointer(C.w2_smallIntFinishSigned),
-		small_int_storage_store_unsigned_func_ptr:                funcPointer(C.w2_smallIntStorageStoreUnsigned),
-		small_int_storage_store_signed_func_ptr:                  funcPointer(C.w2_smallIntStorageStoreSigned),
-		small_int_storage_load_unsigned_func_ptr:                 funcPointer(C.w2_smallIntStorageLoadUnsigned),
-		small_int_storage_load_signed_func_ptr:                   funcPointer(C.w2_smallIntStorageLoadSigned),
-		int64get_argument_func_ptr:                               funcPointer(C.w2_int64getArgument),
-		int64finish_func_ptr:                                     funcPointer(C.w2_int64finish),
-		int64storage_store_func_ptr:                              funcPointer(C.w2_int64storageStore),
-		int64storage_load_func_ptr:                               funcPointer(C.w2_int64storageLoad),
-		sha256_func_ptr:                                          funcPointer(C.w2_sha256),
-		managed_sha256_func_ptr:                                  funcPointer(C.w2_managedSha256),
-		keccak256_func_ptr:                                       funcPointer(C.w2_keccak256),
-		managed_keccak256_func_ptr:                               funcPointer(C.w2_managedKeccak256),
-		ripemd160_func_ptr:                                       funcPointer(C.w2_ripemd160),
-		managed_ripemd160_func_ptr:                               funcPointer(C.w2_managedRipemd160),
-		verify_bls_func_ptr:                                      funcPointer(C.w2_verifyBLS),
-		managed_verify_bls_func_ptr:                              funcPointer(C.w2_managedVerifyBLS),
-		verify_ed25519_func_ptr:                                  funcPointer(C.w2_verifyEd25519),
-		managed_verify_ed25519_func_ptr:                          funcPointer(C.w2_managedVerifyEd25519),
-		verify_custom_secp256k1_func_ptr:                         funcPointer(C.w2_verifyCustomSecp256k1),
-		managed_verify_custom_secp256k1_func_ptr:                 funcPointer(C.w2_managedVerifyCustomSecp256k1),
-		verify_secp256k1_func_ptr:                                funcPointer(C.w2_verifySecp256k1),
-		managed_verify_secp256k1_func_ptr:                        funcPointer(C.w2_managedVerifySecp256k1),
-		encode_secp256k1_der_signature_func_ptr:                  funcPointer(C.w2_encodeSecp256k1DerSignature),
-		managed_encode_secp256k1_der_signature_func_ptr:          funcPointer(C.w2_managedEncodeSecp256k1DerSignature),
-		add_ec_func_ptr:                                          funcPointer(C.w2_addEC),
-		double_ec_func_ptr:                                       funcPointer(C.w2_doubleEC),
-		is_on_curve_ec_func_ptr:                                  funcPointer(C.w2_isOnCurveEC),
-		scalar_base_mult_ec_func_ptr:                             funcPointer(C.w2_scalarBaseMultEC),
-		managed_scalar_base_mult_ec_func_ptr:                     funcPointer(C.w2_managedScalarBaseMultEC),
-		scalar_mult_ec_func_ptr:                                  funcPointer(C.w2_scalarMultEC),
-		managed_scalar_mult_ec_func_ptr:                          funcPointer(C.w2_managedScalarMultEC),
-		marshal_ec_func_ptr:                                      funcPointer(C.w2_marshalEC),
-		managed_marshal_ec_func_ptr:                              funcPointer(C.w2_managedMarshalEC),
-		marshal_compressed_ec_func_ptr:                           funcPointer(C.w2_marshalCompressedEC),
-		managed_marshal_compressed_ec_func_ptr:                   funcPointer(C.w2_managedMarshalCompressedEC),
-		unmarshal_ec_func_ptr:                                    funcPointer(C.w2_unmarshalEC),
-		managed_unmarshal_ec_func_ptr:                            funcPointer(C.w2_managedUnmarshalEC),
-		unmarshal_compressed_ec_func_ptr:                         funcPointer(C.w2_unmarshalCompressedEC),
-		managed_unmarshal_compressed_ec_func_ptr:                 funcPointer(C.w2_managedUnmarshalCompressedEC),
-		generate_key_ec_func_ptr:                                 funcPointer(C.w2_generateKeyEC),
-		managed_generate_key_ec_func_ptr:                         funcPointer(C.w2_managedGenerateKeyEC),
-		create_ec_func_ptr:                                       funcPointer(C.w2_createEC),
-		managed_create_ec_func_ptr:                               funcPointer(C.w2_managedCreateEC),
-		get_curve_length_ec_func_ptr:                             funcPointer(C.w2_getCurveLengthEC),
-		get_priv_key_byte_length_ec_func_ptr:                     funcPointer(C.w2_getPrivKeyByteLengthEC),
-		elliptic_curve_get_values_func_ptr:                       funcPointer(C.w2_ellipticCurveGetValues),
-		managed_verify_secp256r1_func_ptr:                        funcPointer(C.w2_managedVerifySecp256r1),
-		managed_verify_blssignature_share_func_ptr:               funcPointer(C.w2_managedVerifyBLSSignatureShare),
-		managed_verify_blsaggregated_signature_func_ptr:          funcPointer(C.w2_managedVerifyBLSAggregatedSignature),
+		get_gas_left_func_ptr:                                        funcPointer(C.w2_getGasLeft),
+		get_sc_address_func_ptr:                                      funcPointer(C.w2_getSCAddress),
+		get_owner_address_func_ptr:                                   funcPointer(C.w2_getOwnerAddress),
+		get_shard_of_address_func_ptr:                                funcPointer(C.w2_getShardOfAddress),
+		is_smart_contract_func_ptr:                                   funcPointer(C.w2_isSmartContract),
+		signal_error_func_ptr:                                        funcPointer(C.w2_signalError),
+		get_external_balance_func_ptr:                                funcPointer(C.w2_getExternalBalance),
+		get_block_hash_func_ptr:                                      funcPointer(C.w2_getBlockHash),
+		get_esdt_balance_func_ptr:                                    funcPointer(C.w2_getESDTBalance),
+		get_esdt_nft_name_length_func_ptr:                            funcPointer(C.w2_getESDTNFTNameLength),
+		get_esdt_nft_attribute_length_func_ptr:                       funcPointer(C.w2_getESDTNFTAttributeLength),
+		get_esdt_nft_uri_length_func_ptr:                             funcPointer(C.w2_getESDTNFTURILength),
+		get_esdt_token_data_func_ptr:                                 funcPointer(C.w2_getESDTTokenData),
+		get_esdt_local_roles_func_ptr:                                funcPointer(C.w2_getESDTLocalRoles),
+		validate_token_identifier_func_ptr:                           funcPointer(C.w2_validateTokenIdentifier),
+		transfer_value_func_ptr:                                      funcPointer(C.w2_transferValue),
+		transfer_value_execute_func_ptr:                              funcPointer(C.w2_transferValueExecute),
+		transfer_esdt_execute_func_ptr:                               funcPointer(C.w2_transferESDTExecute),
+		transfer_esdt_nft_execute_func_ptr:                           funcPointer(C.w2_transferESDTNFTExecute),
+		multi_transfer_esdt_nft_execute_func_ptr:                     funcPointer(C.w2_multiTransferESDTNFTExecute),
+		create_async_call_func_ptr:                                   funcPointer(C.w2_createAsyncCall),
+		set_async_context_callback_func_ptr:                          funcPointer(C.w2_setAsyncContextCallback),
+		upgrade_contract_func_ptr:                                    funcPointer(C.w2_upgradeContract),
+		upgrade_from_source_contract_func_ptr:                        funcPointer(C.w2_upgradeFromSourceContract),
+		delete_contract_func_ptr:                                     funcPointer(C.w2_deleteContract),
+		async_call_func_ptr:                                          funcPointer(C.w2_asyncCall),
+		get_argument_length_func_ptr:                                 funcPointer(C.w2_getArgumentLength),
+		get_argument_func_ptr:                                        funcPointer(C.w2_getArgument),
+		get_function_func_ptr:                                        funcPointer(C.w2_getFunction),
+		get_num_arguments_func_ptr:                                   funcPointer(C.w2_getNumArguments),
+		storage_store_func_ptr:                                       funcPointer(C.w2_storageStore),
+		storage_load_length_func_ptr:                                 funcPointer(C.w2_storageLoadLength),
+		storage_load_from_address_func_ptr:                           funcPointer(C.w2_storageLoadFromAddress),
+		storage_load_func_ptr:                                        funcPointer(C.w2_storageLoad),
+		set_storage_lock_func_ptr:                                    funcPointer(C.w2_setStorageLock),
+		get_storage_lock_func_ptr:                                    funcPointer(C.w2_getStorageLock),
+		is_storage_locked_func_ptr:                                   funcPointer(C.w2_isStorageLocked),
+		clear_storage_lock_func_ptr:                                  funcPointer(C.w2_clearStorageLock),
+		get_caller_func_ptr:                                          funcPointer(C.w2_getCaller),
+		check_no_payment_func_ptr:                                    funcPointer(C.w2_checkNoPayment),
+		get_call_value_func_ptr:                                      funcPointer(C.w2_getCallValue),
+		get_esdt_value_func_ptr:                                      funcPointer(C.w2_getESDTValue),
+		get_esdt_value_by_index_func_ptr:                             funcPointer(C.w2_getESDTValueByIndex),
+		get_esdt_token_name_func_ptr:                                 funcPointer(C.w2_getESDTTokenName),
+		get_esdt_token_name_by_index_func_ptr:                        funcPointer(C.w2_getESDTTokenNameByIndex),
+		get_esdt_token_nonce_func_ptr:                                funcPointer(C.w2_getESDTTokenNonce),
+		get_esdt_token_nonce_by_index_func_ptr:                       funcPointer(C.w2_getESDTTokenNonceByIndex),
+		get_current_esdt_nft_nonce_func_ptr:                          funcPointer(C.w2_getCurrentESDTNFTNonce),
+		get_esdt_token_type_func_ptr:                                 funcPointer(C.w2_getESDTTokenType),
+		get_esdt_token_type_by_index_func_ptr:                        funcPointer(C.w2_getESDTTokenTypeByIndex),
+		get_num_esdt_transfers_func_ptr:                              funcPointer(C.w2_getNumESDTTransfers),
+		get_call_value_token_name_func_ptr:                           funcPointer(C.w2_getCallValueTokenName),
+		get_call_value_token_name_by_index_func_ptr:                  funcPointer(C.w2_getCallValueTokenNameByIndex),
+		is_reserved_function_name_func_ptr:                           funcPointer(C.w2_isReservedFunctionName),
+		write_log_func_ptr:                                           funcPointer(C.w2_writeLog),
+		write_event_log_func_ptr:                                     funcPointer(C.w2_writeEventLog),
+		get_block_timestamp_func_ptr:                                 funcPointer(C.w2_getBlockTimestamp),
+		get_block_nonce_func_ptr:                                     funcPointer(C.w2_getBlockNonce),
+		get_block_round_func_ptr:                                     funcPointer(C.w2_getBlockRound),
+		get_block_epoch_func_ptr:                                     funcPointer(C.w2_getBlockEpoch),
+		get_block_random_seed_func_ptr:                               funcPointer(C.w2_getBlockRandomSeed),
+		get_state_root_hash_func_ptr:                                 funcPointer(C.w2_getStateRootHash),
+		get_prev_block_timestamp_func_ptr:                            funcPointer(C.w2_getPrevBlockTimestamp),
+		get_prev_block_nonce_func_ptr:                                funcPointer(C.w2_getPrevBlockNonce),
+		get_prev_block_round_func_ptr:                                funcPointer(C.w2_getPrevBlockRound),
+		get_prev_block_epoch_func_ptr:                                funcPointer(C.w2_getPrevBlockEpoch),
+		get_prev_block_random_seed_func_ptr:                          funcPointer(C.w2_getPrevBlockRandomSeed),
+		get_block_round_time_in_milliseconds_func_ptr:                funcPointer(C.w2_getBlockRoundTimeInMilliseconds),
+		epoch_start_block_time_stamp_func_ptr:                        funcPointer(C.w2_epochStartBlockTimeStamp),
+		epoch_start_block_nonce_func_ptr:                             funcPointer(C.w2_epochStartBlockNonce),
+		epoch_start_block_round_func_ptr:                             funcPointer(C.w2_epochStartBlockRound),
+		finish_func_ptr:                                              funcPointer(C.w2_finish),
+		execute_on_same_context_func_ptr:                             funcPointer(C.w2_executeOnSameContext),
+		execute_on_dest_context_func_ptr:                             funcPointer(C.w2_executeOnDestContext),
+		execute_read_only_func_ptr:                                   funcPointer(C.w2_executeReadOnly),
+		create_contract_func_ptr:                                     funcPointer(C.w2_createContract),
+		deploy_from_source_contract_func_ptr:                         funcPointer(C.w2_deployFromSourceContract),
+		get_num_return_data_func_ptr:                                 funcPointer(C.w2_getNumReturnData),
+		get_return_data_size_func_ptr:                                funcPointer(C.w2_getReturnDataSize),
+		get_return_data_func_ptr:                                     funcPointer(C.w2_getReturnData),
+		clean_return_data_func_ptr:                                   funcPointer(C.w2_cleanReturnData),
+		delete_from_return_data_func_ptr:                             funcPointer(C.w2_deleteFromReturnData),
+		get_original_tx_hash_func_ptr:                                funcPointer(C.w2_getOriginalTxHash),
+		get_current_tx_hash_func_ptr:                                 funcPointer(C.w2_getCurrentTxHash),
+		get_prev_tx_hash_func_ptr:                                    funcPointer(C.w2_getPrevTxHash),
+		managed_sc_address_func_ptr:                                  funcPointer(C.w2_managedSCAddress),
+		managed_owner_address_func_ptr:                               funcPointer(C.w2_managedOwnerAddress),
+		managed_caller_func_ptr:                                      funcPointer(C.w2_managedCaller),
+		managed_get_original_caller_addr_func_ptr:                    funcPointer(C.w2_managedGetOriginalCallerAddr),
+		managed_get_relayer_addr_func_ptr:                            funcPointer(C.w2_managedGetRelayerAddr),
+		managed_signal_error_func_ptr:                                funcPointer(C.w2_managedSignalError),
+		managed_write_log_func_ptr:                                   funcPointer(C.w2_managedWriteLog),
+		managed_get_original_tx_hash_func_ptr:                        funcPointer(C.w2_managedGetOriginalTxHash),
+		managed_get_state_root_hash_func_ptr:                         funcPointer(C.w2_managedGetStateRootHash),
+		managed_get_block_random_seed_func_ptr:                       funcPointer(C.w2_managedGetBlockRandomSeed),
+		managed_get_prev_block_random_seed_func_ptr:                  funcPointer(C.w2_managedGetPrevBlockRandomSeed),
+		managed_get_return_data_func_ptr:                             funcPointer(C.w2_managedGetReturnData),
+		managed_get_multi_esdt_call_value_func_ptr:                   funcPointer(C.w2_managedGetMultiESDTCallValue),
+		managed_get_all_transfers_call_value_func_ptr:                funcPointer(C.w2_managedGetAllTransfersCallValue),
+		managed_get_back_transfers_func_ptr:                          funcPointer(C.w2_managedGetBackTransfers),
+		managed_get_esdt_balance_func_ptr:                            funcPointer(C.w2_managedGetESDTBalance),
+		managed_get_esdt_token_data_func_ptr:                         funcPointer(C.w2_managedGetESDTTokenData),
+		managed_get_esdt_token_type_func_ptr:                         funcPointer(C.w2_managedGetESDTTokenType),
+		managed_async_call_func_ptr:                                  funcPointer(C.w2_managedAsyncCall),
+		managed_create_async_call_func_ptr:                           funcPointer(C.w2_managedCreateAsyncCall),
+		managed_get_callback_closure_func_ptr:                        funcPointer(C.w2_managedGetCallbackClosure),
+		managed_upgrade_from_source_contract_func_ptr:                funcPointer(C.w2_managedUpgradeFromSourceContract),
+		managed_upgrade_contract_func_ptr:                            funcPointer(C.w2_managedUpgradeContract),
+		managed_delete_contract_func_ptr:                             funcPointer(C.w2_managedDeleteContract),
+		managed_deploy_from_source_contract_func_ptr:                 funcPointer(C.w2_managedDeployFromSourceContract),
+		managed_create_contract_func_ptr:                             funcPointer(C.w2_managedCreateContract),
+		managed_execute_read_only_func_ptr:                           funcPointer(C.w2_managedExecuteReadOnly),
+		managed_execute_on_same_context_func_ptr:                     funcPointer(C.w2_managedExecuteOnSameContext),
+		managed_execute_on_dest_context_func_ptr:                     funcPointer(C.w2_managedExecuteOnDestContext),
+		managed_execute_on_dest_context_with_error_return_func_ptr:   funcPointer(C.w2_managedExecuteOnDestContextWithErrorReturn),
+		managed_multi_transfer_esdt_nft_execute_func_ptr:             funcPointer(C.w2_managedMultiTransferESDTNFTExecute),
+		managed_multi_transfer_esdt_nft_execute_with_return_func_ptr: funcPointer(C.w2_managedMultiTransferESDTNFTExecuteWithReturn),
+		managed_multi_transfer_esdt_nft_execute_by_user_func_ptr:     funcPointer(C.w2_managedMultiTransferESDTNFTExecuteByUser),
+		managed_transfer_value_execute_func_ptr:                      funcPointer(C.w2_managedTransferValueExecute),
+		managed_is_esdt_frozen_func_ptr:                              funcPointer(C.w2_managedIsESDTFrozen),
+		managed_is_esdt_limited_transfer_func_ptr:                    funcPointer(C.w2_managedIsESDTLimitedTransfer),
+		managed_is_esdt_paused_func_ptr:                              funcPointer(C.w2_managedIsESDTPaused),
+		managed_buffer_to_hex_func_ptr:                               funcPointer(C.w2_managedBufferToHex),
+		managed_get_code_metadata_func_ptr:                           funcPointer(C.w2_managedGetCodeMetadata),
+		managed_get_code_hash_func_ptr:                               funcPointer(C.w2_managedGetCodeHash),
+		managed_is_builtin_function_func_ptr:                         funcPointer(C.w2_managedIsBuiltinFunction),
+		big_float_new_from_parts_func_ptr:                            funcPointer(C.w2_bigFloatNewFromParts),
+		big_float_new_from_frac_func_ptr:                             funcPointer(C.w2_bigFloatNewFromFrac),
+		big_float_new_from_sci_func_ptr:                              funcPointer(C.w2_bigFloatNewFromSci),
+		big_float_add_func_ptr:                                       funcPointer(C.w2_bigFloatAdd),
+		big_float_sub_func_ptr:                                       funcPointer(C.w2_bigFloatSub),
+		big_float_mul_func_ptr:                                       funcPointer(C.w2_bigFloatMul),
+		big_float_div_func_ptr:                                       funcPointer(C.w2_bigFloatDiv),
+		big_float_neg_func_ptr:                                       funcPointer(C.w2_bigFloatNeg),
+		big_float_clone_func_ptr:                                     funcPointer(C.w2_bigFloatClone),
+		big_float_cmp_func_ptr:                                       funcPointer(C.w2_bigFloatCmp),
+		big_float_abs_func_ptr:                                       funcPointer(C.w2_bigFloatAbs),
+		big_float_sign_func_ptr:                                      funcPointer(C.w2_bigFloatSign),
+		big_float_sqrt_func_ptr:                                      funcPointer(C.w2_bigFloatSqrt),
+		big_float_pow_func_ptr:                                       funcPointer(C.w2_bigFloatPow),
+		big_float_floor_func_ptr:                                     funcPointer(C.w2_bigFloatFloor),
+		big_float_ceil_func_ptr:                                      funcPointer(C.w2_bigFloatCeil),
+		big_float_truncate_func_ptr:                                  funcPointer(C.w2_bigFloatTruncate),
+		big_float_set_int64_func_ptr:                                 funcPointer(C.w2_bigFloatSetInt64),
+		big_float_is_int_func_ptr:                                    funcPointer(C.w2_bigFloatIsInt),
+		big_float_set_big_int_func_ptr:                               funcPointer(C.w2_bigFloatSetBigInt),
+		big_float_get_const_pi_func_ptr:                              funcPointer(C.w2_bigFloatGetConstPi),
+		big_float_get_const_e_func_ptr:                               funcPointer(C.w2_bigFloatGetConstE),
+		big_int_get_unsigned_argument_func_ptr:                       funcPointer(C.w2_bigIntGetUnsignedArgument),
+		big_int_get_signed_argument_func_ptr:                         funcPointer(C.w2_bigIntGetSignedArgument),
+		big_int_storage_store_unsigned_func_ptr:                      funcPointer(C.w2_bigIntStorageStoreUnsigned),
+		big_int_storage_load_unsigned_func_ptr:                       funcPointer(C.w2_bigIntStorageLoadUnsigned),
+		big_int_get_call_value_func_ptr:                              funcPointer(C.w2_bigIntGetCallValue),
+		big_int_get_esdt_call_value_func_ptr:                         funcPointer(C.w2_bigIntGetESDTCallValue),
+		big_int_get_esdt_call_value_by_index_func_ptr:                funcPointer(C.w2_bigIntGetESDTCallValueByIndex),
+		big_int_get_external_balance_func_ptr:                        funcPointer(C.w2_bigIntGetExternalBalance),
+		big_int_get_esdt_external_balance_func_ptr:                   funcPointer(C.w2_bigIntGetESDTExternalBalance),
+		big_int_new_func_ptr:                                         funcPointer(C.w2_bigIntNew),
+		big_int_unsigned_byte_length_func_ptr:                        funcPointer(C.w2_bigIntUnsignedByteLength),
+		big_int_signed_byte_length_func_ptr:                          funcPointer(C.w2_bigIntSignedByteLength),
+		big_int_get_unsigned_bytes_func_ptr:                          funcPointer(C.w2_bigIntGetUnsignedBytes),
+		big_int_get_signed_bytes_func_ptr:                            funcPointer(C.w2_bigIntGetSignedBytes),
+		big_int_set_unsigned_bytes_func_ptr:                          funcPointer(C.w2_bigIntSetUnsignedBytes),
+		big_int_set_signed_bytes_func_ptr:                            funcPointer(C.w2_bigIntSetSignedBytes),
+		big_int_is_int64_func_ptr:                                    funcPointer(C.w2_bigIntIsInt64),
+		big_int_get_int64_func_ptr:                                   funcPointer(C.w2_bigIntGetInt64),
+		big_int_set_int64_func_ptr:                                   funcPointer(C.w2_bigIntSetInt64),
+		big_int_add_func_ptr:                                         funcPointer(C.w2_bigIntAdd),
+		big_int_sub_func_ptr:                                         funcPointer(C.w2_bigIntSub),
+		big_int_mul_func_ptr:                                         funcPointer(C.w2_bigIntMul),
+		big_int_tdiv_func_ptr:                                        funcPointer(C.w2_bigIntTDiv),
+		big_int_tmod_func_ptr:                                        funcPointer(C.w2_bigIntTMod),
+		big_int_ediv_func_ptr:                                        funcPointer(C.w2_bigIntEDiv),
+		big_int_emod_func_ptr:                                        funcPointer(C.w2_bigIntEMod),
+		big_int_sqrt_func_ptr:                                        funcPointer(C.w2_bigIntSqrt),
+		big_int_pow_func_ptr:                                         funcPointer(C.w2_bigIntPow),
+		big_int_log2_func_ptr:                                        funcPointer(C.w2_bigIntLog2),
+		big_int_abs_func_ptr:                                         funcPointer(C.w2_bigIntAbs),
+		big_int_neg_func_ptr:                                         funcPointer(C.w2_bigIntNeg),
+		big_int_sign_func_ptr:                                        funcPointer(C.w2_bigIntSign),
+		big_int_cmp_func_ptr:                                         funcPointer(C.w2_bigIntCmp),
+		big_int_not_func_ptr:                                         funcPointer(C.w2_bigIntNot),
+		big_int_and_func_ptr:                                         funcPointer(C.w2_bigIntAnd),
+		big_int_or_func_ptr:                                          funcPointer(C.w2_bigIntOr),
+		big_int_xor_func_ptr:                                         funcPointer(C.w2_bigIntXor),
+		big_int_shr_func_ptr:                                         funcPointer(C.w2_bigIntShr),
+		big_int_shl_func_ptr:                                         funcPointer(C.w2_bigIntShl),
+		big_int_finish_unsigned_func_ptr:                             funcPointer(C.w2_bigIntFinishUnsigned),
+		big_int_finish_signed_func_ptr:                               funcPointer(C.w2_bigIntFinishSigned),
+		big_int_to_string_func_ptr:                                   funcPointer(C.w2_bigIntToString),
+		mbuffer_new_func_ptr:                                         funcPointer(C.w2_mBufferNew),
+		mbuffer_new_from_bytes_func_ptr:                              funcPointer(C.w2_mBufferNewFromBytes),
+		mbuffer_get_length_func_ptr:                                  funcPointer(C.w2_mBufferGetLength),
+		mbuffer_get_bytes_func_ptr:                                   funcPointer(C.w2_mBufferGetBytes),
+		mbuffer_get_byte_slice_func_ptr:                              funcPointer(C.w2_mBufferGetByteSlice),
+		mbuffer_copy_byte_slice_func_ptr:                             funcPointer(C.w2_mBufferCopyByteSlice),
+		mbuffer_eq_func_ptr:                                          funcPointer(C.w2_mBufferEq),
+		mbuffer_set_bytes_func_ptr:                                   funcPointer(C.w2_mBufferSetBytes),
+		mbuffer_set_byte_slice_func_ptr:                              funcPointer(C.w2_mBufferSetByteSlice),
+		mbuffer_append_func_ptr:                                      funcPointer(C.w2_mBufferAppend),
+		mbuffer_append_bytes_func_ptr:                                funcPointer(C.w2_mBufferAppendBytes),
+		mbuffer_to_big_int_unsigned_func_ptr:                         funcPointer(C.w2_mBufferToBigIntUnsigned),
+		mbuffer_to_big_int_signed_func_ptr:                           funcPointer(C.w2_mBufferToBigIntSigned),
+		mbuffer_from_big_int_unsigned_func_ptr:                       funcPointer(C.w2_mBufferFromBigIntUnsigned),
+		mbuffer_from_big_int_signed_func_ptr:                         funcPointer(C.w2_mBufferFromBigIntSigned),
+		mbuffer_to_small_int_unsigned_func_ptr:                       funcPointer(C.w2_mBufferToSmallIntUnsigned),
+		mbuffer_to_small_int_signed_func_ptr:                         funcPointer(C.w2_mBufferToSmallIntSigned),
+		mbuffer_from_small_int_unsigned_func_ptr:                     funcPointer(C.w2_mBufferFromSmallIntUnsigned),
+		mbuffer_from_small_int_signed_func_ptr:                       funcPointer(C.w2_mBufferFromSmallIntSigned),
+		mbuffer_to_big_float_func_ptr:                                funcPointer(C.w2_mBufferToBigFloat),
+		mbuffer_from_big_float_func_ptr:                              funcPointer(C.w2_mBufferFromBigFloat),
+		mbuffer_storage_store_func_ptr:                               funcPointer(C.w2_mBufferStorageStore),
+		mbuffer_storage_load_func_ptr:                                funcPointer(C.w2_mBufferStorageLoad),
+		mbuffer_storage_load_from_address_func_ptr:                   funcPointer(C.w2_mBufferStorageLoadFromAddress),
+		mbuffer_get_argument_func_ptr:                                funcPointer(C.w2_mBufferGetArgument),
+		mbuffer_finish_func_ptr:                                      funcPointer(C.w2_mBufferFinish),
+		mbuffer_set_random_func_ptr:                                  funcPointer(C.w2_mBufferSetRandom),
+		managed_map_new_func_ptr:                                     funcPointer(C.w2_managedMapNew),
+		managed_map_put_func_ptr:                                     funcPointer(C.w2_managedMapPut),
+		managed_map_get_func_ptr:                                     funcPointer(C.w2_managedMapGet),
+		managed_map_remove_func_ptr:                                  funcPointer(C.w2_managedMapRemove),
+		managed_map_contains_func_ptr:                                funcPointer(C.w2_managedMapContains),
+		small_int_get_unsigned_argument_func_ptr:                     funcPointer(C.w2_smallIntGetUnsignedArgument),
+		small_int_get_signed_argument_func_ptr:                       funcPointer(C.w2_smallIntGetSignedArgument),
+		small_int_finish_unsigned_func_ptr:                           funcPointer(C.w2_smallIntFinishUnsigned),
+		small_int_finish_signed_func_ptr:                             funcPointer(C.w2_smallIntFinishSigned),
+		small_int_storage_store_unsigned_func_ptr:                    funcPointer(C.w2_smallIntStorageStoreUnsigned),
+		small_int_storage_store_signed_func_ptr:                      funcPointer(C.w2_smallIntStorageStoreSigned),
+		small_int_storage_load_unsigned_func_ptr:                     funcPointer(C.w2_smallIntStorageLoadUnsigned),
+		small_int_storage_load_signed_func_ptr:                       funcPointer(C.w2_smallIntStorageLoadSigned),
+		int64get_argument_func_ptr:                                   funcPointer(C.w2_int64getArgument),
+		int64finish_func_ptr:                                         funcPointer(C.w2_int64finish),
+		int64storage_store_func_ptr:                                  funcPointer(C.w2_int64storageStore),
+		int64storage_load_func_ptr:                                   funcPointer(C.w2_int64storageLoad),
+		sha256_func_ptr:                                              funcPointer(C.w2_sha256),
+		managed_sha256_func_ptr:                                      funcPointer(C.w2_managedSha256),
+		keccak256_func_ptr:                                           funcPointer(C.w2_keccak256),
+		managed_keccak256_func_ptr:                                   funcPointer(C.w2_managedKeccak256),
+		ripemd160_func_ptr:                                           funcPointer(C.w2_ripemd160),
+		managed_ripemd160_func_ptr:                                   funcPointer(C.w2_managedRipemd160),
+		verify_bls_func_ptr:                                          funcPointer(C.w2_verifyBLS),
+		managed_verify_bls_func_ptr:                                  funcPointer(C.w2_managedVerifyBLS),
+		verify_ed25519_func_ptr:                                      funcPointer(C.w2_verifyEd25519),
+		managed_verify_ed25519_func_ptr:                              funcPointer(C.w2_managedVerifyEd25519),
+		verify_custom_secp256k1_func_ptr:                             funcPointer(C.w2_verifyCustomSecp256k1),
+		managed_verify_custom_secp256k1_func_ptr:                     funcPointer(C.w2_managedVerifyCustomSecp256k1),
+		verify_secp256k1_func_ptr:                                    funcPointer(C.w2_verifySecp256k1),
+		managed_verify_secp256k1_func_ptr:                            funcPointer(C.w2_managedVerifySecp256k1),
+		encode_secp256k1_der_signature_func_ptr:                      funcPointer(C.w2_encodeSecp256k1DerSignature),
+		managed_encode_secp256k1_der_signature_func_ptr:              funcPointer(C.w2_managedEncodeSecp256k1DerSignature),
+		add_ec_func_ptr:                                              funcPointer(C.w2_addEC),
+		double_ec_func_ptr:                                           funcPointer(C.w2_doubleEC),
+		is_on_curve_ec_func_ptr:                                      funcPointer(C.w2_isOnCurveEC),
+		scalar_base_mult_ec_func_ptr:                                 funcPointer(C.w2_scalarBaseMultEC),
+		managed_scalar_base_mult_ec_func_ptr:                         funcPointer(C.w2_managedScalarBaseMultEC),
+		scalar_mult_ec_func_ptr:                                      funcPointer(C.w2_scalarMultEC),
+		managed_scalar_mult_ec_func_ptr:                              funcPointer(C.w2_managedScalarMultEC),
+		marshal_ec_func_ptr:                                          funcPointer(C.w2_marshalEC),
+		managed_marshal_ec_func_ptr:                                  funcPointer(C.w2_managedMarshalEC),
+		marshal_compressed_ec_func_ptr:                               funcPointer(C.w2_marshalCompressedEC),
+		managed_marshal_compressed_ec_func_ptr:                       funcPointer(C.w2_managedMarshalCompressedEC),
+		unmarshal_ec_func_ptr:                                        funcPointer(C.w2_unmarshalEC),
+		managed_unmarshal_ec_func_ptr:                                funcPointer(C.w2_managedUnmarshalEC),
+		unmarshal_compressed_ec_func_ptr:                             funcPointer(C.w2_unmarshalCompressedEC),
+		managed_unmarshal_compressed_ec_func_ptr:                     funcPointer(C.w2_managedUnmarshalCompressedEC),
+		generate_key_ec_func_ptr:                                     funcPointer(C.w2_generateKeyEC),
+		managed_generate_key_ec_func_ptr:                             funcPointer(C.w2_managedGenerateKeyEC),
+		create_ec_func_ptr:                                           funcPointer(C.w2_createEC),
+		managed_create_ec_func_ptr:                                   funcPointer(C.w2_managedCreateEC),
+		get_curve_length_ec_func_ptr:                                 funcPointer(C.w2_getCurveLengthEC),
+		get_priv_key_byte_length_ec_func_ptr:                         funcPointer(C.w2_getPrivKeyByteLengthEC),
+		elliptic_curve_get_values_func_ptr:                           funcPointer(C.w2_ellipticCurveGetValues),
+		managed_verify_secp256r1_func_ptr:                            funcPointer(C.w2_managedVerifySecp256r1),
+		managed_verify_blssignature_share_func_ptr:                   funcPointer(C.w2_managedVerifyBLSSignatureShare),
+		managed_verify_blsaggregated_signature_func_ptr:              funcPointer(C.w2_managedVerifyBLSAggregatedSignature),
 	}
 }
 
@@ -951,6 +977,30 @@ func w2_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
 }
 
+//export w2_getBlockRoundTimeInMilliseconds
+func w2_getBlockRoundTimeInMilliseconds(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetBlockRoundTimeInMilliseconds()
+}
+
+//export w2_epochStartBlockTimeStamp
+func w2_epochStartBlockTimeStamp(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockTimeStamp()
+}
+
+//export w2_epochStartBlockNonce
+func w2_epochStartBlockNonce(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockNonce()
+}
+
+//export w2_epochStartBlockRound
+func w2_epochStartBlockRound(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EpochStartBlockRound()
+}
+
 //export w2_finish
 func w2_finish(context unsafe.Pointer, pointer int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -1113,6 +1163,12 @@ func w2_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandl
 	vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 }
 
+//export w2_managedGetAllTransfersCallValue
+func w2_managedGetAllTransfersCallValue(context unsafe.Pointer, transferCallValuesListHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+}
+
 //export w2_managedGetBackTransfers
 func w2_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -1129,6 +1185,12 @@ func w2_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, token
 func w2_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+}
+
+//export w2_managedGetESDTTokenType
+func w2_managedGetESDTTokenType(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 }
 
 //export w2_managedAsyncCall
@@ -1197,10 +1259,22 @@ func w2_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, addressHa
 	return vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
+//export w2_managedExecuteOnDestContextWithErrorReturn
+func w2_managedExecuteOnDestContextWithErrorReturn(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+}
+
 //export w2_managedMultiTransferESDTNFTExecute
 func w2_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+}
+
+//export w2_managedMultiTransferESDTNFTExecuteWithReturn
+func w2_managedMultiTransferESDTNFTExecuteWithReturn(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export w2_managedMultiTransferESDTNFTExecuteByUser
@@ -1243,6 +1317,12 @@ func w2_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandl
 func w2_managedGetCodeMetadata(context unsafe.Pointer, addressHandle int32, responseHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+}
+
+//export w2_managedGetCodeHash
+func w2_managedGetCodeHash(context unsafe.Pointer, addressHandle int32, codeHashHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 }
 
 //export w2_managedIsBuiltinFunction
@@ -1723,6 +1803,30 @@ func w2_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, b
 func w2_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+}
+
+//export w2_mBufferToSmallIntUnsigned
+func w2_mBufferToSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+}
+
+//export w2_mBufferToSmallIntSigned
+func w2_mBufferToSmallIntSigned(context unsafe.Pointer, mBufferHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+}
+
+//export w2_mBufferFromSmallIntUnsigned
+func w2_mBufferFromSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+}
+
+//export w2_mBufferFromSmallIntSigned
+func w2_mBufferFromSmallIntSigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 }
 
 //export w2_mBufferToBigFloat

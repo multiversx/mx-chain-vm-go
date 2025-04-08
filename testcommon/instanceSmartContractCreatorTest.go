@@ -58,6 +58,12 @@ func (template *InstanceCreatorTestTemplate) WithWasmerSIGSEGVPassthrough(passth
 	return template
 }
 
+// WithEnableEpochsHandler sets the enableEpochsHandler
+func (template *InstanceCreatorTestTemplate) WithEnableEpochsHandler(enableEpochsHandler vmcommon.EnableEpochsHandler) *InstanceCreatorTestTemplate {
+	template.hostBuilder.WithEnableEpochsHandler(enableEpochsHandler)
+	return template
+}
+
 // WithAddress provides the address for a TestCreateTemplateConfig
 func (template *InstanceCreatorTestTemplate) WithAddress(address []byte) *InstanceCreatorTestTemplate {
 	template.address = address

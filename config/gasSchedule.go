@@ -312,8 +312,13 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["CleanReturnData"] = value
 	gasMap["DeleteFromReturnData"] = value
 	gasMap["GetCodeMetadata"] = value
+	gasMap["GetCodeHash"] = value
 	gasMap["IsBuiltinFunction"] = value
 	gasMap["IsReservedFunctionName"] = value
+	gasMap["GetRoundTime"] = value
+	gasMap["EpochStartBlockTimeStamp"] = value
+	gasMap["EpochStartBlockNonce"] = value
+	gasMap["EpochStartBlockRound"] = value
 
 	return gasMap
 }
@@ -469,6 +474,10 @@ func FillGasMapManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferAppend"] = value
 	gasMap["MBufferAppendBytes"] = value
 	gasMap["MBufferToBigIntUnsigned"] = value
+	gasMap["MBufferToSmallIntUnsigned"] = value
+	gasMap["MBufferToSmallIntSigned"] = value
+	gasMap["MBufferFromSmallIntUnsigned"] = value
+	gasMap["MBufferFromSmallIntSigned"] = value
 	gasMap["MBufferToBigIntSigned"] = value
 	gasMap["MBufferFromBigIntUnsigned"] = value
 	gasMap["MBufferFromBigIntSigned"] = value

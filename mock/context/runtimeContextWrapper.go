@@ -260,30 +260,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		runtimeWrapper.runtimeContext.SetPointsUsed(gasPoints)
 	}
 
-	runtimeWrapper.BaseOpsErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.BaseOpsErrorShouldFailExecution()
-	}
-
-	runtimeWrapper.SyncExecAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.SyncExecAPIErrorShouldFailExecution()
-	}
-
-	runtimeWrapper.CryptoAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.CryptoAPIErrorShouldFailExecution()
-	}
-
-	runtimeWrapper.BigIntAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.BigIntAPIErrorShouldFailExecution()
-	}
-
-	runtimeWrapper.BigFloatAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.BigFloatAPIErrorShouldFailExecution()
-	}
-
-	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
-	}
-
 	runtimeWrapper.AddErrorFunc = func(err error, otherInfo ...string) {
 		runtimeWrapper.runtimeContext.AddError(err, otherInfo...)
 	}
@@ -498,41 +474,6 @@ func (contextWrapper *RuntimeContextWrapper) SetPointsUsed(gasPoints uint64) {
 	contextWrapper.SetPointsUsedFunc(gasPoints)
 }
 
-// BaseOpsErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) BaseOpsErrorShouldFailExecution() bool {
-	return contextWrapper.BaseOpsErrorShouldFailExecutionFunc()
-}
-
-// SyncExecAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SyncExecAPIErrorShouldFailExecution() bool {
-	return contextWrapper.SyncExecAPIErrorShouldFailExecutionFunc()
-}
-
-// CryptoAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) CryptoAPIErrorShouldFailExecution() bool {
-	return contextWrapper.CryptoAPIErrorShouldFailExecutionFunc()
-}
-
-// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution() bool {
-	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
-}
-
-// BigFloatAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
-	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
-}
-
-// ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
-	return contextWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
-}
-
-// ManagedMapAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ManagedMapAPIErrorShouldFailExecution() bool {
-	return contextWrapper.runtimeContext.ManagedMapAPIErrorShouldFailExecution()
-}
-
 // UseGasBoundedShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) UseGasBoundedShouldFailExecution() bool {
 	return contextWrapper.runtimeContext.UseGasBoundedShouldFailExecution()
@@ -544,7 +485,7 @@ func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 }
 
 // ReplaceVMExecutor mocked method
-func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(vmExecutor executor.Executor) {
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(_ executor.Executor) {
 }
 
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

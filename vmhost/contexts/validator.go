@@ -4,12 +4,29 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 const allowedCharsInFunctionName = "abcdefghijklmnopqrstuvwxyz0123456789_"
+
+var reservedFunctionsActivationFlag = map[string]core.EnableEpochFlag{
+	"mbufferToSmallIntUnsigned":                    vmhost.BarnardOpcodesFlag,
+	"mbufferToSmallIntSigned":                      vmhost.BarnardOpcodesFlag,
+	"mbufferFromSmallIntUnsigned":                  vmhost.BarnardOpcodesFlag,
+	"mbufferFromSmallIntSigned":                    vmhost.BarnardOpcodesFlag,
+	"getBlockRoundTimeInMilliseconds":              vmhost.BarnardOpcodesFlag,
+	"epochStartBlockTimeStamp":                     vmhost.BarnardOpcodesFlag,
+	"epochStartBlockNonce":                         vmhost.BarnardOpcodesFlag,
+	"epochStartBlockRound":                         vmhost.BarnardOpcodesFlag,
+	"managedGetAllTransfersCallValue":              vmhost.BarnardOpcodesFlag,
+	"managedExecuteOnDestContextWithErrorReturn":   vmhost.BarnardOpcodesFlag,
+	"managedMultiTransferESDTNFTExecuteWithReturn": vmhost.BarnardOpcodesFlag,
+	"managedGetCodeHash":                           vmhost.BarnardOpcodesFlag,
+	"managedGetESDTTokenType":                      vmhost.BarnardOpcodesFlag,
+}
 
 // wasmValidator is a validator for WASM SmartContracts
 type wasmValidator struct {
@@ -20,9 +37,10 @@ type wasmValidator struct {
 func newWASMValidator(
 	scAPINames vmcommon.FunctionNames,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	enableEpochsHandler vmcommon.EnableEpochsHandler,
 ) *wasmValidator {
 	return &wasmValidator{
-		reserved: NewReservedFunctions(scAPINames, builtInFuncContainer),
+		reserved: NewReservedFunctions(scAPINames, builtInFuncContainer, reservedFunctionsActivationFlag, enableEpochsHandler),
 	}
 }
 
