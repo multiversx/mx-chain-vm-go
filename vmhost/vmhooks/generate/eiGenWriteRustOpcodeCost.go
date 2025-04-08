@@ -8,7 +8,7 @@ import (
 )
 
 const useStatements = `
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
@@ -53,7 +53,7 @@ func WriteRustOpcodeCost(out *eiGenWriter) {
 
 `)
 	out.WriteString(useStatements)
-	out.WriteString("#[derive(Clone, Debug, Default, Deserialize)]\n")
+	out.WriteString("#[derive(Clone, Debug, Default, Serialize, Deserialize)]\n")
 	out.WriteString("#[serde(default)]")
 	out.WriteString("pub struct OpcodeCost {\n")
 
