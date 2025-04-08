@@ -86,7 +86,7 @@ type MainVMHooks interface {
 	GetPrevBlockRound() int64
 	GetPrevBlockEpoch() int64
 	GetPrevBlockRandomSeed(pointer MemPtr)
-	GetRoundTime() int64
+	GetBlockRoundTimeInMilliseconds() int64
 	EpochStartBlockTimeStamp() int64
 	EpochStartBlockNonce() int64
 	EpochStartBlockRound() int64

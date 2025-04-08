@@ -9,7 +9,7 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 #[no_mangle]
 pub extern "C" fn test_round_time() {
     unsafe {
-        let result = getRoundTime();
+        let result = getBlockRoundTimeInMilliseconds();
         let result: [u8; 1] = [(result & 0xff) as u8];
         finish(result.as_ref().as_ptr(), 1);
     };
@@ -44,7 +44,7 @@ pub extern "C" fn test_epoch_start_block_round() {
 
 extern {
     fn finish(data: *const u8, len: i32);
-    fn getRoundTime() -> i64;
+    fn getBlockRoundTimeInMilliseconds() -> i64;
     fn epochStartBlockTimeStamp() -> i64;
     fn epochStartBlockNonce() -> i64;
     fn epochStartBlockRound() -> i64;

@@ -76,7 +76,7 @@ var functionNames = map[string]struct{}{
 	"getPrevBlockRound":                            empty,
 	"getPrevBlockEpoch":                            empty,
 	"getPrevBlockRandomSeed":                       empty,
-	"getRoundTime":                                 empty,
+	"getBlockRoundTimeInMilliseconds":              empty,
 	"epochStartBlockTimeStamp":                     empty,
 	"epochStartBlockNonce":                         empty,
 	"epochStartBlockRound":                         empty,

@@ -32,7 +32,7 @@ var mapBarnardOpcodes = map[string]struct{}{
 	"mbufferToSmallIntSigned":                      {},
 	"mbufferFromSmallIntUnsigned":                  {},
 	"mbufferFromSmallIntSigned":                    {},
-	"getRoundTime":                                 {},
+	"getBlockRoundTimeInMilliseconds":              {},
 	"epochStartBlockTimeStamp":                     {},
 	"epochStartBlockNonce":                         {},
 	"epochStartBlockRound":                         {},
@@ -92,12 +92,13 @@ func NewRuntimeContext(
 	}
 
 	scAPINames := vmExecutor.FunctionNames()
+	enableEpochsHandler := host.EnableEpochsHandler()
 
 	context := &runtimeContext{
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
+		validator:  newWASMValidator(scAPINames, builtInFuncContainer, enableEpochsHandler),
 		hasher:     hasher,
 		errors:     nil,
 	}
