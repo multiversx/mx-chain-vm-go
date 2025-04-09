@@ -53,7 +53,7 @@ func WriteRustOpcodeCost(out *eiGenWriter) {
 
 `)
 	out.WriteString(useStatements)
-	out.WriteString("#[derive(Clone, Debug, Default, Serialize, Deserialize)]\n")
+	out.WriteString("#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]\n")
 	out.WriteString("#[serde(default)]")
 	out.WriteString("pub struct OpcodeCost {\n")
 
