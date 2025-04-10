@@ -5,7 +5,7 @@ go 1.20
 replace (
 	github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20250410112225-9b4402144b11
 	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.5.1-0.20250410125451-65e8bdbf0252
-	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20250410124912-03e5244942af
+	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20250410143856-c8c2b5eeaa7c
 )
 
 require (
