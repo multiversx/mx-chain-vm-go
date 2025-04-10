@@ -2,6 +2,12 @@ module github.com/multiversx/mx-chain-vm-go
 
 go 1.20
 
+replace (
+	github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20250410112225-9b4402144b11
+	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.5.1-0.20250410125451-65e8bdbf0252
+	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20250410124912-03e5244942af
+)
+
 require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2
@@ -11,7 +17,7 @@ require (
 	github.com/holiman/uint256 v1.2.4
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiversx/mx-chain-core-go v1.2.24-0.20241119082458-e2451e147ab1
-	github.com/multiversx/mx-chain-crypto-go v1.2.12
+	github.com/multiversx/mx-chain-crypto-go v1.2.13-0.20250410124744-d21d37be8e32
 	github.com/multiversx/mx-chain-logger-go v1.0.15
 	github.com/multiversx/mx-chain-scenario-go v1.4.4
 	github.com/multiversx/mx-chain-storage-go v1.0.16
@@ -87,13 +93,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
-
-replace github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20250410112225-9b4402144b11
-
-replace github.com/multiversx/mx-sdk-abi-go => github.com/multiversx/mx-sdk-abi-go v0.3.1-0.20240912062928-8502f4c3b37c
-
-replace github.com/multiversx/mx-chain-crypto-go => github.com/multiversx/mx-chain-crypto-go v1.2.13-0.20250410114129-6c7b360d3b65
-
-replace github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.5.1-0.20250410123436-5751c92a5b80
-
-replace github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20250410122840-746d3522fe41
