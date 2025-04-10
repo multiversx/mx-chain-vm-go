@@ -63,7 +63,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
-	github.com/multiversx/mx-sdk-abi-go v0.0.0-00010101000000-000000000000 // indirect
+	github.com/multiversx/mx-sdk-abi-go v0.3.1-0.20240912062928-8502f4c3b37c // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -88,12 +88,12 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/multiversx/mx-chain-core-go => github.com/buidly/mx-evm-chain-core-go v0.0.0-20241218164003-125e62918c9a
+replace github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20250410112225-9b4402144b11
 
-replace github.com/multiversx/mx-sdk-abi-go => github.com/buidly/mx-evm-sdk-abi-go v0.0.0-20240912062928-8502f4c3b37c
+replace github.com/multiversx/mx-sdk-abi-go => github.com/multiversx/mx-sdk-abi-go v0.3.1-0.20240912062928-8502f4c3b37c
 
-replace github.com/multiversx/mx-chain-crypto-go => github.com/buidly/mx-evm-chain-crypto-go v0.0.0-20241218164427-23002ca51a06
+replace github.com/multiversx/mx-chain-crypto-go => github.com/multiversx/mx-chain-crypto-go v1.2.13-0.20250410114129-6c7b360d3b65
 
-replace github.com/multiversx/mx-chain-scenario-go => github.com/buidly/mx-evm-chain-scenario-go v0.0.0-20241218165419-d40ea3583a6d
+replace github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.5.1-0.20250410123436-5751c92a5b80
 
-replace github.com/multiversx/mx-chain-vm-common-go => github.com/buidly/mx-evm-chain-vm-common-go v0.0.0-20241218165151-6a06c28b888f
+replace github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20250410122840-746d3522fe41
