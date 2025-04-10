@@ -194,8 +194,8 @@ func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ vmhost.CodeD
 }
 
 // DeductInitialGasForIndirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ vmhost.CodeDeployInput) error {
-	return m.Err
+func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ vmhost.CodeDeployInput) (uint64, error) {
+	return 0, m.Err
 }
 
 // EnableRestoreGas mocked method

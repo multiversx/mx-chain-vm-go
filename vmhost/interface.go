@@ -44,8 +44,9 @@ type VMHost interface {
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnSameContext(input *vmcommon.ContractSameContextCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+	IsOutOfVMFunctionExecution(input *vmcommon.ContractCallInput) bool
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
@@ -69,11 +70,13 @@ type VMHost interface {
 type BlockchainContext interface {
 	StateStack
 
+	GetNonceForNewAddress(creatorAddress []byte) (uint64, error)
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
 	GetBalanceBigInt(addr []byte) *big.Int
 	GetNonce(addr []byte) (uint64, error)
+	ChainID() []byte
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
 	LastTimeStamp() uint64
@@ -105,6 +108,8 @@ type BlockchainContext interface {
 	RevertToSnapshot(snapshot int)
 	ClearCompiledCodes()
 	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	SaveAliasAddress(request *vmcommon.AliasSaveRequest) error
+	RequestAddress(request *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
@@ -120,8 +125,12 @@ type RuntimeContext interface {
 	GetContextAddress() []byte
 	GetOriginalCallerAddress() []byte
 	SetCodeAddress(scAddress []byte)
+	ComputeCodeHash(contract []byte) []byte
+	SetTrackerCode(contract []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
+	GetSCCodeHash() []byte
+	SaveCompiledCode()
 	GetVMType() []byte
 	FunctionName() string
 	Arguments() [][]byte
@@ -238,6 +247,7 @@ type OutputContext interface {
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
+	DeleteAccount(address []byte)
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data [][]byte)
 	WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte)
@@ -260,6 +270,8 @@ type OutputContext interface {
 	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
+	ChangeAccountCode(address []byte, contract []byte)
+	SetIsCreatedInTransactionFlag(address []byte)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 	NextOutputTransferIndex() uint32
 	GetCrtTransferIndex() uint32
@@ -288,7 +300,7 @@ type MeteringContext interface {
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
-	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
+	DeductInitialGasForIndirectDeployment(input CodeDeployInput) (uint64, error)
 	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error

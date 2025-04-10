@@ -87,6 +87,11 @@ func (instance *Wasmer2Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.cgoInstance)
 }
 
+// HasCompiledCode specifies if the code is compiled
+func (instance *Wasmer2Instance) HasCompiledCode() bool {
+	return true
+}
+
 // Cache caches the instance
 func (instance *Wasmer2Instance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar

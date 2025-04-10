@@ -525,12 +525,24 @@ func (context *meteringContext) DeductInitialGasForDirectDeployment(input vmhost
 }
 
 // DeductInitialGasForIndirectDeployment deducts gas for the deployment of a contract initiated by another SmartContract
-func (context *meteringContext) DeductInitialGasForIndirectDeployment(input vmhost.CodeDeployInput) error {
-	return context.deductInitialGas(
+func (context *meteringContext) DeductInitialGasForIndirectDeployment(input vmhost.CodeDeployInput) (uint64, error) {
+	initialCost := context.calculateInitialCost(
 		input.ContractCode,
 		0,
 		context.gasSchedule.BaseOperationCost.CompilePerByte,
 	)
+	err := context.UseGasBounded(initialCost)
+	return initialCost, err
+}
+
+func (context *meteringContext) calculateInitialCost(
+	code []byte,
+	baseCost uint64,
+	costPerByte uint64,
+) uint64 {
+	codeLength := uint64(len(code))
+	codeCost := math.MulUint64(codeLength, costPerByte)
+	return math.AddUint64(baseCost, codeCost)
 }
 
 func (context *meteringContext) deductInitialGas(
@@ -539,9 +551,7 @@ func (context *meteringContext) deductInitialGas(
 	costPerByte uint64,
 ) error {
 	input := context.host.Runtime().GetVMInput()
-	codeLength := uint64(len(code))
-	codeCost := math.MulUint64(codeLength, costPerByte)
-	initialCost := math.AddUint64(baseCost, codeCost)
+	initialCost := context.calculateInitialCost(code, baseCost, costPerByte)
 
 	if initialCost > input.GasProvided {
 		return vmhost.ErrNotEnoughGas

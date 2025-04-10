@@ -35,6 +35,11 @@ func (b *BlockchainContextMock) PopDiscard() {
 func (b *BlockchainContextMock) ClearStateStack() {
 }
 
+// GetNonceForNewAddress -
+func (b *BlockchainContextMock) GetNonceForNewAddress(_ []byte) (uint64, error) {
+	return 0, nil
+}
+
 // NewAddress -
 func (b *BlockchainContextMock) NewAddress(creatorAddress []byte) ([]byte, error) {
 	return creatorAddress, nil
@@ -58,6 +63,11 @@ func (b *BlockchainContextMock) GetBalanceBigInt(_ []byte) *big.Int {
 // GetNonce -
 func (b *BlockchainContextMock) GetNonce(_ []byte) (uint64, error) {
 	return 0, nil
+}
+
+// ChainID -
+func (b *BlockchainContextMock) ChainID() []byte {
+	return make([]byte, 0)
 }
 
 // CurrentEpoch -
@@ -208,5 +218,15 @@ func (b *BlockchainContextMock) ClearCompiledCodes() {
 
 // ExecuteSmartContractCallOnOtherVM -
 func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
+}
+
+// SaveAliasAddress -
+func (b *BlockchainContextMock) SaveAliasAddress(_ *vmcommon.AliasSaveRequest) error {
+	return nil
+}
+
+// RequestAddress -
+func (b *BlockchainContextMock) RequestAddress(_ *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error) {
 	return nil, nil
 }

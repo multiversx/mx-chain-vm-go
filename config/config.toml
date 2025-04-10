@@ -192,6 +192,49 @@
     MBufferFinish = 10
     MBufferSetRandom = 10
 
+[EVMOpcodeCost]
+    QuickStep = 1
+    FastestStep = 1
+    FastStep = 1
+    MidStep = 1
+    SlowStep = 1
+    ExtStep = 1
+    Ecrecover = 1
+    Sha256PerWord = 1
+    Sha256Base = 1
+    Ripemd160PerWord = 1
+    Ripemd160Base = 1
+    IdentityPerWord = 1
+    IdentityBase = 1
+    Bn256Add = 1
+    Bn256ScalarMul = 1
+    Bn256PairingBase = 1
+    Bn256PairingPerPoint = 1
+    BlobTxPointEvaluation = 1
+    Keccak256 = 1
+    Balance = 1
+    ExtcodeSize = 1
+    ExtcodeCopy = 1
+    ExtcodeHash = 1
+    Sload = 1
+    Sstore = 1
+    Jumpdest = 1
+    Tload = 1
+    Tstore = 1
+    Create = 1
+    Call = 1
+    Create2 = 1
+    Selfdestruct = 1
+    Memory = 1
+    Copy = 1
+    Log = 1
+    LogTopic = 1
+    LogData = 1
+    Keccak256Word = 1
+    InitCodeWord = 1
+    ExpByte = 1
+    Exp = 1
+
 [WASMOpcodeCost]
     AtomicFence = 1
     AtomicNotify = 1

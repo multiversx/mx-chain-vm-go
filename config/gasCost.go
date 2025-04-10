@@ -14,6 +14,7 @@ type GasCost struct {
 	ManagedBufferAPICost ManagedBufferAPICost
 	ManagedMapAPICost    ManagedMapAPICost
 	CryptoAPICost        CryptoAPICost
+	EVMOpcodeCost        *executor.EVMOpcodeCost
 	WASMOpcodeCost       *executor.WASMOpcodeCost
 	DynamicStorageLoad   DynamicStorageLoadCostCoefficients
 }

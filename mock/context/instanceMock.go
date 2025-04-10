@@ -102,6 +102,11 @@ func (instance *InstanceMock) GetBreakpointValue() uint64 {
 	return uint64(instance.BreakpointValue)
 }
 
+// HasCompiledCode mocked method
+func (instance *InstanceMock) HasCompiledCode() bool {
+	return true
+}
+
 // Cache mocked method
 func (instance *InstanceMock) Cache() ([]byte, error) {
 	return instance.Code, nil

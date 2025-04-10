@@ -25,7 +25,7 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 		return nil, err
 	}
 	executor.initVMHooks(args.VMHooks)
-	if args.OpcodeCosts != nil {
+	if args.OpcodeCosts.WASMOpcodeCost != nil {
 		// opcode costs are sometimes not initialized at this point in certain tests
 		executor.SetOpcodeCosts(args.OpcodeCosts)
 	}

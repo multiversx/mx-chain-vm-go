@@ -46,11 +46,13 @@ func TestDeployFromSource_Success(t *testing.T) {
 	deployedCodeLen := uint64(len(deployedCode))
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		newContractAddress := verify.VmOutput.ReturnData[0]
+		parentCodeLen := uint64(len(test.ParentAddress))
 		verify.
 			Ok().
 			Code(newContractAddress, deployedCode).
 			GasRemaining(testConfig.GasProvided -
 				testConfig.GasUsedByInit -
+				parentCodeLen*testConfig.AoTPreparePerByteCost -
 				deployedCodeLen*testConfig.CompilePerByteCost -
 				deployedCodeLen*testConfig.AoTPreparePerByteCost)
 	})
