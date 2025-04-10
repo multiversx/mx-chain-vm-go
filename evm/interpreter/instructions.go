@@ -242,7 +242,7 @@ func opKeccak256(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) (
 		interpreter.hasher.Reset()
 	}
 	interpreter.hasher.Write(data)
-	interpreter.hasher.Read(interpreter.hasherBuf[:])
+	_, _ = interpreter.hasher.Read(interpreter.hasherBuf[:])
 
 	size.SetBytes(interpreter.hasherBuf[:])
 	return nil, nil
