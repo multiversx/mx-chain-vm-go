@@ -90,6 +90,17 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
+	evmOps := &executor.EVMOpcodeCost{}
+	err = mapstructure.Decode(gasMap["EVMOpcodeCost"], evmOps)
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkForZeroUint64Fields(*evmOps)
+	if err != nil {
+		return nil, err
+	}
+
 	wasmOps := &executor.WASMOpcodeCost{}
 	err = mapstructure.Decode(gasMap["WASMOpcodeCost"], wasmOps)
 	if err != nil {
@@ -121,6 +132,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		BaseOpsAPICost:       *baseOpsAPI,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
+		EVMOpcodeCost:        evmOps,
 		WASMOpcodeCost:       wasmOps,
 		DynamicStorageLoad:   *dynamicStorageLoadParams,
 	}
@@ -204,6 +216,7 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
 	gasMap["ManagedBufferAPICost"] = FillGasMapManagedBufferAPICosts(value)
+	gasMap["EVMOpcodeCost"] = FillGasMapEVMOpcodeCosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMapWASMOpcodeValues(value)
 	gasMap["DynamicStorageLoad"] = FillGasMapDynamicStorageLoad()
 
@@ -479,6 +492,55 @@ func FillGasMapManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferGetArgument"] = value
 	gasMap["MBufferFinish"] = value
 	gasMap["MBufferSetRandom"] = value
+
+	return gasMap
+}
+
+// FillGasMapEVMOpcodeCosts fills the evm opcodes costs
+func FillGasMapEVMOpcodeCosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
+
+	gasMap["QuickStep"] = value
+	gasMap["FastestStep"] = value
+	gasMap["FastStep"] = value
+	gasMap["MidStep"] = value
+	gasMap["SlowStep"] = value
+	gasMap["ExtStep"] = value
+	gasMap["Ecrecover"] = value
+	gasMap["Sha256PerWord"] = value
+	gasMap["Sha256Base"] = value
+	gasMap["Ripemd160PerWord"] = value
+	gasMap["Ripemd160Base"] = value
+	gasMap["IdentityPerWord"] = value
+	gasMap["IdentityBase"] = value
+	gasMap["Bn256Add"] = value
+	gasMap["Bn256ScalarMul"] = value
+	gasMap["Bn256PairingBase"] = value
+	gasMap["Bn256PairingPerPoint"] = value
+	gasMap["BlobTxPointEvaluation"] = value
+	gasMap["Keccak256"] = value
+	gasMap["Balance"] = value
+	gasMap["ExtcodeSize"] = value
+	gasMap["ExtcodeCopy"] = value
+	gasMap["ExtcodeHash"] = value
+	gasMap["Sload"] = value
+	gasMap["Sstore"] = value
+	gasMap["Jumpdest"] = value
+	gasMap["Tload"] = value
+	gasMap["Tstore"] = value
+	gasMap["Create"] = value
+	gasMap["Call"] = value
+	gasMap["Create2"] = value
+	gasMap["Selfdestruct"] = value
+	gasMap["Memory"] = value
+	gasMap["Copy"] = value
+	gasMap["Log"] = value
+	gasMap["LogTopic"] = value
+	gasMap["LogData"] = value
+	gasMap["Keccak256Word"] = value
+	gasMap["InitCodeWord"] = value
+	gasMap["ExpByte"] = value
+	gasMap["Exp"] = value
 
 	return gasMap
 }

@@ -2865,7 +2865,25 @@ func ExecuteOnSameContextWithTypedArgs(
 	}
 
 	sender := runtime.GetContextAddress()
+	result, err := ExecuteOnSameContextUnmetered(host, gasLimit, value, function, sender, args, sender, gasToUse, dest, true)
+	WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 
+	return result
+}
+
+// ExecuteOnSameContextUnmetered - executeOnSameContext unmetered
+func ExecuteOnSameContextUnmetered(
+	host vmhost.VMHost,
+	gasLimit int64,
+	value *big.Int,
+	function []byte,
+	dest []byte,
+	args [][]byte,
+	sender []byte,
+	gasToUse uint64,
+	codeAddress []byte,
+	doTransfer bool,
+) (int32, error) {
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -2877,21 +2895,25 @@ func ExecuteOnSameContextWithTypedArgs(
 		gasToUse,
 		true,
 	)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return -1
+	if err != nil {
+		return -1, err
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		WithFaultAndHost(host, vmhost.ErrInvalidBuiltInFunctionCall, runtime.BaseOpsErrorShouldFailExecution())
-		return 1
+		return 1, vmhost.ErrInvalidBuiltInFunctionCall
 	}
 
-	err = host.ExecuteOnSameContext(contractCallInput)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return -1
+	sameContextInput := vmcommon.ContractSameContextCallInput{
+		ContractCallInput: *contractCallInput,
+		DoTransfer:        doTransfer,
+		CodeAddress:       codeAddress,
+	}
+	err = host.ExecuteOnSameContext(&sameContextInput)
+	if err != nil {
+		return -1, err
 	}
 
-	return 0
+	return 0, nil
 }
 
 // ExecuteOnDestContext VMHooks implementation.
@@ -2971,6 +2993,24 @@ func ExecuteOnDestContextWithTypedArgs(
 		return -1
 	}
 
+	result, err := ExecuteOnDestContextUnmetered(host, gasLimit, value, function, dest, args, gasToUse)
+	WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
+
+	return result
+}
+
+// ExecuteOnDestContextUnmetered - executeOnDestContext unmetered
+func ExecuteOnDestContextUnmetered(
+	host vmhost.VMHost,
+	gasLimit int64,
+	value *big.Int,
+	function []byte,
+	dest []byte,
+	args [][]byte,
+	gasToUse uint64,
+) (int32, error) {
+	runtime := host.Runtime()
+
 	sender := runtime.GetContextAddress()
 
 	contractCallInput, err := prepareIndirectContractCallInput(
@@ -2984,18 +3024,18 @@ func ExecuteOnDestContextWithTypedArgs(
 		gasToUse,
 		true,
 	)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return 1
+	if err != nil {
+		return 1, err
 	}
 
 	vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return 1
+	if err != nil {
+		return 1, err
 	}
 
 	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.ExecuteOnDestContextString)
 
-	return 0
+	return 0, nil
 }
 
 // ExecuteReadOnly VMHooks implementation.
@@ -3070,6 +3110,23 @@ func ExecuteReadOnlyWithTypedArguments(
 		return -1
 	}
 
+	result, err := ExecuteReadOnlyUnmetered(host, gasLimit, function, dest, args, gasToUse)
+	WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
+
+	return result
+}
+
+// ExecuteReadOnlyUnmetered - executeReadOnly unmetered
+func ExecuteReadOnlyUnmetered(
+	host vmhost.VMHost,
+	gasLimit int64,
+	function []byte,
+	dest []byte,
+	args [][]byte,
+	gasToUse uint64,
+) (int32, error) {
+	runtime := host.Runtime()
+
 	sender := runtime.GetContextAddress()
 
 	contractCallInput, err := prepareIndirectContractCallInput(
@@ -3083,13 +3140,12 @@ func ExecuteReadOnlyWithTypedArguments(
 		gasToUse,
 		true,
 	)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return -1
+	if err != nil {
+		return -1, err
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		WithFaultAndHost(host, vmhost.ErrInvalidBuiltInFunctionCall, runtime.BaseOpsErrorShouldFailExecution())
-		return 1
+		return 1, vmhost.ErrInvalidBuiltInFunctionCall
 	}
 
 	wasReadOnly := runtime.ReadOnly()
@@ -3097,11 +3153,11 @@ func ExecuteReadOnlyWithTypedArguments(
 	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	runtime.SetReadOnly(wasReadOnly)
 
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
-		return -1
+	if err != nil {
+		return -1, err
 	}
 
-	return 0
+	return 0, nil
 }
 
 // CreateContract VMHooks implementation.
@@ -3308,6 +3364,20 @@ func createContract(
 	host vmhost.VMHost,
 	createContractCallType CreateContractCallType,
 ) ([]byte, error) {
+	return CreateContractWithAddress(sender, data, value, gasLimit, code, codeMetadata, host, createContractCallType, nil)
+}
+
+func CreateContractWithAddress(
+	sender []byte,
+	data [][]byte,
+	value *big.Int,
+	gasLimit int64,
+	code []byte,
+	codeMetadata []byte,
+	host vmhost.VMHost,
+	createContractCallType CreateContractCallType,
+	aliasAddress []byte,
+) ([]byte, error) {
 	originalCaller := host.Runtime().GetOriginalCallerAddress()
 	metering := host.Metering()
 	contractCreate := &vmcommon.ContractCreateInput{
@@ -3319,6 +3389,7 @@ func createContract(
 			GasPrice:           0,
 			GasProvided:        metering.BoundGasLimit(gasLimit),
 		},
+		AliasAddress:         aliasAddress,
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 	}

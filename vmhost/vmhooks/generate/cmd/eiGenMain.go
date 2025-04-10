@@ -61,9 +61,13 @@ func main() {
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
 	writeExecutorOpcodeCosts()
+	writeEVMExecutorOpcodeCosts()
 	writeWasmer2OpcodeCost()
+	writeEVMOpcodeCost()
 	writeWASMOpcodeCostFuncHelpers()
+	writeEVMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
+	writeEVMOpcodeCostConfigHelpers()
 	writeOpcodeCostFuncHelpers()
 	writeRustOpcodeCost()
 	writeRustWasmerMeteringHelpers()
@@ -158,10 +162,22 @@ func writeExecutorOpcodeCosts() {
 	eapigen.WriteExecutorOpcodeCost(out)
 }
 
+func writeEVMExecutorOpcodeCosts() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/gasCostEVM.go")
+	defer out.Close()
+	eapigen.WriteEVMExecutorOpcodeCost(out)
+}
+
 func writeWASMOpcodeCostFuncHelpers() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/FillGasMap_WASMOpcodeCosts.txt")
 	defer out.Close()
 	eapigen.WriteWASMOpcodeCostFuncHelpers(out)
+}
+
+func writeEVMOpcodeCostFuncHelpers() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/FillGasMap_EVMOpcodeCosts.txt")
+	defer out.Close()
+	eapigen.WriteEVMOpcodeCostFuncHelpers(out)
 }
 
 func writeWASMOpcodeCostConfigHelpers() {
@@ -170,10 +186,22 @@ func writeWASMOpcodeCostConfigHelpers() {
 	eapigen.WriteWASMOpcodeCostConfigHelpers(out)
 }
 
+func writeEVMOpcodeCostConfigHelpers() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/evm_config.txt")
+	defer out.Close()
+	eapigen.WriteEVMOpcodeCostConfigHelpers(out)
+}
+
 func writeWasmer2OpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/opcodeCost.go")
 	defer out.Close()
 	eapigen.WriteWasmer2OpcodeCost(out)
+}
+
+func writeEVMOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../evm/interpreter/gas_config.go")
+	defer out.Close()
+	eapigen.WriteEVMOpcodeCost(out)
 }
 
 func writeOpcodeCostFuncHelpers() {

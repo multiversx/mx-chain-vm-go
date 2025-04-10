@@ -22,7 +22,7 @@ type Executor interface {
 	check.NilInterfaceChecker
 
 	// SetOpcodeCosts sets gas costs globally inside an executor.
-	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
+	SetOpcodeCosts(opcodeCosts VMOpcodeCost)
 
 	// FunctionNames return the low-level function names provided to contracts.
 	FunctionNames() vmcommon.FunctionNames

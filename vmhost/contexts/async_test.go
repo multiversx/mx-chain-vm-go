@@ -69,14 +69,14 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	host.MeteringContext = mockMetering
 
 	world := worldmock.NewMockWorld()
-	host.BlockchainContext, err = NewBlockchainContext(host, world)
+	host.BlockchainContext, err = NewBlockchainContext(host, world, false)
 	require.Nil(tb, err)
 
 	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(tb)
 	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
-		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
+		OpcodeCosts: executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost},
 	})
 	require.Nil(tb, err)
 	runtimeCtx, err := NewRuntimeContext(
@@ -85,6 +85,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
+		false,
 	)
 	require.Nil(tb, err)
 

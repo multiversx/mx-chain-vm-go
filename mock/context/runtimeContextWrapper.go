@@ -28,9 +28,17 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetCodeAddressFunc func(scAddress []byte)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ComputeCodeHashFunc func(contract []byte) []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetTrackerCodeFunc func(contract []byte)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCCodeFunc func() ([]byte, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCCodeSizeFunc func() uint64
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetSCCodeHashFunc func() []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SaveCompiledCodeFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetVMTypeFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -156,12 +164,28 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		runtimeWrapper.runtimeContext.SetCodeAddress(scAddress)
 	}
 
+	runtimeWrapper.ComputeCodeHashFunc = func(contract []byte) []byte {
+		return runtimeWrapper.runtimeContext.ComputeCodeHash(contract)
+	}
+
+	runtimeWrapper.SetTrackerCodeFunc = func(contract []byte) {
+		runtimeWrapper.runtimeContext.SetTrackerCode(contract)
+	}
+
 	runtimeWrapper.GetSCCodeFunc = func() ([]byte, error) {
 		return runtimeWrapper.runtimeContext.GetSCCode()
 	}
 
 	runtimeWrapper.GetSCCodeSizeFunc = func() uint64 {
 		return runtimeWrapper.runtimeContext.GetSCCodeSize()
+	}
+
+	runtimeWrapper.GetSCCodeHashFunc = func() []byte {
+		return runtimeWrapper.runtimeContext.GetSCCodeHash()
+	}
+
+	runtimeWrapper.SaveCompiledCodeFunc = func() {
+		runtimeWrapper.runtimeContext.SaveCompiledCode()
 	}
 
 	runtimeWrapper.GetVMTypeFunc = func() []byte {
@@ -363,6 +387,16 @@ func (contextWrapper *RuntimeContextWrapper) SetCodeAddress(scAddress []byte) {
 	contextWrapper.SetCodeAddressFunc(scAddress)
 }
 
+// ComputeCodeHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ComputeCodeHash(contract []byte) []byte {
+	return contextWrapper.ComputeCodeHashFunc(contract)
+}
+
+// SetTrackerCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetTrackerCode(contract []byte) {
+	contextWrapper.SetTrackerCodeFunc(contract)
+}
+
 // GetSCCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetSCCode() ([]byte, error) {
 	return contextWrapper.GetSCCodeFunc()
@@ -371,6 +405,16 @@ func (contextWrapper *RuntimeContextWrapper) GetSCCode() ([]byte, error) {
 // GetSCCodeSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetSCCodeSize() uint64 {
 	return contextWrapper.GetSCCodeSizeFunc()
+}
+
+// GetSCCodeHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetSCCodeHash() []byte {
+	return contextWrapper.GetSCCodeHashFunc()
+}
+
+// SaveCompiledCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SaveCompiledCode() {
+	contextWrapper.SaveCompiledCodeFunc()
 }
 
 // GetVMType calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
