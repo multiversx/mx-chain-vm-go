@@ -12,9 +12,12 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
+use crate::GasSchedule;
+
 `
 
-const configStruct = `#[derive(Deserialize)]
+const configStruct = `
+#[derive(Deserialize)]
 struct Config {
     #[serde(rename = "WASMOpcodeCost")]
     wasm_opcode_cost: OpcodeCost,
@@ -41,7 +44,8 @@ const implBlock = `impl OpcodeCost {
         let config: Config = toml::from_str(content)?;
         Ok(config.wasm_opcode_cost)
     }
-}`
+}
+`
 
 // WriteRustOpcodeCost generates code for opcode_cost.rs
 func WriteRustOpcodeCost(out *eiGenWriter) {
@@ -50,11 +54,10 @@ func WriteRustOpcodeCost(out *eiGenWriter) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 `)
 	out.WriteString(useStatements)
 	out.WriteString("#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]\n")
-	out.WriteString("#[serde(default)]")
+	out.WriteString("#[serde(default)]\n")
 	out.WriteString("pub struct OpcodeCost {\n")
 
 	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes_short.txt")
