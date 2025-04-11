@@ -24,7 +24,7 @@ pub trait VMHooks: core::fmt::Debug + 'static {
 			"    fn %s%s;\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&self",
+				"&mut self",
 				funcMetadata,
 				rustVMHooksType,
 			),
@@ -54,7 +54,7 @@ impl VMHooks for VMHooksDefault {
 			"    fn %s%s {\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&self",
+				"&mut self",
 				funcMetadata,
 				rustVMHooksType,
 			),

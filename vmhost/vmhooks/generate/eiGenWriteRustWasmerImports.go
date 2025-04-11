@@ -29,7 +29,7 @@ use crate::wasmer_vm_hooks::VMHooksWrapper;
 		))
 
 		out.WriteString(" {\n")
-		out.WriteString(fmt.Sprintf("    env.vm_hooks.%s(", snakeCase(funcMetadata.Name)))
+		out.WriteString(fmt.Sprintf("    env.vm_hooks.borrow_mut().%s(", snakeCase(funcMetadata.Name)))
 
 		for i, arg := range funcMetadata.Arguments {
 			if i > 0 {
