@@ -54,10 +54,12 @@ func main() {
 
 	writeRustVMHooksNames(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
+	writeRustVMHooksLegacyTrait(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
 	writeRustWasmerProdImports(eiMetadata)
 	writeRustWasmerExperimentalImports(eiMetadata)
+	writeRustVHDispatcherLegacy(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
@@ -129,8 +131,14 @@ func writeRustVMHooksNames(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustHookNames(out, eiMetadata)
 }
 
-func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
+func writeRustVMHooksLegacyTrait(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks.rs")
+	defer out.Close()
+	eapigen.WriteRustVMHooksLegacyTrait(out, eiMetadata)
+}
+
+func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks_new.rs")
 	defer out.Close()
 	eapigen.WriteRustVMHooksTrait(out, eiMetadata)
 }
@@ -157,6 +165,12 @@ func writeRustWasmerExperimentalImports(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/we_imports.rs")
 	defer out.Close()
 	eapigen.WriteRustWasmer5Imports(out, eiMetadata)
+}
+
+func writeRustVHDispatcherLegacy(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vh_dispatcher_legacy.rs")
+	defer out.Close()
+	eapigen.WriteRustVHDispatcherLegacy(out, eiMetadata)
 }
 
 func writeExecutorOpcodeCosts() {
@@ -215,6 +229,10 @@ func tryCopyFilesToRustExecutorRepo() {
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks.rs"),
 		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_new.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks_new.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),

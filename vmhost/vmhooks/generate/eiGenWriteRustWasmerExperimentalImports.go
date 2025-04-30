@@ -10,6 +10,7 @@ func WriteRustWasmer5Imports(out *eiGenWriter, eiMetadata *EIMetadata) {
 	out.WriteString(`
 #![allow(clippy::too_many_arguments)]
 
+use multiversx_chain_vm_executor::VMHooksError;
 use wasmer::{imports, Function, FunctionEnv, FunctionEnvMut, Imports, Store};
 
 use crate::we_vm_hooks::{convert_mem_length, convert_mem_ptr, with_vm_hooks, VMHooksWrapper};
@@ -25,6 +26,7 @@ use crate::we_vm_hooks::{convert_mem_length, convert_mem_ptr, with_vm_hooks, VMH
 				"env: FunctionEnvMut<VMHooksWrapper>",
 				funcMetadata,
 				rustWasmerType,
+				rustVMHooksReturnType,
 			),
 		))
 

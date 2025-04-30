@@ -25,6 +25,7 @@ use crate::wasmer_vm_hooks::VMHooksWrapper;
 				"env: &VMHooksWrapper",
 				funcMetadata,
 				rustWasmerType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 

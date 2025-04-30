@@ -38,7 +38,7 @@ impl CapiVMHooks {
 }
 
 #[rustfmt::skip]
-impl multiversx_chain_vm_executor::VMHooks for CapiVMHooks {
+impl multiversx_chain_vm_executor::VMHooksLegacy for CapiVMHooks {
     fn set_vm_hooks_ptr(&mut self, vm_hooks_ptr: *mut c_void) {
         self.vm_hooks_ptr = vm_hooks_ptr;
     }
@@ -52,6 +52,7 @@ impl multiversx_chain_vm_executor::VMHooks for CapiVMHooks {
 				"&mut self",
 				funcMetadata,
 				rustVMHooksType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 
