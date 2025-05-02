@@ -55,6 +55,7 @@ func main() {
 	writeRustVMHooksNames(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
 	writeRustVMHooksLegacyTrait(eiMetadata)
+	writeRustVMHooksLegacyAdapter(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
 	writeRustWasmerProdImports(eiMetadata)
@@ -135,6 +136,12 @@ func writeRustVMHooksLegacyTrait(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks.rs")
 	defer out.Close()
 	eapigen.WriteRustVMHooksLegacyTrait(out, eiMetadata)
+}
+
+func writeRustVMHooksLegacyAdapter(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks_legacy_adapter.rs")
+	defer out.Close()
+	eapigen.WriteRustVMHooksLegacyAdapter(out, eiMetadata)
 }
 
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
@@ -233,6 +240,10 @@ func tryCopyFilesToRustExecutorRepo() {
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_new.rs"),
 		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks_new.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_legacy_adapter.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks_legacy_adapter.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),
