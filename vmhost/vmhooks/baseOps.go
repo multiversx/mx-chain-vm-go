@@ -846,7 +846,8 @@ func TransferValueExecuteWithTypedArgs(
 		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
 	}
 
-	if host.IsBuiltinFunctionCall([]byte(data)) {
+	lastRound := host.Blockchain().LastRound()
+	if host.IsBuiltinFunctionCall([]byte(data)) && lastRound > 25184293 {
 		WithFaultAndHost(host, vmhost.ErrTransferValueOnESDTCall, runtime.BaseOpsErrorShouldFailExecution())
 		return 1
 	}
