@@ -841,6 +841,16 @@ func TransferValueExecuteWithTypedArgs(
 		}
 	}
 
+	data := ""
+	if contractCallInput != nil {
+		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
+	}
+
+	if host.IsBuiltinFunctionCall([]byte(data)) {
+		WithFaultAndHost(host, vmhost.ErrTransferValueOnESDTCall, runtime.BaseOpsErrorShouldFailExecution())
+		return 1
+	}
+
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
 		vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
@@ -852,11 +862,6 @@ func TransferValueExecuteWithTypedArgs(
 		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.TransferAndExecuteString)
 
 		return 0
-	}
-
-	data := ""
-	if contractCallInput != nil {
-		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
 	}
 
 	err = metering.UseGasBounded(uint64(gasLimit))
