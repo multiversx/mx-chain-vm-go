@@ -13,6 +13,7 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -850,6 +851,8 @@ func TransferValueExecuteWithTypedArgs(
 	if host.IsBuiltinFunctionCall([]byte(data)) && lastRound > 25184293 {
 		WithFaultAndHost(host, vmhost.ErrTransferValueOnESDTCall, runtime.BaseOpsErrorShouldFailExecution())
 		return 1
+	} else if host.IsBuiltinFunctionCall([]byte(data)) {
+		logEEI.Warn("TransferValueExecute: builtin function call detected", "data", data, "currentTxHash", host.Runtime().GetCurrentTxHash(), "originalTxHash", host.Runtime().GetOriginalTxHash())
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
