@@ -267,6 +267,13 @@ const (
     MBufferFinish = 1000
     MBufferSetRandom = 6000
 
+[ManagedMapAPICost]
+    ManagedMapNew      = 10000
+    ManagedMapPut      = 10000
+    ManagedMapGet      = 10000
+    ManagedMapRemove   = 10000
+    ManagedMapContains = 10000
+
 [WASMOpcodeCost]
     AtomicFence = 10
     AtomicNotify = 10
@@ -1072,9 +1079,9 @@ const (
     UnmarshalCompressedECC = 270000
     GenerateKeyECC = 7000000
     EncodeDERSig = 10000000
-VerifySecp256r1 = 2000000
-VerifyBLSSignatureShare = 2000000
-VerifyBLSMultiSig = 2000000
+    VerifySecp256r1 = 2000000
+    VerifyBLSSignatureShare = 2000000
+    VerifyBLSMultiSig = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000
@@ -1097,6 +1104,13 @@ VerifyBLSMultiSig = 2000000
     MBufferGetArgument = 1000
     MBufferFinish = 1000
     MBufferSetRandom = 6000
+
+[ManagedMapAPICost]
+    ManagedMapNew      = 10000
+    ManagedMapPut      = 10000
+    ManagedMapGet      = 10000
+    ManagedMapRemove   = 10000
+    ManagedMapContains = 10000
 
 [WASMOpcodeCost]
     AtomicFence = 10

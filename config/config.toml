@@ -192,6 +192,13 @@
     MBufferFinish = 10
     MBufferSetRandom = 10
 
+[ManagedMapAPICost]
+    ManagedMapNew      = 10
+    ManagedMapPut      = 10
+    ManagedMapGet      = 10
+    ManagedMapRemove   = 10
+    ManagedMapContains = 10
+
 [WASMOpcodeCost]
     AtomicFence = 1
     AtomicNotify = 1
