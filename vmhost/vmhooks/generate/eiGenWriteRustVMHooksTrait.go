@@ -14,7 +14,7 @@ use crate::{MemLength, MemPtr};
 
 #[rustfmt::skip]
 #[allow(clippy::too_many_arguments)]
-pub trait VMHooks: core::fmt::Debug + 'static {
+pub trait VMHooks: core::fmt::Debug {
     fn set_vm_hooks_ptr(&mut self, vm_hooks_ptr: *mut c_void);
 
 `)
@@ -24,7 +24,7 @@ pub trait VMHooks: core::fmt::Debug + 'static {
 			"    fn %s%s;\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&self",
+				"&mut self",
 				funcMetadata,
 				rustVMHooksType,
 			),
@@ -54,7 +54,7 @@ impl VMHooks for VMHooksDefault {
 			"    fn %s%s {\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&self",
+				"&mut self",
 				funcMetadata,
 				rustVMHooksType,
 			),
