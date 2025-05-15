@@ -174,6 +174,36 @@ func TestGasUsed_SingleContract_TransferFromChild(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGasUsed_SingleContract_TransferFromChildWithBuiltIn(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithCodeMetadata([]byte{0, vmcommon.MetadataPayable}).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecOnDestCtxSingleCallParentMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.TransferAndExecuteWithBuiltIn)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execOnDestCtxSingleCall").
+			WithArguments(test.ChildAddress, []byte("transferAndExecuteWithBuiltIn")).
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.ReturnCode(vmcommon.ExecutionFailed)
+		})
+	assert.Nil(t, err)
+}
+
 func TestGasUsed_ExecuteOnDestChain(t *testing.T) {
 	alphaAddress := test.MakeTestSCAddress("alpha")
 	betaAddress := test.MakeTestSCAddress("beta")
