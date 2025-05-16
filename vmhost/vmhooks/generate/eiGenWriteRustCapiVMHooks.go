@@ -28,17 +28,17 @@ impl CapiVMHooks {
         }
     }
 
-    fn convert_mem_ptr(&mut self, mem_ptr: MemPtr) -> i32 {
+    fn convert_mem_ptr(&self, mem_ptr: MemPtr) -> i32 {
         mem_ptr as i32
     }
 
-    fn convert_mem_length(&mut self, mem_length: MemLength) -> i32 {
+    fn convert_mem_length(&self, mem_length: MemLength) -> i32 {
         mem_length as i32
     }
 }
 
 #[rustfmt::skip]
-impl multiversx_chain_vm_executor::VMHooks for CapiVMHooks {
+impl multiversx_chain_vm_executor::VMHooksLegacy for CapiVMHooks {
     fn set_vm_hooks_ptr(&mut self, vm_hooks_ptr: *mut c_void) {
         self.vm_hooks_ptr = vm_hooks_ptr;
     }
@@ -49,9 +49,10 @@ impl multiversx_chain_vm_executor::VMHooks for CapiVMHooks {
 			"\n    fn %s%s {\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&mut self",
+				"&self",
 				funcMetadata,
 				rustVMHooksType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 
