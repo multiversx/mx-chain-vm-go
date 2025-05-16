@@ -29,9 +29,9 @@ func rustVMHooksLegacyReturnType(result *EIFunctionResult) string {
 
 func rustVMHooksReturnType(result *EIFunctionResult) string {
 	if result == nil {
-		return " -> Result<(), VMHooksError>"
+		return " -> Result<(), VMHooksEarlyExit>"
 	}
-	return " -> Result<" + rustVMHooksType(result.Type) + ", VMHooksError>"
+	return " -> Result<" + rustVMHooksType(result.Type) + ", VMHooksEarlyExit>"
 }
 
 func rustCapiType(eiType EIType) string {

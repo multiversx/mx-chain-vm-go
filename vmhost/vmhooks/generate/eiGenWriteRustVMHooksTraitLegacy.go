@@ -24,7 +24,7 @@ pub trait VMHooksLegacy: core::fmt::Debug {
 			"    fn %s%s;\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&mut self",
+				"&self",
 				funcMetadata,
 				rustVMHooksType,
 				rustVMHooksLegacyReturnType,
@@ -55,7 +55,7 @@ impl VMHooksLegacy for VMHooksLegacyDefault {
 			"    fn %s%s {\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnDeclarationArguments(
-				"&mut self",
+				"&self",
 				funcMetadata,
 				rustVMHooksType,
 				rustVMHooksLegacyReturnType,

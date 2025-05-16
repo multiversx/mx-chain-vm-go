@@ -239,11 +239,11 @@ func tryCopyFilesToRustExecutorRepo() {
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_new.rs"),
-		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks_new.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/new_traits/vm_hooks_new.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_legacy_adapter.rs"),
-		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks_legacy_adapter.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/new_traits/vm_hooks_legacy_adapter.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),
