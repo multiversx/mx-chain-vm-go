@@ -36,6 +36,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "gas": "48666977",
                 "out": [
                     "str:value0"
                 ]
@@ -55,6 +56,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "gas": "48673648",
                 "out": [
                     "true"
                 ]
@@ -74,6 +76,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "gas": "48673577",
                 "out": [
                     ""
                 ]
@@ -93,6 +96,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "gas": "48673648",
                 "out": [
                     "false"
                 ]
@@ -112,6 +116,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "gas": "48673577",
                 "out": [
                     ""
                 ]
@@ -131,6 +136,7 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "gas": "48673648",
                 "out": [
                     "false"
                 ]

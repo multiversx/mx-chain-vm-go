@@ -276,6 +276,13 @@ const (
     MBufferFinish = 1000
     MBufferSetRandom = 6000
 
+[ManagedMapAPICost]
+    ManagedMapNew      = 10000
+    ManagedMapPut      = 10000
+    ManagedMapGet      = 10000
+    ManagedMapRemove   = 10000
+    ManagedMapContains = 10000
+
 [WASMOpcodeCost]
     AtomicFence = 10
     AtomicNotify = 10
@@ -1115,6 +1122,13 @@ const (
     MBufferGetArgument = 1000
     MBufferFinish = 1000
     MBufferSetRandom = 6000
+
+[ManagedMapAPICost]
+    ManagedMapNew      = 10000
+    ManagedMapPut      = 10000
+    ManagedMapGet      = 10000
+    ManagedMapRemove   = 10000
+    ManagedMapContains = 10000
 
 [WASMOpcodeCost]
     AtomicFence = 10

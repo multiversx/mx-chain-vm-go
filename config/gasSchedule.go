@@ -114,6 +114,12 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 			dynamicStorageLoadParams.Quadratic, dynamicStorageLoadParams.Linear, dynamicStorageLoadParams.Constant)
 	}
 
+	managedMapOps := &ManagedMapAPICost{}
+	err = mapstructure.Decode(gasMap["ManagedMapAPICost"], managedMapOps)
+	if err != nil {
+		return nil, err
+	}
+
 	gasCost := &GasCost{
 		BaseOperationCost:    *baseOps,
 		BigIntAPICost:        *bigIntOps,
@@ -123,6 +129,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       wasmOps,
 		DynamicStorageLoad:   *dynamicStorageLoadParams,
+		ManagedMapAPICost:    *managedMapOps,
 	}
 
 	return gasCost, nil
