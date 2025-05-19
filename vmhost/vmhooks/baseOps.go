@@ -888,7 +888,7 @@ func TransferValueExecuteWithTypedArgs(
 	lastRound := host.Blockchain().LastRound()
 	if host.IsBuiltinFunctionCall([]byte(data)) &&
 		lastRound >= uint64(host.EnableEpochsHandler().GetActivationEpoch(vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag)) {
-		WithFaultAndHost(host, vmhost.ErrTransferValueOnESDTCall, runtime.BaseOpsErrorShouldFailExecution())
+		FailExecution(host, vmhost.ErrTransferValueOnESDTCall)
 		return 1
 	}
 
