@@ -63,7 +63,8 @@ func (context *VMHooksImpl) BigIntGetUnsignedArgument(id int32, destinationHandl
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedArgument
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetUnsignedArgumentName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -86,7 +87,8 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedArgument
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetSignedArgumentName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -104,18 +106,19 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntStorageStoreUnsignedName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -123,7 +126,8 @@ func (context *VMHooksImpl) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr
 	bytes := value.Bytes()
 
 	storageStatus, err := storage.SetStorage(key, bytes)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -134,17 +138,18 @@ func (context *VMHooksImpl) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	bytes, trieDepth, usedCache, err := storage.GetStorage(key)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -152,7 +157,8 @@ func (context *VMHooksImpl) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr,
 		int64(trieDepth),
 		metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned,
 		usedCache)
-	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -171,7 +177,8 @@ func (context *VMHooksImpl) BigIntGetCallValue(destinationHandle int32) {
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetCallValueName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -197,7 +204,8 @@ func (context *VMHooksImpl) BigIntGetESDTCallValueByIndex(destinationHandle int3
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetESDTCallValueByIndexName, gasToUse)
-	if context.WithFault(err, context.GetRuntimeContext().BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -214,18 +222,19 @@ func (context *VMHooksImpl) BigIntGetESDTCallValueByIndex(destinationHandle int3
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetExternalBalanceName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -245,18 +254,19 @@ func (context *VMHooksImpl) BigIntGetESDTExternalBalance(
 	resultHandle int32) {
 
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntGetESDTExternalBalanceName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 	if esdtData == nil {
@@ -275,7 +285,8 @@ func (context *VMHooksImpl) BigIntNew(smallValue int64) int32 {
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntNewName, gasToUse)
-	if context.WithFault(err, context.GetRuntimeContext().BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -287,16 +298,17 @@ func (context *VMHooksImpl) BigIntNew(smallValue int64) int32 {
 func (context *VMHooksImpl) BigIntUnsignedByteLength(referenceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntUnsignedByteLengthName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	value, err := managedType.GetBigInt(referenceHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -309,16 +321,17 @@ func (context *VMHooksImpl) BigIntUnsignedByteLength(referenceHandle int32) int3
 func (context *VMHooksImpl) BigIntSignedByteLength(referenceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSignedByteLength
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntSignedByteLengthName, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	value, err := managedType.GetBigInt(referenceHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -330,30 +343,33 @@ func (context *VMHooksImpl) BigIntSignedByteLength(referenceHandle int32) int32 
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntGetUnsignedBytesName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedBytes
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	value, err := managedType.GetBigInt(referenceHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	bytes := value.Bytes()
 
 	err = context.MemStore(byteOffset, bytes)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -364,30 +380,33 @@ func (context *VMHooksImpl) BigIntGetUnsignedBytes(referenceHandle int32, byteOf
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntGetSignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntGetSignedBytesName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedBytes
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	value, err := managedType.GetBigInt(referenceHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	bytes := twos.ToBytes(value)
 
 	err = context.MemStore(byteOffset, bytes)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
@@ -398,24 +417,26 @@ func (context *VMHooksImpl) BigIntGetSignedBytes(referenceHandle int32, byteOffs
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntSetUnsignedBytesName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetUnsignedBytes
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	bytes, err := context.MemLoad(byteOffset, byteLength)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -427,24 +448,26 @@ func (context *VMHooksImpl) BigIntSetUnsignedBytes(destinationHandle int32, byte
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	managedType := context.GetManagedTypesContext()
-	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntSetSignedBytesName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetSignedBytes
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	bytes, err := context.MemLoad(byteOffset, byteLength)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -457,16 +480,17 @@ func (context *VMHooksImpl) BigIntSetSignedBytes(destinationHandle int32, byteOf
 func (context *VMHooksImpl) BigIntIsInt64(destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntIsInt64
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntIsInt64Name, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	value, err := managedType.GetBigInt(destinationHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	if value.IsInt64() {
@@ -480,19 +504,18 @@ func (context *VMHooksImpl) BigIntIsInt64(destinationHandle int32) int32 {
 func (context *VMHooksImpl) BigIntGetInt64(destinationHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetInt64Name, gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	if !value.IsInt64() {
-		if context.WithFault(vmhost.ErrBigIntCannotBeRepresentedAsInt64, runtime.BigIntAPIErrorShouldFailExecution()) {
-			return -1
-		}
+		context.FailExecution(vmhost.ErrBigIntCannotBeRepresentedAsInt64)
+		return -1
 	}
 	return value.Int64()
 }
@@ -505,7 +528,8 @@ func (context *VMHooksImpl) BigIntSetInt64(destinationHandle int32, value int64)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetInt64
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntSetInt64Name, gasToUse)
-	if context.WithFault(err, context.GetRuntimeContext().BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -518,23 +542,25 @@ func (context *VMHooksImpl) BigIntSetInt64(destinationHandle int32, value int64)
 func (context *VMHooksImpl) BigIntAdd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntAddName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAdd
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -546,23 +572,25 @@ func (context *VMHooksImpl) BigIntAdd(destinationHandle, op1Handle, op2Handle in
 func (context *VMHooksImpl) BigIntSub(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntSubName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -574,23 +602,25 @@ func (context *VMHooksImpl) BigIntSub(destinationHandle, op1Handle, op2Handle in
 func (context *VMHooksImpl) BigIntMul(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntMulName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -602,28 +632,30 @@ func (context *VMHooksImpl) BigIntMul(destinationHandle, op1Handle, op2Handle in
 func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntTDivName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if b.Sign() == 0 {
-		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrDivZero)
 		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
@@ -634,28 +666,30 @@ func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle i
 func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntTModName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTMod
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if b.Sign() == 0 {
-		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrDivZero)
 		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
@@ -666,28 +700,30 @@ func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle i
 func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntEDivName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEDiv
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if b.Sign() == 0 {
-		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrDivZero)
 		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
@@ -698,28 +734,30 @@ func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle i
 func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntEModName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEMod
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if b.Sign() == 0 {
-		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrDivZero)
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
@@ -730,28 +768,30 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntSqrtName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSqrt
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBadLowerBounds)
 		return
 	}
 	dest.Sqrt(a)
@@ -762,18 +802,19 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntPowName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -781,17 +822,19 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(b, big.NewInt(int64(a.BitLen()))), big.NewInt(8))
 
 	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if b.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBadLowerBounds)
 		return
 	}
 
@@ -803,27 +846,29 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntLog2Name)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntLog
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	a, err := managedType.GetBigInt(op1Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 
 	if a.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBadLowerBounds)
 		return -1
 	}
 
@@ -835,23 +880,25 @@ func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 func (context *VMHooksImpl) BigIntAbs(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntAbsName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAbs
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -863,23 +910,25 @@ func (context *VMHooksImpl) BigIntAbs(destinationHandle, opHandle int32) {
 func (context *VMHooksImpl) BigIntNeg(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntNegName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNeg
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -891,22 +940,24 @@ func (context *VMHooksImpl) BigIntNeg(destinationHandle, opHandle int32) {
 func (context *VMHooksImpl) BigIntSign(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntSignName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSign
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -2
 	}
 
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -2
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -2
 	}
 
@@ -918,22 +969,24 @@ func (context *VMHooksImpl) BigIntSign(opHandle int32) int32 {
 func (context *VMHooksImpl) BigIntCmp(op1Handle, op2Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntCmpName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntCmp
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -2
 	}
 
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -2
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return -2
 	}
 
@@ -945,28 +998,30 @@ func (context *VMHooksImpl) BigIntCmp(op1Handle, op2Handle int32) int32 {
 func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntNotName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNot
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(dest, a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Not(a)
@@ -977,28 +1032,30 @@ func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntAndName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAnd
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.And(a, b)
@@ -1009,28 +1066,30 @@ func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle in
 func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntOrName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntOr
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Or(a, b)
@@ -1041,28 +1100,30 @@ func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int
 func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntXorName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntXor
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a, b)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Xor(a, b)
@@ -1073,34 +1134,37 @@ func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle in
 func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntShrName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShr
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 || bits < 0 {
-		_ = context.WithFault(vmhost.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrShiftNegative)
 		return
 	}
 	dest.Rsh(a, uint(bits))
 
 	err = managedType.ConsumeGasForBigIntCopy(dest)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -1110,34 +1174,37 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntShlName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShl
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	if a.Sign() < 0 || bits < 0 {
-		_ = context.WithFault(vmhost.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		context.FailExecution(vmhost.ErrShiftNegative)
 		return
 	}
 	dest.Lsh(a, uint(bits))
 
 	err = managedType.ConsumeGasForBigIntCopy(dest)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 }
@@ -1148,24 +1215,26 @@ func (context *VMHooksImpl) BigIntFinishUnsigned(referenceHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntFinishUnsignedName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishUnsigned
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	value, err := managedType.GetBigInt(referenceHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 	bigIntBytes := value.Bytes()
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(value.Bytes())))
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -1178,24 +1247,26 @@ func (context *VMHooksImpl) BigIntFinishSigned(referenceHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
-	runtime := context.GetRuntimeContext()
 	metering.StartGasTracing(bigIntFinishSignedName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	err := metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
 	value, err := managedType.GetBigInt(referenceHandle)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 	bigInt2cBytes := twos.ToBytes(value)
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bigInt2cBytes)))
 	err = metering.UseGasBounded(gasToUse)
-	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 
@@ -1210,18 +1281,19 @@ func (context *VMHooksImpl) BigIntToString(bigIntHandle int32, destinationHandle
 }
 
 func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationHandle int32) {
-	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntToStringName, gasToUse)
-	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
 	value, err := managedType.GetBigInt(bigIntHandle)
-	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 
@@ -1229,7 +1301,8 @@ func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationH
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(resultStr)))
 	err = metering.UseGasBounded(gasToUse)
-	if WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return
 	}
 

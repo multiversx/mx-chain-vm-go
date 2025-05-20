@@ -3,9 +3,7 @@ package main
 import (
 	scenclibase "github.com/multiversx/mx-chain-scenario-go/clibase"
 	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
-
 	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	cli "github.com/urfave/cli/v2"
 )
@@ -42,9 +40,6 @@ func (*vm15Flags) ParseFlags(cCtx *cli.Context) scenclibase.CLIRunOptions {
 	}
 
 	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
-	if cCtx.Bool("wasmer1") {
-		vmBuilder.OverrideVMExecutor = wasmer.ExecutorFactory()
-	}
 	if cCtx.Bool("wasmer2") {
 		vmBuilder.OverrideVMExecutor = wasmer2.ExecutorFactory()
 	}

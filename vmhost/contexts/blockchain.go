@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
@@ -8,7 +9,6 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 var logBlockchain = logger.GetOrCreate("vm/blockchainContext")
@@ -247,6 +247,26 @@ func (context *blockchainContext) CurrentRandomSeed() []byte {
 	return context.blockChainHook.CurrentRandomSeed()
 }
 
+// RoundTime returns the duruation of a round
+func (context *blockchainContext) RoundTime() uint64 {
+	return context.blockChainHook.RoundTime()
+}
+
+// EpochStartBlockTimeStamp returns the timestamp of the first block of the current epoch.
+func (context *blockchainContext) EpochStartBlockTimeStamp() uint64 {
+	return context.blockChainHook.EpochStartBlockTimeStamp()
+}
+
+// EpochStartBlockNonce returns the nonce of the first block of the current epoch.
+func (context *blockchainContext) EpochStartBlockNonce() uint64 {
+	return context.blockChainHook.EpochStartBlockNonce()
+}
+
+// EpochStartBlockRound returns the round of the first block of the current epoch.
+func (context *blockchainContext) EpochStartBlockRound() uint64 {
+	return context.blockChainHook.EpochStartBlockRound()
+}
+
 // GetOwnerAddress returns the owner address of the contract being executed.
 func (context *blockchainContext) GetOwnerAddress() ([]byte, error) {
 	scAddress := context.host.Runtime().GetContextAddress()
@@ -317,7 +337,8 @@ func (context *blockchainContext) PopSetActiveState() {
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
-	if vmhooks.WithFaultAndHost(context.host, err, true) {
+	if err != nil {
+		vmhooks.FailExecution(context.host, err)
 		context.host.Runtime().AddError(err, "RevertToSnapshot")
 		logBlockchain.Error("PopSetActiveState RevertToSnapshot", "error", err)
 		return

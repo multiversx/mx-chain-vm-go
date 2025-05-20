@@ -25,7 +25,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	_ = builtInFuncContainer.Add("protocolFunctionFoo", &mock.BuiltInFunctionStub{})
 	_ = builtInFuncContainer.Add("protocolFunctionBar", &mock.BuiltInFunctionStub{})
 
-	validator := newWASMValidator(testImportNames(), builtInFuncContainer)
+	validator := newWASMValidator(testImportNames(), builtInFuncContainer, worldmock.EnableEpochsHandlerStubAllFlags())
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -55,7 +55,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 func TestFunctionsProtected(t *testing.T) {
 	host := InitializeVMAndWasmer()
 
-	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer())
+	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer(), worldmock.EnableEpochsHandlerStubAllFlags())
 
 	world := worldmock.NewMockWorld()
 	imb := contextmock.NewExecutorMock(world)

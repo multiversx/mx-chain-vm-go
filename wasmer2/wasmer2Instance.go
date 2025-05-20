@@ -111,7 +111,15 @@ func (instance *Wasmer2Instance) Cache() ([]byte, error) {
 
 // IsFunctionImported returns true if the instance imports the specified function
 func (instance *Wasmer2Instance) IsFunctionImported(name string) bool {
-	return false
+	var cImportName = cCString(name)
+	defer cFree(unsafe.Pointer(cImportName))
+
+	result := cWasmerInstanceHasImportedFunction(
+		instance.cgoInstance,
+		cImportName,
+	)
+
+	return result == 1
 }
 
 // CallFunction executes given function from loaded contract.

@@ -9,7 +9,7 @@ import (
 
 var _ executor.Executor = (*Wasmer2Executor)(nil)
 
-// WasmerExecutor oversees the creation of Wasmer instances and execution.
+// Wasmer2Executor oversees the creation of Wasmer instances and execution.
 type Wasmer2Executor struct {
 	cgoExecutor *cWasmerExecutorT
 
@@ -27,10 +27,10 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 	localPtr := uintptr(unsafe.Pointer(vmHookPointers))
 	localPtrPtr := unsafe.Pointer(&localPtr)
 
-	var c_executor *cWasmerExecutorT
+	var cExecutor *cWasmerExecutorT
 
 	var result = cWasmerNewExecutor(
-		&c_executor,
+		&cExecutor,
 		localPtrPtr,
 	)
 
@@ -40,12 +40,12 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 
 	cWasmerForceInstallSighandlers()
 
-	executor := &Wasmer2Executor{
-		cgoExecutor:    c_executor,
+	wasmerExecutor := &Wasmer2Executor{
+		cgoExecutor:    cExecutor,
 		vmHookPointers: vmHookPointers,
 	}
 
-	return executor, nil
+	return wasmerExecutor, nil
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
@@ -59,7 +59,7 @@ func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *executor.WASMOpco
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.
-func (wasmerExecutor *Wasmer2Executor) SetRkyvSerializationEnabled(enabled bool) {
+func (wasmerExecutor *Wasmer2Executor) SetRkyvSerializationEnabled(_ bool) {
 }
 
 // SetSIGSEGVPassthrough controls a Wasmer flag.
@@ -76,7 +76,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	var c_instance *cWasmerInstanceT
+	var cInstance *cWasmerInstanceT
 
 	if len(contractCode) == 0 {
 		return nil, newWrappedError(ErrInvalidBytecode)
@@ -85,7 +85,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	cOptions := unsafe.Pointer(&options)
 	var compileResult = cWasmerInstantiateWithOptions(
 		wasmerExecutor.cgoExecutor,
-		&c_instance,
+		&cInstance,
 		(*cUchar)(unsafe.Pointer(&contractCode[0])),
 		cUint(len(contractCode)),
 		(*cWasmerCompilationOptions)(cOptions),
@@ -95,7 +95,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
-	return newInstance(c_instance)
+	return newInstance(cInstance)
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -104,7 +104,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	var c_instance *cWasmerInstanceT
+	var cInstance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {
 		return nil, newWrappedError(ErrInvalidBytecode)
@@ -113,7 +113,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	cOptions := unsafe.Pointer(&options)
 	var compileResult = cWasmerInstanceFromCache(
 		wasmerExecutor.cgoExecutor,
-		&c_instance,
+		&cInstance,
 		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
 		cUint32T(len(compiledCode)),
 		(*cWasmerCompilationOptions)(cOptions),
@@ -123,7 +123,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
-	return newInstance(c_instance)
+	return newInstance(cInstance)
 }
 
 // IsInterfaceNil returns true if underlying object is nil

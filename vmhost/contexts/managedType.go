@@ -64,6 +64,7 @@ type managedTypesContext struct {
 type backTransfers struct {
 	ESDTTransfers []*vmcommon.ESDTTransfer
 	CallValue     *big.Int
+	LastIndex     uint32
 }
 
 type managedTypesState struct {
@@ -833,13 +834,20 @@ func (context *managedTypesContext) getKeyValueFromManagedMap(mMapHandle int32, 
 }
 
 // AddBackTransfers add transfers to back transfers structure
-func (context *managedTypesContext) AddBackTransfers(transfers []*vmcommon.ESDTTransfer) {
-	context.managedTypesValues.backTransfers.ESDTTransfers = append(context.managedTypesValues.backTransfers.ESDTTransfers, transfers...)
-}
+func (context *managedTypesContext) AddBackTransfers(value *big.Int, transfers []*vmcommon.ESDTTransfer, index uint32) {
+	backTrs := &context.managedTypesValues.backTransfers
+	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixBackTransferOPCODE) && backTrs.LastIndex >= index {
+		return
+	}
 
-// AddValueOnlyBackTransfer add to back transfer value
-func (context *managedTypesContext) AddValueOnlyBackTransfer(value *big.Int) {
-	context.managedTypesValues.backTransfers.CallValue.Add(context.managedTypesValues.backTransfers.CallValue, value)
+	if backTrs.LastIndex < index {
+		backTrs.LastIndex = index
+	}
+
+	backTrs.CallValue.Add(backTrs.CallValue, value)
+	if len(transfers) > 0 {
+		backTrs.ESDTTransfers = append(backTrs.ESDTTransfers, transfers...)
+	}
 }
 
 // GetBackTransfers returns all ESDT transfers and accumulated value as well, will clean accumulated values
@@ -848,6 +856,7 @@ func (context *managedTypesContext) GetBackTransfers() ([]*vmcommon.ESDTTransfer
 	context.managedTypesValues.backTransfers = backTransfers{
 		ESDTTransfers: make([]*vmcommon.ESDTTransfer, 0),
 		CallValue:     big.NewInt(0),
+		LastIndex:     clonedTransfers.LastIndex,
 	}
 
 	return clonedTransfers.ESDTTransfers, clonedTransfers.CallValue
@@ -857,6 +866,7 @@ func cloneBackTransfers(currentBackTransfers backTransfers) backTransfers {
 	newBackTransfers := backTransfers{
 		ESDTTransfers: make([]*vmcommon.ESDTTransfer, len(currentBackTransfers.ESDTTransfers)),
 		CallValue:     big.NewInt(0).Set(currentBackTransfers.CallValue),
+		LastIndex:     currentBackTransfers.LastIndex,
 	}
 
 	for index, transfer := range currentBackTransfers.ESDTTransfers {
