@@ -40,7 +40,7 @@ impl<VH: VMHooksSetEarlyExit> VMHooksLegacyAdapter<VH> {
         let mut vm_hooks = self.inner_cell.borrow_mut();
         let result = f(&mut *vm_hooks);
         result.unwrap_or_else(|early_exit| {
-            self.inner_cell.borrow().set_early_exit(early_exit);
+            vm_hooks.set_early_exit(early_exit);
             R::default()
         })
     }
