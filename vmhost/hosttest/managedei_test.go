@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -12,8 +13,10 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
-	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	mockContext "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
+	mockHost "github.com/multiversx/mx-chain-vm-go/mock/host"
+	"github.com/multiversx/mx-chain-vm-go/mock/matcher"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -26,6 +29,7 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock/esdtconvert"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,8 +66,8 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -130,8 +134,8 @@ func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -185,8 +189,8 @@ func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bo
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -228,8 +232,8 @@ func Test_ManagedBufferToHex(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -274,8 +278,8 @@ func Test_BigIntToString(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -311,8 +315,8 @@ func Test_BigIntToString(t *testing.T) {
 
 // Real contracts always check first that the big int fits.
 // This special test case represents an intentionally badly written contract.
-func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{}) {
-	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+func bigIntToInt64MockContract(parentInstance *mockContext.InstanceMock, _ interface{}) {
+	parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
 
 		inputHandle := int32(0)
@@ -389,8 +393,8 @@ func Test_ManagedRipemd160(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -465,8 +469,8 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						key, message, sig := blsSplitString(t, blsCheckOK)
@@ -517,8 +521,8 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -569,8 +573,8 @@ func Test_VerifySecp256k1(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -621,8 +625,8 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -671,8 +675,8 @@ func Test_VerifySecp256r1(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -723,8 +727,8 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -768,8 +772,8 @@ func Test_ManagedVerifyBLSSignatureShare(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						key, message, sig := blsSplitString(t, blsCheckOK)
@@ -814,8 +818,8 @@ func Test_ManagedVerifyBLSMultiSig(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						keys, message, sig := blsMultiSigSplitString(t, blsMultiSigOk)
@@ -865,8 +869,8 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -917,8 +921,8 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -973,8 +977,8 @@ func Test_ManagedMarshalEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1027,8 +1031,8 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1084,8 +1088,8 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1138,8 +1142,8 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1195,8 +1199,8 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1245,8 +1249,8 @@ func Test_ManagedCreateEC(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						p224ec := elliptic.P224().Params()
@@ -1312,8 +1316,8 @@ func Test_ManagedDeleteContract(t *testing.T) {
 				WithConfig(testConfig).
 				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
 				WithOwnerAddress(test.ParentAddress).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
 
@@ -1405,8 +1409,8 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 						managed := host.ManagedTypes()
 
@@ -1479,8 +1483,8 @@ func TestBaseOpsAPI_GetESDTTokenType(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 						managed := host.ManagedTypes()
 
@@ -1544,8 +1548,8 @@ func Test_ManagedGetCodeMetadata(t *testing.T) {
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
 				WithCodeMetadata(metadata).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1590,8 +1594,8 @@ func Test_ManagedGetCodeHash(t *testing.T) {
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
 				WithCodeHash(codeHash).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						output, err := vmhooks.ManagedGetCodeHashTyped(host, test.ParentAddress)
@@ -1623,8 +1627,8 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
@@ -1678,8 +1682,8 @@ func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 						input := test.DefaultTestContractCallInput()
 						input.GasProvided = testConfig.GasProvidedToChild
@@ -1702,8 +1706,8 @@ func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						valueBytes := egldTransfer.Bytes()
@@ -1767,8 +1771,8 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						for i := 0; i < callsNumber; i++ {
@@ -1795,8 +1799,8 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						valueBytes := egldTransfer.Bytes()
@@ -1857,8 +1861,8 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						for i := 0; i < callsNumber; i++ {
@@ -1884,8 +1888,8 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						valueBytes := egldTransfer.Bytes()
@@ -2004,12 +2008,12 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
 				WithCodeMetadata([]byte{0, (1 << vmcommon.MetadataPayableBySC) | (1 << vmcommon.MetadataPayable)}).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {}),
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {}),
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						transfer := &vmcommon.ESDTTransfer{
@@ -2072,8 +2076,8 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mockContext.InstanceMock {
 
 						return parentInstance
 					})
@@ -2081,8 +2085,8 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						transfer := &vmcommon.ESDTTransfer{
@@ -2140,8 +2144,8 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_ReturnOnFail(t *testing.T) {
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						host.Runtime().SignalUserError("triggered erorr")
@@ -2152,8 +2156,8 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_ReturnOnFail(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						transfer := &vmcommon.ESDTTransfer{
@@ -2214,12 +2218,12 @@ func Test_ManagedManagedGetAllTransfersCallValue_NoCallValue(t *testing.T) {
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
 				WithCodeMetadata([]byte{0, (1 << vmcommon.MetadataPayableBySC) | (1 << vmcommon.MetadataPayable)}).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {}),
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {}),
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						transfers, err := vmhooks.ManagedGetAllTransfersCallValueTyped(host)
@@ -2262,12 +2266,12 @@ func Test_ManagedManagedGetAllTransfersCallValue_NoTokenNoCallValue(t *testing.T
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
 				WithCodeMetadata([]byte{0, (1 << vmcommon.MetadataPayableBySC) | (1 << vmcommon.MetadataPayable)}).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {}),
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {}),
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						transfers, err := vmhooks.ManagedGetAllTransfersCallValueTyped(host)
@@ -2303,12 +2307,12 @@ func Test_ManagedManagedGetAllTransfersCallValue_OnlyCallValue(t *testing.T) {
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
 				WithCodeMetadata([]byte{0, (1 << vmcommon.MetadataPayableBySC) | (1 << vmcommon.MetadataPayable)}).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {}),
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {}),
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *mockContext.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mockContext.InstanceMock {
 						host := parentInstance.Host
 
 						transfers, err := vmhooks.ManagedGetAllTransfersCallValueTyped(host)
@@ -2339,4 +2343,792 @@ func Test_ManagedManagedGetAllTransfersCallValue_OnlyCallValue(t *testing.T) {
 				Ok()
 		})
 	assert.Nil(t, err)
+}
+
+// TestManagedExecuteOnDestContextWithErrorReturn_BuiltinFunctionCall tests that a call to a built-in function is prevented.
+func TestManagedExecuteOnDestContextWithErrorReturn_BuiltinFunctionCall(t *testing.T) {
+	t.Parallel()
+
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock() // Added for IsSmartContract
+	mockGasSchedule := mockContext.NewGasScheduleMock()      // For BaseOpsAPICost
+	mockVMInput := &vmcommon.VMInput{}
+
+	destAddr := []byte("dest-address")
+	funcName := "ESDTTransfer" // A known built-in function
+	initialGas := int64(100000)
+	expectedReturnCode := int32(1) // Error code expected when execution fails but is handled by "WithErrorReturn"
+
+	// Setup ManagedTypes mock
+	mockManaged.On("GetBytes", mock.AnythingOfType("int32")).Return(func(handle int32) []byte {
+		if handle == 1 { // addressHandle
+			return destAddr
+		}
+		if handle == 3 { // functionHandle
+			return []byte(funcName)
+		}
+		return nil
+	}, nil).Maybe() // .Maybe() allows calls not explicitly defined if not crucial for this path
+	mockManaged.On("GetBigInt", mock.AnythingOfType("int32")).Return(big.NewInt(0), nil).Maybe()
+	mockManaged.On("ReadManagedVecOfManagedBuffers", mock.AnythingOfType("int32")).Return([][]byte{}, uint64(0), nil).Maybe()
+	mockManaged.On("WriteManagedVecOfManagedBuffers", mock.AnythingOfType("int32"), mock.Anything).Return(nil).Maybe() // For setReturnDataIfExists
+
+	// Setup Runtime mock
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address")).Maybe()
+	mockRuntime.On("GetVMInput").Return(mockVMInput).Maybe()
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true).Maybe() // typical setup
+	mockRuntime.On("ReadOnly").Return(false).Maybe()                        // Not a read-only call
+
+	// Setup Metering mock
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{ExecuteOnDestContext: 1000}).Maybe()
+	mockMetering.On("GasSchedule").Return(mockGasSchedule).Maybe()
+	mockMetering.On("StartGasTracing", vmhooks.ManagedExecuteOnDestContextWithReturnName).Return().Maybe()
+	mockMetering.On("UseGasBounded", mock.AnythingOfType("uint64")).Return(nil).Maybe()
+
+	// Setup Output mock
+	mockOutput.On("ReturnData").Return([][]byte{}).Maybe() // No initial return data
+	// For the error case, CreateVMOutputInCaseOfError might be called by the deeper ExecuteOnDestContext
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: vmhost.ErrInvalidBuiltInFunctionCall.Error()}).Once()
+	mockOutput.On("CreateVMOutputInCaseOfError", vmhost.ErrInvalidBuiltInFunctionCall).Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: vmhost.ErrInvalidBuiltInFunctionCall.Error()}).Maybe()
+
+
+	// Setup Blockchain mock (for prepareIndirectContractCallInput and ExecuteOnDestContext)
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0)).Maybe()
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true).Maybe()
+
+	// Setup host mock
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("IsBuiltinFunctionName", funcName).Return(true).Once() // CRUCIAL: This makes it a built-in call
+
+	// This is what ExecuteOnDestContext in execution.go would do when it sees a built-in function
+	// It would call handleBuiltinFunctionCall, which might return an error.
+	// The error vmhost.ErrInvalidBuiltInFunctionCall should be set.
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      funcName,
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: vmhost.ErrInvalidBuiltInFunctionCall.Error()}, true, vmhost.ErrInvalidBuiltInFunctionCall).Once()
+
+	// No FailExecution should be called directly by the hooks being tested, as failOnError is false
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		t.Errorf("FailExecution was called with %v, but should not have been", args.Get(0))
+	}).Maybe() // .Maybe() here because if ExecuteOnDestContext is not mocked perfectly, it might call it.
+
+	vmHooks := vmhooks.NewVMHooksImpl(mockHost)
+
+	// Call the function under test
+	// Handles: addressHandle=1, valueHandle=2, functionHandle=3, argumentsHandle=4, resultHandle=5
+	retCode := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(initialGas, 1, 2, 3, 4, 5)
+
+	// Assertions
+	assert.Equal(t, expectedReturnCode, retCode, "Return code should indicate an error was handled")
+	mockHost.AssertExpectations(t)
+	mockManaged.AssertExpectations(t)
+	mockRuntime.AssertExpectations(t)
+	mockMetering.AssertExpectations(t)
+	mockOutput.AssertExpectations(t)
+	mockBlockchain.AssertExpectations(t)
+}
+
+// TestManagedExecuteOnDestContextWithErrorReturn_NormalFunctionCall_Success tests a normal successful function call.
+func TestManagedExecuteOnDestContextWithErrorReturn_NormalFunctionCall_Success(t *testing.T) {
+	t.Parallel()
+
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+	mockVMInput := &vmcommon.VMInput{}
+
+	destAddr := []byte("dest-address")
+	funcName := "validScFunction"
+	initialGas := int64(100000)
+	expectedReturnData := [][]byte{[]byte("success")}
+	expectedReturnCode := int32(0) // Success
+
+	// Setup ManagedTypes mock
+	mockManaged.On("GetBytes", int32(1)).Return(destAddr, nil)      // addressHandle
+	mockManaged.On("GetBigInt", int32(2)).Return(big.NewInt(0), nil) // valueHandle
+	mockManaged.On("GetBytes", int32(3)).Return([]byte(funcName), nil) // functionHandle
+	mockManaged.On("ReadManagedVecOfManagedBuffers", int32(4)).Return([][]byte{}, uint64(0), nil) // argumentsHandle
+	mockManaged.On("WriteManagedVecOfManagedBuffers", int32(5), expectedReturnData).Return(nil).Once() // resultHandle
+
+	// Setup Runtime mock
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address"))
+	mockRuntime.On("GetVMInput").Return(mockVMInput)
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true)
+	mockRuntime.On("ReadOnly").Return(false)
+
+	// Setup Metering mock
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{ExecuteOnDestContext: 1000})
+	mockMetering.On("GasSchedule").Return(mockGasSchedule)
+	mockMetering.On("StartGasTracing", vmhooks.ManagedExecuteOnDestContextWithReturnName).Return()
+	mockMetering.On("UseGasBounded", mock.AnythingOfType("uint64")).Return(nil)
+
+	// Setup Output mock
+	// ReturnData is called by setReturnDataIfExists. Before the call, it's empty. After, it contains the result.
+	mockOutput.On("ReturnData").Return([][]byte{}, [][]byte{expectedReturnData[0]}).Once() // First call in ManagedExecuteOnDestContextWithErrorReturnWithHost, second in setReturnDataIfExists
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.Ok, ReturnData: expectedReturnData, GasRemaining: 50000}).Maybe()
+
+
+	// Setup Blockchain mock
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0))
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true)
+
+	// Setup host mock
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("IsBuiltinFunctionName", funcName).Return(false).Once() // Not a built-in call
+
+	// Mock ExecuteOnDestContext to simulate successful execution
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      funcName,
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.Ok, ReturnData: expectedReturnData, GasRemaining: 50000}, true, nil).Once()
+
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		t.Errorf("FailExecution was called with %v, but should not have been", args.Get(0))
+	}).Maybe()
+
+	vmHooks := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(initialGas, 1, 2, 3, 4, 5)
+
+	assert.Equal(t, expectedReturnCode, retCode, "Return code should indicate success")
+	mockHost.AssertExpectations(t)
+	mockManaged.AssertExpectations(t)
+}
+
+// TestManagedExecuteOnDestContextWithErrorReturn_NormalFunctionCall_ExecutionError tests a normal function call that results in an execution error.
+func TestManagedExecuteOnDestContextWithErrorReturn_NormalFunctionCall_ExecutionError(t *testing.T) {
+	t.Parallel()
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+	mockVMInput := &vmcommon.VMInput{}
+
+	destAddr := []byte("dest-address")
+	funcName := "errorFunction"
+	initialGas := int64(100000)
+	expectedReturnCode := int32(1) // Error handled by WithErrorReturn
+
+	// Setup ManagedTypes
+	mockManaged.On("GetBytes", int32(1)).Return(destAddr, nil)
+	mockManaged.On("GetBigInt", int32(2)).Return(big.NewInt(0), nil)
+	mockManaged.On("GetBytes", int32(3)).Return([]byte(funcName), nil)
+	mockManaged.On("ReadManagedVecOfManagedBuffers", int32(4)).Return([][]byte{}, uint64(0), nil)
+	mockManaged.On("WriteManagedVecOfManagedBuffers", int32(5), mock.Anything).Return(nil).Maybe() // Result handle, might contain error data or empty
+
+	// Setup Runtime
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address"))
+	mockRuntime.On("GetVMInput").Return(mockVMInput)
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true)
+	mockRuntime.On("ReadOnly").Return(false)
+
+	// Setup Metering
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{ExecuteOnDestContext: 1000})
+	mockMetering.On("GasSchedule").Return(mockGasSchedule)
+	mockMetering.On("StartGasTracing", vmhooks.ManagedExecuteOnDestContextWithReturnName).Return()
+	mockMetering.On("UseGasBounded", mock.AnythingOfType("uint64")).Return(nil)
+
+	// Setup Output
+	mockOutput.On("ReturnData").Return([][]byte{}).Maybe() // For setReturnDataIfExists
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: "execution failed"}).Maybe()
+
+
+	// Setup Blockchain
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0))
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true)
+
+	// Setup host
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("IsBuiltinFunctionName", funcName).Return(false)
+
+	// Mock ExecuteOnDestContext to simulate execution error
+	executionError := errors.New("simulated execution error")
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      funcName,
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: executionError.Error()}, true, executionError).Once()
+
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		t.Errorf("FailExecution was called with %v, but should not have been for this type of error", args.Get(0))
+	}).Maybe()
+
+	vmHooks := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(initialGas, 1, 2, 3, 4, 5)
+
+	assert.Equal(t, expectedReturnCode, retCode, "Return code should indicate error was handled")
+	mockHost.AssertExpectations(t)
+}
+
+// TestManagedExecuteOnDestContextWithErrorReturn_InvalidInputs tests various invalid input scenarios.
+func TestManagedExecuteOnDestContextWithErrorReturn_InvalidInputs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		mockSetup     func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock)
+		expectedError error // Expected error for FailExecution
+	}{
+		{
+			name: "InvalidAddressHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock) {
+				mockManaged.On("GetBytes", int32(1)).Return(nil, vmhost.ErrArgOutOfRange).Once() // Address handle fails
+				mockHost.On("FailExecution", vmhost.ErrArgOutOfRange).Return().Once()
+			},
+			expectedError: vmhost.ErrArgOutOfRange,
+		},
+		{
+			name: "InvalidValueHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock) {
+				mockManaged.On("GetBytes", int32(1)).Return([]byte("dest-addr"), nil) // Address handle OK
+				mockManaged.On("GetBigInt", int32(2)).Return(nil, vmhost.ErrArgOutOfRange).Once() // Value handle fails
+				mockHost.On("FailExecution", vmhost.ErrArgOutOfRange).Return().Once()
+			},
+			expectedError: vmhost.ErrArgOutOfRange,
+		},
+		{
+			name: "InvalidFunctionHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock) {
+				mockManaged.On("GetBytes", int32(1)).Return([]byte("dest-addr"), nil)
+				mockManaged.On("GetBigInt", int32(2)).Return(big.NewInt(0), nil)
+				mockManaged.On("GetBytes", int32(3)).Return(nil, vmhost.ErrArgOutOfRange).Once() // Function handle fails
+				mockHost.On("FailExecution", vmhost.ErrArgOutOfRange).Return().Once()
+			},
+			expectedError: vmhost.ErrArgOutOfRange,
+		},
+		{
+			name: "InvalidArgumentsHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock) {
+				mockManaged.On("GetBytes", int32(1)).Return([]byte("dest-addr"), nil)
+				mockManaged.On("GetBigInt", int32(2)).Return(big.NewInt(0), nil)
+				mockManaged.On("GetBytes", int32(3)).Return([]byte("funcName"), nil)
+				mockManaged.On("ReadManagedVecOfManagedBuffers", int32(4)).Return(nil, uint64(0), vmhost.ErrArgOutOfRange).Once() // Args handle fails
+				mockHost.On("FailExecution", vmhost.ErrArgOutOfRange).Return().Once()
+			},
+			expectedError: vmhost.ErrArgOutOfRange,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockHost := mockHost.NewVMHostMock()
+			mockManaged := mockContext.NewManagedTypesContextMock()
+			// Common mocks that shouldn't be called if input validation fails early
+			mockRuntime := mockContext.NewRuntimeContextMock()
+			mockMetering := mockContext.NewMeteringContextMock()
+			mockGasSchedule := mockContext.NewGasScheduleMock()
+
+			mockHost.On("ManagedTypes").Return(mockManaged)
+			mockHost.On("Runtime").Return(mockRuntime).Maybe() // May not be called if GetBytes fails
+			mockHost.On("Metering").Return(mockMetering).Maybe()
+			mockMetering.On("GasSchedule").Return(mockGasSchedule).Maybe()
+			mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{}).Maybe() // Empty cost needed for GasSchedule mock
+			mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true).Maybe()
+
+
+			tt.mockSetup(mockManaged, mockHost)
+
+			vmHooks := vmhooks.NewVMHooksImpl(mockHost)
+			retCode := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(100000, 1, 2, 3, 4, 5)
+
+			assert.Equal(t, int32(-1), retCode, "Return code should be -1 for input validation errors")
+			mockHost.AssertExpectations(t)
+			mockManaged.AssertExpectations(t)
+		})
+	}
+}
+
+// TestManagedExecuteOnDestContextWithErrorReturn_SetReturnDataError tests error during setting return data.
+func TestManagedExecuteOnDestContextWithErrorReturn_SetReturnDataError(t *testing.T) {
+	t.Parallel()
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+	mockVMInput := &vmcommon.VMInput{}
+
+	destAddr := []byte("dest-address")
+	funcName := "validScFunction"
+	initialGas := int64(100000)
+	simulatedReturnData := [][]byte{[]byte("success")}
+	setError := errors.New("error setting return data")
+
+	// Setup ManagedTypes
+	mockManaged.On("GetBytes", int32(1)).Return(destAddr, nil)
+	mockManaged.On("GetBigInt", int32(2)).Return(big.NewInt(0), nil)
+	mockManaged.On("GetBytes", int32(3)).Return([]byte(funcName), nil)
+	mockManaged.On("ReadManagedVecOfManagedBuffers", int32(4)).Return([][]byte{}, uint64(0), nil)
+	// This mock is for setReturnDataIfExists, make it fail
+	mockManaged.On("WriteManagedVecOfManagedBuffers", int32(5), simulatedReturnData).Return(setError).Once()
+
+	// Setup Runtime
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address"))
+	mockRuntime.On("GetVMInput").Return(mockVMInput)
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true)
+	mockRuntime.On("ReadOnly").Return(false)
+
+
+	// Setup Metering
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{ExecuteOnDestContext: 1000})
+	mockMetering.On("GasSchedule").Return(mockGasSchedule)
+	mockMetering.On("StartGasTracing", vmhooks.ManagedExecuteOnDestContextWithReturnName).Return()
+	mockMetering.On("UseGasBounded", mock.AnythingOfType("uint64")).Return(nil)
+
+	// Setup Output
+	// ReturnData is called twice: once for oldLen, once for newLen
+	mockOutput.On("ReturnData").Return([][]byte{}, simulatedReturnData).Once() // oldLen = 0, new data = simulatedReturnData
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.Ok, ReturnData: simulatedReturnData}).Maybe()
+
+
+	// Setup Blockchain
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0))
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true)
+
+	// Setup host
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("IsBuiltinFunctionName", funcName).Return(false)
+
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      funcName,
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.Ok, ReturnData: simulatedReturnData, GasRemaining: 50000}, true, nil).Once()
+
+	// Expect FailExecution due to error in setReturnDataIfExists
+	mockHost.On("FailExecution", setError).Return().Once()
+
+	vmHooks := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(initialGas, 1, 2, 3, 4, 5)
+
+	assert.Equal(t, int32(-1), retCode, "Return code should be -1 when setReturnDataIfExists fails")
+	mockHost.AssertExpectations(t)
+	mockManaged.AssertExpectations(t)
+}
+
+// ---- Tests for ManagedMultiTransferESDTNFTExecuteWithReturn ----
+
+// TestManagedMultiTransferESDTNFTExecuteWithReturn_BuiltinFunctionCall tests transfer and subsequent built-in function call attempt.
+func TestManagedMultiTransferESDTNFTExecuteWithReturn_BuiltinFunctionCall(t *testing.T) {
+	t.Parallel()
+
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+	mockVMInput := &vmcommon.VMInput{}
+
+	destAddr := []byte("dest-address")
+	builtinFuncName := "ESDTNFTCreate" // A built-in function
+	gasLimit := int64(200000)
+	expectedReturnCode := int32(1) // Error from execution phase, handled by WithErrorReturn
+
+	// Handles for ManagedMultiTransferESDTNFTExecuteWithReturn
+	dstHandle := int32(1)
+	tokenTransfersHandle := int32(2)
+	functionHandle := int32(3)
+	argumentsHandle := int32(4)
+
+	// Setup ManagedTypes
+	mockManaged.On("GetBytes", dstHandle).Return(destAddr, nil).Once()
+	mockManaged.On("GetBytes", functionHandle).Return([]byte(builtinFuncName), nil).Once()
+	mockManaged.On("ReadManagedVecOfManagedBuffers", argumentsHandle).Return([][]byte{}, uint64(0), nil).Once() // No specific args for this test
+	mockManaged.On("ReadESDTTransfers", tokenTransfersHandle).Return([]*vmcommon.ESDTTransfer{
+		{ESDTTokenName: []byte("TOKEN-abcdef"), ESDTValue: big.NewInt(100)},
+	}, nil).Once()
+
+	// Setup Runtime
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address")).Maybe()
+	mockRuntime.On("GetVMInput").Return(mockVMInput).Maybe()
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true).Maybe()
+	mockRuntime.On("ReadOnly").Return(false).Maybe()
+
+	// Setup Metering
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{TransferValue: 500, ExecuteOnDestContext: 1000}).Maybe() // Include TransferValue for ESDT transfer cost
+	mockMetering.On("GasSchedule").Return(mockGasSchedule).Maybe()
+	mockMetering.On("StartGasTracing", vmhooks.ManagedMultiTransferESDTNFTExecuteWithReturnName).Return().Once()
+	mockMetering.On("UseGasBounded", mock.AnythingOfType("uint64")).Return(nil).Maybe() // For various gas operations
+
+	// Setup Output
+	// TransferESDT is expected to be called and succeed for the transfer part
+	mockOutput.On("TransferESDT", mock.AnythingOfType("*vmhost.ESDTTransfersArgs"), mock.AnythingOfType("*vmcommon.ContractCallInput")).Return(gasLimit, nil).Once()
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: vmhost.ErrInvalidBuiltInFunctionCall.Error()}).Maybe() // For the execution phase
+
+	// Setup Blockchain
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0)).Maybe() // For AreInSameShard
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true).Maybe()            // Assuming dest is a SC for execution part
+
+	// Setup Host
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("AreInSameShard", []byte("caller-address"), destAddr).Return(true).Maybe() // For same-shard execution path
+	mockHost.On("IsBuiltinFunctionName", builtinFuncName).Return(true).Once()             // CRUCIAL for the execution phase check
+
+	// Mock ExecuteOnDestContext for the execution phase
+	// This mock simulates what happens after the built-in check in host.ExecuteOnDestContext
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      builtinFuncName,
+		ESDTTransfers: []*vmcommon.ESDTTransfer{{ESDTTokenName: []byte("TOKEN-abcdef"), ESDTValue: big.NewInt(100)}},
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: vmhost.ErrInvalidBuiltInFunctionCall.Error()}, true, vmhost.ErrInvalidBuiltInFunctionCall).Once()
+	
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		// FailExecution might be called by readDestinationFunctionArguments or readESDTTransfers if they fail,
+		// but not by TransferESDTNFTExecuteWithTypedArgsWithFailure for this specific scenario.
+		// It could also be called by ExecuteOnDestContext if the error handling there is different.
+		// For this test, we primarily care it's not called for the *transfer* part due to withFailure=false.
+		// If ExecuteOnDestContext itself calls it, that's part of its mocked behavior.
+		if args.Get(0) != vmhost.ErrInvalidBuiltInFunctionCall { // Allow if it's the specific error from ExecuteOnDestContext
+			 t.Logf("FailExecution called with: %v", args.Get(0))
+		}
+	}).Maybe()
+
+
+	vmHooksImpl := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooksImpl.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+
+	assert.Equal(t, expectedReturnCode, retCode)
+	mockHost.AssertExpectations(t)
+	mockManaged.AssertExpectations(t)
+}
+
+// TestManagedMultiTransferESDTNFTExecuteWithReturn_NormalCall_Success tests transfer and successful normal function call.
+func TestManagedMultiTransferESDTNFTExecuteWithReturn_NormalCall_Success(t *testing.T) {
+	t.Parallel()
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+
+	destAddr := []byte("dest-sc-address")
+	validFuncName := "doSomething"
+	gasLimit := int64(300000)
+	expectedReturnCode := int32(0) // Success
+	esdtTransfers := []*vmcommon.ESDTTransfer{
+		{ESDTTokenName: []byte("MYTOKEN-1234"), ESDTValue: big.NewInt(50)},
+	}
+
+	dstHandle, transfersHandle, funcHandle, argsHandle := int32(1), int32(2), int32(3), int32(4)
+
+	mockManaged.On("GetBytes", dstHandle).Return(destAddr, nil)
+	mockManaged.On("ReadESDTTransfers", transfersHandle).Return(esdtTransfers, nil)
+	mockManaged.On("GetBytes", funcHandle).Return([]byte(validFuncName), nil)
+	mockManaged.On("ReadManagedVecOfManagedBuffers", argsHandle).Return([][]byte{[]byte("arg1")}, uint64(4), nil)
+
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address"))
+	mockRuntime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true)
+	mockRuntime.On("ReadOnly").Return(false)
+
+
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{TransferValue: 100, ExecuteOnDestContext: 100})
+	mockMetering.On("GasSchedule").Return(mockGasSchedule)
+	mockMetering.On("StartGasTracing", mock.Anything).Return()
+	mockMetering.On("UseGasBounded", mock.Anything).Return(nil)
+
+	mockOutput.On("TransferESDT", mock.Anything, mock.Anything).Return(gasLimit/2, nil).Once() // Gas for exec
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.Ok, GasRemaining: gasLimit / 4}).Maybe()
+
+
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0))
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true)
+
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
+	mockHost.On("IsBuiltinFunctionName", validFuncName).Return(false) // Not a built-in
+
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      validFuncName,
+		Arguments:     [][]byte{[]byte("arg1")},
+		ESDTTransfers: esdtTransfers,
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.Ok, GasRemaining: gasLimit / 4}, true, nil).Once()
+	
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		t.Errorf("FailExecution was called unexpectedly with %v", args.Get(0))
+	}).Maybe()
+
+
+	vmHooksImpl := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooksImpl.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, transfersHandle, gasLimit, funcHandle, argsHandle)
+
+	assert.Equal(t, expectedReturnCode, retCode)
+	mockHost.AssertExpectations(t)
+}
+
+// TestManagedMultiTransferESDTNFTExecuteWithReturn_NormalCall_ExecutionError tests transfer and normal call that fails.
+func TestManagedMultiTransferESDTNFTExecuteWithReturn_NormalCall_ExecutionError(t *testing.T) {
+	t.Parallel()
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockBlockchain := mockContext.NewBlockchainContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+
+	destAddr := []byte("dest-sc-address")
+	errorFuncName := "errorFunc"
+	gasLimit := int64(300000)
+	expectedReturnCode := int32(1) // Error handled
+	esdtTransfers := []*vmcommon.ESDTTransfer{
+		{ESDTTokenName: []byte("MYTOKEN-1234"), ESDTValue: big.NewInt(50)},
+	}
+	executionErr := errors.New("SC execution failed")
+
+	dstHandle, transfersHandle, funcHandle, argsHandle := int32(1), int32(2), int32(3), int32(4)
+
+	mockManaged.On("GetBytes", dstHandle).Return(destAddr, nil)
+	mockManaged.On("ReadESDTTransfers", transfersHandle).Return(esdtTransfers, nil)
+	mockManaged.On("GetBytes", funcHandle).Return([]byte(errorFuncName), nil)
+	mockManaged.On("ReadManagedVecOfManagedBuffers", argsHandle).Return([][]byte{}, uint64(0), nil)
+
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address"))
+	mockRuntime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true)
+	mockRuntime.On("ReadOnly").Return(false)
+
+
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{TransferValue: 100, ExecuteOnDestContext: 100})
+	mockMetering.On("GasSchedule").Return(mockGasSchedule)
+	mockMetering.On("StartGasTracing", mock.Anything).Return()
+	mockMetering.On("UseGasBounded", mock.Anything).Return(nil)
+
+	mockOutput.On("TransferESDT", mock.Anything, mock.Anything).Return(gasLimit/2, nil).Once()
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: executionErr.Error()}).Maybe()
+
+
+	mockBlockchain.On("GetShardOfAddress", mock.Anything).Return(uint32(0))
+	mockBlockchain.On("IsSmartContract", destAddr).Return(true)
+	mockBlockchain.On("GetSnapshot").Return(uint64(1)).Maybe() // For RevertToSnapshot
+	mockBlockchain.On("RevertToSnapshot", uint64(1)).Return().Maybe()
+
+
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	mockHost.On("Blockchain").Return(mockBlockchain)
+	mockHost.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
+	mockHost.On("IsBuiltinFunctionName", errorFuncName).Return(false)
+
+	mockHost.On("ExecuteOnDestContext", matcher.Proto(&vmcommon.ContractCallInput{
+		RecipientAddr: destAddr,
+		Function:      errorFuncName,
+		ESDTTransfers: esdtTransfers,
+	})).Return(&vm.VMOutput{ReturnCode: vmcommon.UserError, ReturnMessage: executionErr.Error()}, true, executionErr).Once()
+	
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		// FailExecution should not be called by TransferESDTNFTExecuteWithTypedArgsWithFailure when withFailure=false
+		// but it might be called by the mocked ExecuteOnDestContext if its error handling implies that.
+		// We are primarily interested that the hook itself does not panic or call FailExecution directly for this path.
+		 t.Logf("FailExecution called with: %v", args.Get(0))
+	}).Maybe()
+
+
+	vmHooksImpl := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooksImpl.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, transfersHandle, gasLimit, funcHandle, argsHandle)
+
+	assert.Equal(t, expectedReturnCode, retCode)
+	mockHost.AssertExpectations(t)
+}
+
+// TestManagedMultiTransferESDTNFTExecuteWithReturn_TransferOnly tests transfer with no subsequent function call.
+func TestManagedMultiTransferESDTNFTExecuteWithReturn_TransferOnly(t *testing.T) {
+	t.Parallel()
+	mockHost := mockHost.NewVMHostMock()
+	mockManaged := mockContext.NewManagedTypesContextMock()
+	mockRuntime := mockContext.NewRuntimeContextMock()
+	mockMetering := mockContext.NewMeteringContextMock()
+	mockOutput := mockContext.NewOutputContextMock()
+	mockGasSchedule := mockContext.NewGasScheduleMock()
+
+	destAddr := []byte("dest-sc-address")
+	gasLimit := int64(100000)
+	expectedReturnCode := int32(0) // Success
+	esdtTransfers := []*vmcommon.ESDTTransfer{
+		{ESDTTokenName: []byte("MYTOKEN-1234"), ESDTValue: big.NewInt(50)},
+	}
+
+	dstHandle, transfersHandle, funcHandle, argsHandle := int32(1), int32(2), int32(3), int32(4)
+
+	mockManaged.On("GetBytes", dstHandle).Return(destAddr, nil)
+	mockManaged.On("ReadESDTTransfers", transfersHandle).Return(esdtTransfers, nil)
+	mockManaged.On("GetBytes", funcHandle).Return([]byte(""), nil) // Empty function name
+	mockManaged.On("ReadManagedVecOfManagedBuffers", argsHandle).Return([][]byte{}, uint64(0), nil)
+
+	mockRuntime.On("GetContextAddress").Return([]byte("caller-address"))
+	mockRuntime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true)
+
+
+	mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{TransferValue: 100})
+	mockMetering.On("GasSchedule").Return(mockGasSchedule)
+	mockMetering.On("StartGasTracing", mock.Anything).Return()
+	mockMetering.On("UseGasBounded", mock.Anything).Return(nil)
+
+	// TransferESDT is called, contractCallInput will be nil because func name is empty
+	mockOutput.On("TransferESDT", mock.Anything, (*vmcommon.ContractCallInput)(nil)).Return(gasLimit, nil).Once()
+	mockOutput.On("GetVMOutput").Return(&vm.VMOutput{ReturnCode: vmcommon.Ok}).Maybe()
+
+
+	mockHost.On("ManagedTypes").Return(mockManaged)
+	mockHost.On("Runtime").Return(mockRuntime)
+	mockHost.On("Metering").Return(mockMetering)
+	mockHost.On("Output").Return(mockOutput)
+	
+	mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+		t.Errorf("FailExecution was called unexpectedly with %v", args.Get(0))
+	}).Maybe()
+
+
+	vmHooksImpl := vmhooks.NewVMHooksImpl(mockHost)
+	retCode := vmHooksImpl.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, transfersHandle, gasLimit, funcHandle, argsHandle)
+
+	assert.Equal(t, expectedReturnCode, retCode)
+	mockHost.AssertExpectations(t)
+	// IsBuiltinFunctionName and ExecuteOnDestContext should not be called
+	mockHost.AssertNotCalled(t, "IsBuiltinFunctionName", mock.Anything)
+	mockHost.AssertNotCalled(t, "ExecuteOnDestContext", mock.Anything)
+}
+
+// TestManagedMultiTransferESDTNFTExecuteWithReturn_InvalidInputs tests various invalid input scenarios.
+func TestManagedMultiTransferESDTNFTExecuteWithReturn_InvalidInputs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name               string
+		mockSetup          func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock, mockOutput *mockContext.OutputContextMock)
+		expectedReturnCode int32
+		expectFailExecution bool
+		expectedFailError  error
+	}{
+		{
+			name: "InvalidDestHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock, mockOutput *mockContext.OutputContextMock) {
+				mockManaged.On("GetBytes", int32(1)).Return(nil, vmhost.ErrArgOutOfRange).Once() // Dest handle fails
+			},
+			expectedReturnCode:  -1,
+			expectFailExecution: true,
+			expectedFailError:   vmhost.ErrArgOutOfRange,
+		},
+		{
+			name: "InvalidFunctionHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock, mockOutput *mockContext.OutputContextMock) {
+				mockManaged.On("GetBytes", int32(1)).Return([]byte("dest-addr"), nil)          // Dest handle OK
+				mockManaged.On("GetBytes", int32(3)).Return(nil, vmhost.ErrArgOutOfRange).Once() // Function handle fails
+			},
+			expectedReturnCode:  -1,
+			expectFailExecution: true,
+			expectedFailError:   vmhost.ErrArgOutOfRange,
+		},
+		{
+			name: "InvalidTokenTransfersHandle",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock, mockOutput *mockContext.OutputContextMock) {
+				mockManaged.On("GetBytes", int32(1)).Return([]byte("dest-addr"), nil)
+				mockManaged.On("GetBytes", int32(3)).Return([]byte("func"), nil)
+				mockManaged.On("ReadManagedVecOfManagedBuffers", int32(4)).Return([][]byte{}, uint64(0), nil) // Args handle OK
+				mockManaged.On("ReadESDTTransfers", int32(2)).Return(nil, vmhost.ErrArgOutOfRange).Once()   // Token transfers handle fails
+			},
+			expectedReturnCode:  -1,
+			expectFailExecution: true,
+			expectedFailError:   vmhost.ErrArgOutOfRange,
+		},
+		{
+			name: "TransferESDTFails",
+			mockSetup: func(mockManaged *mockContext.ManagedTypesContextMock, mockHost *mockHost.VMHostMock, mockOutput *mockContext.OutputContextMock) {
+				mockManaged.On("GetBytes", int32(1)).Return([]byte("dest-addr"), nil)
+				mockManaged.On("GetBytes", int32(3)).Return([]byte("func"), nil)
+				mockManaged.On("ReadManagedVecOfManagedBuffers", int32(4)).Return([][]byte{}, uint64(0), nil)
+				mockManaged.On("ReadESDTTransfers", int32(2)).Return([]*vmcommon.ESDTTransfer{{}}, nil) // Valid transfers
+				mockOutput.On("TransferESDT", mock.Anything, mock.Anything).Return(int64(0), vmhost.ErrInsufficientFunds).Once()
+			},
+			expectedReturnCode:  1, // Propagated error from TransferESDTNFTExecuteWithTypedArgsWithFailure
+			expectFailExecution: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockHost := mockHost.NewVMHostMock()
+			mockManaged := mockContext.NewManagedTypesContextMock()
+			mockRuntime := mockContext.NewRuntimeContextMock()
+			mockMetering := mockContext.NewMeteringContextMock()
+			mockOutput := mockContext.NewOutputContextMock()
+			mockGasSchedule := mockContext.NewGasScheduleMock()
+
+			mockHost.On("ManagedTypes").Return(mockManaged)
+			mockHost.On("Runtime").Return(mockRuntime).Maybe()
+			mockHost.On("Metering").Return(mockMetering).Maybe()
+			mockHost.On("Output").Return(mockOutput).Maybe()
+
+			mockRuntime.On("GetContextAddress").Return([]byte("caller-address")).Maybe()
+			mockRuntime.On("GetVMInput").Return(&vmcommon.VMInput{}).Maybe()
+			mockRuntime.On("UseGasBoundedShouldFailExecution").Return(true).Maybe()
+
+
+			mockMetering.On("StartGasTracing", mock.Anything).Return().Maybe()
+			mockMetering.On("GasSchedule").Return(mockGasSchedule).Maybe()
+			mockGasSchedule.On("BaseOpsAPICost").Return(&vmcommon.GasCost{TransferValue: 100}).Maybe() // Minimal cost
+			mockMetering.On("UseGasBounded", mock.Anything).Return(nil).Maybe()
+
+			if tt.expectFailExecution {
+				mockHost.On("FailExecution", tt.expectedFailError).Return().Once()
+			} else {
+				mockHost.On("FailExecution", mock.Anything).Run(func(args mock.Arguments) {
+					t.Errorf("FailExecution called unexpectedly with %v", args.Get(0))
+				}).Maybe()
+			}
+
+			tt.mockSetup(mockManaged, mockHost, mockOutput)
+
+			vmHooksImpl := vmhooks.NewVMHooksImpl(mockHost)
+			retCode := vmHooksImpl.ManagedMultiTransferESDTNFTExecuteWithReturn(1, 2, 100000, 3, 4)
+
+			assert.Equal(t, tt.expectedReturnCode, retCode)
+			mockHost.AssertExpectations(t)
+			mockManaged.AssertExpectations(t)
+			mockOutput.AssertExpectations(t)
+		})
+	}
 }
