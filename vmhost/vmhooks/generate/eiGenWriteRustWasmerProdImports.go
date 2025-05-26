@@ -25,6 +25,7 @@ use crate::wasmer_vm_hooks::VMHooksWrapper;
 				"env: &VMHooksWrapper",
 				funcMetadata,
 				rustWasmerType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 
@@ -35,7 +36,7 @@ use crate::wasmer_vm_hooks::VMHooksWrapper;
 			if i > 0 {
 				out.WriteString(", ")
 			}
-			out.WriteString(rustWasmerConvertArg(arg))
+			out.WriteString(rustWasmerProdConvertArg(arg))
 		}
 
 		out.WriteString(")\n}\n\n")
