@@ -566,7 +566,7 @@ int vm_exec_last_error_length(void);
  * error occurs. Potential errors are:
  *
  *  * The buffer is a null pointer,
- *  * The buffer is too smal to hold the error message.
+ *  * The buffer is too small to hold the error message.
  *
  * Note: The error message always has a trailing null character.
  *
