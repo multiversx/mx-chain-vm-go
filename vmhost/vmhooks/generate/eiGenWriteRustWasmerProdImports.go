@@ -25,11 +25,12 @@ use crate::wasmer_vm_hooks::VMHooksWrapper;
 				"env: &VMHooksWrapper",
 				funcMetadata,
 				rustWasmerType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 
 		out.WriteString(" {\n")
-		out.WriteString(fmt.Sprintf("    env.with_vm_hooks(|vh| vh.%s(", snakeCase(funcMetadata.Name)))
+		out.WriteString(fmt.Sprintf("    env.vm_hooks.%s(", snakeCase(funcMetadata.Name)))
 
 		for i, arg := range funcMetadata.Arguments {
 			if i > 0 {
@@ -38,7 +39,7 @@ use crate::wasmer_vm_hooks::VMHooksWrapper;
 			out.WriteString(rustWasmerProdConvertArg(arg))
 		}
 
-		out.WriteString("))\n}\n\n")
+		out.WriteString(")\n}\n\n")
 	}
 
 	out.WriteString(`pub fn generate_import_object(store: &Store, env: &VMHooksWrapper) -> ImportObject {

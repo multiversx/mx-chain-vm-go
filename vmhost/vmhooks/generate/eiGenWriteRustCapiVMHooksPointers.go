@@ -23,6 +23,7 @@ pub struct vm_exec_vm_hook_c_func_pointers {`)
 				"context: *mut c_void",
 				funcMetadata,
 				rustCapiType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 
