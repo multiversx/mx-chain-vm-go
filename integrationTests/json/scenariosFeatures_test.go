@@ -62,6 +62,17 @@ func TestRustBigFloatFeatures(t *testing.T) {
 		CheckNoError()
 }
 
+func TestRustManagedMapBenchmark(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	ScenariosTest(t).
+		Folder("features/managed-map-benchmark/scenarios").
+		Run().
+		CheckNoError()
+}
+
 func TestRustManagedMapFeatures(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
