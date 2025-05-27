@@ -273,6 +273,11 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 // MBufferSetBytes VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) MBufferSetBytes(mBufferHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(mBufferSetBytesName)
@@ -310,6 +315,10 @@ func (context *VMHooksImpl) MBufferSetByteSlice(
 	dataOffset executor.MemPtr) int32 {
 
 	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	return context.ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
 }
 
@@ -320,6 +329,7 @@ func (context *VMHooksImpl) ManagedBufferSetByteSliceWithHost(
 	startingPosition int32,
 	dataLength executor.MemLength,
 	dataOffset executor.MemPtr) int32 {
+	// ReadOnly check is done in the calling MBufferSetByteSlice
 
 	metering := host.Metering()
 	metering.StartGasTracing(mBufferGetByteSliceName)
@@ -377,6 +387,11 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 // MBufferAppend VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
+	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(mBufferAppendName)
@@ -412,6 +427,11 @@ func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle in
 // MBufferAppendBytes VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(mBufferAppendBytesName)

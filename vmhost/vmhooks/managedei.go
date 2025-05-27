@@ -639,6 +639,10 @@ func ManagedAsyncCallWithHost(
 	functionHandle int32,
 	argumentsHandle int32) {
 	runtime := host.Runtime()
+	if runtime.ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return
+	}
 	async := host.Async()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
@@ -701,6 +705,10 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 ) int32 {
 
 	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	managedType := host.ManagedTypes()
 
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
@@ -1148,7 +1156,19 @@ func (context *VMHooksImpl) ManagedExecuteOnSameContext(
 ) int32 {
 	host := context.GetVMHost()
 	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedExecuteOnSameContextName)
+
+	// Check if a non-zero EGLD value is being transferred
+	valueBigInt, err := managedType.GetBigInt(valueHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange) // Or a more specific error if GetBigInt can fail for other reasons
+		return -1
+	}
+	if valueBigInt.Sign() != 0 {
+		FailExecution(host, vmhost.ErrValueTransferInExecuteOnSameContextNotAllowed)
+		return -1
+	}
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {

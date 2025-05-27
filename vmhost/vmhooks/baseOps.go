@@ -1837,6 +1837,10 @@ func (context *VMHooksImpl) AsyncCall(
 
 	host := context.GetVMHost()
 	runtime := host.Runtime()
+	if runtime.ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return
+	}
 	async := host.Async()
 	metering := host.Metering()
 	metering.StartGasTracing(asyncCallName)

@@ -597,6 +597,9 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall) error {
 
 	runtime := context.host.Runtime()
+	if runtime.ReadOnly() {
+		return vmhost.ErrInvalidCallOnReadOnlyMode
+	}
 	functionName := runtime.GetVMInput().Function
 	if functionName == vmhost.InitFunctionName || functionName == vmhost.UpgradeFunctionName {
 		return vmhost.ErrAsyncNotAllowed

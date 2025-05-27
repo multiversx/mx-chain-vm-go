@@ -332,5 +332,8 @@ var ErrNilMapOpcodeAddress = errors.New("nil map opcode address")
 // ErrOpcodeIsNotAllowed signals that opcode is not allowed for the address
 var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
+// ErrValueTransferInExecuteOnSameContextNotAllowed signals that ExecuteOnSameContext was called with a non-zero value
+var ErrValueTransferInExecuteOnSameContextNotAllowed = errors.New("value transfer in ExecuteOnSameContext is not allowed")
+
 // ErrInvalidSignature signals that a signature verification failed
 var ErrInvalidSignature = errors.New("signature is invalid")

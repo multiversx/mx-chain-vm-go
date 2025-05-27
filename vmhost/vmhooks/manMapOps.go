@@ -27,6 +27,11 @@ func (context *VMHooksImpl) ManagedMapNew() int32 {
 // ManagedMapPut VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
+	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
@@ -71,6 +76,11 @@ func (context *VMHooksImpl) ManagedMapGet(mMapHandle int32, keyHandle int32, out
 // ManagedMapRemove VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+	host := context.GetVMHost()
+	if host.Runtime().ReadOnly() {
+		FailExecution(host, vmhost.ErrInvalidCallOnReadOnlyMode)
+		return 1 // Indicate error
+	}
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 

@@ -107,6 +107,83 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 	assert.Nil(t, err)
 }
 
+func Test_ManagedExecuteOnSameContext_WithValue_ShouldFail(t *testing.T) {
+	testConfig := baseTestConfig
+	host := testcommon.NewTestHostBuilder(t).Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	managedTypes := host.ManagedTypes()
+	addressHandle := managedTypes.NewManagedBufferFromBytes(testcommon.MakeSimpleAddress(1))
+	valueHandle := managedTypes.NewBigInt(big.NewInt(100)) // Non-zero value
+	functionHandle := managedTypes.NewManagedBufferFromBytes([]byte("someFunction"))
+	argsHandle := managedTypes.NewManagedBuffer() // Empty args
+
+	vmHooks := vmhooks.NewVMHooksImpl(host)
+	ret := vmHooks.ManagedExecuteOnSameContext(
+		1_000_000,      // gas
+		addressHandle,  // address handle (library address)
+		valueHandle,    // value handle
+		functionHandle, // function name handle
+		argsHandle,     // arguments handle
+		0,              // result handle (not used for failure)
+	)
+
+	assert.Equal(t, int32(-1), ret, "Expected call to fail")
+	assert.Error(t, host.GetRuntimeErrors())
+	assert.Contains(t, host.GetRuntimeErrors().Error(), vmhost.ErrValueTransferInExecuteOnSameContextNotAllowed.Error())
+}
+
+func Test_ManagedExecuteOnSameContext_WithZeroValue_ShouldPassValueCheck(t *testing.T) {
+	testConfig := baseTestConfig
+	host := testcommon.NewTestHostBuilder(t).Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	managedTypes := host.ManagedTypes()
+	// For ExecuteOnSameContext, the "destination" is the library address,
+	// and the actual execution happens on the caller's address context.
+	// So, RecipientAddr is the caller, and AddressHandle is the library.
+	callerAddr := testcommon.MakeSimpleAddress(1)
+	libraryAddr := testcommon.MakeSimpleAddress(2)
+
+	addressHandle := managedTypes.NewManagedBufferFromBytes(libraryAddr)
+	valueHandle := managedTypes.NewBigInt(big.NewInt(0)) // Zero value
+	functionHandle := managedTypes.NewManagedBufferFromBytes([]byte("someFunction"))
+	argsHandle := managedTypes.NewManagedBuffer()
+
+	// Setup RuntimeContext for the caller
+	host.Runtime().SetVMInput(&vmcommon.ContractCallInput{
+		CallerAddr:    testcommon.MakeSimpleAddress(0), // Original caller
+		RecipientAddr: callerAddr,                      // Current contract (caller of ExecuteOnSameContext)
+	})
+	host.Runtime().SetCodeAddress(callerAddr) // Code address for the current execution context
+
+	vmHooks := vmhooks.NewVMHooksImpl(host)
+	ret := vmHooks.ManagedExecuteOnSameContext(
+		1_000_000,      // gas
+		addressHandle,  // library address handle
+		valueHandle,    // value handle
+		functionHandle, // function name handle
+		argsHandle,     // arguments handle
+		0,              // result handle
+	)
+
+	// It should pass the value check. It will likely fail for other reasons
+	// (e.g., ErrBuiltinCallOnSameContextDisallowed if "someFunction" is a builtin,
+	// or function not found, or because no actual code is set up for libraryAddr),
+	// but NOT for ErrValueTransferInExecuteOnSameContextNotAllowed.
+	currentError := host.GetRuntimeErrors()
+	if currentError != nil {
+		assert.NotContains(t, currentError.Error(), vmhost.ErrValueTransferInExecuteOnSameContextNotAllowed.Error())
+	} else {
+		assert.Nil(t, currentError) // Or specific success if a minimal valid call is set up
+	}
+	// Depending on setup, ret might be 0 or -1. We only care it didn't fail due to value.
+}
+
 func Test_ManagedIsESDTFrozen_IsPaused(t *testing.T) {
 	testManagedIsESDTFrozenIsPaused(t, true)
 }
