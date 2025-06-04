@@ -1200,13 +1200,18 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 		context.FailExecution(vmhost.ErrShiftNegative)
 		return
 	}
-	dest.Lsh(a, uint(bits))
 
-	err = managedType.ConsumeGasForBigIntCopy(dest)
+	//this calculates the length of the result in bytes
+	resultBits := a.BitLen() + int(bits)
+	resultBytes := big.NewInt(0).Div(big.NewInt(0).Add(big.NewInt(int64(resultBits)), big.NewInt(int64(a.BitLen()))), big.NewInt(8))
+
+	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(resultBytes)
 	if err != nil {
 		context.FailExecution(err)
 		return
 	}
+
+	dest.Lsh(a, uint(bits))
 }
 
 // BigIntFinishUnsigned VMHooks implementation.
