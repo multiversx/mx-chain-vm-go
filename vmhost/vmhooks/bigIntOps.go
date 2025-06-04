@@ -1173,6 +1173,7 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntShlName)
 
@@ -1198,6 +1199,18 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 
 	if a.Sign() < 0 || bits < 0 {
 		context.FailExecution(vmhost.ErrShiftNegative)
+		return
+	}
+
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		dest.Lsh(a, uint(bits))
+
+		err = managedType.ConsumeGasForBigIntCopy(dest)
+		if err != nil {
+			context.FailExecution(err)
+			return
+		}
+
 		return
 	}
 
