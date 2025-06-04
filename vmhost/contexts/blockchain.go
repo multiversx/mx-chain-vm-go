@@ -1,8 +1,9 @@
 package contexts
 
 import (
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"math/big"
+
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
@@ -212,6 +213,11 @@ func (context *blockchainContext) LastTimeStamp() uint64 {
 	return context.blockChainHook.LastTimeStamp()
 }
 
+// LastTimeStampMs returns the timestamp of the last commited block in milliseconds
+func (context *blockchainContext) LastTimeStampMs() uint64 {
+	return context.blockChainHook.LastTimeStampMs()
+}
+
 // LastNonce returns the nonce of the last commited block.
 func (context *blockchainContext) LastNonce() uint64 {
 	return context.blockChainHook.LastNonce()
@@ -237,6 +243,11 @@ func (context *blockchainContext) CurrentTimeStamp() uint64 {
 	return context.blockChainHook.CurrentTimeStamp()
 }
 
+// CurrentTimeStampMs returns the timestamp of the block currently being built in milliseconds
+func (context *blockchainContext) CurrentTimeStampMs() uint64 {
+	return context.blockChainHook.CurrentTimeStampMs()
+}
+
 // LastRandomSeed returns the randomness seed of the last commited block.
 func (context *blockchainContext) LastRandomSeed() []byte {
 	return context.blockChainHook.LastRandomSeed()
@@ -252,9 +263,9 @@ func (context *blockchainContext) RoundTime() uint64 {
 	return context.blockChainHook.RoundTime()
 }
 
-// EpochStartBlockTimeStamp returns the timestamp of the first block of the current epoch.
-func (context *blockchainContext) EpochStartBlockTimeStamp() uint64 {
-	return context.blockChainHook.EpochStartBlockTimeStamp()
+// EpochStartBlockTimeStampMs returns the timestamp of the first block of the current epoch in milliseconds
+func (context *blockchainContext) EpochStartBlockTimeStampMs() uint64 {
+	return context.blockChainHook.EpochStartBlockTimeStampMs()
 }
 
 // EpochStartBlockNonce returns the nonce of the first block of the current epoch.

@@ -44,7 +44,7 @@ func TestNewBlockchainHooks_EpochStartBlockTimeStamp(t *testing.T) {
 	code := testcommon.GetTestSCCode("new-blockchain-hooks", "../../")
 
 	blockchainHook := testcommon.BlockchainHookStubForCall(code, nil)
-	blockchainHook.EpochStartBlockTimeStampCalled = func() uint64 {
+	blockchainHook.EpochStartBlockTimeStampMsCalled = func() uint64 {
 		return 31
 	}
 

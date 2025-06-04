@@ -87,12 +87,14 @@ const (
 	isStorageLockedName                 = "isStorageLocked"
 	clearStorageLockName                = "clearStorageLock"
 	getBlockTimestampName               = "getBlockTimestamp"
+	getBlockTimestampMsName             = "getBlockTimestampMs"
 	getBlockNonceName                   = "getBlockNonce"
 	getBlockRoundName                   = "getBlockRound"
 	getBlockEpochName                   = "getBlockEpoch"
 	getBlockRandomSeedName              = "getBlockRandomSeed"
 	getStateRootHashName                = "getStateRootHash"
 	getPrevBlockTimestampName           = "getPrevBlockTimestamp"
+	getPrevBlockTimestampMsName         = "getPrevBlockTimestampMs"
 	getPrevBlockNonceName               = "getPrevBlockNonce"
 	getPrevBlockRoundName               = "getPrevBlockRound"
 	getPrevBlockEpochName               = "getPrevBlockEpoch"
@@ -101,7 +103,7 @@ const (
 	getCurrentTxHashName                = "getCurrentTxHash"
 	getPrevTxHashName                   = "getPrevTxHash"
 	getBlockRoundTimeInMillisecondsName = "getBlockRoundTimeInMilliseconds"
-	epochStartBlockTimeStampName        = "epochStartBlockTimeStamp"
+	epochStartBlockTimeStampMsName      = "epochStartBlockTimeStampMs"
 	epochStartBlockNonceName            = "epochStartBlockNonce"
 	epochStartBlockRoundName            = "epochStartBlockRound"
 )
@@ -2766,6 +2768,22 @@ func (context *VMHooksImpl) GetBlockTimestamp() int64 {
 	return int64(blockchain.CurrentTimeStamp())
 }
 
+// GetBlockTimestampMs VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetBlockTimestampMs() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockTimeStamp
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockTimestampMsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.CurrentTimeStampMs())
+}
+
 // GetBlockNonce VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetBlockNonce() int64 {
@@ -2870,6 +2888,22 @@ func (context *VMHooksImpl) GetPrevBlockTimestamp() int64 {
 	return int64(blockchain.LastTimeStamp())
 }
 
+// GetPrevBlockTimestampMs VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetPrevBlockTimestampMs() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockTimeStamp
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockTimestampMsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.LastTimeStampMs())
+}
+
 // GetPrevBlockNonce VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetPrevBlockNonce() int64 {
@@ -2954,20 +2988,20 @@ func (context *VMHooksImpl) GetBlockRoundTimeInMilliseconds() int64 {
 	return int64(blockchain.RoundTime())
 }
 
-// EpochStartBlockTimeStamp VMHooks implementation.
+// EpochStartBlockTimeStampMs VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) EpochStartBlockTimeStamp() int64 {
+func (context *VMHooksImpl) EpochStartBlockTimeStampMs() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockTimeStamp
-	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimeStampName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimeStampMsName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
 		return -1
 	}
 
-	return int64(blockchain.EpochStartBlockTimeStamp())
+	return int64(blockchain.EpochStartBlockTimeStampMs())
 }
 
 // EpochStartBlockNonce VMHooks implementation.

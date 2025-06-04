@@ -519,6 +519,15 @@ func (w *WrapperVMHooks) GetBlockTimestamp() int64 {
 	return result
 }
 
+// GetBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) GetBlockTimestampMs() int64 {
+	callInfo := "GetBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // GetBlockNonce VM hook wrapper
 func (w *WrapperVMHooks) GetBlockNonce() int64 {
 	callInfo := "GetBlockNonce()"
@@ -571,6 +580,15 @@ func (w *WrapperVMHooks) GetPrevBlockTimestamp() int64 {
 	return result
 }
 
+// GetPrevBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) GetPrevBlockTimestampMs() int64 {
+	callInfo := "GetPrevBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetPrevBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // GetPrevBlockNonce VM hook wrapper
 func (w *WrapperVMHooks) GetPrevBlockNonce() int64 {
 	callInfo := "GetPrevBlockNonce()"
@@ -615,11 +633,11 @@ func (w *WrapperVMHooks) GetBlockRoundTimeInMilliseconds() int64 {
 	return result
 }
 
-// EpochStartBlockTimeStamp VM hook wrapper
-func (w *WrapperVMHooks) EpochStartBlockTimeStamp() int64 {
-	callInfo := "EpochStartBlockTimeStamp()"
+// EpochStartBlockTimeStampMs VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockTimeStampMs() int64 {
+	callInfo := "EpochStartBlockTimeStampMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EpochStartBlockTimeStamp()
+	result := w.wrappedVMHooks.EpochStartBlockTimeStampMs()
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }

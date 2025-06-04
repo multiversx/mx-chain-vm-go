@@ -68,18 +68,20 @@ package wasmer2
 // extern void      w2_writeLog(void* context, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
 // extern void      w2_writeEventLog(void* context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern long long w2_getBlockTimestamp(void* context);
+// extern long long w2_getBlockTimestampMs(void* context);
 // extern long long w2_getBlockNonce(void* context);
 // extern long long w2_getBlockRound(void* context);
 // extern long long w2_getBlockEpoch(void* context);
 // extern void      w2_getBlockRandomSeed(void* context, int32_t pointer);
 // extern void      w2_getStateRootHash(void* context, int32_t pointer);
 // extern long long w2_getPrevBlockTimestamp(void* context);
+// extern long long w2_getPrevBlockTimestampMs(void* context);
 // extern long long w2_getPrevBlockNonce(void* context);
 // extern long long w2_getPrevBlockRound(void* context);
 // extern long long w2_getPrevBlockEpoch(void* context);
 // extern void      w2_getPrevBlockRandomSeed(void* context, int32_t pointer);
 // extern long long w2_getBlockRoundTimeInMilliseconds(void* context);
-// extern long long w2_epochStartBlockTimeStamp(void* context);
+// extern long long w2_epochStartBlockTimeStampMs(void* context);
 // extern long long w2_epochStartBlockNonce(void* context);
 // extern long long w2_epochStartBlockRound(void* context);
 // extern void      w2_finish(void* context, int32_t pointer, int32_t length);
@@ -354,18 +356,20 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		write_log_func_ptr:                                           funcPointer(C.w2_writeLog),
 		write_event_log_func_ptr:                                     funcPointer(C.w2_writeEventLog),
 		get_block_timestamp_func_ptr:                                 funcPointer(C.w2_getBlockTimestamp),
+		get_block_timestamp_ms_func_ptr:                              funcPointer(C.w2_getBlockTimestampMs),
 		get_block_nonce_func_ptr:                                     funcPointer(C.w2_getBlockNonce),
 		get_block_round_func_ptr:                                     funcPointer(C.w2_getBlockRound),
 		get_block_epoch_func_ptr:                                     funcPointer(C.w2_getBlockEpoch),
 		get_block_random_seed_func_ptr:                               funcPointer(C.w2_getBlockRandomSeed),
 		get_state_root_hash_func_ptr:                                 funcPointer(C.w2_getStateRootHash),
 		get_prev_block_timestamp_func_ptr:                            funcPointer(C.w2_getPrevBlockTimestamp),
+		get_prev_block_timestamp_ms_func_ptr:                         funcPointer(C.w2_getPrevBlockTimestampMs),
 		get_prev_block_nonce_func_ptr:                                funcPointer(C.w2_getPrevBlockNonce),
 		get_prev_block_round_func_ptr:                                funcPointer(C.w2_getPrevBlockRound),
 		get_prev_block_epoch_func_ptr:                                funcPointer(C.w2_getPrevBlockEpoch),
 		get_prev_block_random_seed_func_ptr:                          funcPointer(C.w2_getPrevBlockRandomSeed),
 		get_block_round_time_in_milliseconds_func_ptr:                funcPointer(C.w2_getBlockRoundTimeInMilliseconds),
-		epoch_start_block_time_stamp_func_ptr:                        funcPointer(C.w2_epochStartBlockTimeStamp),
+		epoch_start_block_time_stamp_ms_func_ptr:                     funcPointer(C.w2_epochStartBlockTimeStampMs),
 		epoch_start_block_nonce_func_ptr:                             funcPointer(C.w2_epochStartBlockNonce),
 		epoch_start_block_round_func_ptr:                             funcPointer(C.w2_epochStartBlockRound),
 		finish_func_ptr:                                              funcPointer(C.w2_finish),
@@ -917,6 +921,12 @@ func w2_getBlockTimestamp(context unsafe.Pointer) int64 {
 	return vmHooks.GetBlockTimestamp()
 }
 
+//export w2_getBlockTimestampMs
+func w2_getBlockTimestampMs(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetBlockTimestampMs()
+}
+
 //export w2_getBlockNonce
 func w2_getBlockNonce(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -953,6 +963,12 @@ func w2_getPrevBlockTimestamp(context unsafe.Pointer) int64 {
 	return vmHooks.GetPrevBlockTimestamp()
 }
 
+//export w2_getPrevBlockTimestampMs
+func w2_getPrevBlockTimestampMs(context unsafe.Pointer) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetPrevBlockTimestampMs()
+}
+
 //export w2_getPrevBlockNonce
 func w2_getPrevBlockNonce(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
@@ -983,10 +999,10 @@ func w2_getBlockRoundTimeInMilliseconds(context unsafe.Pointer) int64 {
 	return vmHooks.GetBlockRoundTimeInMilliseconds()
 }
 
-//export w2_epochStartBlockTimeStamp
-func w2_epochStartBlockTimeStamp(context unsafe.Pointer) int64 {
+//export w2_epochStartBlockTimeStampMs
+func w2_epochStartBlockTimeStampMs(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.EpochStartBlockTimeStamp()
+	return vmHooks.EpochStartBlockTimeStampMs()
 }
 
 //export w2_epochStartBlockNonce

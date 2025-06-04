@@ -76,18 +76,20 @@ type MainVMHooks interface {
 	WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32)
 	WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength)
 	GetBlockTimestamp() int64
+	GetBlockTimestampMs() int64
 	GetBlockNonce() int64
 	GetBlockRound() int64
 	GetBlockEpoch() int64
 	GetBlockRandomSeed(pointer MemPtr)
 	GetStateRootHash(pointer MemPtr)
 	GetPrevBlockTimestamp() int64
+	GetPrevBlockTimestampMs() int64
 	GetPrevBlockNonce() int64
 	GetPrevBlockRound() int64
 	GetPrevBlockEpoch() int64
 	GetPrevBlockRandomSeed(pointer MemPtr)
 	GetBlockRoundTimeInMilliseconds() int64
-	EpochStartBlockTimeStamp() int64
+	EpochStartBlockTimeStampMs() int64
 	EpochStartBlockNonce() int64
 	EpochStartBlockRound() int64
 	Finish(pointer MemPtr, length MemLength)
