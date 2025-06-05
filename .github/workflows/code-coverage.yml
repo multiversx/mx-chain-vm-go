@@ -33,8 +33,9 @@ jobs:
           fi
       - name: Run unit tests
         run: |
-          TESTS_TO_RUN=$(go list ./... | grep -v /integrationTests/ | grep -v /fuzz/ | grep -v /mandos-go/json/integrationTests | grep -v /mandos-go/expression/integrationTests)
-          go test -short -cover -coverprofile=coverage.txt -covermode=atomic -v ${TESTS_TO_RUN}
+          go test -short -cover -coverprofile=coverage.txt -covermode=atomic -v ./...
+          #cat coverage.txt | grep -v "/fuzz/" > coverage.txt 
+          #cat coverage.txt | grep -v "/integrationTests/" > coverage.txt 
 
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash) -f coverage.txt -y codecov.yml
