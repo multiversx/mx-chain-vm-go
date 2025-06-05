@@ -1,3 +1,4 @@
 ignore:
-  - "**/*.pb.go"       # wildcards accepted
-
+    - "**/*.pb.go"
+    - "fuzz/**"
+    - "integrationTests/**"
