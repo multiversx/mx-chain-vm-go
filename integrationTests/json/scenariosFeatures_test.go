@@ -15,6 +15,18 @@ func TestRustAllocFeatures(t *testing.T) {
 		CheckNoError()
 }
 
+func TestRustBarnardFeatures(t *testing.T) {
+	// TODO: will get merged into basic-features after barnard mainnet release
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	ScenariosTest(t).
+		Folder("features/barnard-features/scenarios").
+		Run().
+		CheckNoError()
+}
+
 func TestRustBasicFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
