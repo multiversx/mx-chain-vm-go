@@ -32,7 +32,7 @@ var mapBarnardOpcodes = map[string]struct{}{
 	"mbufferToSmallIntSigned":                      {},
 	"mbufferFromSmallIntUnsigned":                  {},
 	"mbufferFromSmallIntSigned":                    {},
-	"getBlockRoundTimeInMilliseconds":              {},
+	"getBlockRoundTimeMs":                          {},
 	"getBlockTimestampMs":                          {},
 	"getPrevBlockTimestampMs":                      {},
 	"epochStartBlockTimeStampMs":                   {},

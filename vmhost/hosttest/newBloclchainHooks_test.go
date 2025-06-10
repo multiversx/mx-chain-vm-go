@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewBlockchainHooks_GetBlockRoundTimeInMilliseconds(t *testing.T) {
+func TestNewBlockchainHooks_GetBlockRoundTimeMs(t *testing.T) {
 	code := testcommon.GetTestSCCode("new-blockchain-hooks", "../../")
 
 	blockchainHook := testcommon.BlockchainHookStubForCall(code, nil)

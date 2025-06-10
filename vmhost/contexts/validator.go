@@ -17,7 +17,7 @@ var reservedFunctionsActivationFlag = map[string]core.EnableEpochFlag{
 	"mbufferToSmallIntSigned":                      vmhost.BarnardOpcodesFlag,
 	"mbufferFromSmallIntUnsigned":                  vmhost.BarnardOpcodesFlag,
 	"mbufferFromSmallIntSigned":                    vmhost.BarnardOpcodesFlag,
-	"getBlockRoundTimeInMilliseconds":              vmhost.BarnardOpcodesFlag,
+	"getBlockRoundTimeMs":                          vmhost.BarnardOpcodesFlag,
 	"epochStartBlockTimeStamp":                     vmhost.BarnardOpcodesFlag,
 	"epochStartBlockNonce":                         vmhost.BarnardOpcodesFlag,
 	"epochStartBlockRound":                         vmhost.BarnardOpcodesFlag,
