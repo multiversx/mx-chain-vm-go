@@ -108,7 +108,7 @@ typedef struct {
   int64_t (*get_prev_block_epoch_func_ptr)(void *context);
   void (*get_prev_block_random_seed_func_ptr)(void *context, int32_t pointer);
   int64_t (*get_block_round_time_ms_func_ptr)(void *context);
-  int64_t (*epoch_start_block_time_stamp_ms_func_ptr)(void *context);
+  int64_t (*epoch_start_block_timestamp_ms_func_ptr)(void *context);
   int64_t (*epoch_start_block_nonce_func_ptr)(void *context);
   int64_t (*epoch_start_block_round_func_ptr)(void *context);
   void (*finish_func_ptr)(void *context, int32_t pointer, int32_t length);

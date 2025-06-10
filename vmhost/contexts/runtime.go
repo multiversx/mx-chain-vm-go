@@ -35,7 +35,7 @@ var mapBarnardOpcodes = map[string]struct{}{
 	"getBlockRoundTimeMs":                          {},
 	"getBlockTimestampMs":                          {},
 	"getPrevBlockTimestampMs":                      {},
-	"epochStartBlockTimeStampMs":                   {},
+	"epochStartBlockTimestampMs":                   {},
 	"epochStartBlockNonce":                         {},
 	"epochStartBlockRound":                         {},
 	"managedGetAllTransfersCallValue":              {},

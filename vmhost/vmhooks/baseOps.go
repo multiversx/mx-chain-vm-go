@@ -103,7 +103,7 @@ const (
 	getCurrentTxHashName             = "getCurrentTxHash"
 	getPrevTxHashName                = "getPrevTxHash"
 	getBlockRoundTimeMsName          = "getBlockRoundTimeMs"
-	epochStartBlockTimeStampMsName   = "epochStartBlockTimeStampMs"
+	epochStartBlockTimestampMsName   = "epochStartBlockTimestampMs"
 	epochStartBlockNonceName         = "epochStartBlockNonce"
 	epochStartBlockRoundName         = "epochStartBlockRound"
 )
@@ -2988,14 +2988,14 @@ func (context *VMHooksImpl) GetBlockRoundTimeMs() int64 {
 	return int64(blockchain.RoundTime())
 }
 
-// EpochStartBlockTimeStampMs VMHooks implementation.
+// EpochStartBlockTimestampMs VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) EpochStartBlockTimeStampMs() int64 {
+func (context *VMHooksImpl) EpochStartBlockTimestampMs() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockTimeStamp
-	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimeStampMsName, gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimestampMsName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
 		return -1

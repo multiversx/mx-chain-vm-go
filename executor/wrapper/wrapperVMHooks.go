@@ -633,11 +633,11 @@ func (w *WrapperVMHooks) GetBlockRoundTimeMs() int64 {
 	return result
 }
 
-// EpochStartBlockTimeStampMs VM hook wrapper
-func (w *WrapperVMHooks) EpochStartBlockTimeStampMs() int64 {
-	callInfo := "EpochStartBlockTimeStampMs()"
+// EpochStartBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockTimestampMs() int64 {
+	callInfo := "EpochStartBlockTimestampMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EpochStartBlockTimeStampMs()
+	result := w.wrappedVMHooks.EpochStartBlockTimestampMs()
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
