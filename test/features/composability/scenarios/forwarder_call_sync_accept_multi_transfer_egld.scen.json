@@ -1,4 +1,5 @@
 {
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
@@ -45,12 +46,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "send_async_accept_multi_transfer",
+                "function": "forward_sync_accept_funds_multi_transfer",
                 "arguments": [
                     "sc:vault",
                     "str:FWD-TOKEN",
                     "0",
-                    "800",
+                    "100",
                     "str:NFT-123456",
                     "1",
                     "1",
@@ -61,13 +62,75 @@
                     "3",
                     "6"
                 ],
-                "gasLimit": "80,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "0",
                 "message": "",
+                "logs": [
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:MultiESDTNFTTransfer",
+                        "topics": [
+                            "str:FWD-TOKEN",
+                            "0",
+                            "100",
+                            "str:NFT-123456",
+                            "1",
+                            "1",
+                            "str:EGLD-000000",
+                            "0",
+                            "100",
+                            "str:SFT-456789",
+                            "3",
+                            "6",
+                            "sc:vault"
+                        ],
+                        "data": [
+                            "str:ExecuteOnDestContext",
+                            "str:MultiESDTNFTTransfer",
+                            "sc:vault",
+                            "4",
+                            "str:FWD-TOKEN",
+                            "0",
+                            "100",
+                            "str:NFT-123456",
+                            "1",
+                            "1",
+                            "str:EGLD-000000",
+                            "0",
+                            "100",
+                            "str:SFT-456789",
+                            "3",
+                            "6",
+                            "str:accept_funds"
+                        ]
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:accept_funds",
+                        "topics": [
+                            "str:accept_funds",
+                            "str:FWD-TOKEN",
+                            "0",
+                            "100",
+                            "str:NFT-123456",
+                            "1",
+                            "1",
+                            "str:EGLD",
+                            "0",
+                            "100",
+                            "str:SFT-456789",
+                            "3",
+                            "6"
+                        ],
+                        "data": [
+                            ""
+                        ]
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -85,7 +148,7 @@
                     "nonce": "0",
                     "balance": "100",
                     "esdt": {
-                        "str:FWD-TOKEN": "800",
+                        "str:FWD-TOKEN": "100",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -112,7 +175,7 @@
                     "nonce": "0",
                     "balance": "3900",
                     "esdt": {
-                        "str:FWD-TOKEN": "200",
+                        "str:FWD-TOKEN": "900",
                         "str:SFT-456789": {
                             "instances": [
                                 {
@@ -122,6 +185,7 @@
                             ]
                         }
                     },
+                    "storage": {},
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"
                 }
             }
