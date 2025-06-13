@@ -930,6 +930,7 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	_, _, metering, _, runtime, _, _ := host.GetContexts()
+	enableEpochsHandler := host.EnableEpochsHandler()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -949,7 +950,7 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	transfers := transfersArgs.Transfers
-	if len(transfers) == 1 {
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) && len(transfers) == 1 {
 		if transfers[0].ESDTTokenNonce > 0 {
 			esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
