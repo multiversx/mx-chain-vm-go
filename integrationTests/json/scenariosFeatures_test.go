@@ -41,6 +41,23 @@ func TestRustBasicFeaturesLatest(t *testing.T) {
 		CheckNoError()
 }
 
+func TestRustBasicFeaturesBarnard(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	ScenariosTest(t).
+		Folder("features/basic-features/scenarios").
+		Exclude("features/basic-features/scenarios/storage_mapper_fungible_token.scen.json").
+		Exclude("features/basic-features/scenarios/get_shard_of_address.scen.json").
+		ReplacePath(
+			"../output/basic-features.mxsc.json",
+			filepath.Join(getTestRoot(), "features/basic-features/output/basic-features-barnard.mxsc.json"),
+		).
+		Run().
+		CheckNoError()
+}
+
 func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
