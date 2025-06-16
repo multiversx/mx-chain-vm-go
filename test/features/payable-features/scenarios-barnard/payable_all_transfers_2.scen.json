@@ -13,7 +13,7 @@
                 "sc:payable": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "mxsc:../output/payable-features.mxsc.json"
+                    "code": "mxsc:../output/payable-features-barnard.mxsc.json"
                 }
             }
         },
@@ -62,7 +62,7 @@
                     "balance": "10",
                     "storage": {},
                     "esdt": {},
-                    "code": "mxsc:../output/payable-features.mxsc.json"
+                    "code": "mxsc:../output/payable-features-barnard.mxsc.json"
                 }
             }
         }

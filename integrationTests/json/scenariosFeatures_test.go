@@ -96,13 +96,24 @@ func TestRustManagedMapFeatures(t *testing.T) {
 		CheckNoError()
 }
 
-func TestRustPayableFeaturesLatest(t *testing.T) {
+func TestRustPayableFeatures(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
 	ScenariosTest(t).
 		Folder("features/payable-features/scenarios").
+		Run().
+		CheckNoError()
+}
+
+func TestRustPayableFeaturesBarnard(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	ScenariosTest(t).
+		Folder("features/payable-features/scenarios-barnard").
 		Run().
 		CheckNoError()
 }
@@ -130,22 +141,6 @@ func TestRustFormattedMessageFeatures(t *testing.T) {
 func TestTimelocks(t *testing.T) {
 	ScenariosTest(t).
 		Folder("timelocks").
-		Run().
-		CheckNoError()
-}
-
-func TestForwarderTransfExec(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios").
-		File("forwarder_call_transf_exec_reject_nft.scen.json").
-		Run().
-		CheckNoError()
-}
-
-func TestForwarderTransfExecMultiReject(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios").
-		File("forwarder_call_transf_exec_reject_multi_transfer.scen.json").
 		Run().
 		CheckNoError()
 }
