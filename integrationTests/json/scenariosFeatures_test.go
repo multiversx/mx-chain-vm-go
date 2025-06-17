@@ -1,7 +1,6 @@
 package vmjsonintegrationtest
 
 import (
-	logger "github.com/multiversx/mx-chain-logger-go"
 	"path/filepath"
 	"testing"
 )
@@ -149,12 +148,6 @@ func TestRustPayableFeaturesBarnard(t *testing.T) {
 func TestRustComposability(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
-		// TODO: fix logs
-		Exclude("features/composability/scenarios/forw_raw_transf_exec_fallible_egld_reject.scen.json").
-		Exclude("features/composability/scenarios/forw_raw_transf_exec_fallible_multi_egld_reject.scen.json").
-		Exclude("features/composability/scenarios/forwarder_call_async_multi_transfer_egld_reject.scen.json").
-		Exclude("features/composability/scenarios/forwarder_call_sync_fallible_multi_transfer_egld_reject.scen.json").
-		Exclude("features/composability/scenarios/forwarder_call_transf_exec_multi_transfer_egld_reject.scen.json").
 		Run().
 		CheckNoError()
 }
@@ -190,7 +183,6 @@ func TestForwarderTransfExecMultiReject(t *testing.T) {
 }
 
 func TestForwarderTransfExecFallibleMultiReject(t *testing.T) {
-	_ = logger.SetLogLevel("*:TRACE")
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forw_raw_transf_exec_fallible_multi_egld_reject.scen.json").
