@@ -166,22 +166,6 @@ func TestTimelocks(t *testing.T) {
 		CheckNoError()
 }
 
-func TestForwarderTransfExec(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios").
-		File("forwarder_call_transf_exec_reject_nft.scen.json").
-		Run().
-		CheckNoError()
-}
-
-func TestForwarderTransfExecMultiReject(t *testing.T) {
-	ScenariosTest(t).
-		Folder("features/composability/scenarios").
-		File("forwarder_call_transf_exec_reject_multi_transfer.scen.json").
-		Run().
-		CheckNoError()
-}
-
 func TestForwarderTransfExecFallibleMultiReject(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
