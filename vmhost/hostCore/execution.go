@@ -428,6 +428,8 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
+	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
+
 	if host.IsOutOfVMFunctionExecution(input) {
 		vmOutput, err = host.handleFunctionCallOnOtherVM(input)
 		if err != nil {
@@ -435,10 +437,14 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 		}
 
+		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
+			err = vmhost.ErrExecutionFailed
+		}
+		runtime.AddError(err, input.Function)
+
 		return vmOutput, true, err
 	}
 
-	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
 	managedTypes.PopBackTransferIfAsyncCallBack(input)

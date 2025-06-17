@@ -1,6 +1,7 @@
 package vmjsonintegrationtest
 
 import (
+	logger "github.com/multiversx/mx-chain-logger-go"
 	"testing"
 )
 
@@ -140,6 +141,15 @@ func TestForwarderTransfExecMultiReject(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forwarder_call_transf_exec_reject_multi_transfer.scen.json").
+		Run().
+		CheckNoError()
+}
+
+func TestForwarderTransfExecFallibleMultiReject(t *testing.T) {
+	_ = logger.SetLogLevel("*:TRACE")
+	ScenariosTest(t).
+		Folder("features/composability/scenarios").
+		File("forw_raw_transf_exec_fallible_multi_egld_reject.scen.json").
 		Run().
 		CheckNoError()
 }
