@@ -950,7 +950,8 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	transfers := transfersArgs.Transfers
-	if !enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) && len(transfers) == 1 {
+	isSingleEgldAsEsdtTransfer := enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) && len(transfers) == 1 && string(transfers[0].ESDTTokenName) == vmhooks.EGLDTokenName
+	if len(transfers) == 1 && !isSingleEgldAsEsdtTransfer {
 		if transfers[0].ESDTTokenNonce > 0 {
 			esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
