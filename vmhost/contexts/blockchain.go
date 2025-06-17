@@ -375,7 +375,6 @@ func (context *blockchainContext) GetSnapshot() int {
 
 // RevertToSnapshot - reverts to the specified snapshot via blockchain hook
 func (context *blockchainContext) RevertToSnapshot(snapshot int) {
-	logOutput.Error("revert to snapshot called")
 	_ = context.blockChainHook.RevertToSnapshot(snapshot)
 }
 
