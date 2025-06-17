@@ -1,2 +1,9 @@
 ignore:
     - "**/*.pb.go"
+    - "**/testInitializerInputs.go"
+    - "**/testInitializerVMOutput.go"
+    - "hosttest/**/*"
+    - "mock/**/*"
+    - "scenario/**/*"
+    - "test/**/*"
+    - "testcommon/**/*"
