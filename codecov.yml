@@ -7,3 +7,4 @@ ignore:
     - "**scenario/**"
     - "**test/**"
     - "**testcommon/**"
+    - "**testgen/**"
