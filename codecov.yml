@@ -4,6 +4,8 @@ ignore:
     - "**/testInitializerVMOutput.go"
     - "hosttest/**/*"
     - "mock/**/*"
+    - "scenario/*"
     - "scenario/**/*"
     - "test/**/*"
+    - "testcommon/*"
     - "testcommon/**/*"
