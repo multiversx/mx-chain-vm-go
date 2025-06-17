@@ -47,7 +47,7 @@
                 },
                 "address:an_account": {
                     "nonce": "1",
-                    "balance": "0x200abc",
+                    "balance": "*",
                     "storage": {},
                     "code": ""
                 }
