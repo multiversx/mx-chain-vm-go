@@ -77,15 +77,17 @@ type BlockchainContext interface {
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
 	LastTimeStamp() uint64
+	LastTimeStampMs() uint64
 	LastNonce() uint64
 	LastRound() uint64
 	LastEpoch() uint32
 	CurrentRound() uint64
 	CurrentNonce() uint64
 	CurrentTimeStamp() uint64
+	CurrentTimeStampMs() uint64
 	CurrentRandomSeed() []byte
 	RoundTime() uint64
-	EpochStartBlockTimeStamp() uint64
+	EpochStartBlockTimeStampMs() uint64
 	EpochStartBlockNonce() uint64
 	EpochStartBlockRound() uint64
 	LastRandomSeed() []byte

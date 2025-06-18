@@ -40,6 +40,7 @@ type ScenariosTestBuilder struct {
 	folder              string
 	singleFile          string
 	exclusions          []string
+	pathReplacements    map[string]string
 	executorLogger      executorwrapper.ExecutorLogger
 	executorFactory     executor.ExecutorAbstractFactory
 	enableEpochsHandler vmcommon.EnableEpochsHandler
@@ -53,6 +54,7 @@ func ScenariosTest(t *testing.T) *ScenariosTestBuilder {
 		t:                   t,
 		folder:              "",
 		singleFile:          "",
+		pathReplacements:    make(map[string]string),
 		executorLogger:      nil,
 		executorFactory:     nil,
 		enableEpochsHandler: worldmock.EnableEpochsHandlerStubAllFlags(),
@@ -75,6 +77,13 @@ func (mtb *ScenariosTestBuilder) File(fileName string) *ScenariosTestBuilder {
 func (mtb *ScenariosTestBuilder) Exclude(path string) *ScenariosTestBuilder {
 	mtb.exclusions = append(mtb.exclusions, path)
 	return mtb
+}
+
+// ReplacePath allows a test to override the path to a contract, as expressed in a mandos test.
+// This is very helpful when running the same scenarios on multiple contracts.
+func (fr *ScenariosTestBuilder) ReplacePath(pathInTest, actualPath string) *ScenariosTestBuilder {
+	fr.pathReplacements[pathInTest] = actualPath
+	return fr
 }
 
 // WithExecutorLogs sets a StringLogger
@@ -129,9 +138,14 @@ func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 
 	scenarioExecutor.World.EnableEpochsHandler = mtb.enableEpochsHandler
 
+	fileResolver := scenio.NewDefaultFileResolver()
+	for pathInTest, actualPath := range mtb.pathReplacements {
+		fileResolver.ReplacePath(pathInTest, actualPath)
+	}
+
 	runner := scenio.NewScenarioController(
 		scenarioExecutor,
-		scenio.NewDefaultFileResolver(),
+		fileResolver,
 		vmBuilder.GetVMType(),
 	)
 

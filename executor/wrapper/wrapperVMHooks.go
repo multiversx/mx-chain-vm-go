@@ -519,6 +519,15 @@ func (w *WrapperVMHooks) GetBlockTimestamp() int64 {
 	return result
 }
 
+// GetBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) GetBlockTimestampMs() int64 {
+	callInfo := "GetBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // GetBlockNonce VM hook wrapper
 func (w *WrapperVMHooks) GetBlockNonce() int64 {
 	callInfo := "GetBlockNonce()"
@@ -571,6 +580,15 @@ func (w *WrapperVMHooks) GetPrevBlockTimestamp() int64 {
 	return result
 }
 
+// GetPrevBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) GetPrevBlockTimestampMs() int64 {
+	callInfo := "GetPrevBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetPrevBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // GetPrevBlockNonce VM hook wrapper
 func (w *WrapperVMHooks) GetPrevBlockNonce() int64 {
 	callInfo := "GetPrevBlockNonce()"
@@ -606,20 +624,20 @@ func (w *WrapperVMHooks) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
-// GetBlockRoundTimeInMilliseconds VM hook wrapper
-func (w *WrapperVMHooks) GetBlockRoundTimeInMilliseconds() int64 {
-	callInfo := "GetBlockRoundTimeInMilliseconds()"
+// GetBlockRoundTimeMs VM hook wrapper
+func (w *WrapperVMHooks) GetBlockRoundTimeMs() int64 {
+	callInfo := "GetBlockRoundTimeMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockRoundTimeInMilliseconds()
+	result := w.wrappedVMHooks.GetBlockRoundTimeMs()
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
 
-// EpochStartBlockTimeStamp VM hook wrapper
-func (w *WrapperVMHooks) EpochStartBlockTimeStamp() int64 {
-	callInfo := "EpochStartBlockTimeStamp()"
+// EpochStartBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockTimestampMs() int64 {
+	callInfo := "EpochStartBlockTimestampMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EpochStartBlockTimeStamp()
+	result := w.wrappedVMHooks.EpochStartBlockTimestampMs()
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
