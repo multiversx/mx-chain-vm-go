@@ -92,23 +92,26 @@ VM hook begin: MBufferToBigIntUnsigned(-202, -203)
 GetPointsUsed: 21611
 GetPointsUsed: 21611
 SetPointsUsed: 25611
+GetPointsUsed: 25611
+GetPointsUsed: 25611
+SetPointsUsed: 26611
 VM hook end:   MBufferToBigIntUnsigned(-202, -203)
 VM hook begin: BigIntFinishUnsigned(-203)
-GetPointsUsed: 25622
-GetPointsUsed: 25622
-SetPointsUsed: 26622
 GetPointsUsed: 26622
 GetPointsUsed: 26622
-SetPointsUsed: 36622
+SetPointsUsed: 27622
+GetPointsUsed: 27622
+GetPointsUsed: 27622
+SetPointsUsed: 37622
 VM hook end:   BigIntFinishUnsigned(-203)
-GetPointsUsed: 36624
-GetPointsUsed: 36624
-GetPointsUsed: 36624
-GetPointsUsed: 36624
-GetPointsUsed: 36624
-GetPointsUsed: 36624
-GetPointsUsed: 36624
-GetPointsUsed: 36624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
+GetPointsUsed: 37624
 Reset: true
 SetPointsUsed: 0
 SetGasLimit: 3791200
@@ -150,36 +153,39 @@ VM hook begin: MBufferToBigIntUnsigned(-203, -204)
 GetPointsUsed: 22653
 GetPointsUsed: 22653
 SetPointsUsed: 26653
+GetPointsUsed: 26653
+GetPointsUsed: 26653
+SetPointsUsed: 27653
 VM hook end:   MBufferToBigIntUnsigned(-203, -204)
 VM hook begin: BigIntAdd(-204, -204, -201)
-GetPointsUsed: 26673
-GetPointsUsed: 26673
-SetPointsUsed: 28673
+GetPointsUsed: 27673
+GetPointsUsed: 27673
+SetPointsUsed: 29673
 VM hook end:   BigIntAdd(-204, -204, -201)
 VM hook begin: MBufferFromBigIntUnsigned(-205, -204)
-GetPointsUsed: 28712
-GetPointsUsed: 28712
-SetPointsUsed: 32712
+GetPointsUsed: 29712
+GetPointsUsed: 29712
+SetPointsUsed: 33712
 VM hook end:   MBufferFromBigIntUnsigned(-205, -204)
 VM hook begin: MBufferStorageStore(-202, -205)
-GetPointsUsed: 32724
-GetPointsUsed: 32724
-SetPointsUsed: 107724
-GetPointsUsed: 107724
-GetPointsUsed: 107724
-SetPointsUsed: 107724
-GetPointsUsed: 107724
-GetPointsUsed: 107724
-SetPointsUsed: 107724
+GetPointsUsed: 33724
+GetPointsUsed: 33724
+SetPointsUsed: 108724
+GetPointsUsed: 108724
+GetPointsUsed: 108724
+SetPointsUsed: 108724
+GetPointsUsed: 108724
+GetPointsUsed: 108724
+SetPointsUsed: 108724
 VM hook end:   MBufferStorageStore(-202, -205)
-GetPointsUsed: 107731
-GetPointsUsed: 107731
-GetPointsUsed: 107731
-GetPointsUsed: 107731
-GetPointsUsed: 107731
-GetPointsUsed: 107731
-GetPointsUsed: 107731
-GetPointsUsed: 107731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
+GetPointsUsed: 108731
 Clean: true
 `
 
