@@ -221,6 +221,7 @@ const (
     BigFloatAbs = 5000
     BigFloatSqrt = 7000
     BigFloatPow = 10000
+    BigFloatPowPerIteration = 10000
     BigFloatFloor = 5000
     BigFloatCeil = 5000
     BigFloatIsInt = 3000
@@ -1068,6 +1069,7 @@ const (
     BigFloatAbs = 5000
     BigFloatSqrt = 7000
     BigFloatPow = 10000
+    BigFloatPowPerIteration = 10000
     BigFloatFloor = 5000
     BigFloatCeil = 5000
     BigFloatIsInt = 3000

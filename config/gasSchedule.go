@@ -431,6 +431,7 @@ func FillGasMapBigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigFloatAbs"] = value
 	gasMap["BigFloatSqrt"] = value
 	gasMap["BigFloatPow"] = value
+	gasMap["BigFloatPowPerIteration"] = value
 	gasMap["BigFloatFloor"] = value
 	gasMap["BigFloatCeil"] = value
 	gasMap["BigFloatIsInt"] = value
