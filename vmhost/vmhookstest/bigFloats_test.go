@@ -10,6 +10,7 @@ import (
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -729,4 +730,105 @@ func TestBigFloats_GetConstE(t *testing.T) {
 			verify.Ok().
 				ReturnData(encodedFloat)
 		})
+}
+func TestBigFloats_Pow_WithNoBarnardOpcodesFlag(t *testing.T) {
+	parentBalance := int64(100000)
+	gasProvided := uint64(100000)
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(parentBalance).
+				WithMethods(func(instanceMock *contextmock.InstanceMock, config interface{}) {
+					instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
+						host := instanceMock.Host
+						instance := contextmock.GetMockInstance(host)
+						managedTypes := host.ManagedTypes()
+						hooks := vmhooks.NewVMHooksImpl(host)
+
+						destination, err := managedTypes.PutBigFloat(big.NewFloat(0))
+						assert.Nil(t, err)
+						arg, err := managedTypes.PutBigFloat(big.NewFloat(10))
+						assert.Nil(t, err)
+
+						hooks.BigFloatPow(destination, arg, 5)
+
+						result, err := managedTypes.GetBigFloat(destination)
+						assert.Nil(t, err)
+
+						println(result.String())
+
+						assert.True(t, result.Cmp(big.NewFloat(100000)) == 0)
+
+						return instance
+					})
+				})).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(gasProvided).
+			WithFunction("test").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			enableEpochsHandler := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+			enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+				return flag != vmhost.BarnardOpcodesFlag
+			}
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				GasRemaining(gasProvided-36).
+				GasUsed(test.ParentAddress, 36)
+		})
+	assert.Nil(t, err)
+}
+
+func TestBigFloats_Pow_WithBarnardOpcodesFlag(t *testing.T) {
+	parentBalance := int64(100000)
+	gasProvided := uint64(100000)
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(parentBalance).
+				WithMethods(func(instanceMock *contextmock.InstanceMock, config interface{}) {
+					instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
+						host := instanceMock.Host
+						instance := contextmock.GetMockInstance(host)
+						managedTypes := host.ManagedTypes()
+						hooks := vmhooks.NewVMHooksImpl(host)
+
+						destination, err := managedTypes.PutBigFloat(big.NewFloat(0))
+						assert.Nil(t, err)
+						arg, err := managedTypes.PutBigFloat(big.NewFloat(10))
+						assert.Nil(t, err)
+
+						hooks.BigFloatPow(destination, arg, 5)
+
+						result, err := managedTypes.GetBigFloat(destination)
+						assert.Nil(t, err)
+
+						println(result.String())
+
+						assert.True(t, result.Cmp(big.NewFloat(100000)) == 0)
+
+						return instance
+					})
+				})).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(gasProvided).
+			WithFunction("test").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			enableEpochsHandler := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+			enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+				return true
+			}
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				GasRemaining(gasProvided-41).
+				GasUsed(test.ParentAddress, 41)
+		})
+	assert.Nil(t, err)
 }
