@@ -75,6 +75,9 @@
                 ]
             },
             {
+                "docs": [
+                    "If event identifier is missing, the name of the method will be used."
+                ],
                 "identifier": "event_b",
                 "inputs": [
                     {

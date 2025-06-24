@@ -58,7 +58,7 @@ GetPointsUsed: 135352
 GetPointsUsed: 135352
 Reset: true
 SetPointsUsed: 0
-SetGasLimit: 9223372036853567007
+SetGasLimit: 9223372036853566107
 SetBreakpointValue: 0
 HasFunction(getSum): true
 CallFunction(getSum):
@@ -114,7 +114,7 @@ GetPointsUsed: 37624
 GetPointsUsed: 37624
 Reset: true
 SetPointsUsed: 0
-SetGasLimit: 3791200
+SetGasLimit: 3790300
 SetBreakpointValue: 0
 HasFunction(add): true
 CallFunction(add):
