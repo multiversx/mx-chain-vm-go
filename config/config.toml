@@ -153,6 +153,7 @@
     BigFloatAbs = 10
     BigFloatSqrt = 10
     BigFloatPow = 10
+    BigFloatPowPerIteration = 10
     BigFloatFloor = 10
     BigFloatCeil = 10
     BigFloatIsInt = 10

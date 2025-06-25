@@ -450,6 +450,7 @@ func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntUnsigned
 	err := metering.UseGasBoundedAndAddTracedGas(mBufferToBigIntUnsignedName, gasToUse)
@@ -464,6 +465,15 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 		return 1
 	}
 
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(managedBuffer)))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			context.FailExecution(err)
+			return 1
+		}
+	}
+
 	bigInt := managedType.GetBigIntOrCreate(bigIntHandle)
 	bigInt.SetBytes(managedBuffer)
 
@@ -475,6 +485,7 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntSigned
 	err := metering.UseGasBoundedAndAddTracedGas(mBufferToBigIntSignedName, gasToUse)
@@ -487,6 +498,15 @@ func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 	if err != nil {
 		context.FailExecution(err)
 		return 1
+	}
+
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(managedBuffer)))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			context.FailExecution(err)
+			return 1
+		}
 	}
 
 	bigInt := managedType.GetBigIntOrCreate(bigIntHandle)
@@ -560,6 +580,14 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 		context.FailExecution(err)
 		return 1
 	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return 1
+	}
+
 	bigInt := big.NewInt(0).SetBytes(data)
 	if !bigInt.IsUint64() {
 		context.FailExecution(vmhost.ErrBytesExceedUint64)
@@ -586,6 +614,14 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 		context.FailExecution(err)
 		return 1
 	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return 1
+	}
+
 	bigInt := twos.SetBytes(big.NewInt(0), data)
 	if !bigInt.IsInt64() {
 		context.FailExecution(vmhost.ErrBytesExceedInt64)

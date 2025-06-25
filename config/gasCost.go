@@ -157,24 +157,25 @@ type BigIntAPICost struct {
 
 // BigFloatAPICost defines the big float operations gas cost config structure
 type BigFloatAPICost struct {
-	BigFloatNewFromParts uint64
-	BigFloatAdd          uint64
-	BigFloatSub          uint64
-	BigFloatMul          uint64
-	BigFloatDiv          uint64
-	BigFloatTruncate     uint64
-	BigFloatNeg          uint64
-	BigFloatClone        uint64
-	BigFloatCmp          uint64
-	BigFloatAbs          uint64
-	BigFloatSqrt         uint64
-	BigFloatPow          uint64
-	BigFloatFloor        uint64
-	BigFloatCeil         uint64
-	BigFloatIsInt        uint64
-	BigFloatSetBigInt    uint64
-	BigFloatSetInt64     uint64
-	BigFloatGetConst     uint64
+	BigFloatNewFromParts    uint64
+	BigFloatAdd             uint64
+	BigFloatSub             uint64
+	BigFloatMul             uint64
+	BigFloatDiv             uint64
+	BigFloatTruncate        uint64
+	BigFloatNeg             uint64
+	BigFloatClone           uint64
+	BigFloatCmp             uint64
+	BigFloatAbs             uint64
+	BigFloatSqrt            uint64
+	BigFloatPow             uint64
+	BigFloatPowPerIteration uint64
+	BigFloatFloor           uint64
+	BigFloatCeil            uint64
+	BigFloatIsInt           uint64
+	BigFloatSetBigInt       uint64
+	BigFloatSetInt64        uint64
+	BigFloatGetConst        uint64
 }
 
 // CryptoAPICost defines the crypto operations gas cost config structure

@@ -84,6 +84,7 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedArgument
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetSignedArgumentName, gasToUse)
@@ -95,6 +96,15 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
 		return
+	}
+
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(args[id])))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			context.FailExecution(err)
+			return
+		}
 	}
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)

@@ -481,8 +481,13 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatPowName)
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatPow
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse += vmMath.MulUint64(metering.GasSchedule().BigFloatAPICost.BigFloatPowPerIteration, uint64(exponent))
+	}
+
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
