@@ -85,6 +85,16 @@
                         "indexed": true
                     }
                 ]
+            },
+            {
+                "identifier": "retrieve_funds_multi",
+                "inputs": [
+                    {
+                        "name": "transfers",
+                        "type": "variadic<multi<TokenIdentifier,u64,BigUint>>",
+                        "indexed": true
+                    }
+                ]
             }
         ],
         "esdtAttributes": [],
