@@ -365,12 +365,6 @@ func TestManBuffers_Ints_WithNoBarnardOpcodesFlag(t *testing.T) {
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						smallInt := hooks.MBufferToSmallIntSigned(sourceBuffer)
-						assert.True(t, smallInt == 0x00_ff_00_ff_00_ff_00_ff)
-
-						smallInt = hooks.MBufferToSmallIntUnsigned(sourceBuffer)
-						assert.True(t, smallInt == 0x00_ff_00_ff_00_ff_00_ff)
-
 						return instance
 					})
 				})).
@@ -387,8 +381,8 @@ func TestManBuffers_Ints_WithNoBarnardOpcodesFlag(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasRemaining(gasProvided-37).
-				GasUsed(test.ParentAddress, 37)
+				GasRemaining(gasProvided-35).
+				GasUsed(test.ParentAddress, 35)
 		})
 	assert.Nil(t, err)
 }

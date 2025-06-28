@@ -786,13 +786,8 @@ func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle in
 		return err
 	}
 
-	err = context.ConsumeGasForBytes(value)
-	if err != nil {
-		return err
-	}
-
 	context.SetBytes(outValueHandle, value)
-	return nil
+	return context.ConsumeGasForBytes(value)
 }
 
 // ManagedMapRemove removes the bytes stored as the key handle and returns it in an output value handle
