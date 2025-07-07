@@ -45,6 +45,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag,
 	vmhost.ValidationOnGobDecodeFlag,
 	vmhost.BarnardOpcodesFlag,
+	vmhost.FixGetBalanceFlag,
 }
 
 // vmHost implements HostContext interface.
