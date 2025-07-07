@@ -75,7 +75,8 @@ func (context *blockchainContext) GetBalance(address []byte) []byte {
 func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
-		if outputAccount.Balance == nil {
+		isBarnardActive := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixGetBalanceFlag)
+		if outputAccount.Balance == nil || isBarnardActive {
 			account, err := context.blockChainHook.GetUserAccount(address)
 			if err != nil || vmhost.IfNil(account) {
 				return big.NewInt(0)
