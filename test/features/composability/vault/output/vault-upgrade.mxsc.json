@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.58.0"
+            "version": "0.59.0"
         }
     },
     "abi": {
@@ -82,6 +82,16 @@
                     {
                         "name": "amount",
                         "type": "BigUint",
+                        "indexed": true
+                    }
+                ]
+            },
+            {
+                "identifier": "retrieve_funds_multi",
+                "inputs": [
+                    {
+                        "name": "transfers",
+                        "type": "variadic<multi<TokenIdentifier,u64,BigUint>>",
                         "indexed": true
                     }
                 ]
