@@ -27,5 +27,8 @@ const (
 	// BarnardOpcodesFlag defines the flag that activates the new opcodes from the Barnard release
 	BarnardOpcodesFlag core.EnableEpochFlag = "BarnardOpcodesFlag"
 
+	// FixGetBalanceFlag defines the flag that activates the fix for get balance from the Barnard release
+	FixGetBalanceFlag core.EnableEpochFlag = "FixGetBalanceFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

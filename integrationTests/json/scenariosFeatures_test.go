@@ -173,3 +173,11 @@ func TestForwarderTransfExecFallibleMultiReject(t *testing.T) {
 		Run().
 		CheckNoError()
 }
+
+func TestBalanceAfterGet(t *testing.T) {
+	ScenariosTest(t).
+		Folder("features/composability/scenarios").
+		File("forwarder_call_sync_retrieve_bt_multi.scen.json").
+		Run().
+		CheckNoError()
+}
