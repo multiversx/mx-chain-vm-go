@@ -57,7 +57,9 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	mockWorld := worldmock.NewMockWorld()
 	mockWorld.AcctMap.PutAccounts(testAccounts)
 	mockOutput := &contextmock.OutputContextMock{}
-	host := &contextmock.VMHostMock{}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+	}
 	host.OutputContext = mockOutput
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
@@ -107,7 +109,9 @@ func TestBlockchainContext_GetBalance_Updates(t *testing.T) {
 	mockWorld := worldmock.NewMockWorld()
 	mockWorld.AcctMap.PutAccounts(testAccounts)
 	mockOutput := &contextmock.OutputContextMock{}
-	host := &contextmock.VMHostMock{}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+	}
 	host.OutputContext = mockOutput
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 

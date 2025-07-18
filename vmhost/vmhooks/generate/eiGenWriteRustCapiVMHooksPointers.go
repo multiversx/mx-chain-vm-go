@@ -11,6 +11,7 @@ use std::ffi::c_void;
 
 #[repr(C)]
 #[derive(Clone)]
+#[allow(non_camel_case_types)]
 #[rustfmt::skip]
 pub struct vm_exec_vm_hook_c_func_pointers {`)
 
@@ -22,6 +23,7 @@ pub struct vm_exec_vm_hook_c_func_pointers {`)
 				"context: *mut c_void",
 				funcMetadata,
 				rustCapiType,
+				rustVMHooksLegacyReturnType,
 			),
 		))
 

@@ -31,58 +31,63 @@ type BaseOperationCost struct {
 
 // BaseOpsAPICost defines the API operations gas cost config structure
 type BaseOpsAPICost struct {
-	GetSCAddress            uint64
-	GetOwnerAddress         uint64
-	IsSmartContract         uint64
-	GetShardOfAddress       uint64
-	GetExternalBalance      uint64
-	GetBlockHash            uint64
-	GetOriginalTxHash       uint64
-	GetCurrentTxHash        uint64
-	GetPrevTxHash           uint64
-	TransferValue           uint64
-	GetArgument             uint64
-	GetFunction             uint64
-	GetNumArguments         uint64
-	StorageStore            uint64
-	StorageLoad             uint64
-	CachedStorageLoad       uint64
-	GetCaller               uint64
-	GetCallValue            uint64
-	Log                     uint64
-	Finish                  uint64
-	SignalError             uint64
-	GetBlockTimeStamp       uint64
-	GetGasLeft              uint64
-	Int64GetArgument        uint64
-	Int64StorageStore       uint64
-	Int64StorageLoad        uint64
-	Int64Finish             uint64
-	GetStateRootHash        uint64
-	GetBlockNonce           uint64
-	GetBlockEpoch           uint64
-	GetBlockRound           uint64
-	GetBlockRandomSeed      uint64
-	ExecuteOnSameContext    uint64
-	ExecuteOnDestContext    uint64
-	DelegateExecution       uint64
-	ExecuteReadOnly         uint64
-	AsyncCallStep           uint64
-	AsyncCallbackGasLock    uint64
-	CreateAsyncCall         uint64
-	SetAsyncCallback        uint64
-	SetAsyncGroupCallback   uint64
-	SetAsyncContextCallback uint64
-	GetCallbackClosure      uint64
-	CreateContract          uint64
-	GetReturnData           uint64
-	GetNumReturnData        uint64
-	GetReturnDataSize       uint64
-	CleanReturnData         uint64
-	DeleteFromReturnData    uint64
-	GetCodeMetadata         uint64
-	IsBuiltinFunction       uint64
-	IsReservedFunctionName 	uint64
+	GetSCAddress             uint64
+	GetOwnerAddress          uint64
+	IsSmartContract          uint64
+	GetShardOfAddress        uint64
+	GetExternalBalance       uint64
+	GetBlockHash             uint64
+	GetOriginalTxHash        uint64
+	GetCurrentTxHash         uint64
+	GetPrevTxHash            uint64
+	TransferValue            uint64
+	GetArgument              uint64
+	GetFunction              uint64
+	GetNumArguments          uint64
+	StorageStore             uint64
+	StorageLoad              uint64
+	CachedStorageLoad        uint64
+	GetCaller                uint64
+	GetCallValue             uint64
+	Log                      uint64
+	Finish                   uint64
+	SignalError              uint64
+	GetBlockTimeStamp        uint64
+	GetGasLeft               uint64
+	Int64GetArgument         uint64
+	Int64StorageStore        uint64
+	Int64StorageLoad         uint64
+	Int64Finish              uint64
+	GetStateRootHash         uint64
+	GetBlockNonce            uint64
+	GetBlockEpoch            uint64
+	GetBlockRound            uint64
+	GetBlockRandomSeed       uint64
+	ExecuteOnSameContext     uint64
+	ExecuteOnDestContext     uint64
+	DelegateExecution        uint64
+	ExecuteReadOnly          uint64
+	AsyncCallStep            uint64
+	AsyncCallbackGasLock     uint64
+	CreateAsyncCall          uint64
+	SetAsyncCallback         uint64
+	SetAsyncGroupCallback    uint64
+	SetAsyncContextCallback  uint64
+	GetCallbackClosure       uint64
+	CreateContract           uint64
+	GetReturnData            uint64
+	GetNumReturnData         uint64
+	GetReturnDataSize        uint64
+	CleanReturnData          uint64
+	DeleteFromReturnData     uint64
+	GetCodeMetadata          uint64
+	GetCodeHash              uint64
+	IsBuiltinFunction        uint64
+	IsReservedFunctionName   uint64
+	GetRoundTime             uint64
+	EpochStartBlockTimeStamp uint64
+	EpochStartBlockNonce     uint64
+	EpochStartBlockRound     uint64
 }
 
 // DynamicStorageLoadCostCoefficients holds the signed coefficients of the func that will compute the gas cost
@@ -152,24 +157,25 @@ type BigIntAPICost struct {
 
 // BigFloatAPICost defines the big float operations gas cost config structure
 type BigFloatAPICost struct {
-	BigFloatNewFromParts uint64
-	BigFloatAdd          uint64
-	BigFloatSub          uint64
-	BigFloatMul          uint64
-	BigFloatDiv          uint64
-	BigFloatTruncate     uint64
-	BigFloatNeg          uint64
-	BigFloatClone        uint64
-	BigFloatCmp          uint64
-	BigFloatAbs          uint64
-	BigFloatSqrt         uint64
-	BigFloatPow          uint64
-	BigFloatFloor        uint64
-	BigFloatCeil         uint64
-	BigFloatIsInt        uint64
-	BigFloatSetBigInt    uint64
-	BigFloatSetInt64     uint64
-	BigFloatGetConst     uint64
+	BigFloatNewFromParts    uint64
+	BigFloatAdd             uint64
+	BigFloatSub             uint64
+	BigFloatMul             uint64
+	BigFloatDiv             uint64
+	BigFloatTruncate        uint64
+	BigFloatNeg             uint64
+	BigFloatClone           uint64
+	BigFloatCmp             uint64
+	BigFloatAbs             uint64
+	BigFloatSqrt            uint64
+	BigFloatPow             uint64
+	BigFloatPowPerIteration uint64
+	BigFloatFloor           uint64
+	BigFloatCeil            uint64
+	BigFloatIsInt           uint64
+	BigFloatSetBigInt       uint64
+	BigFloatSetInt64        uint64
+	BigFloatGetConst        uint64
 }
 
 // CryptoAPICost defines the crypto operations gas cost config structure
@@ -198,26 +204,30 @@ type CryptoAPICost struct {
 
 // ManagedBufferAPICost defines the managed buffer operations gas cost config structure
 type ManagedBufferAPICost struct {
-	MBufferNew                uint64
-	MBufferNewFromBytes       uint64
-	MBufferGetLength          uint64
-	MBufferGetBytes           uint64
-	MBufferGetByteSlice       uint64
-	MBufferCopyByteSlice      uint64
-	MBufferSetBytes           uint64
-	MBufferAppend             uint64
-	MBufferAppendBytes        uint64
-	MBufferToBigIntUnsigned   uint64
-	MBufferToBigIntSigned     uint64
-	MBufferFromBigIntUnsigned uint64
-	MBufferFromBigIntSigned   uint64
-	MBufferToBigFloat         uint64
-	MBufferFromBigFloat       uint64
-	MBufferStorageStore       uint64
-	MBufferStorageLoad        uint64
-	MBufferGetArgument        uint64
-	MBufferFinish             uint64
-	MBufferSetRandom          uint64
+	MBufferNew                  uint64
+	MBufferNewFromBytes         uint64
+	MBufferGetLength            uint64
+	MBufferGetBytes             uint64
+	MBufferGetByteSlice         uint64
+	MBufferCopyByteSlice        uint64
+	MBufferSetBytes             uint64
+	MBufferAppend               uint64
+	MBufferAppendBytes          uint64
+	MBufferToBigIntUnsigned     uint64
+	MBufferToBigIntSigned       uint64
+	MBufferFromBigIntUnsigned   uint64
+	MBufferFromBigIntSigned     uint64
+	MBufferToSmallIntUnsigned   uint64
+	MBufferToSmallIntSigned     uint64
+	MBufferFromSmallIntUnsigned uint64
+	MBufferFromSmallIntSigned   uint64
+	MBufferToBigFloat           uint64
+	MBufferFromBigFloat         uint64
+	MBufferStorageStore         uint64
+	MBufferStorageLoad          uint64
+	MBufferGetArgument          uint64
+	MBufferFinish               uint64
+	MBufferSetRandom            uint64
 }
 
 // ManagedMapAPICost defines the managed map operations gas cost config structure

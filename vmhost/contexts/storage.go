@@ -3,6 +3,7 @@ package contexts
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/multiversx/mx-chain-core-go/core"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
