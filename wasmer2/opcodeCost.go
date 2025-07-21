@@ -116,6 +116,8 @@ type OpcodeCost struct {
 	Loop                          uint32
 	MemoryGrow                    uint32
 	MemorySize                    uint32
+	MemoryCopy                    uint32
+	MemoryFill                    uint32
 	Nop                           uint32
 	RefFunc                       uint32
 	RefIsNull                     uint32
