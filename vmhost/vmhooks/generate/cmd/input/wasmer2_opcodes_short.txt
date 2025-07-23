@@ -107,6 +107,8 @@ LocalAllocate
 Loop
 MemoryGrow
 MemorySize
+MemoryCopy
+MemoryFill
 Nop
 RefFunc
 RefIsNull
