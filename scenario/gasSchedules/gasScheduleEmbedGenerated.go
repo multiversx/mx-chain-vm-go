@@ -120,8 +120,13 @@ const (
     CleanReturnData = 100
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
+    GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
+    GetRoundTime = 100
+    EpochStartBlockTimeStamp = 100
+    EpochStartBlockNonce = 100
+    EpochStartBlockRound = 100
 
 [EthAPICost]
     UseGas = 100
@@ -216,6 +221,7 @@ const (
     BigFloatAbs = 5000
     BigFloatSqrt = 7000
     BigFloatPow = 10000
+    BigFloatPowPerIteration = 10000
     BigFloatFloor = 5000
     BigFloatCeil = 5000
     BigFloatIsInt = 3000
@@ -259,6 +265,10 @@ const (
     MBufferToBigIntSigned = 10000
     MBufferFromBigIntUnsigned = 4000
     MBufferFromBigIntSigned = 10000
+    MBufferToSmallIntUnsigned = 4000
+    MBufferToSmallIntSigned = 10000
+    MBufferFromSmallIntUnsigned = 4000
+    MBufferFromSmallIntSigned = 10000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000
@@ -958,8 +968,13 @@ const (
     CleanReturnData = 100
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
+    GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
+    GetRoundTime = 100
+    EpochStartBlockTimeStamp = 100
+    EpochStartBlockNonce = 100
+    EpochStartBlockRound = 100
 
 [EthAPICost]
     UseGas = 100
@@ -1054,6 +1069,7 @@ const (
     BigFloatAbs = 5000
     BigFloatSqrt = 7000
     BigFloatPow = 10000
+    BigFloatPowPerIteration = 10000
     BigFloatFloor = 5000
     BigFloatCeil = 5000
     BigFloatIsInt = 3000
@@ -1097,6 +1113,10 @@ const (
     MBufferToBigIntSigned = 5000
     MBufferFromBigIntUnsigned = 2000
     MBufferFromBigIntSigned = 5000
+    MBufferToSmallIntUnsigned = 2000
+    MBufferToSmallIntSigned = 5000
+    MBufferFromSmallIntUnsigned = 2000
+    MBufferFromSmallIntSigned = 5000
     MBufferToBigFloat = 2000
     MBufferFromBigFloat = 2000
     MBufferStorageStore = 75000

@@ -43,6 +43,9 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.MultiESDTNFTTransferAndExecuteByUserFlag,
 	vmhost.UseGasBoundedShouldFailExecutionFlag,
 	vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag,
+	vmhost.ValidationOnGobDecodeFlag,
+	vmhost.BarnardOpcodesFlag,
+	vmhost.FixGetBalanceFlag,
 }
 
 // vmHost implements HostContext interface.
@@ -547,10 +550,6 @@ func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 // IsAllowedToExecute returns true if the special opcode is allowed to be run by the address
 func (host *vmHost) IsAllowedToExecute(opcode string) bool {
-	if !host.enableEpochsHandler.IsFlagEnabled(vmhost.MultiESDTNFTTransferAndExecuteByUserFlag) {
-		return false
-	}
-
 	mapAddresses, ok := host.mapOpcodeAddressIsAllowed[opcode]
 	if !ok {
 		return false

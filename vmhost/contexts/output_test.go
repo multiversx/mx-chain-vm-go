@@ -446,7 +446,9 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 		Balance: big.NewInt(2000),
 	})
 
-	host := &contextmock.VMHostMock{}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+	}
 	outputContext, _ := NewOutputContext(host)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
@@ -513,7 +515,9 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 		},
 	})
 
-	host := &contextmock.VMHostMock{}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+	}
 	oc, _ := NewOutputContext(host)
 	bc, _ := NewBlockchainContext(host, mockWorld)
 
