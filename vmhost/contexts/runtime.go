@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	builtinMath "math"
+	"math/big"
+
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	builtinMath "math"
-	"math/big"
 )
 
 var logRuntime = logger.GetOrCreate("vm/runtime")
@@ -24,6 +25,24 @@ var mapNewCryptoAPI = map[string]struct{}{
 	"managedGetOriginalCallerAddr":             {},
 	"managedGetRelayerAddr":                    {},
 	"managedMultiTransferESDTNFTExecuteByUser": {},
+}
+
+var mapBarnardOpcodes = map[string]struct{}{
+	"mbufferToSmallIntUnsigned":                    {},
+	"mbufferToSmallIntSigned":                      {},
+	"mbufferFromSmallIntUnsigned":                  {},
+	"mbufferFromSmallIntSigned":                    {},
+	"getBlockRoundTimeMs":                          {},
+	"getBlockTimestampMs":                          {},
+	"getPrevBlockTimestampMs":                      {},
+	"epochStartBlockTimestampMs":                   {},
+	"epochStartBlockNonce":                         {},
+	"epochStartBlockRound":                         {},
+	"managedGetAllTransfersCallValue":              {},
+	"managedExecuteOnDestContextWithErrorReturn":   {},
+	"managedMultiTransferESDTNFTExecuteWithReturn": {},
+	"managedGetCodeHash":                           {},
+	"managedGetESDTTokenType":                      {},
 }
 
 const warmCacheSize = 100
@@ -75,12 +94,13 @@ func NewRuntimeContext(
 	}
 
 	scAPINames := vmExecutor.FunctionNames()
+	enableEpochsHandler := host.EnableEpochsHandler()
 
 	context := &runtimeContext{
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
+		validator:  newWASMValidator(scAPINames, builtInFuncContainer, enableEpochsHandler),
 		hasher:     hasher,
 		errors:     nil,
 	}
@@ -677,6 +697,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		err = context.checkIfContainsBarnardOpcodes()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -684,6 +712,15 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
 	for funcName := range mapNewCryptoAPI {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
+	for funcName := range mapBarnardOpcodes {
 		if context.iTracker.Instance().IsFunctionImported(funcName) {
 			return vmhost.ErrContractInvalid
 		}

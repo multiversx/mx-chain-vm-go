@@ -114,6 +114,12 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 			dynamicStorageLoadParams.Quadratic, dynamicStorageLoadParams.Linear, dynamicStorageLoadParams.Constant)
 	}
 
+	managedMapOps := &ManagedMapAPICost{}
+	err = mapstructure.Decode(gasMap["ManagedMapAPICost"], managedMapOps)
+	if err != nil {
+		return nil, err
+	}
+
 	gasCost := &GasCost{
 		BaseOperationCost:    *baseOps,
 		BigIntAPICost:        *bigIntOps,
@@ -123,6 +129,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       wasmOps,
 		DynamicStorageLoad:   *dynamicStorageLoadParams,
+		ManagedMapAPICost:    *managedMapOps,
 	}
 
 	return gasCost, nil
@@ -313,8 +320,13 @@ func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["CleanReturnData"] = value
 	gasMap["DeleteFromReturnData"] = value
 	gasMap["GetCodeMetadata"] = value
+	gasMap["GetCodeHash"] = value
 	gasMap["IsBuiltinFunction"] = value
 	gasMap["IsReservedFunctionName"] = value
+	gasMap["GetRoundTime"] = value
+	gasMap["EpochStartBlockTimeStamp"] = value
+	gasMap["EpochStartBlockNonce"] = value
+	gasMap["EpochStartBlockRound"] = value
 
 	return gasMap
 }
@@ -420,6 +432,7 @@ func FillGasMapBigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigFloatAbs"] = value
 	gasMap["BigFloatSqrt"] = value
 	gasMap["BigFloatPow"] = value
+	gasMap["BigFloatPowPerIteration"] = value
 	gasMap["BigFloatFloor"] = value
 	gasMap["BigFloatCeil"] = value
 	gasMap["BigFloatIsInt"] = value

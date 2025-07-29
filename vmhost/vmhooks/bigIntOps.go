@@ -84,6 +84,7 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedArgument
 	err := metering.UseGasBoundedAndAddTracedGas(bigIntGetSignedArgumentName, gasToUse)
@@ -95,6 +96,15 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
 		return
+	}
+
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(args[id])))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			context.FailExecution(err)
+			return
+		}
 	}
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
@@ -1173,6 +1183,7 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigIntShlName)
 
@@ -1200,13 +1211,30 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 		context.FailExecution(vmhost.ErrShiftNegative)
 		return
 	}
-	dest.Lsh(a, uint(bits))
 
-	err = managedType.ConsumeGasForBigIntCopy(dest)
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		dest.Lsh(a, uint(bits))
+
+		err = managedType.ConsumeGasForBigIntCopy(dest)
+		if err != nil {
+			context.FailExecution(err)
+			return
+		}
+
+		return
+	}
+
+	//this calculates the length of the result in bytes
+	resultBits := a.BitLen() + int(bits)
+	resultBytes := big.NewInt(0).Div(big.NewInt(0).Add(big.NewInt(int64(resultBits)), big.NewInt(int64(a.BitLen()))), big.NewInt(8))
+
+	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(resultBytes)
 	if err != nil {
 		context.FailExecution(err)
 		return
 	}
+
+	dest.Lsh(a, uint(bits))
 }
 
 // BigIntFinishUnsigned VMHooks implementation.

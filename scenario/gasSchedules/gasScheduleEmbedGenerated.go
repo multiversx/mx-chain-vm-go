@@ -120,8 +120,13 @@ const (
     CleanReturnData = 100
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
+    GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
+    GetRoundTime = 100
+    EpochStartBlockTimeStamp = 100
+    EpochStartBlockNonce = 100
+    EpochStartBlockRound = 100
 
 [EthAPICost]
     UseGas = 100
@@ -216,6 +221,7 @@ const (
     BigFloatAbs = 5000
     BigFloatSqrt = 7000
     BigFloatPow = 10000
+    BigFloatPowPerIteration = 10000
     BigFloatFloor = 5000
     BigFloatCeil = 5000
     BigFloatIsInt = 3000
@@ -270,6 +276,13 @@ const (
     MBufferGetArgument = 1000
     MBufferFinish = 1000
     MBufferSetRandom = 6000
+
+[ManagedMapAPICost]
+    ManagedMapNew      = 10000
+    ManagedMapPut      = 10000
+    ManagedMapGet      = 10000
+    ManagedMapRemove   = 10000
+    ManagedMapContains = 10000
 
 [WASMOpcodeCost]
     AtomicFence = 10
@@ -955,8 +968,13 @@ const (
     CleanReturnData = 100
     DeleteFromReturnData = 100
     GetCodeMetadata = 100
+    GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
+    GetRoundTime = 100
+    EpochStartBlockTimeStamp = 100
+    EpochStartBlockNonce = 100
+    EpochStartBlockRound = 100
 
 [EthAPICost]
     UseGas = 100
@@ -1051,6 +1069,7 @@ const (
     BigFloatAbs = 5000
     BigFloatSqrt = 7000
     BigFloatPow = 10000
+    BigFloatPowPerIteration = 10000
     BigFloatFloor = 5000
     BigFloatCeil = 5000
     BigFloatIsInt = 3000
@@ -1105,6 +1124,13 @@ const (
     MBufferGetArgument = 1000
     MBufferFinish = 1000
     MBufferSetRandom = 6000
+
+[ManagedMapAPICost]
+    ManagedMapNew      = 10000
+    ManagedMapPut      = 10000
+    ManagedMapGet      = 10000
+    ManagedMapRemove   = 10000
+    ManagedMapContains = 10000
 
 [WASMOpcodeCost]
     AtomicFence = 10

@@ -77,13 +77,19 @@ type BlockchainContext interface {
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
 	LastTimeStamp() uint64
+	LastTimeStampMs() uint64
 	LastNonce() uint64
 	LastRound() uint64
 	LastEpoch() uint32
 	CurrentRound() uint64
 	CurrentNonce() uint64
 	CurrentTimeStamp() uint64
+	CurrentTimeStampMs() uint64
 	CurrentRandomSeed() []byte
+	RoundTime() uint64
+	EpochStartBlockTimeStampMs() uint64
+	EpochStartBlockNonce() uint64
+	EpochStartBlockRound() uint64
 	LastRandomSeed() []byte
 	IncreaseNonce(addr []byte)
 	GetCodeHash(addr []byte) []byte
@@ -217,8 +223,7 @@ type ManagedTypesContext interface {
 	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error
 	ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error)
 	GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int)
-	AddValueOnlyBackTransfer(value *big.Int)
-	AddBackTransfers(transfers []*vmcommon.ESDTTransfer)
+	AddBackTransfers(value *big.Int, transfers []*vmcommon.ESDTTransfer, index uint32)
 	PopBackTransferIfAsyncCallBack(vmInput *vmcommon.ContractCallInput)
 }
 

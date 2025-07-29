@@ -1,0 +1,46 @@
+{
+    "name": "send_esdt",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:sender_contract": {
+                    "nonce": "1000",
+                    "balance": "0",
+                    "esdt": {
+                        "str:TOKEN-123456": "1,000"
+                    },
+                    "code": "mxsc:../output/transfer-with-return-error.mxsc.json"
+                },
+                "sc:receiver_contract": {
+                    "nonce": "1000",
+                    "balance": "0",
+                    "code": "mxsc:../output/transfer-with-return-error.mxsc.json"
+                },
+                "address:account": {
+                    "nonce": "0",
+                    "balance": "0"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "not-enough",
+            "tx": {
+                "from": "address:account",
+                "to": "sc:sender_contract",
+                "function": "test_esdt_execute_with_return",
+                "arguments": [
+                    "sc:receiver_contract"
+                ],
+                "gasLimit": "5,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0"
+            }
+        }
+    ]
+}

@@ -528,6 +528,15 @@ func (w *WrapperVMHooks) GetBlockTimestamp() int64 {
 	return result
 }
 
+// GetBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) GetBlockTimestampMs() int64 {
+	callInfo := "GetBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // GetBlockNonce VM hook wrapper
 func (w *WrapperVMHooks) GetBlockNonce() int64 {
 	callInfo := "GetBlockNonce()"
@@ -580,6 +589,15 @@ func (w *WrapperVMHooks) GetPrevBlockTimestamp() int64 {
 	return result
 }
 
+// GetPrevBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) GetPrevBlockTimestampMs() int64 {
+	callInfo := "GetPrevBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetPrevBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // GetPrevBlockNonce VM hook wrapper
 func (w *WrapperVMHooks) GetPrevBlockNonce() int64 {
 	callInfo := "GetPrevBlockNonce()"
@@ -613,6 +631,42 @@ func (w *WrapperVMHooks) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.GetPrevBlockRandomSeed(pointer)
 	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// GetBlockRoundTimeMs VM hook wrapper
+func (w *WrapperVMHooks) GetBlockRoundTimeMs() int64 {
+	callInfo := "GetBlockRoundTimeMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.GetBlockRoundTimeMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// EpochStartBlockTimestampMs VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockTimestampMs() int64 {
+	callInfo := "EpochStartBlockTimestampMs()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.EpochStartBlockTimestampMs()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// EpochStartBlockNonce VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockNonce() int64 {
+	callInfo := "EpochStartBlockNonce()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.EpochStartBlockNonce()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// EpochStartBlockRound VM hook wrapper
+func (w *WrapperVMHooks) EpochStartBlockRound() int64 {
+	callInfo := "EpochStartBlockRound()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.EpochStartBlockRound()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
 }
 
 // Finish VM hook wrapper
@@ -839,6 +893,14 @@ func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
+// ManagedGetAllTransfersCallValue VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetAllTransfersCallValue(%d)", transferCallValuesListHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedGetBackTransfers VM hook wrapper
 func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
 	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, egldValueHandle)
@@ -860,6 +922,14 @@ func (w *WrapperVMHooks) ManagedGetESDTTokenData(addressHandle int32, tokenIDHan
 	callInfo := fmt.Sprintf("ManagedGetESDTTokenData(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetESDTTokenType VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetESDTTokenType(%d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, typeHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 
@@ -957,11 +1027,29 @@ func (w *WrapperVMHooks) ManagedExecuteOnDestContext(gas int64, addressHandle in
 	return result
 }
 
+// ManagedExecuteOnDestContextWithErrorReturn VM hook wrapper
+func (w *WrapperVMHooks) ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedExecuteOnDestContextWithErrorReturn(%d, %d, %d, %d, %d, %d)", gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
 // ManagedMultiTransferESDTNFTExecute VM hook wrapper
 func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecute(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMultiTransferESDTNFTExecuteWithReturn VM hook wrapper
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteWithReturn(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
@@ -1024,6 +1112,14 @@ func (w *WrapperVMHooks) ManagedGetCodeMetadata(addressHandle int32, responseHan
 	callInfo := fmt.Sprintf("ManagedGetCodeMetadata(%d, %d)", addressHandle, responseHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetCodeHash VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetCodeHash(%d, %d)", addressHandle, codeHashHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
 

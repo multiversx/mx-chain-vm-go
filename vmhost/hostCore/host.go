@@ -43,6 +43,10 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.MultiESDTNFTTransferAndExecuteByUserFlag,
 	vmhost.UseGasBoundedShouldFailExecutionFlag,
 	vmhost.AsyncV3Flag,
+	vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag,
+	vmhost.ValidationOnGobDecodeFlag,
+	vmhost.BarnardOpcodesFlag,
+	vmhost.FixGetBalanceFlag,
 }
 
 // vmHost implements HostContext interface.

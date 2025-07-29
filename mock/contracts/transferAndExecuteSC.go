@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -57,6 +58,27 @@ func TransferEGLDToParent(instanceMock *mock.InstanceMock, config interface{}) {
 			big.NewInt(testConfig.ChildBalance/2),
 			0,
 			[]byte{}, // transfer data
+			[][]byte{},
+		)
+
+		return instance
+	})
+}
+
+func TransferAndExecuteWithBuiltIn(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("transferAndExecuteWithBuiltIn", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		_ = host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+
+		transferString := "ESDTTransfer@" + hex.EncodeToString([]byte("XYY-ABCDEF")) + "@" + hex.EncodeToString(big.NewInt(100000).Bytes())
+		vmhooks.TransferValueExecuteWithTypedArgs(host,
+			test.UserAddress,
+			big.NewInt(0),
+			1,
+			[]byte(transferString),
 			[][]byte{},
 		)
 

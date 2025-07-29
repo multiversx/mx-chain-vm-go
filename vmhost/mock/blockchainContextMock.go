@@ -75,6 +75,11 @@ func (b *BlockchainContextMock) LastTimeStamp() uint64 {
 	return 0
 }
 
+// LastTimeStampMs -
+func (b *BlockchainContextMock) LastTimeStampMs() uint64 {
+	return 0
+}
+
 // LastNonce -
 func (b *BlockchainContextMock) LastNonce() uint64 {
 	return 0
@@ -102,6 +107,31 @@ func (b *BlockchainContextMock) CurrentNonce() uint64 {
 
 // CurrentTimeStamp -
 func (b *BlockchainContextMock) CurrentTimeStamp() uint64 {
+	return 0
+}
+
+// CurrentTimeStampMs -
+func (b *BlockchainContextMock) CurrentTimeStampMs() uint64 {
+	return 0
+}
+
+// RoundTime -
+func (b *BlockchainContextMock) RoundTime() uint64 {
+	return 0
+}
+
+// EpochStartBlockTimeStampMs -
+func (b *BlockchainContextMock) EpochStartBlockTimeStampMs() uint64 {
+	return 0
+}
+
+// EpochStartBlockNonce -
+func (b *BlockchainContextMock) EpochStartBlockNonce() uint64 {
+	return 0
+}
+
+// EpochStartBlockRound -
+func (b *BlockchainContextMock) EpochStartBlockRound() uint64 {
 	return 0
 }
 

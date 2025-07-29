@@ -87,12 +87,14 @@ const (
 	isStorageLockedName              = "isStorageLocked"
 	clearStorageLockName             = "clearStorageLock"
 	getBlockTimestampName            = "getBlockTimestamp"
+	getBlockTimestampMsName          = "getBlockTimestampMs"
 	getBlockNonceName                = "getBlockNonce"
 	getBlockRoundName                = "getBlockRound"
 	getBlockEpochName                = "getBlockEpoch"
 	getBlockRandomSeedName           = "getBlockRandomSeed"
 	getStateRootHashName             = "getStateRootHash"
 	getPrevBlockTimestampName        = "getPrevBlockTimestamp"
+	getPrevBlockTimestampMsName      = "getPrevBlockTimestampMs"
 	getPrevBlockNonceName            = "getPrevBlockNonce"
 	getPrevBlockRoundName            = "getPrevBlockRound"
 	getPrevBlockEpochName            = "getPrevBlockEpoch"
@@ -100,6 +102,10 @@ const (
 	getOriginalTxHashName            = "getOriginalTxHash"
 	getCurrentTxHashName             = "getCurrentTxHash"
 	getPrevTxHashName                = "getPrevTxHash"
+	getBlockRoundTimeMsName          = "getBlockRoundTimeMs"
+	epochStartBlockTimestampMsName   = "epochStartBlockTimestampMs"
+	epochStartBlockNonceName         = "epochStartBlockNonce"
+	epochStartBlockRoundName         = "epochStartBlockRound"
 )
 
 type CreateContractCallType int
@@ -876,6 +882,18 @@ func TransferValueExecuteWithTypedArgs(
 		}
 	}
 
+	data := ""
+	if contractCallInput != nil {
+		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
+	}
+
+	lastRound := host.Blockchain().LastRound()
+	if host.IsBuiltinFunctionCall([]byte(data)) &&
+		lastRound >= uint64(host.EnableEpochsHandler().GetActivationEpoch(vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag)) {
+		FailExecution(host, vmhost.ErrTransferValueOnESDTCall)
+		return 1
+	}
+
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
 		vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
@@ -887,11 +905,6 @@ func TransferValueExecuteWithTypedArgs(
 		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.TransferAndExecuteString)
 
 		return 0
-	}
-
-	data := ""
-	if contractCallInput != nil {
-		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
 	}
 
 	err = metering.UseGasBounded(uint64(gasLimit))
@@ -1118,6 +1131,19 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
+	return TransferESDTNFTExecuteWithTypedArgsWithFailure(host, dest, transfers, gasLimit, function, data, true)
+}
+
+// TransferESDTNFTExecuteWithTypedArgsWithFailure defines the actual transfer ESDT execute logic
+func TransferESDTNFTExecuteWithTypedArgsWithFailure(
+	host vmhost.VMHost,
+	dest []byte,
+	transfers []*vmcommon.ESDTTransfer,
+	gasLimit int64,
+	function []byte,
+	data [][]byte,
+	withFailure bool,
+) int32 {
 	var executeErr error
 
 	runtime := host.Runtime()
@@ -1167,7 +1193,9 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if executeErr != nil {
-		FailExecution(host, executeErr)
+		if withFailure {
+			FailExecution(host, executeErr)
+		}
 		return 1
 	}
 
@@ -1175,11 +1203,14 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		contractCallInput.GasProvided = gasLimitForExec
 		contractCallInput.CallerAddr = sender
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
+		vmOutput, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
-			FailExecution(host, executeErr)
+			if vmOutput == nil || withFailure {
+				FailExecution(host, executeErr)
+			}
+
 			return 1
 		}
 
@@ -1187,7 +1218,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	}
 
 	return 0
-
 }
 
 // TransferESDTNFTExecuteByUserWithTypedArgs defines the actual transfer ESDT execute logic and execution
@@ -1246,8 +1276,8 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 		SenderForExec:  callerForExecution,
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
-	if err != nil {
-		FailExecution(host, executeErr)
+	if executeErr != nil {
+		// no fail execution is needed here - transfer was not successful, returning error which can be treated at SC level
 		return 1
 	}
 
@@ -1269,7 +1299,8 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 				ReturnAfterError: true,
 			}
 			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
-			if err != nil {
+			if executeErr != nil {
+				// fail execution is needed here - tokens are at destination contract, so fail is needed to revert everything
 				FailExecution(host, executeErr)
 				return 1
 			}
@@ -2863,6 +2894,22 @@ func (context *VMHooksImpl) GetBlockTimestamp() int64 {
 	return int64(blockchain.CurrentTimeStamp())
 }
 
+// GetBlockTimestampMs VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetBlockTimestampMs() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockTimeStamp
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockTimestampMsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.CurrentTimeStampMs())
+}
+
 // GetBlockNonce VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetBlockNonce() int64 {
@@ -2967,6 +3014,22 @@ func (context *VMHooksImpl) GetPrevBlockTimestamp() int64 {
 	return int64(blockchain.LastTimeStamp())
 }
 
+// GetPrevBlockTimestampMs VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetPrevBlockTimestampMs() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockTimeStamp
+	err := metering.UseGasBoundedAndAddTracedGas(getPrevBlockTimestampMsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.LastTimeStampMs())
+}
+
 // GetPrevBlockNonce VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetPrevBlockNonce() int64 {
@@ -3033,6 +3096,71 @@ func (context *VMHooksImpl) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	if err != nil {
 		context.FailExecution(err)
 	}
+}
+
+// GetBlockRoundTimeMs VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetBlockRoundTimeMs() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetRoundTime
+	err := metering.UseGasBoundedAndAddTracedGas(getBlockRoundTimeMsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.RoundTime())
+}
+
+// EpochStartBlockTimestampMs VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) EpochStartBlockTimestampMs() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockTimeStamp
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockTimestampMsName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.EpochStartBlockTimeStampMs())
+}
+
+// EpochStartBlockNonce VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) EpochStartBlockNonce() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockNonce
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockNonceName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.EpochStartBlockNonce())
+}
+
+// EpochStartBlockRound VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) EpochStartBlockRound() int64 {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.EpochStartBlockRound
+
+	err := metering.UseGasBoundedAndAddTracedGas(epochStartBlockRoundName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int64(blockchain.EpochStartBlockRound())
 }
 
 // Finish VMHooks implementation.
@@ -3226,6 +3354,7 @@ func (context *VMHooksImpl) ExecuteOnDestContextWithHost(
 		callArgs.function,
 		callArgs.dest,
 		callArgs.args,
+		true,
 	)
 }
 
@@ -3237,6 +3366,7 @@ func ExecuteOnDestContextWithTypedArgs(
 	function []byte,
 	dest []byte,
 	args [][]byte,
+	failExecution bool,
 ) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -3268,7 +3398,10 @@ func ExecuteOnDestContextWithTypedArgs(
 
 	vmOutput, err := executeOnDestContextFromAPI(host, contractCallInput)
 	if err != nil {
-		FailExecution(host, err)
+		if vmOutput == nil || failExecution {
+			FailExecution(host, err)
+		}
+
 		return 1
 	}
 
@@ -3899,12 +4032,13 @@ func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCal
 	host.Async().SetAsyncArgumentsForCall(input)
 	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
 	if err != nil {
-		return nil, err
+		return vmOutput, err
 	}
 
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
 		return nil, err
 	}
+
 	return vmOutput, err
 }

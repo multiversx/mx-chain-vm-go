@@ -3,8 +3,11 @@ package vmhooks
 import (
 	"encoding/hex"
 	"errors"
+	"math/big"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -13,40 +16,47 @@ import (
 )
 
 const (
-	managedSCAddressName                     = "managedSCAddress"
-	managedOwnerAddressName                  = "managedOwnerAddress"
-	managedCallerName                        = "managedCaller"
-	managedSignalErrorName                   = "managedSignalError"
-	managedWriteLogName                      = "managedWriteLog"
-	managedMultiTransferESDTNFTExecuteName   = "managedMultiTransferESDTNFTExecute"
-	managedTransferValueExecuteName          = "managedTransferValueExecute"
-	managedExecuteOnDestContextName          = "managedExecuteOnDestContext"
-	managedExecuteOnDestContextByCallerName  = "managedExecuteOnDestContextByCaller"
-	managedExecuteOnSameContextName          = "managedExecuteOnSameContext"
-	managedExecuteReadOnlyName               = "managedExecuteReadOnly"
-	managedCreateContractName                = "managedCreateContract"
-	managedDeployFromSourceContractName      = "managedDeployFromSourceContract"
-	managedUpgradeContractName               = "managedUpgradeContract"
-	managedUpgradeFromSourceContractName     = "managedUpgradeFromSourceContract"
-	managedAsyncCallName                     = "managedAsyncCall"
-	managedCreateAsyncCallName               = "managedCreateAsyncCall"
-	managedGetCallbackClosure                = "managedGetCallbackClosure"
-	managedGetMultiESDTCallValueName         = "managedGetMultiESDTCallValue"
-	managedGetESDTBalanceName                = "managedGetESDTBalance"
-	managedGetESDTTokenDataName              = "managedGetESDTTokenData"
-	managedGetReturnDataName                 = "managedGetReturnData"
-	managedGetPrevBlockRandomSeedName        = "managedGetPrevBlockRandomSeed"
-	managedGetBlockRandomSeedName            = "managedGetBlockRandomSeed"
-	managedGetStateRootHashName              = "managedGetStateRootHash"
-	managedGetOriginalTxHashName             = "managedGetOriginalTxHash"
-	managedIsESDTFrozenName                  = "managedIsESDTFrozen"
-	managedIsESDTLimitedTransferName         = "managedIsESDTLimitedTransfer"
-	managedIsESDTPausedName                  = "managedIsESDTPaused"
-	managedBufferToHexName                   = "managedBufferToHex"
-	managedGetCodeMetadataName               = "managedGetCodeMetadata"
-	managedIsBuiltinFunction                 = "managedIsBuiltinFunction"
-	managedMultiTransferESDTNFTExecuteByUser = "managedMultiTransferESDTNFTExecuteByUser"
+	managedSCAddressName                         = "managedSCAddress"
+	managedOwnerAddressName                      = "managedOwnerAddress"
+	managedCallerName                            = "managedCaller"
+	managedSignalErrorName                       = "managedSignalError"
+	managedWriteLogName                          = "managedWriteLog"
+	managedMultiTransferESDTNFTExecuteName       = "managedMultiTransferESDTNFTExecute"
+	managedTransferValueExecuteName              = "managedTransferValueExecute"
+	managedExecuteOnDestContextName              = "managedExecuteOnDestContext"
+	managedExecuteOnDestContextWithReturnName    = "managedExecuteOnDestContextWithReturn"
+	managedExecuteOnDestContextByCallerName      = "managedExecuteOnDestContextByCaller"
+	managedExecuteOnSameContextName              = "managedExecuteOnSameContext"
+	managedExecuteReadOnlyName                   = "managedExecuteReadOnly"
+	managedCreateContractName                    = "managedCreateContract"
+	managedDeployFromSourceContractName          = "managedDeployFromSourceContract"
+	managedUpgradeContractName                   = "managedUpgradeContract"
+	managedUpgradeFromSourceContractName         = "managedUpgradeFromSourceContract"
+	managedAsyncCallName                         = "managedAsyncCall"
+	managedCreateAsyncCallName                   = "managedCreateAsyncCall"
+	managedGetCallbackClosure                    = "managedGetCallbackClosure"
+	managedGetMultiESDTCallValueName             = "managedGetMultiESDTCallValue"
+	managedGetAllTransfersCallValue              = "managedGetAllTransfersCallValue"
+	managedGetESDTBalanceName                    = "managedGetESDTBalance"
+	managedGetESDTTokenDataName                  = "managedGetESDTTokenData"
+	managedGetESDTTokenTypeName                  = "managedGetESDTTokenType"
+	managedGetReturnDataName                     = "managedGetReturnData"
+	managedGetPrevBlockRandomSeedName            = "managedGetPrevBlockRandomSeed"
+	managedGetBlockRandomSeedName                = "managedGetBlockRandomSeed"
+	managedGetStateRootHashName                  = "managedGetStateRootHash"
+	managedGetOriginalTxHashName                 = "managedGetOriginalTxHash"
+	managedIsESDTFrozenName                      = "managedIsESDTFrozen"
+	managedIsESDTLimitedTransferName             = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                      = "managedIsESDTPaused"
+	managedBufferToHexName                       = "managedBufferToHex"
+	managedGetCodeMetadataName                   = "managedGetCodeMetadata"
+	managedGetCodeHashName                       = "managedGetCodeHash"
+	managedIsBuiltinFunction                     = "managedIsBuiltinFunction"
+	managedMultiTransferESDTNFTExecuteByUser     = "managedMultiTransferESDTNFTExecuteByUser"
+	managedMultiTransferESDTNFTExecuteWithReturn = "managedMultiTransferESDTNFTExecuteByWithReturn"
 )
+
+const EGLDTokenName = "EGLD-000000" // TODO: maybe move to core?
 
 // ManagedSCAddress VMHooks implementation.
 // @autogenerate(VMHooks)
@@ -343,6 +353,59 @@ func (context *VMHooksImpl) ManagedGetMultiESDTCallValue(multiCallValueHandle in
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
 
+// ManagedGetAllTransfersCallValue VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+
+	allTransfers, err := ManagedGetAllTransfersCallValueTyped(host)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
+
+	allTransfersBytes := writeESDTTransfersToBytes(managedType, allTransfers)
+	err = managedType.ConsumeGasForBytes(allTransfersBytes)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
+
+	managedType.SetBytes(transferCallValuesListHandle, allTransfersBytes)
+}
+
+// ManagedGetAllTransfersCallValueTyped returns a combined list of all transfers (ESDT and EGLD)
+func ManagedGetAllTransfersCallValueTyped(
+	host vmhost.VMHost,
+) ([]*vmcommon.ESDTTransfer, error) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
+	err := metering.UseGasBoundedAndAddTracedGas(managedGetAllTransfersCallValue, gasToUse)
+	if err != nil {
+		return nil, err
+	}
+
+	input := runtime.GetVMInput()
+	egldCallValue := input.CallValue
+	hasCallValue := egldCallValue.Sign() > 0
+
+	if hasCallValue {
+		return []*vmcommon.ESDTTransfer{
+			{
+				ESDTValue:      egldCallValue,
+				ESDTTokenName:  []byte(EGLDTokenName),
+				ESDTTokenType:  uint32(core.Fungible),
+				ESDTTokenNonce: 0,
+			},
+		}, nil
+	}
+
+	return input.ESDTTransfers, nil
+}
+
 // ManagedGetBackTransfers VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
@@ -495,6 +558,62 @@ func ManagedGetESDTTokenDataWithHost(
 		}
 	}
 
+}
+
+// ManagedGetESDTTokenData VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetESDTTokenType(
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	typeHandle int32) {
+	host := context.GetVMHost()
+	ManagedGetESDTTokenTypeWithHost(
+		host,
+		addressHandle,
+		tokenIDHandle,
+		nonce,
+		typeHandle)
+}
+
+// ManagedGetESDTTokenTypeWithHost implements the ManagedGetESDTTokenType VMHook logic.
+func ManagedGetESDTTokenTypeWithHost(
+	host vmhost.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	typeHandle int32) {
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(managedGetESDTTokenTypeName)
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+	tokenID, err := managedType.GetBytes(tokenIDHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+
+	esdtType := managedType.GetBigIntOrCreate(typeHandle)
+	esdtType.SetUint64(uint64(esdtToken.Type))
 }
 
 // ManagedAsyncCall VMHooks implementation.
@@ -1083,9 +1202,64 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 		[]byte(vmInput.function),
 		vmInput.destination,
 		vmInput.arguments,
+		true,
 	)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return returnVal
+}
+
+// ManagedExecuteOnDestContextWithErrorReturn VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedExecuteOnDestContextWithErrorReturn(
+	gas int64,
+	addressHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := context.GetVMHost()
+
+	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return ManagedExecuteOnDestContextWithErrorReturnWithHost(host, gas, vmInput.value, vmInput.function, vmInput.destination, vmInput.arguments, resultHandle)
+}
+
+// ManagedExecuteOnDestContextWithErrorReturnWithHost - execute on dest context and return error instead of failing execution
+func ManagedExecuteOnDestContextWithErrorReturnWithHost(
+	host vmhost.VMHost,
+	gas int64,
+	value *big.Int,
+	function string,
+	destination []byte,
+	arguments [][]byte,
+	resultHandle int32,
+) int32 {
+	metering := host.Metering()
+	metering.StartGasTracing(managedExecuteOnDestContextWithReturnName)
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := ExecuteOnDestContextWithTypedArgs(
+		host,
+		gas,
+		value,
+		[]byte(function),
+		destination,
+		arguments,
+		false,
+	)
+
+	err := setReturnDataIfExists(host, lenReturnData, resultHandle)
+	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
@@ -1127,6 +1301,44 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
+	)
+}
+
+// ManagedMultiTransferESDTNFTExecuteWithReturn VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithReturn(
+	dstHandle int32,
+	tokenTransfersHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteWithReturn)
+
+	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return TransferESDTNFTExecuteWithTypedArgsWithFailure(
+		host,
+		vmInput.destination,
+		transfers,
+		gasLimit,
+		[]byte(vmInput.function),
+		vmInput.arguments,
+		false,
 	)
 }
 
@@ -1391,6 +1603,46 @@ func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, res
 	codeMetadata := contract.GetCodeMetadata()
 
 	managedType.SetBytes(responseHandle, codeMetadata)
+}
+
+// ManagedGetCodeHash VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+
+	codeHash, err := ManagedGetCodeHashTyped(host, address)
+	if err != nil {
+		context.FailExecution(err)
+		return
+	}
+
+	managedType.SetBytes(codeHashHandle, codeHash)
+}
+
+// ManagedGetCodeHashWithHost returns the code hash at some address
+func ManagedGetCodeHashTyped(
+	host vmhost.VMHost,
+	address []byte,
+) ([]byte, error) {
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCodeHash
+	err := metering.UseGasBoundedAndAddTracedGas(managedGetCodeHashName, gasToUse)
+	if err != nil {
+		return nil, err
+	}
+
+	codeHash := blockchain.GetCodeHash(address)
+
+	return codeHash, nil
 }
 
 // ManagedIsBuiltinFunction VMHooks implementation.

@@ -3,6 +3,7 @@ package vmhooks
 import (
 	"bytes"
 	"math/big"
+	"strings"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
@@ -449,6 +450,7 @@ func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntUnsigned
 	err := metering.UseGasBoundedAndAddTracedGas(mBufferToBigIntUnsignedName, gasToUse)
@@ -463,6 +465,15 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 		return 1
 	}
 
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(managedBuffer)))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			context.FailExecution(err)
+			return 1
+		}
+	}
+
 	bigInt := managedType.GetBigIntOrCreate(bigIntHandle)
 	bigInt.SetBytes(managedBuffer)
 
@@ -474,6 +485,7 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
+	enableEpochsHandler := context.GetEnableEpochsHandler()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntSigned
 	err := metering.UseGasBoundedAndAddTracedGas(mBufferToBigIntSignedName, gasToUse)
@@ -486,6 +498,15 @@ func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 	if err != nil {
 		context.FailExecution(err)
 		return 1
+	}
+
+	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(managedBuffer)))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			context.FailExecution(err)
+			return 1
+		}
 	}
 
 	bigInt := managedType.GetBigIntOrCreate(bigIntHandle)
@@ -559,6 +580,14 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 		context.FailExecution(err)
 		return 1
 	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return 1
+	}
+
 	bigInt := big.NewInt(0).SetBytes(data)
 	if !bigInt.IsUint64() {
 		context.FailExecution(vmhost.ErrBytesExceedUint64)
@@ -585,6 +614,14 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 		context.FailExecution(err)
 		return 1
 	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return 1
+	}
+
 	bigInt := twos.SetBytes(big.NewInt(0), data)
 	if !bigInt.IsInt64() {
 		context.FailExecution(vmhost.ErrBytesExceedInt64)
@@ -631,6 +668,7 @@ func (context *VMHooksImpl) MBufferFromSmallIntSigned(mBufferHandle int32, value
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(mBufferToBigFloatName)
 
@@ -667,9 +705,19 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	bigFloat := new(big.Float)
 	err = bigFloat.GobDecode(managedBuffer)
 	if err != nil {
-		context.FailExecution(err)
-		return 1
+		if !enableEpochsHandler.IsFlagEnabled(vmhost.ValidationOnGobDecodeFlag) &&
+			isGobDecodeValidationError(err) {
+
+		} else {
+			if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+				err = vmhost.ErrBigFloatDecode
+			}
+
+			context.FailExecution(err)
+			return 1
+		}
 	}
+
 	if bigFloat.IsInf() {
 		context.FailExecution(vmhost.ErrInfinityFloatOperation)
 		return 1
@@ -679,10 +727,31 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	return 0
 }
 
+func isGobDecodeValidationError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	validationErrors := []string{
+		"nonzero finite number with empty mantissa",
+		"msb not set in last word",
+		"zero precision finite number",
+	}
+
+	for _, validationError := range validationErrors {
+		if strings.Contains(err.Error(), validationError) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // MBufferFromBigFloat VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
+	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(mBufferFromBigFloatName)
 
@@ -701,6 +770,9 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 
 	encodedFloat, err := value.GobEncode()
 	if err != nil {
+		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
+			err = vmhost.ErrBigFloatEncode
+		}
 		context.FailExecution(err)
 		return 1
 	}
