@@ -31,6 +31,7 @@ const (
 	multiTransferESDTNFTExecuteName  = "multiTransferESDTNFTExecute"
 	transferValueExecuteName         = "transferValueExecute"
 	createAsyncCallName              = "createAsyncCall"
+	createAsyncV3CallName            = "createAsyncV3Call"
 	setAsyncGroupCallbackName        = "setAsyncGroupCallback"
 	setAsyncContextCallbackName      = "setAsyncContextCallback"
 	getArgumentLengthName            = "getArgumentLength"
@@ -1494,30 +1495,33 @@ func (context *VMHooksImpl) CreateAsyncV3CallWithHost(host vmhost.VMHost,
 	gas int64,
 	extraGasForCallback int64,
 ) int32 {
-	runtime := host.Runtime()
-
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	successFunc, err := context.MemLoad(successOffset, successLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
 	errorFunc, err := context.MemLoad(errorOffset, errorLength)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -1550,7 +1554,11 @@ func CreateAsyncCallV3WithTypedArgs(host vmhost.VMHost,
 	metering.StartGasTracing(createAsyncCallName)
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateAsyncCall
-	metering.UseAndTraceGas(gasToUse)
+	err := metering.UseGasBoundedAndAddTracedGas(createAsyncV3CallName, gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
 
 	asyncCall := &vmhost.AsyncCall{
 		Status:          vmhost.AsyncCallPending,
@@ -1567,11 +1575,16 @@ func CreateAsyncCallV3WithTypedArgs(host vmhost.VMHost,
 
 	if asyncCall.HasDefinedAnyCallback() {
 		gasToUse := metering.GasSchedule().BaseOpsAPICost.SetAsyncCallback
-		metering.UseAndTraceGas(gasToUse)
+		err := metering.UseGasBoundedAndAddTracedGas(setAsyncContextCallbackName, gasToUse)
+		if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+			FailExecution(host, err)
+			return 1
+		}
 	}
 
-	err := async.RegisterAsyncCall("", asyncCall)
-	if WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
+	err = async.RegisterAsyncCall("", asyncCall)
+	if err != nil {
+		FailExecution(host, err)
 		return 1
 	}
 
