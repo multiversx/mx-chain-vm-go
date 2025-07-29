@@ -624,7 +624,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall
 		call.CallID = context.generateNewCallID()
 	}
 
-	if context.isMultiLevelAsync(call) {
+	if context.isMultiLevelAsync(call) && !call.IsAsyncV3 {
 		return vmhost.ErrAsyncNoMultiLevel
 	}
 
