@@ -2286,7 +2286,10 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
-	// TODO if timelock <= currentTimeStamp { fail somehow }
+	if timeLock <= context.GetBlockTimestamp() {
+		context.FailExecution(vmhost.ErrTimelockExpired)
+		return -1
+	}
 
 	return timeLock
 }

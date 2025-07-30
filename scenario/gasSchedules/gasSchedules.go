@@ -1,23 +1,17 @@
 package gasschedules
 
-// TODO: go:embed can be used after we upgrade to go 1.16
-// import _ "embed"
+import _ "embed"
 
-// //go:embed gasScheduleV1.toml
-// var gasScheduleV1 string
-
-// //go:embed gasScheduleV2.toml
-// var gasScheduleV2 string
-
-// //go:embed gasScheduleV3.toml
-// var gasScheduleV3 string
-
-//go:generate go run scripts/includetoml.go
+//go:embed gasScheduleV3.toml
+var gasScheduleV3 string
 
 // GetV3 yields the schedule V3
 func GetV3() string {
 	return gasScheduleV3
 }
+
+//go:embed gasScheduleV4.toml
+var gasScheduleV4 string
 
 // GetV4 yields the schedule V4
 func GetV4() string {
