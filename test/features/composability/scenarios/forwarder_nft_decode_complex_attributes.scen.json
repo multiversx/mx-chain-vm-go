@@ -64,8 +64,8 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "0",
+                "status": "10",
+                "message": "str:bad bounds",
                 "gas": "*",
                 "refund": "*"
             }
@@ -98,19 +98,9 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1"
-                                },
-                                {
-                                    "nonce": "2",
-                                    "balance": "1",
-                                    "creator": "sc:forwarder",
-                                    "royalties": "0",
-                                    "hash": "str:nft-create-hash-----------------",
-                                    "uri": [
-                                        "str:nft-create-uri"
-                                    ]
                                 }
                             ],
-                            "lastNonce": "2",
+                            "lastNonce": "1",
                             "roles": [
                                 "ESDTRoleNFTCreate"
                             ]

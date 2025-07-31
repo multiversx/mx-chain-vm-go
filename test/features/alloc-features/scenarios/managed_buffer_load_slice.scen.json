@@ -63,7 +63,8 @@
                 ]
             },
             "expect": {
-                "out": []
+                "status": "10",
+                "message": "str:bad bounds"
             }
         },
         {
@@ -97,7 +98,8 @@
                 ]
             },
             "expect": {
-                "out": []
+                "status": "10",
+                "message": "str:bad bounds"
             }
         }
     ]

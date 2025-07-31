@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"bytes"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -164,7 +165,7 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
-		// does not fail execution if slice exceeds bounds
+		context.FailExecution(vmhost.ErrBadBounds)
 		return 1
 	}
 
@@ -210,7 +211,7 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
-		// does not fail execution if slice exceeds bounds
+		FailExecution(host, vmhost.ErrBadBounds)
 		return 1
 	}
 
@@ -359,7 +360,7 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 	}
 
 	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
-		// does not fail execution if slice exceeds bounds
+		FailExecution(host, vmhost.ErrBadBounds)
 		return 1
 	}
 
@@ -703,6 +704,11 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	}
 
 	bigFloat := new(big.Float)
+	defer func() {
+		if r := recover(); r != nil {
+			context.FailExecution(fmt.Errorf("panic in GobDecode: %v", r))
+		}
+	}()
 	err = bigFloat.GobDecode(managedBuffer)
 	if err != nil {
 		if !enableEpochsHandler.IsFlagEnabled(vmhost.ValidationOnGobDecodeFlag) &&
