@@ -31,18 +31,28 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		CallID:          ac.CallID,
 		Status:          ac.Status,
 		ExecutionMode:   ac.ExecutionMode,
-		Destination:     make([]byte, len(ac.Destination)),
-		Data:            make([]byte, len(ac.Data)),
 		GasLimit:        ac.GasLimit,
 		GasLocked:       ac.GasLocked,
-		ValueBytes:      make([]byte, len(ac.ValueBytes)),
 		SuccessCallback: ac.SuccessCallback,
 		ErrorCallback:   ac.ErrorCallback,
 	}
 
-	copy(clone.Destination, ac.Destination)
-	copy(clone.Data, ac.Data)
-	copy(clone.ValueBytes, ac.ValueBytes)
+	if ac.Destination != nil {
+		clone.Destination = make([]byte, len(ac.Destination))
+		copy(clone.Destination, ac.Destination)
+	}
+	if ac.Data != nil {
+		clone.Data = make([]byte, len(ac.Data))
+		copy(clone.Data, ac.Data)
+	}
+	if ac.ValueBytes != nil {
+		clone.ValueBytes = make([]byte, len(ac.ValueBytes))
+		copy(clone.ValueBytes, ac.ValueBytes)
+	}
+	if ac.CallbackClosure != nil {
+		clone.CallbackClosure = make([]byte, len(ac.CallbackClosure))
+		copy(clone.CallbackClosure, ac.CallbackClosure)
+	}
 
 	return clone
 }

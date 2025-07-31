@@ -7,7 +7,17 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
-	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/stretchr/testify/mock"
+
+
+
+
+
+
+
+
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +27,7 @@ import (
 func TestNewManagedTypes(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	managedTypesCtx, err := NewManagedTypesContext(host)
 	currentStateValues := managedTypesCtx.managedTypesValues
@@ -39,19 +49,19 @@ func TestNewManagedTypes(t *testing.T) {
 func TestManagedTypesContext_Randomness(t *testing.T) {
 	t.Parallel()
 
-	mockRuntime := &contextmock.RuntimeContextMock{
+	mockRuntime := &context.MockRuntimeContext{
 		CurrentTxHash: []byte{0xf, 0xf, 0xf, 0xf, 0xf, 0xf},
 	}
-	host := &contextmock.VMHostMock{
+	host := &context.MockVMHost{
 		RuntimeContext: mockRuntime,
 	}
-	mockBlockchain := &contextmock.BlockchainHookStub{
+	mockBlockchain := &context.MockBlockchainContext{
 		CurrentRandomSeedCalled: func() []byte {
 			return []byte{0xf, 0xf, 0xf, 0xf, 0xa, 0xb}
 		},
 	}
 	blockchainCtx, _ := NewBlockchainContext(host, mockBlockchain)
-	host.BlockchainContext = blockchainCtx
+	host.On("Blockchain").Return blockchainCtx
 	copyHost := host
 
 	managedTypesCtx, _ := NewManagedTypesContext(host)
@@ -79,12 +89,12 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 
 func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{
+	host := &context.MockVMHost{
 		BlockchainCalled: func() vmhost.BlockchainContext {
 			return &mock.BlockchainContextMock{}
 		},
 		RuntimeCalled: func() vmhost.RuntimeContext {
-			return &contextmock.RuntimeContextMock{CurrentTxHash: bytes.Repeat([]byte{1}, 32)}
+			return &context.MockRuntimeContext{CurrentTxHash: bytes.Repeat([]byte{1}, 32)}
 		},
 	}
 	intValue1, intValue2 := int64(100), int64(200)
@@ -154,7 +164,7 @@ func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 
 func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	intValue1, intValue2, intValue3 := int64(100), int64(200), int64(-42)
 	floatValue1, floatValue2, floatValue3 := 307.72, 78.008, -37.84732
 	p224ec, p256ec, p384ec, p521ec := elliptic.P224().Params(), elliptic.P256().Params(), elliptic.P384().Params(), elliptic.P521().Params()
@@ -415,7 +425,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 
 func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	intValue1, intValue2, intValue3, intValue4 := int64(100), int64(200), int64(-42), int64(-80)
 	managedTypesCtx, _ := NewManagedTypesContext(host)
@@ -467,7 +477,7 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 
 func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	floatValue1, floatValue2, floatValue3, floatValue4 := 23.56, 62.8453, -8234.6512, -0.0001
 	managedTypesCtx, _ := NewManagedTypesContext(host)
@@ -549,7 +559,7 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 }
 func TestManagedTypesContext_NewBigIntCopied(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	managedTypesCtx, _ := NewManagedTypesContext(host)
 
 	originalBigInt := big.NewInt(3)
@@ -564,7 +574,7 @@ func TestManagedTypesContext_NewBigIntCopied(t *testing.T) {
 
 func TestManagedTypesContext_PutGetEllipticCurves(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	p224ec, p256ec, p384ec, p521ec := elliptic.P224().Params(), elliptic.P256().Params(), elliptic.P384().Params(), elliptic.P521().Params()
 	managedTypesCtx, _ := NewManagedTypesContext(host)
@@ -604,7 +614,7 @@ func TestManagedTypesContext_PutGetEllipticCurves(t *testing.T) {
 
 func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	managedTypesCtx, _ := NewManagedTypesContext(host)
 	mBytes := []byte{2, 234, 64, 255}
 	emptyBuffer := make([]byte, 0)
@@ -713,7 +723,7 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 
 func TestManagedTypesContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	managedTypesCtx, _ := NewManagedTypesContext(host)
 	managedTypesCtx.PopSetActiveState()
@@ -723,7 +733,7 @@ func TestManagedTypesContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *te
 
 func TestManagedTypesContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	managedTypesCtx, _ := NewManagedTypesContext(host)
 	managedTypesCtx.PopDiscard()
