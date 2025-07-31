@@ -51,6 +51,7 @@ var allFlags = []core.EnableEpochFlag{
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook       crypto.VMCrypto
+	marshalizer      marshal.Marshalizer
 	mutExecution     sync.RWMutex
 	closingInstance  bool
 	executionTimeout time.Duration
@@ -120,6 +121,7 @@ func NewVMHost(
 
 	host := &vmHost{
 		cryptoHook:                cryptoHook,
+		marshalizer:               &marshal.GogoProtoMarshalizer{},
 		meteringContext:           nil,
 		runtimeContext:            nil,
 		asyncContext:              nil,
@@ -245,6 +247,11 @@ func (host *vmHost) Blockchain() vmhost.BlockchainContext {
 // Runtime returns the RuntimeContext instance of the host
 func (host *vmHost) Runtime() vmhost.RuntimeContext {
 	return host.runtimeContext
+}
+
+// Marshalizer returns the Marshalizer instance of the host
+func (host *vmHost) Marshalizer() marshal.Marshalizer {
+	return host.marshalizer
 }
 
 // Output returns the OutputContext instance of the host

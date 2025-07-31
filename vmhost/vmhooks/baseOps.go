@@ -16,6 +16,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/conv"
 )
 
 const (
@@ -106,6 +107,8 @@ const (
 	epochStartBlockTimestampMsName   = "epochStartBlockTimestampMs"
 	epochStartBlockNonceName         = "epochStartBlockNonce"
 	epochStartBlockRoundName         = "epochStartBlockRound"
+	currentAsyncCallStatusName       = "currentAsyncCallStatus"
+	allAsyncCallStatusName           = "allAsyncCallStatus"
 )
 
 type CreateContractCallType int
@@ -1432,6 +1435,20 @@ func CreateAsyncCallWithTypedArgs(host vmhost.VMHost,
 		ErrorCallback:   string(errorFunc),
 		GasLocked:       uint64(extraGasForCallback),
 		CallbackClosure: callbackClosure,
+	}
+
+	if async.GetCallType() == vm.AsynchronousCallBack {
+		parentCall := async.GetCallbackParentCall()
+		if parentCall != nil {
+			gasLimits := make([]uint64, 0)
+			gasLimits = append(gasLimits, parentCall.GasLimitsForCallback...)
+			gasLimits = append(gasLimits, parentCall.GasLocked)
+
+			encodedGasLimits := conv.EncodeGasLimits(gasLimits)
+			asyncCall.CallbackClosure = append(encodedGasLimits, asyncCall.CallbackClosure...)
+
+			asyncCall.GasLimitsForCallback = gasLimits
+		}
 	}
 
 	if asyncCall.HasDefinedAnyCallback() {
@@ -3915,4 +3932,77 @@ func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCal
 	}
 
 	return vmOutput, err
+}
+
+// CurrentAsyncCallStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) CurrentAsyncCallStatus() int32 {
+	host := context.GetVMHost()
+	async := host.Async()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument
+	err := metering.UseGasBoundedAndAddTracedGas(currentAsyncCallStatusName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	parentCall := async.GetCallbackParentCall()
+	if parentCall == nil || parentCall.Results == nil || parentCall.Results.InitialCall == nil {
+		return int32(vmhost.AsyncFailure)
+	}
+
+	if parentCall.Results.InitialCall.ReturnCode != vmcommon.Ok {
+		return int32(vmhost.AsyncFailure)
+	}
+
+	if parentCall.Results.Callback == nil {
+		return int32(vmhost.AsyncSuccess)
+	}
+
+	if parentCall.Results.Callback.ReturnCode == vmcommon.Ok {
+		return int32(vmhost.AsyncSuccess)
+	}
+
+	return int32(vmhost.AsyncPartialFailure)
+}
+
+// AllAsyncCallStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) AllAsyncCallStatus(resultsOffset executor.MemPtr) int32 {
+	host := context.GetVMHost()
+	async := host.Async()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument
+	err := metering.UseGasBoundedAndAddTracedGas(allAsyncCallStatusName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	numFinished := 0
+	numPending := 0
+
+	// This is a simplified implementation. A full implementation would require
+	// iterating over the storage keys, which is not currently possible.
+	// For now, we just count the number of pending calls in the current context.
+	for _, group := range async.GetAsyncCallGroups() {
+		numPending += len(group.AsyncCalls)
+	}
+
+	// The results are returned as a byte slice containing two int32 values:
+	// numFinished and numPending.
+	results := make([]byte, 8)
+	binary.LittleEndian.PutUint32(results[0:4], uint32(numFinished))
+	binary.LittleEndian.PutUint32(results[4:8], uint32(numPending))
+
+	err = context.MemStore(resultsOffset, results)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return 0
 }
