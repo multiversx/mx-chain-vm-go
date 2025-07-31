@@ -838,7 +838,7 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 		return
 	}
 	if context.errors == nil {
-		context.errors = vmhost.WrapError(err, otherInfo...)
+		context.errors = vmhost.NewWrappableError(err, otherInfo...)
 		return
 	}
 	context.errors = context.errors.WrapWithError(err, otherInfo...)

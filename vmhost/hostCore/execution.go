@@ -76,6 +76,66 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	return vmOutput
 }
 
+func (host *vmHost) logErrors(context string, functionName string) {
+	errs := host.GetRuntimeErrors()
+	if errs != nil {
+		log.Trace(fmt.Sprintf("%s full error list for %s", context, functionName), "error", errs)
+	}
+}
+
+func (host *vmHost) initializeExecution(input *vmcommon.ContractCallInput) error {
+	_, _, metering, output, runtime, async, storage := host.GetContexts()
+
+	runtime.InitStateFromContractCallInput(input)
+
+	if err := async.InitStateFromInput(input); err != nil {
+		log.Trace("doRunSmartContractCall init async", "error", vmhost.ErrAsyncInit)
+		return err
+	}
+	metering.InitStateFromContractCallInput(&input.VMInput)
+	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
+	storage.SetAddress(runtime.GetContextAddress())
+
+	return nil
+}
+
+func (host *vmHost) getContractCode(input *vmcommon.ContractCallInput) ([]byte, error) {
+	if err := host.checkGasForGetCode(input, host.Metering()); err != nil {
+		log.Trace("doRunSmartContractCall check gas for GetSCCode", "error", vmhost.ErrNotEnoughGas)
+		return nil, vmhost.ErrNotEnoughGas
+	}
+
+	contract, err := host.Runtime().GetSCCode()
+	if err != nil {
+		log.Trace("doRunSmartContractCall get code", "error", vmhost.ErrContractNotFound)
+		return nil, vmhost.ErrContractNotFound
+	}
+
+	return contract, nil
+}
+
+func (host *vmHost) prepareExecution(contract []byte) error {
+	metering := host.Metering()
+	if err := metering.DeductInitialGasForExecution(contract); err != nil {
+		log.Trace("doRunSmartContractCall initial gas", "error", vmhost.ErrNotEnoughGas)
+		return vmhost.ErrNotEnoughGas
+	}
+
+	if err := host.Runtime().StartWasmerInstance(contract, metering.GetGasForExecution(), false); err != nil {
+		return vmhost.ErrContractInvalid
+	}
+
+	return nil
+}
+
+func (host *vmHost) finalizeExecution() *vmcommon.VMOutput {
+	output := host.Output()
+	output.RemoveNonUpdatedStorage()
+	vmOutput := output.GetVMOutput()
+	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DirectCallString)
+	return vmOutput
+}
+
 func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunction func() error) (*vmcommon.VMOutput, error) {
 	log.Trace("performCodeDeployment", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
@@ -194,14 +254,7 @@ func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) 
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
-	defer func() {
-		errs := host.GetRuntimeErrors()
-		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errs)
-		}
-	}()
-
-	_, _, metering, output, runtime, async, storage := host.GetContexts()
+	defer host.logErrors("doRunSmartContractCall", input.Function)
 
 	var vmOutput *vmcommon.VMOutput
 	defer func() {
@@ -210,56 +263,25 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		}
 	}()
 
-	runtime.InitStateFromContractCallInput(input)
-
-	err := async.InitStateFromInput(input)
-	if err != nil {
-		log.Trace("doRunSmartContractCall init async", "error", vmhost.ErrAsyncInit)
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
-		return vmOutput
-	}
-	metering.InitStateFromContractCallInput(&input.VMInput)
-	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetContextAddress())
-
-	err = host.checkGasForGetCode(input, metering)
-	if err != nil {
-		log.Trace("doRunSmartContractCall check gas for GetSCCode", "error", vmhost.ErrNotEnoughGas)
-		vmOutput = output.CreateVMOutputInCaseOfError(vmhost.ErrNotEnoughGas)
-		return vmOutput
+	if err := host.initializeExecution(input); err != nil {
+		return host.Output().CreateVMOutputInCaseOfError(err)
 	}
 
-	contract, err := runtime.GetSCCode()
+	contract, err := host.getContractCode(input)
 	if err != nil {
-		log.Trace("doRunSmartContractCall get code", "error", vmhost.ErrContractNotFound)
-		vmOutput = output.CreateVMOutputInCaseOfError(vmhost.ErrContractNotFound)
-		return vmOutput
+		return host.Output().CreateVMOutputInCaseOfError(err)
 	}
 
-	err = metering.DeductInitialGasForExecution(contract)
-	if err != nil {
-		log.Trace("doRunSmartContractCall initial gas", "error", vmhost.ErrNotEnoughGas)
-		vmOutput = output.CreateVMOutputInCaseOfError(vmhost.ErrNotEnoughGas)
-		return vmOutput
+	if err = host.prepareExecution(contract); err != nil {
+		return host.Output().CreateVMOutputInCaseOfError(err)
 	}
 
-	err = runtime.StartWasmerInstance(contract, metering.GetGasForExecution(), false)
-	if err != nil {
-		vmOutput = output.CreateVMOutputInCaseOfError(vmhost.ErrContractInvalid)
-		return vmOutput
-	}
-
-	err = host.callSCMethod()
-	if err != nil {
+	if err = host.callSCMethod(); err != nil {
 		log.Trace("doRunSmartContractCall", "error", err)
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
-		return vmOutput
+		return host.Output().CreateVMOutputInCaseOfError(err)
 	}
 
-	output.RemoveNonUpdatedStorage()
-	vmOutput = output.GetVMOutput()
-	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DirectCallString)
-
+	vmOutput = host.finalizeExecution()
 	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
 		"message", vmOutput.ReturnMessage,

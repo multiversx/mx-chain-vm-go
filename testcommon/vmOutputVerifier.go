@@ -119,7 +119,7 @@ func (v *VMOutputVerifier) HasRuntimeErrorAndInfo(message string, otherInfo stri
 	require.NotNil(v.T, v.AllErrors)
 	errors, otherInfos := v.AllErrors.GetAllErrorsAndOtherInfo()
 	for index, err := range errors {
-		if strings.HasPrefix(err.Error(), message) && strings.HasPrefix(otherInfos[index], otherInfo) {
+		if strings.HasPrefix(err.Error(), message) && strings.HasPrefix(strings.Join(otherInfos[index], " "), otherInfo) {
 			errorFound = true
 			break
 		}
