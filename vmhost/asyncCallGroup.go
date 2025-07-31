@@ -35,7 +35,10 @@ func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 		AsyncCalls: make([]*AsyncCall, callCount),
 	}
 
-	copy(clone.CallbackData, acg.CallbackData)
+	if acg.CallbackData != nil {
+		clone.CallbackData = make([]byte, len(acg.CallbackData))
+		copy(clone.CallbackData, acg.CallbackData)
+	}
 
 	for i := 0; i < callCount; i++ {
 		clone.AsyncCalls[i] = acg.AsyncCalls[i].Clone()

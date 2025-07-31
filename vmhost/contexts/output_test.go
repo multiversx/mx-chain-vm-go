@@ -6,7 +6,17 @@ import (
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/stretchr/testify/mock"
+
+
+
+
+
+
+
+
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +24,7 @@ import (
 func TestNewOutputContext(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 
 	outputContext, err := NewOutputContext(host)
 	require.Nil(t, err)
@@ -43,9 +53,9 @@ func TestNewOutputContext(t *testing.T) {
 func TestOutputContext_PushPopState(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	host.RuntimeCalled = func() vmhost.RuntimeContext {
-		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
+		return &context.MockRuntimeContext{VMInput: &vmcommon.ContractCallInput{}}
 	}
 	outputContext, _ := NewOutputContext(host)
 
@@ -109,7 +119,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 func TestOutputContext_GetOutputAccount(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	outputContext, _ := NewOutputContext(host)
 	require.Zero(t, len(outputContext.outputState.OutputAccounts))
 
@@ -137,7 +147,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 }
 
 func TestOutputContext_GettersAndSetters(t *testing.T) {
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	outputContext, _ := NewOutputContext(host)
 
 	outputContext.SetRefund(24)
@@ -151,7 +161,7 @@ func TestOutputContext_GettersAndSetters(t *testing.T) {
 }
 
 func TestOutputContext_FinishReturnData(t *testing.T) {
-	host := &contextmock.VMHostStub{}
+	host := &context.MockVMHost{}
 	outputContext, _ := NewOutputContext(host)
 
 	require.Zero(t, len(outputContext.ReturnData()))
@@ -374,9 +384,9 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 func TestOutputContext_VMOutputError(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostMock{
-		MeteringContext: &contextmock.MeteringContextMock{},
-		RuntimeContext: &contextmock.RuntimeContextMock{
+	host := &context.MockVMHost{
+		MeteringContext: &context.MockMeteringContext{},
+		RuntimeContext: &context.MockRuntimeContext{
 			VMInput: &vmcommon.ContractCallInput{},
 		},
 	}
@@ -404,8 +414,8 @@ func TestOutputContext_Transfer(t *testing.T) {
 	balance := big.NewInt(10000)
 	valueToTransfer := big.NewInt(1000)
 
-	host := &contextmock.VMHostMock{}
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
+	host := &context.MockVMHost{}
+	host.On("Runtime").Return &context.MockRuntimeContext{VMInput: &vmcommon.ContractCallInput{}}
 	mockWorld := worldmock.NewMockWorld()
 	mockWorld.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
@@ -416,8 +426,8 @@ func TestOutputContext_Transfer(t *testing.T) {
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 	outputContext, _ := NewOutputContext(host)
 
-	host.OutputContext = outputContext
-	host.BlockchainContext = blockchainContext
+	host.On("Output").Return outputContext
+	host.On("Blockchain").Return blockchainContext
 
 	err := outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, nil, []byte("txdata"), 0)
 	require.Nil(t, err)
@@ -446,15 +456,15 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 		Balance: big.NewInt(2000),
 	})
 
-	host := &contextmock.VMHostMock{
+	host := &context.MockVMHost{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
 	}
 	outputContext, _ := NewOutputContext(host)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
-	host.OutputContext = outputContext
-	host.BlockchainContext = blockchainContext
+	host.On("Runtime").Return &context.MockRuntimeContext{VMInput: &vmcommon.ContractCallInput{}}
+	host.On("Output").Return outputContext
+	host.On("Blockchain").Return blockchainContext
 
 	senderOutputAccount, _ := outputContext.GetOutputAccount(sender)
 	require.Nil(t, senderOutputAccount.Balance)
@@ -515,15 +525,15 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 		},
 	})
 
-	host := &contextmock.VMHostMock{
+	host := &context.MockVMHost{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
 	}
 	oc, _ := NewOutputContext(host)
 	bc, _ := NewBlockchainContext(host, mockWorld)
 
-	host.OutputContext = oc
-	host.BlockchainContext = bc
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
+	host.On("Output").Return oc
+	host.On("Blockchain").Return bc
+	host.On("Runtime").Return &context.MockRuntimeContext{VMInput: &vmcommon.ContractCallInput{}}
 
 	valueToTransfer := big.NewInt(10)
 	err := oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, nil, []byte("txdata"), 0)
@@ -544,8 +554,8 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 func TestOutputContext_WriteLog(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostMock{
-		RuntimeContext: &contextmock.RuntimeContextMock{
+	host := &context.MockVMHost{
+		RuntimeContext: &context.MockRuntimeContext{
 			CallFunction: "function",
 		},
 	}
@@ -578,7 +588,7 @@ func TestOutputContext_WriteLog(t *testing.T) {
 func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext, _ := NewOutputContext(&context.MockVMHost{})
 	outputContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(outputContext.stateStack))
@@ -587,7 +597,7 @@ func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.
 func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext, _ := NewOutputContext(&context.MockVMHost{})
 	outputContext.PopMergeActiveState()
 
 	require.Equal(t, 0, len(outputContext.stateStack))
@@ -596,7 +606,7 @@ func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testin
 func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext, _ := NewOutputContext(&context.MockVMHost{})
 	outputContext.PopDiscard()
 
 	require.Equal(t, 0, len(outputContext.stateStack))

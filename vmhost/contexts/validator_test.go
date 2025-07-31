@@ -7,7 +7,17 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/stretchr/testify/mock"
+
+
+
+
+
+
+
+
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -58,12 +68,12 @@ func TestFunctionsProtected(t *testing.T) {
 	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer(), worldmock.EnableEpochsHandlerStubAllFlags())
 
 	world := worldmock.NewMockWorld()
-	imb := contextmock.NewExecutorMock(world)
+	imb := context.NewExecutorMock(world)
 	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
-	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {
+	instance.AddMockMethod("transferValueOnly", func() *context.MockInstance {
 		testHost := instance.Host
-		testInstance := contextmock.GetMockInstance(testHost)
+		testInstance := context.GetMockInstance(testHost)
 		return testInstance
 	})
 

@@ -11,7 +11,17 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
-	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/stretchr/testify/mock"
+
+
+
+
+
+
+
+
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +34,7 @@ func TestNewStorageContext(t *testing.T) {
 	t.Run("empty protected key prefix should error", func(t *testing.T) {
 		t.Parallel()
 
-		host := &contextmock.VMHostMock{}
+		host := &context.MockVMHost{}
 		mockBlockchain := worldmock.NewMockWorld()
 
 		storageCtx, err := NewStorageContext(host, mockBlockchain, make([]byte, 0))
@@ -43,7 +53,7 @@ func TestNewStorageContext(t *testing.T) {
 	t.Run("nil blockchain hook should error", func(t *testing.T) {
 		t.Parallel()
 
-		host := &contextmock.VMHostMock{}
+		host := &context.MockVMHost{}
 
 		storageCtx, err := NewStorageContext(host, nil, reservedTestPrefix)
 		require.Equal(t, vmhost.ErrNilBlockChainHook, err)
@@ -53,9 +63,8 @@ func TestNewStorageContext(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-		host := &contextmock.VMHostMock{
-			EnableEpochsHandlerField: enableEpochsHandler,
-		}
+		host := &context.MockVMHost{}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
 		mockBlockchain := worldmock.NewMockWorld()
 
 		storageCtx, err := NewStorageContext(host, mockBlockchain, reservedTestPrefix)
@@ -69,7 +78,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 
 	addressA := []byte("accountA")
 	addressB := []byte("accountB")
-	stubOutput := &contextmock.OutputContextStub{}
+	stubOutput := &context.MockOutputContext{}
 	accountA := &vmcommon.OutputAccount{
 		Address:        addressA,
 		Nonce:          0,
@@ -84,30 +93,22 @@ func TestStorageContext_SetAddress(t *testing.T) {
 		Balance:        big.NewInt(0),
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
-	stubOutput.GetOutputAccountCalled = func(address []byte) (*vmcommon.OutputAccount, bool) {
-		if bytes.Equal(address, addressA) {
-			return accountA, false
-		}
-		if bytes.Equal(address, addressB) {
-			return accountB, false
-		}
-		return nil, false
-	}
+	stubOutput.On("GetOutputAccount", addressA).Return(accountA, false)
+	stubOutput.On("GetOutputAccount", addressB).Return(accountB, false)
 
-	mockRuntime := &contextmock.RuntimeContextMock{}
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-	mockMetering.BlockGasLimitMock = uint64(15000)
-	mockMetering.GasLeftMock = 20000
+	mockRuntime := &context.MockRuntimeContext{}
+	mockMetering := &context.MockMeteringContext{}
+	mockMetering.On("GasSchedule").Return(config.MakeGasMapForTests())
+	mockMetering.On("BlockGasLimit").Return(uint64(15000))
+	mockMetering.On("GasLeft").Return(uint64(20000))
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
 
-	host := &contextmock.VMHostMock{
-		OutputContext:            stubOutput,
-		MeteringContext:          mockMetering,
-		RuntimeContext:           mockRuntime,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
-	bcHook := &contextmock.BlockchainHookStub{}
+	host := &context.MockVMHost{}
+	host.On("Output").Return(stubOutput)
+	host.On("Metering").Return(mockMetering)
+	host.On("Runtime").Return(mockRuntime)
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+	bcHook := &context.MockBlockchainContext{}
 
 	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 
@@ -147,10 +148,9 @@ func TestStorageContext_SetAddress(t *testing.T) {
 func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	t.Parallel()
 
-	mockOutput := &contextmock.OutputContextMock{}
-	account := mockOutput.NewVMOutputAccount([]byte("account"))
-	mockOutput.OutputAccountMock = account
-	mockOutput.OutputAccountIsNew = false
+	mockOutput := &context.MockOutputContext{}
+	account := &vmcommon.OutputAccount{}
+	mockOutput.On("GetOutputAccount", []byte("account")).Return(account, false)
 
 	account.StorageUpdates["update"] = &vmcommon.StorageUpdate{
 		Offset: []byte("update"),
@@ -159,10 +159,9 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
 
-	host := &contextmock.VMHostMock{
-		OutputContext:            mockOutput,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
+	host := &context.MockVMHost{}
+	host.On("Output").Return(mockOutput)
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
 
 	mockBlockchainHook := worldmock.NewMockWorld()
 	storageCtx, _ := NewStorageContext(host, mockBlockchainHook, reservedTestPrefix)
@@ -177,25 +176,23 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	t.Parallel()
 
 	address := []byte("account")
-	mockOutput := &contextmock.OutputContextMock{}
-	account := mockOutput.NewVMOutputAccount(address)
-	mockOutput.OutputAccountMock = account
-	mockOutput.OutputAccountIsNew = false
+	mockOutput := &context.MockOutputContext{}
+	account := &vmcommon.OutputAccount{}
+	mockOutput.On("GetOutputAccount", address).Return(account, false)
 
-	mockRuntime := &contextmock.RuntimeContextMock{}
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-	mockMetering.BlockGasLimitMock = uint64(15000)
-	mockMetering.GasLeftMock = 20000
+	mockRuntime := &context.MockRuntimeContext{}
+	mockMetering := &context.MockMeteringContext{}
+	mockMetering.On("GasSchedule").Return(config.MakeGasMapForTests())
+	mockMetering.On("BlockGasLimit").Return(uint64(15000))
+	mockMetering.On("GasLeft").Return(uint64(20000))
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-	host := &contextmock.VMHostMock{
-		OutputContext:            mockOutput,
-		MeteringContext:          mockMetering,
-		RuntimeContext:           mockRuntime,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
-	bcHook := &contextmock.BlockchainHookStub{}
+	host := &context.MockVMHost{}
+	host.On("Output").Return(mockOutput)
+	host.On("Metering").Return(mockMetering)
+	host.On("Runtime").Return(mockRuntime)
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+	bcHook := &context.MockBlockchainContext{}
 	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(address)
 
@@ -317,10 +314,9 @@ func TestStorageContext_SetStorage(t *testing.T) {
 
 func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	address := []byte("account")
-	mockOutput := &contextmock.OutputContextMock{}
-	account := mockOutput.NewVMOutputAccount(address)
-	mockOutput.OutputAccountMock = account
-	mockOutput.OutputAccountIsNew = false
+	mockOutput := &context.MockOutputContext{}
+	account := &vmcommon.OutputAccount{}
+	mockOutput.On("GetOutputAccount", address).Return(account, false)
 
 	storeCost := 11
 	persistCost := 7
@@ -331,25 +327,24 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	gasMap["BaseOperationCost"]["PersistPerByte"] = uint64(persistCost)
 	gasMap["BaseOperationCost"]["ReleasePerByte"] = uint64(releaseCost)
 
-	mockRuntime := &contextmock.RuntimeContextMock{}
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(gasMap)
-	mockMetering.BlockGasLimitMock = uint64(15000)
+	mockRuntime := &context.MockRuntimeContext{}
+	mockMetering := &context.MockMeteringContext{}
+	mockMetering.On("SetGasSchedule", gasMap).Return()
+	mockMetering.On("BlockGasLimit").Return(uint64(15000))
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-	host := &contextmock.VMHostMock{
-		OutputContext:            mockOutput,
-		MeteringContext:          mockMetering,
-		RuntimeContext:           mockRuntime,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
-	bcHook := &contextmock.BlockchainHookStub{}
+	host := &context.MockVMHost{}
+	host.On("Output").Return(mockOutput)
+	host.On("Metering").Return(mockMetering)
+	host.On("Runtime").Return(mockRuntime)
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+	bcHook := &context.MockBlockchainContext{}
 
 	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(address)
 
 	gasProvided := 100
-	mockMetering.GasLeftMock = uint64(gasProvided)
+	mockMetering.On("GasLeft").Return(uint64(gasProvided))
 	key := []byte("key")
 
 	// Store new value
@@ -364,7 +359,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 
 	// Update with longer value
 	value2 := []byte("value2")
-	mockMetering.GasLeftMock = uint64(gasProvided)
+	mockMetering.On("GasLeft").Return(uint64(gasProvided))
 	storageStatus, err = storageCtx.SetStorage(key, value2)
 	require.Nil(t, err)
 	storedValue, _, _, err = storageCtx.GetStorage(key)
@@ -376,7 +371,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	require.Equal(t, value2, storedValue)
 
 	// Revert to initial value
-	mockMetering.GasLeftMock = uint64(gasProvided)
+	mockMetering.On("GasLeft").Return(uint64(gasProvided))
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	gasLeft = gasProvided - persistCost*len(value)
@@ -385,31 +380,29 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageModified, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
-	require.Equal(t, gasFreed, int(mockMetering.GasFreedMock))
+	mockMetering.AssertCalled(t, "FreeGas", uint64(gasFreed))
 	require.Equal(t, value, storedValue)
 }
 
 func TestStorageContext_StorageProtection(t *testing.T) {
 	address := []byte("account")
-	mockOutput := &contextmock.OutputContextMock{}
-	account := mockOutput.NewVMOutputAccount(address)
-	mockOutput.OutputAccountMock = account
-	mockOutput.OutputAccountIsNew = false
+	mockOutput := &context.MockOutputContext{}
+	account := &vmcommon.OutputAccount{}
+	mockOutput.On("GetOutputAccount", address).Return(account, false)
 
-	mockRuntime := &contextmock.RuntimeContextMock{}
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-	mockMetering.BlockGasLimitMock = uint64(15000)
-	mockMetering.GasLeftMock = 20000
+	mockRuntime := &context.MockRuntimeContext{}
+	mockMetering := &context.MockMeteringContext{}
+	mockMetering.On("SetGasSchedule", config.MakeGasMapForTests()).Return()
+	mockMetering.On("BlockGasLimit").Return(uint64(15000))
+	mockMetering.On("GasLeft").Return(uint64(20000))
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-	host := &contextmock.VMHostMock{
-		OutputContext:            mockOutput,
-		MeteringContext:          mockMetering,
-		RuntimeContext:           mockRuntime,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
-	bcHook := &contextmock.BlockchainHookStub{}
+	host := &context.MockVMHost{}
+	host.On("Output").Return(mockOutput)
+	host.On("Metering").Return(mockMetering)
+	host.On("Runtime").Return(mockRuntime)
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+	bcHook := &context.MockBlockchainContext{}
 
 	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(address)
@@ -460,23 +453,21 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		},
 	}
 
-	mockOutput := &contextmock.OutputContextMock{}
-	account := mockOutput.NewVMOutputAccount(scAddress)
-	mockOutput.OutputAccountMock = account
-	mockOutput.OutputAccountIsNew = false
+	mockOutput := &context.MockOutputContext{}
+	account := &vmcommon.OutputAccount{}
+	mockOutput.On("GetOutputAccount", scAddress).Return(account, false)
 
-	mockRuntime := &contextmock.RuntimeContextMock{}
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-	mockMetering.BlockGasLimitMock = uint64(15000)
-	mockMetering.GasLeftMock = uint64(15000)
+	mockRuntime := &context.MockRuntimeContext{}
+	mockMetering := &context.MockMeteringContext{}
+	mockMetering.On("SetGasSchedule", config.MakeGasMapForTests()).Return()
+	mockMetering.On("BlockGasLimit").Return(uint64(15000))
+	mockMetering.On("GasLeft").Return(uint64(15000))
 
-	host := &contextmock.VMHostMock{
-		OutputContext:            mockOutput,
-		MeteringContext:          mockMetering,
-		RuntimeContext:           mockRuntime,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
+	host := &context.MockVMHost{}
+	host.On("Output").Return(mockOutput)
+	host.On("Metering").Return(mockMetering)
+	host.On("Runtime").Return(mockRuntime)
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
 
 	t.Run("blockchain hook errors", func(t *testing.T) {
 		errTooManyRequests := errors.New("too many requests")
@@ -551,8 +542,8 @@ func makeBcHookStub(
 	readable []byte,
 	internalData []byte,
 	getStorageErr error,
-) *contextmock.BlockchainHookStub {
-	return &contextmock.BlockchainHookStub{
+) *context.MockBlockchainContext {
+	return &context.MockBlockchainContext{
 		GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
 			if bytes.Equal(readable, address) {
 				return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
@@ -577,11 +568,10 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 	t.Parallel()
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
 
-	host := &contextmock.VMHostMock{
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
+	host := &context.MockVMHost{}
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
 
-	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, &context.MockBlockchainContext{}, reservedTestPrefix)
 	storageCtx.PopSetActiveState()
 
 	require.Equal(t, 0, len(storageCtx.stateStack))
@@ -591,11 +581,10 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
 
-	host := &contextmock.VMHostMock{
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
+	host := &context.MockVMHost{}
+	host.On("EnableEpochsHandler").Return(enableEpochsHandler)
 
-	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, &context.MockBlockchainContext{}, reservedTestPrefix)
 	storageCtx.PopDiscard()
 
 	require.Equal(t, 0, len(storageCtx.stateStack))
@@ -608,7 +597,7 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-		mockMetering := &contextmock.MeteringContextMock{
+		mockMetering := &context.MockMeteringContext{
 			GasCost: &config.GasCost{
 				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
 					Quadratic: 2,
@@ -618,12 +607,11 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 			},
 		}
 
-		host := &contextmock.VMHostMock{
-			EnableEpochsHandlerField: enableEpochsHandler,
-			MeteringContext:          mockMetering,
-		}
+		host := &context.MockVMHost{}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+		host.On("Metering").Return(mockMetering)
 
-		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		storageContext, _ := NewStorageContext(host, &context.MockBlockchainContext{}, reservedTestPrefix)
 		trieDepth := int64(0)
 		staticCost := uint64(40000)
 
@@ -636,7 +624,7 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-		mockMetering := &contextmock.MeteringContextMock{
+		mockMetering := &context.MockMeteringContext{
 			GasCost: &config.GasCost{
 				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
 					Quadratic: 2,
@@ -646,12 +634,11 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 			},
 		}
 
-		host := &contextmock.VMHostMock{
-			EnableEpochsHandlerField: enableEpochsHandler,
-			MeteringContext:          mockMetering,
-		}
+		host := &context.MockVMHost{}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+		host.On("Metering").Return(mockMetering)
 
-		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		storageContext, _ := NewStorageContext(host, &context.MockBlockchainContext{}, reservedTestPrefix)
 		trieDepth := int64(5)
 		staticCost := uint64(40000)
 
@@ -664,7 +651,7 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-		mockMetering := &contextmock.MeteringContextMock{
+		mockMetering := &context.MockMeteringContext{
 			GasCost: &config.GasCost{
 				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
 					Quadratic: 688,
@@ -674,12 +661,11 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 			},
 		}
 
-		host := &contextmock.VMHostMock{
-			EnableEpochsHandlerField: enableEpochsHandler,
-			MeteringContext:          mockMetering,
-		}
+		host := &context.MockVMHost{}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+		host.On("Metering").Return(mockMetering)
 
-		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		storageContext, _ := NewStorageContext(host, &context.MockBlockchainContext{}, reservedTestPrefix)
 		trieDepth := int64(5)
 		staticCost := uint64(40000)
 
@@ -692,7 +678,7 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		t.Parallel()
 
 		enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
-		mockMetering := &contextmock.MeteringContextMock{
+		mockMetering := &context.MockMeteringContext{
 			GasCost: &config.GasCost{
 				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
 					Quadratic:  2,
@@ -703,12 +689,11 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 			},
 		}
 
-		host := &contextmock.VMHostMock{
-			EnableEpochsHandlerField: enableEpochsHandler,
-			MeteringContext:          mockMetering,
-		}
+		host := &context.MockVMHost{}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+		host.On("Metering").Return(mockMetering)
 
-		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
+		storageContext, _ := NewStorageContext(host, &context.MockBlockchainContext{}, reservedTestPrefix)
 		trieDepth := int64(5)
 		staticCost := uint64(40000)
 

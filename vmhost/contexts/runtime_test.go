@@ -17,7 +17,17 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/stretchr/testify/mock"
+
+
+
+
+
+
+
+
+
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
@@ -30,20 +40,23 @@ const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
 
-func InitializeVMAndWasmer() *contextmock.VMHostMock {
+func InitializeVMAndWasmer() *context.MockVMHost {
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
 	wasmerExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
-	host := &contextmock.VMHostMock{}
+	host := &context.MockVMHost{}
 
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(gasSchedule)
-	host.MeteringContext = mockMetering
-	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
-	host.OutputContext, _ = NewOutputContext(host)
-	host.CryptoHook, _ = factory.NewVMCrypto()
+	mockMetering := &context.MockMeteringContext{}
+	mockMetering.On("SetGasSchedule", gasSchedule).Return()
+	host.On("Metering").Return(mockMetering)
+	blockchainContext, _ := NewBlockchainContext(host, worldmock.NewMockWorld())
+	host.On("Blockchain").Return(blockchainContext)
+	outputContext, _ := NewOutputContext(host)
+	host.On("Output").Return(outputContext)
+	cryptoHook, _ := factory.NewVMCrypto()
+	host.On("Crypto").Return(cryptoHook)
 	return host
 }
 
@@ -205,7 +218,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 }
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
-	host := &contextmock.VMHostMock{}
+	host := &context.MockVMHost{}
 
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
@@ -293,7 +306,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
-	host := &contextmock.VMHostMock{}
+	host := &context.MockVMHost{}
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -316,7 +329,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	}
 	runtimeCtx.InitStateFromContractCallInput(input)
 
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &context.MockInstance{}
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
@@ -338,11 +351,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeCtx.ReadOnly())
 	require.Nil(t, runtimeCtx.Arguments())
 
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &context.MockInstance{}
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &context.MockInstance{}
 	runtimeCtx.PushState()
 	require.Equal(t, 2, len(runtimeCtx.stateStack))
 
@@ -358,7 +371,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	beta := []byte("beta")
 	gamma := []byte("gamma")
 
-	host := &contextmock.VMHostMock{}
+	host := &context.MockVMHost{}
 
 	testVMType := []byte("type")
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
@@ -482,13 +495,13 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
-	mockOutput := &contextmock.OutputContextMock{
+	mockOutput := &context.MockOutputContext{
 		OutputAccountMock: NewVMOutputAccount([]byte("address")),
 	}
 	mockOutput.OutputAccountMock.Code = []byte("code")
 	mockOutput.SetReturnMessage("")
 
-	host.OutputContext = mockOutput
+	host.On("Output").Return mockOutput
 
 	runtimeCtx.SetMaxInstanceStackSize(1)
 
