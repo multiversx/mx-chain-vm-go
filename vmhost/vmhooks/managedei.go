@@ -56,7 +56,6 @@ const (
 	managedMultiTransferESDTNFTExecuteWithReturn = "managedMultiTransferESDTNFTExecuteByWithReturn"
 )
 
-const EGLDTokenName = "EGLD-000000" // TODO: maybe move to core?
 
 // ManagedSCAddress VMHooks implementation.
 // @autogenerate(VMHooks)

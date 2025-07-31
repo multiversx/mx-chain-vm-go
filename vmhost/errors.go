@@ -334,3 +334,6 @@ var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
 // ErrInvalidSignature signals that a signature verification failed
 var ErrInvalidSignature = errors.New("signature is invalid")
+
+// ErrTimelockExpired signals that the timelock has expired
+var ErrTimelockExpired = errors.New("timelock expired")

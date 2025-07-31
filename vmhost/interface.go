@@ -400,7 +400,7 @@ type AsyncContext interface {
 
 	GetAsyncCallByCallID(callID []byte) AsyncCallLocation
 	LoadParentContextFromStackOrStorage() (AsyncContext, error)
-	ExecuteSyncCallbackAndFinishOutput(
+	ExecuteLocalCallbackAndFinishOutput(
 		asyncCall *AsyncCall,
 		vmOutput *vmcommon.VMOutput,
 		destinationCallInput *vmcommon.ContractCallInput,
