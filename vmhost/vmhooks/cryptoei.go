@@ -92,42 +92,17 @@ func (context *VMHooksImpl) Sha256(
 // ManagedSha256 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32 {
-	managedType := context.GetManagedTypesContext()
 	crypto := context.GetCryptoContext()
-	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
-	err := metering.UseGasBoundedAndAddTracedGas(sha256Name, metering.GasSchedule().CryptoAPICost.SHA256)
-	if err != nil {
-		context.FailExecution(err)
-		return 1
-	}
-
-	inputBytes, err := managedType.GetBytes(inputHandle)
-	if err != nil {
-		context.FailExecution(err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(inputBytes)
-	if err != nil {
-		context.FailExecution(err)
-		return 1
-	}
-
-	resultBytes, err := crypto.Sha256(inputBytes)
-	if err != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			err = vmhost.ErrSha256Hash
-		}
-
-		context.FailExecution(err)
-		return 1
-	}
-
-	managedType.SetBytes(outputHandle, resultBytes)
-
-	return 0
+	return context.managedHash(
+		inputHandle,
+		outputHandle,
+		sha256Name,
+		metering.GasSchedule().CryptoAPICost.SHA256,
+		crypto.Sha256,
+		vmhost.ErrSha256Hash,
+	)
 }
 
 // Keccak256 VMHooks implementation.
@@ -173,42 +148,17 @@ func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executo
 // ManagedKeccak256 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) int32 {
-	managedType := context.GetManagedTypesContext()
 	crypto := context.GetCryptoContext()
-	enableEpochsHandler := context.host.EnableEpochsHandler()
 	metering := context.GetMeteringContext()
 
-	err := metering.UseGasBoundedAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.Keccak256)
-	if err != nil {
-		context.FailExecution(err)
-		return 1
-	}
-
-	inputBytes, err := managedType.GetBytes(inputHandle)
-	if err != nil {
-		context.FailExecution(err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(inputBytes)
-	if err != nil {
-		context.FailExecution(err)
-		return 1
-	}
-
-	resultBytes, err := crypto.Keccak256(inputBytes)
-	if err != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			err = vmhost.ErrKeccak256Hash
-		}
-
-		context.FailExecution(err)
-		return 1
-	}
-
-	managedType.SetBytes(outputHandle, resultBytes)
-
-	return 0
+	return context.managedHash(
+		inputHandle,
+		outputHandle,
+		keccak256Name,
+		metering.GasSchedule().CryptoAPICost.Keccak256,
+		crypto.Keccak256,
+		vmhost.ErrKeccak256Hash,
+	)
 }
 
 // Ripemd160 VMHooks implementation.
@@ -254,48 +204,17 @@ func (context *VMHooksImpl) Ripemd160(dataOffset executor.MemPtr, length executo
 // ManagedRipemd160 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
-	host := context.GetVMHost()
-	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
-}
+	crypto := context.GetCryptoContext()
+	metering := context.GetMeteringContext()
 
-// ManagedRipemd160WithHost VMHooks implementation.
-func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandle int32) int32 {
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-	crypto := host.Crypto()
-	enableEpochsHandler := host.EnableEpochsHandler()
-
-	err := metering.UseGasBoundedAndAddTracedGas(ripemd160Name, metering.GasSchedule().CryptoAPICost.Ripemd160)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	inputBytes, err := managedType.GetBytes(inputHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(inputBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	result, err := crypto.Ripemd160(inputBytes)
-	if err != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			err = vmhost.ErrRipemd160Hash
-		}
-
-		FailExecution(host, err)
-		return 1
-	}
-
-	managedType.SetBytes(outputHandle, result)
-
-	return 0
+	return context.managedHash(
+		inputHandle,
+		outputHandle,
+		ripemd160Name,
+		metering.GasSchedule().CryptoAPICost.Ripemd160,
+		crypto.Ripemd160,
+		vmhost.ErrRipemd160Hash,
+	)
 }
 
 // VerifyBLS VMHooks implementation.
@@ -363,8 +282,14 @@ func (context *VMHooksImpl) ManagedVerifyBLS(
 	messageHandle int32,
 	sigHandle int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle, verifyBLSName)
+	crypto := context.GetCryptoContext()
+	return context.managedVerifyWithOperands(verifyBLSName, vmhost.ErrBlsVerify, func() error {
+		keyBytes, msgBytes, sigBytes, err := context.getSignatureOperands(keyHandle, messageHandle, sigHandle)
+		if err != nil {
+			return err
+		}
+		return crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
+	})
 }
 
 func useGasForCryptoVerify(
@@ -388,89 +313,6 @@ func useGasForCryptoVerify(
 	}
 
 	return metering.UseGasBounded(gasToUse)
-}
-
-// ManagedVerifyBLSWithHost VMHooks implementation.
-func ManagedVerifyBLSWithHost(
-	host vmhost.VMHost,
-	keyHandle int32,
-	messageHandle int32,
-	sigHandle int32,
-	sigVerificationType string,
-) int32 {
-	runtime := host.Runtime()
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-	crypto := host.Crypto()
-	enableEpochsHandler := host.EnableEpochsHandler()
-	err := useGasForCryptoVerify(metering, sigVerificationType)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return 1
-	}
-
-	keyBytes, err := managedType.GetBytes(keyHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(keyBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	msgBytes, err := managedType.GetBytes(messageHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(msgBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	sigBytes, err := managedType.GetBytes(sigHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(sigBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	invalidSigErr := vmhost.ErrInvalidArgument
-	switch sigVerificationType {
-	case verifyBLSName:
-		invalidSigErr = crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
-	case verifyBLSSignatureShare:
-		invalidSigErr = crypto.VerifySignatureShare(keyBytes, msgBytes, sigBytes)
-	case verifyBLSAggregatedSignature:
-		var pubKeyBytes [][]byte
-		pubKeyBytes, _, invalidSigErr = managedType.ReadManagedVecOfManagedBuffers(keyHandle)
-		if invalidSigErr != nil {
-			break
-		}
-
-		invalidSigErr = crypto.VerifyAggregatedSig(pubKeyBytes, msgBytes, sigBytes)
-	}
-
-	if invalidSigErr != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			invalidSigErr = vmhost.ErrBlsVerify
-		}
-
-		FailExecution(host, invalidSigErr)
-		return -1
-	}
-
-	return 0
 }
 
 // VerifyEd25519 VMHooks implementation.
@@ -536,75 +378,14 @@ func (context *VMHooksImpl) VerifyEd25519(
 func (context *VMHooksImpl) ManagedVerifyEd25519(
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifyEd25519WithHost(host, keyHandle, messageHandle, sigHandle)
-}
-
-// ManagedVerifyEd25519WithHost VMHooks implementation.
-func ManagedVerifyEd25519WithHost(
-	host vmhost.VMHost,
-	keyHandle, messageHandle, sigHandle int32,
-) int32 {
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-	enableEpochsHandler := host.EnableEpochsHandler()
-	crypto := host.Crypto()
-	metering.StartGasTracing(verifyEd25519Name)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
-	err := metering.UseGasBounded(gasToUse)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	keyBytes, err := managedType.GetBytes(keyHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(keyBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	msgBytes, err := managedType.GetBytes(messageHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(msgBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	sigBytes, err := managedType.GetBytes(sigHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(sigBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
-	if invalidSigErr != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			invalidSigErr = vmhost.ErrEd25519Verify
+	crypto := context.GetCryptoContext()
+	return context.managedVerifyWithOperands(verifyEd25519Name, vmhost.ErrEd25519Verify, func() error {
+		keyBytes, msgBytes, sigBytes, err := context.getSignatureOperands(keyHandle, messageHandle, sigHandle)
+		if err != nil {
+			return err
 		}
-
-		FailExecution(host, invalidSigErr)
-		return -1
-	}
-
-	return 0
+		return crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
+	})
 }
 
 // VerifyCustomSecp256k1 VMHooks implementation.
@@ -688,89 +469,14 @@ func (context *VMHooksImpl) ManagedVerifyCustomSecp256k1(
 	keyHandle, messageHandle, sigHandle int32,
 	hashType int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifyCustomSecp256k1WithHost(
-		host,
-		keyHandle,
-		messageHandle,
-		sigHandle,
-		hashType,
-		verifyCustomSecp256k1Name)
-}
-
-// ManagedVerifyCustomSecp256k1WithHost VMHooks implementation.
-func ManagedVerifyCustomSecp256k1WithHost(
-	host vmhost.VMHost,
-	keyHandle, messageHandle, sigHandle int32,
-	hashType int32,
-	verifyCryptoFunc string,
-) int32 {
-	runtime := host.Runtime()
-	enableEpochsHandler := host.EnableEpochsHandler()
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-	crypto := host.Crypto()
-
-	err := useGasForCryptoVerify(metering, verifyCryptoFunc)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return 1
-	}
-
-	keyBytes, err := managedType.GetBytes(keyHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(keyBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	msgBytes, err := managedType.GetBytes(messageHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(msgBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	sigBytes, err := managedType.GetBytes(sigHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	err = managedType.ConsumeGasForBytes(sigBytes)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	invalidSigErr := vmhost.ErrInvalidArgument
-	switch verifyCryptoFunc {
-	case verifyCustomSecp256k1Name:
-		invalidSigErr = crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
-	case verifySecp256R1Signature:
-		invalidSigErr = crypto.VerifySecp256r1(keyBytes, msgBytes, sigBytes)
-	}
-
-	if invalidSigErr != nil {
-		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
-			invalidSigErr = vmhost.ErrSecp256k1Verify
+	crypto := context.GetCryptoContext()
+	return context.managedVerifyWithOperands(verifyCustomSecp256k1Name, vmhost.ErrSecp256k1Verify, func() error {
+		keyBytes, msgBytes, sigBytes, err := context.getSignatureOperands(keyHandle, messageHandle, sigHandle)
+		if err != nil {
+			return err
 		}
-
-		FailExecution(host, invalidSigErr)
-		return -1
-	}
-
-	return 0
+		return crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
+	})
 }
 
 // VerifySecp256k1 VMHooks implementation.
@@ -797,22 +503,11 @@ func (context *VMHooksImpl) VerifySecp256k1(
 func (context *VMHooksImpl) ManagedVerifySecp256k1(
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifySecp256k1WithHost(host, keyHandle, messageHandle, sigHandle)
-}
-
-// ManagedVerifySecp256k1WithHost VMHooks implementation.
-func ManagedVerifySecp256k1WithHost(
-	host vmhost.VMHost,
-	keyHandle, messageHandle, sigHandle int32,
-) int32 {
-	return ManagedVerifyCustomSecp256k1WithHost(
-		host,
+	return context.ManagedVerifyCustomSecp256k1(
 		keyHandle,
 		messageHandle,
 		sigHandle,
 		int32(secp256.ECDSADoubleSha256),
-		verifyCustomSecp256k1Name,
 	)
 }
 
@@ -2093,14 +1788,14 @@ func (context *VMHooksImpl) EllipticCurveGetValues(ecHandle int32, fieldOrderHan
 func (context *VMHooksImpl) ManagedVerifySecp256r1(
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifyCustomSecp256k1WithHost(
-		host,
-		keyHandle,
-		messageHandle,
-		sigHandle,
-		0,
-		verifySecp256R1Signature)
+	crypto := context.GetCryptoContext()
+	return context.managedVerifyWithOperands(verifySecp256R1Signature, vmhost.ErrSecp256k1Verify, func() error {
+		keyBytes, msgBytes, sigBytes, err := context.getSignatureOperands(keyHandle, messageHandle, sigHandle)
+		if err != nil {
+			return err
+		}
+		return crypto.VerifySecp256r1(keyBytes, msgBytes, sigBytes)
+	})
 }
 
 // ManagedVerifyBLSSignatureShare VMHooks implementation.
@@ -2110,8 +1805,14 @@ func (context *VMHooksImpl) ManagedVerifyBLSSignatureShare(
 	messageHandle int32,
 	sigHandle int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle, verifyBLSSignatureShare)
+	crypto := context.GetCryptoContext()
+	return context.managedVerifyWithOperands(verifyBLSSignatureShare, vmhost.ErrBlsVerify, func() error {
+		keyBytes, msgBytes, sigBytes, err := context.getSignatureOperands(keyHandle, messageHandle, sigHandle)
+		if err != nil {
+			return err
+		}
+		return crypto.VerifySignatureShare(keyBytes, msgBytes, sigBytes)
+	})
 }
 
 // ManagedVerifyBLSAggregatedSignature VMHooks implementation.
@@ -2121,6 +1822,20 @@ func (context *VMHooksImpl) ManagedVerifyBLSAggregatedSignature(
 	messageHandle int32,
 	sigHandle int32,
 ) int32 {
-	host := context.GetVMHost()
-	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle, verifyBLSAggregatedSignature)
+	crypto := context.GetCryptoContext()
+	managedType := context.GetManagedTypesContext()
+
+	return context.managedVerifyWithOperands(verifyBLSAggregatedSignature, vmhost.ErrBlsVerify, func() error {
+		pubKeyBytes, _, err := managedType.ReadManagedVecOfManagedBuffers(keyHandle)
+		if err != nil {
+			return err
+		}
+
+		_, msgBytes, sigBytes, err := context.getSignatureOperands(0, messageHandle, sigHandle)
+		if err != nil {
+			return err
+		}
+
+		return crypto.VerifyAggregatedSig(pubKeyBytes, msgBytes, sigBytes)
+	})
 }
