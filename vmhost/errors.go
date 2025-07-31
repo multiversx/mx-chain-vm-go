@@ -334,3 +334,8 @@ var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
 // ErrInvalidSignature signals that a signature verification failed
 var ErrInvalidSignature = errors.New("signature is invalid")
+
+// WrapError creates a new WrappableError.
+func WrapError(err error, otherInfo ...string) WrappableError {
+	return NewWrappableError(err, otherInfo...)
+}

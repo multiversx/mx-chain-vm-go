@@ -51,6 +51,8 @@ type asyncContext struct {
 }
 
 // NewAsyncContext creates a new asyncContext.
+// The asynchronous context is responsible for handling asynchronous calls between smart contracts.
+// It keeps track of the call stack, the arguments, and the return data.
 func NewAsyncContext(
 	host vmhost.VMHost,
 	callArgsParser vmhost.CallArgsParser,
@@ -91,6 +93,7 @@ func NewAsyncContext(
 }
 
 // InitState initializes the internal state of the AsyncContext.
+// This function is called at the beginning of each transaction.
 func (context *asyncContext) InitState() {
 	context.originalCallerAddr = nil
 	context.address = nil
@@ -111,7 +114,7 @@ func (context *asyncContext) InitState() {
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
-// information provided by a ContractCallInput.
+// information provided by a ContractCallInput. This function is called at the beginning of each transaction.
 func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) error {
 	context.InitState()
 
@@ -171,7 +174,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 }
 
 // PushState creates a deep clone of the internal state and pushes it onto the
-// internal state stack.
+// internal state stack. This is used to handle nested asynchronous calls.
 func (context *asyncContext) PushState() {
 	newState := &asyncContext{
 		originalCallerAddr: context.originalCallerAddr,
@@ -212,7 +215,7 @@ func (context *asyncContext) PopDiscard() {
 }
 
 // PopSetActiveState pops the state found at the top of the internal state
-// stack and sets it as the 'active' state of the AsyncContext.
+// stack and sets it as the 'active' state of the AsyncContext. This is used to handle nested asynchronous calls.
 func (context *asyncContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -278,26 +281,31 @@ func (context *asyncContext) ClearStateStack() {
 }
 
 // GetCallerAddress returns the address of the original caller.
+// The original caller is the account that initiated the transaction.
 func (context *asyncContext) GetCallerAddress() []byte {
 	return context.callerAddr
 }
 
-// GetParentAddress returns the address of the original caller.
+// GetParentAddress returns the address of the parent caller.
+// The parent caller is the smart contract that called the current smart contract.
 func (context *asyncContext) GetParentAddress() []byte {
 	return context.parentAddr
 }
 
 // GetCallerCallID returns the callID of the original caller.
+// The callID is a unique identifier for each call.
 func (context *asyncContext) GetCallerCallID() []byte {
 	return context.callerCallID
 }
 
 // GetCallbackAsyncInitiatorCallID returns the callID of the original caller.
+// This is used to identify the callback function that should be called when the asynchronous call is complete.
 func (context *asyncContext) GetCallbackAsyncInitiatorCallID() []byte {
 	return context.callbackAsyncInitiatorCallID
 }
 
-// GetCallID is a getter for the async call's callID
+// GetCallID is a getter for the async call's callID.
+// The callID is a unique identifier for each call.
 func (context *asyncContext) GetCallID() []byte {
 	return context.callID
 }
@@ -313,16 +321,19 @@ func (context *asyncContext) SetCallIDForCallInGroup(groupIndex int, callIndex i
 }
 
 // GetReturnData returns the data to be sent back to the original caller.
+// The return data is the data that is returned by the smart contract.
 func (context *asyncContext) GetReturnData() []byte {
 	return context.returnData
 }
 
 // SetReturnData sets the data to be sent back to the original caller.
+// The return data is the data that is returned by the smart contract.
 func (context *asyncContext) SetReturnData(data []byte) {
 	context.returnData = data
 }
 
 // GetCallGroup retrieves an AsyncCallGroup by its ID.
+// An async call group is a group of asynchronous calls that are executed together.
 func (context *asyncContext) GetCallGroup(groupID string) (*vmhost.AsyncCallGroup, bool) {
 	index, ok := context.findGroupByID(groupID)
 	if ok {
