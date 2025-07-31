@@ -83,7 +83,12 @@ func (tracker *instanceTracker) PushState() {
 	logTracker.Trace("pushing instance", "id", tracker.instance.ID(), "codeHash", tracker.codeHash)
 }
 
-// PopSetActiveState pops the instance and codeHash from the state stacks and sets them as active
+// PopSetActiveState pops the instance and codeHash from the state stacks and sets them as active.
+// It also contains logic to clean up instances that are no longer needed.
+// An instance is cleaned if it is not the same as the one on top of the stack
+// (i.e., it's a child instance that has just finished execution) and its code hash
+// is already present on the stack (i.e., it's a recursive call). This prevents
+// resource leaks from instances that are created for nested calls.
 func (tracker *instanceTracker) PopSetActiveState() {
 	instanceStackLen := len(tracker.instanceStack)
 	if instanceStackLen == 0 {
