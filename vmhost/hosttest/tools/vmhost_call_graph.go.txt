@@ -1,0 +1,98 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
+)
+
+func main() {
+	callGraph := testcommon.CreateTestCallGraph()
+
+	// --- Node Definitions ---
+
+	// Main Entry Points
+	runSCCall := callGraph.AddStartNode("vmHost", "RunSmartContractCall", 10000, 10)
+	runSCCreate := callGraph.AddNode("vmHost", "RunSmartContractCreate")
+
+	// Core Execution
+	doRunSCCall := callGraph.AddNode("hostCore", "doRunSmartContractCall")
+	doRunSCCreate := callGraph.AddNode("hostCore", "doRunSmartContractCreate")
+	performCodeDeployment := callGraph.AddNode("hostCore", "performCodeDeployment")
+	callSCMethod := callGraph.AddNode("hostCore", "callSCMethod")
+	execute := callGraph.AddNode("hostCore", "execute")
+
+	// VM Execution
+	vmExecute := callGraph.AddNode("VM", "execute")
+
+	// Contract-to-Contract
+	executeOnDestContext := callGraph.AddNode("hostCore", "ExecuteOnDestContext")
+	executeOnSameContext := callGraph.AddNode("hostCore", "ExecuteOnSameContext")
+
+	// VM Hooks (as entry points from the VM)
+	hookGetCaller := callGraph.AddNode("vmhooks", "getCaller")
+	hookStorageStore := callGraph.AddNode("vmhooks", "storageStore")
+	hookTransferValueExecute := callGraph.AddNode("vmhooks", "transferValueExecute")
+	hookExecuteOnDest := callGraph.AddNode("vmhooks", "executeOnDestContext")
+	hookAsyncCall := callGraph.AddNode("vmhooks", "asyncCall")
+
+	// Contexts (as leaf nodes)
+	runtimeContext := callGraph.AddNode("context", "Runtime")
+	storageContext := callGraph.AddNode("context", "Storage")
+	asyncContext := callGraph.AddNode("context", "Async")
+
+	// --- Edge Definitions ---
+
+	// RunSmartContractCall flow
+	callGraph.AddSyncEdge(runSCCall, doRunSCCall)
+	callGraph.AddSyncEdge(doRunSCCall, callSCMethod)
+	callGraph.AddSyncEdge(callSCMethod, vmExecute)
+
+	// RunSmartContractCreate flow
+	callGraph.AddSyncEdge(runSCCreate, doRunSCCreate)
+	callGraph.AddSyncEdge(doRunSCCreate, performCodeDeployment)
+	callGraph.AddSyncEdge(performCodeDeployment, vmExecute) // Simplified, represents calling "init"
+
+	// Calls from VM to hooks
+	callGraph.AddSyncEdge(vmExecute, hookGetCaller)
+	callGraph.AddSyncEdge(vmExecute, hookStorageStore)
+	callGraph.AddSyncEdge(vmExecute, hookTransferValueExecute)
+	callGraph.AddSyncEdge(vmExecute, hookExecuteOnDest)
+	callGraph.AddAsyncEdge(vmExecute, hookAsyncCall, "callback", "")
+
+	// Hook implementations
+	callGraph.AddSyncEdge(hookGetCaller, runtimeContext)
+	callGraph.AddSyncEdge(hookStorageStore, storageContext)
+	callGraph.AddSyncEdge(hookTransferValueExecute, executeOnDestContext) // Simplified
+	callGraph.AddSyncEdge(hookExecuteOnDest, executeOnDestContext)
+	callGraph.AddSyncEdge(hookAsyncCall, asyncContext)
+
+	// Contract-to-contract flow
+	callGraph.AddSyncEdge(executeOnDestContext, execute)
+	callGraph.AddSyncEdge(executeOnSameContext, execute)
+	callGraph.AddSyncEdge(execute, vmExecute) // Recursive call to VM
+
+	// --- Generate Graph ---
+	graphvizGraph := testcommon.ToGraphviz(callGraph, true)
+
+	dotFileName := "vmhost-call-graph.dot"
+	svgFileName := "vmhost-call-graph.svg"
+
+	err := ioutil.WriteFile(dotFileName, []byte(graphvizGraph.String()), 0644)
+	if err != nil {
+		fmt.Println("Error writing dot file:", err)
+		os.Exit(1)
+	}
+
+	cmd := exec.Command("dot", "-Tsvg", dotFileName, "-o", svgFileName)
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error running dot command:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Successfully generated", svgFileName)
+}

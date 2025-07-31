@@ -1,0 +1,41 @@
+digraph  {
+	nodesep=1.5;
+	"vmHost.RunSmartContractCall"->"hostCore.doRunSmartContractCall"[ color=blue, label="Sync\nP0/U0" ];
+	"vmHost.RunSmartContractCreate"->"hostCore.doRunSmartContractCreate"[ color=blue, label="Sync\nP0/U0" ];
+	"hostCore.doRunSmartContractCall"->"hostCore.callSCMethod"[ color=blue, label="Sync\nP0/U0" ];
+	"hostCore.doRunSmartContractCreate"->"hostCore.performCodeDeployment"[ color=blue, label="Sync\nP0/U0" ];
+	"hostCore.performCodeDeployment"->"VM.execute"[ color=blue, label="Sync\nP0/U0" ];
+	"hostCore.callSCMethod"->"VM.execute"[ color=blue, label="Sync\nP0/U0" ];
+	"hostCore.execute"->"VM.execute"[ color=blue, label="Sync\nP0/U0" ];
+	"VM.execute"->"vmhooks.getCaller"[ color=blue, label="Sync\nP0/U0" ];
+	"VM.execute"->"vmhooks.storageStore"[ color=blue, label="Sync\nP0/U0" ];
+	"VM.execute"->"vmhooks.transferValueExecute"[ color=blue, label="Sync\nP0/U0" ];
+	"VM.execute"->"vmhooks.executeOnDestContext"[ color=blue, label="Sync\nP0/U0" ];
+	"VM.execute"->"vmhooks.asyncCall"[ color=red, label="Async\ncallback\nP0/U0/CU0" ];
+	"hostCore.ExecuteOnDestContext"->"hostCore.execute"[ color=blue, label="Sync\nP0/U0" ];
+	"hostCore.ExecuteOnSameContext"->"hostCore.execute"[ color=blue, label="Sync\nP0/U0" ];
+	"vmhooks.getCaller"->"context.Runtime"[ color=blue, label="Sync\nP0/U0" ];
+	"vmhooks.storageStore"->"context.Storage"[ color=blue, label="Sync\nP0/U0" ];
+	"vmhooks.transferValueExecute"->"hostCore.ExecuteOnDestContext"[ color=blue, label="Sync\nP0/U0" ];
+	"vmhooks.executeOnDestContext"->"hostCore.ExecuteOnDestContext"[ color=blue, label="Sync\nP0/U0" ];
+	"vmhooks.asyncCall"->"context.Async"[ color=blue, label="Sync\nP0/U0" ];
+	"VM.execute" [ fillcolor=lightgrey, label="VM.execute [0]", style=filled ];
+	"context.Async" [ fillcolor=lightgrey, label="context.Async [0]", style=filled ];
+	"context.Runtime" [ fillcolor=lightgrey, label="context.Runtime [0]", style=filled ];
+	"context.Storage" [ fillcolor=lightgrey, label="context.Storage [0]", style=filled ];
+	"hostCore.ExecuteOnDestContext" [ fillcolor=lightgrey, label="hostCore.ExecuteOnDestContext [0]", style=filled ];
+	"hostCore.ExecuteOnSameContext" [ fillcolor=lightgrey, label="hostCore.ExecuteOnSameContext [0]", style=filled ];
+	"hostCore.callSCMethod" [ fillcolor=lightgrey, label="hostCore.callSCMethod [0]", style=filled ];
+	"hostCore.doRunSmartContractCall" [ fillcolor=lightgrey, label="hostCore.doRunSmartContractCall [0]", style=filled ];
+	"hostCore.doRunSmartContractCreate" [ fillcolor=lightgrey, label="hostCore.doRunSmartContractCreate [0]", style=filled ];
+	"hostCore.execute" [ fillcolor=lightgrey, label="hostCore.execute [0]", style=filled ];
+	"hostCore.performCodeDeployment" [ fillcolor=lightgrey, label="hostCore.performCodeDeployment [0]", style=filled ];
+	"vmHost.RunSmartContractCall" [ fillcolor=lightgrey, label="vmHost.RunSmartContractCall [0]", shape=box, style=filled, xlabel=<<font color='green'>P10000<br/>R0</font>> ];
+	"vmHost.RunSmartContractCreate" [ fillcolor=lightgrey, label="vmHost.RunSmartContractCreate [0]", style=filled ];
+	"vmhooks.asyncCall" [ fillcolor=lightgrey, label="vmhooks.asyncCall [0]", style=filled ];
+	"vmhooks.executeOnDestContext" [ fillcolor=lightgrey, label="vmhooks.executeOnDestContext [0]", style=filled ];
+	"vmhooks.getCaller" [ fillcolor=lightgrey, label="vmhooks.getCaller [0]", style=filled ];
+	"vmhooks.storageStore" [ fillcolor=lightgrey, label="vmhooks.storageStore [0]", style=filled ];
+	"vmhooks.transferValueExecute" [ fillcolor=lightgrey, label="vmhooks.transferValueExecute [0]", style=filled ];
+
+}
