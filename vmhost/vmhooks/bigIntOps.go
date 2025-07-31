@@ -70,6 +70,7 @@ func (context *VMHooksImpl) BigIntGetUnsignedArgument(id int32, destinationHandl
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
 		return
 	}
 
@@ -95,6 +96,7 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
 		return
 	}
 

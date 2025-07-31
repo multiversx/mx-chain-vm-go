@@ -690,12 +690,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	newContractAddress = nil
 	err = nil
 
-	defer func() {
-		if err != nil {
-			newContractAddress = nil
-		}
-	}()
-
 	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := vmhost.CodeDeployInput{

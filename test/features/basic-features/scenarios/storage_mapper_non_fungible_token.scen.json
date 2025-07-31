@@ -383,11 +383,8 @@
                 ]
             },
             "expect": {
-                "out": [
-                    "u8:1|u8:2|u8:3"
-                ],
-                "status": "",
-                "logs": "*"
+                "status": "10",
+                "message": "str:bad bounds"
             }
         },
         {
