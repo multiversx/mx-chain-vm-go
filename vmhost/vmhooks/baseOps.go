@@ -319,40 +319,6 @@ func (context *VMHooksImpl) GetBlockHash(nonce int64, resultOffset executor.MemP
 	return 0
 }
 
-func getESDTDataFromBlockchainHook(
-	context *VMHooksImpl,
-	addressOffset executor.MemPtr,
-	tokenIDOffset executor.MemPtr,
-	tokenIDLen executor.MemLength,
-	nonce int64,
-) (*esdt.ESDigitalToken, error) {
-	metering := context.GetMeteringContext()
-	blockchain := context.GetBlockchainContext()
-
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
-	err := metering.UseGasBounded(gasToUse)
-	if err != nil {
-		return nil, err
-	}
-
-	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
-	if err != nil {
-		return nil, err
-	}
-
-	tokenID, err := context.MemLoad(tokenIDOffset, tokenIDLen)
-	if err != nil {
-		return nil, err
-	}
-
-	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
-	if err != nil {
-		return nil, err
-	}
-
-	return esdtToken, nil
-}
-
 // GetESDTBalance VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTBalance(
@@ -362,22 +328,16 @@ func (context *VMHooksImpl) GetESDTBalance(
 	nonce int64,
 	resultOffset executor.MemPtr,
 ) int32 {
-	metering := context.GetMeteringContext()
-	metering.StartGasTracing(getESDTBalanceName)
+	return context.withESDTData(addressOffset, tokenIDOffset, tokenIDLen, nonce, getESDTBalanceName,
+		func(goContext *VMHooksImpl, esdtData *esdt.ESDigitalToken) int32 {
+			err := goContext.MemStore(resultOffset, esdtData.Value.Bytes())
+			if err != nil {
+				goContext.FailExecution(err)
+				return -1
+			}
 
-	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-
-	return int32(len(esdtData.Value.Bytes()))
+			return int32(len(esdtData.Value.Bytes()))
+		})
 }
 
 // GetESDTNFTNameLength VMHooks implementation.
@@ -388,21 +348,15 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 ) int32 {
-	metering := context.GetMeteringContext()
-	metering.StartGasTracing(getESDTNFTNameLengthName)
+	return context.withESDTData(addressOffset, tokenIDOffset, tokenIDLen, nonce, getESDTNFTNameLengthName,
+		func(goContext *VMHooksImpl, esdtData *esdt.ESDigitalToken) int32 {
+			if esdtData == nil || esdtData.TokenMetaData == nil {
+				FailExecution(goContext.GetVMHost(), vmhost.ErrNilESDTData)
+				return 0
+			}
 
-	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
-		return 0
-	}
-
-	return int32(len(esdtData.TokenMetaData.Name))
+			return int32(len(esdtData.TokenMetaData.Name))
+		})
 }
 
 // GetESDTNFTAttributeLength VMHooks implementation.
@@ -413,21 +367,15 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 ) int32 {
-	metering := context.GetMeteringContext()
-	metering.StartGasTracing(getESDTNFTAttributeLengthName)
+	return context.withESDTData(addressOffset, tokenIDOffset, tokenIDLen, nonce, getESDTNFTAttributeLengthName,
+		func(goContext *VMHooksImpl, esdtData *esdt.ESDigitalToken) int32 {
+			if esdtData == nil || esdtData.TokenMetaData == nil {
+				FailExecution(goContext.GetVMHost(), vmhost.ErrNilESDTData)
+				return 0
+			}
 
-	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
-		return 0
-	}
-
-	return int32(len(esdtData.TokenMetaData.Attributes))
+			return int32(len(esdtData.TokenMetaData.Attributes))
+		})
 }
 
 // GetESDTNFTURILength VMHooks implementation.
@@ -438,24 +386,18 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 ) int32 {
-	metering := context.GetMeteringContext()
-	metering.StartGasTracing(getESDTNFTURILengthName)
+	return context.withESDTData(addressOffset, tokenIDOffset, tokenIDLen, nonce, getESDTNFTURILengthName,
+		func(goContext *VMHooksImpl, esdtData *esdt.ESDigitalToken) int32 {
+			if esdtData == nil || esdtData.TokenMetaData == nil {
+				FailExecution(goContext.GetVMHost(), vmhost.ErrNilESDTData)
+				return 0
+			}
+			if len(esdtData.TokenMetaData.URIs) == 0 {
+				return 0
+			}
 
-	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
-		return 0
-	}
-	if len(esdtData.TokenMetaData.URIs) == 0 {
-		return 0
-	}
-
-	return int32(len(esdtData.TokenMetaData.URIs[0]))
+			return int32(len(esdtData.TokenMetaData.URIs[0]))
+		})
 }
 
 // GetESDTTokenData VMHooks implementation.
@@ -474,60 +416,54 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	royaltiesHandle int32,
 	urisOffset executor.MemPtr,
 ) int32 {
-	managedType := context.GetManagedTypesContext()
-	metering := context.GetMeteringContext()
-	metering.StartGasTracing(getESDTTokenDataName)
+	return context.withESDTData(addressOffset, tokenIDOffset, tokenIDLen, nonce, getESDTTokenDataName,
+		func(goContext *VMHooksImpl, esdtData *esdt.ESDigitalToken) int32 {
+			managedType := goContext.GetManagedTypesContext()
 
-	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+			value := managedType.GetBigIntOrCreate(valueHandle)
+			value.Set(esdtData.Value)
 
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-
-	value := managedType.GetBigIntOrCreate(valueHandle)
-	value.Set(esdtData.Value)
-
-	err = context.MemStore(propertiesOffset, esdtData.Properties)
-	if err != nil {
-		context.FailExecution(err)
-		return -1
-	}
-
-	if esdtData.TokenMetaData != nil {
-		err = context.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
-		if err != nil {
-			context.FailExecution(err)
-			return -1
-		}
-		err = context.MemStore(nameOffset, esdtData.TokenMetaData.Name)
-		if err != nil {
-			context.FailExecution(err)
-			return -1
-		}
-		err = context.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
-		if err != nil {
-			context.FailExecution(err)
-			return -1
-		}
-		err = context.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
-		if err != nil {
-			context.FailExecution(err)
-			return -1
-		}
-
-		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
-		royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
-
-		if len(esdtData.TokenMetaData.URIs) > 0 {
-			err = context.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
+			err := goContext.MemStore(propertiesOffset, esdtData.Properties)
 			if err != nil {
-				context.FailExecution(err)
+				goContext.FailExecution(err)
 				return -1
 			}
-		}
-	}
-	return int32(len(esdtData.Value.Bytes()))
+
+			if esdtData.TokenMetaData != nil {
+				err = goContext.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
+				if err != nil {
+					goContext.FailExecution(err)
+					return -1
+				}
+				err = goContext.MemStore(nameOffset, esdtData.TokenMetaData.Name)
+				if err != nil {
+					goContext.FailExecution(err)
+					return -1
+				}
+				err = goContext.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
+				if err != nil {
+					goContext.FailExecution(err)
+					return -1
+				}
+				err = goContext.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
+				if err != nil {
+					goContext.FailExecution(err)
+					return -1
+				}
+
+				royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
+				royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
+
+				if len(esdtData.TokenMetaData.URIs) > 0 {
+					err = goContext.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
+					if err != nil {
+						goContext.FailExecution(err)
+						return -1
+					}
+				}
+			}
+			return int32(len(esdtData.Value.Bytes()))
+		})
 }
 
 // GetESDTLocalRoles VMHooks implementation.
