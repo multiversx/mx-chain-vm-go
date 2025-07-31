@@ -15,6 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/conv"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
@@ -1230,6 +1231,10 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	}
 
 	async.SetCallbackParentCall(asyncCall)
+
+	gasLimits, remainingClosure := conv.DecodeGasLimits(asyncCall.CallbackClosure)
+	asyncCall.GasLimitsForCallback = gasLimits
+	asyncCall.CallbackClosure = remainingClosure
 
 	if asyncCall.HasCallback() {
 		callbackName := asyncCall.GetCallbackName()

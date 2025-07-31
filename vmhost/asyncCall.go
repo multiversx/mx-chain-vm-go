@@ -16,33 +16,38 @@ type AsyncCall struct {
 	GasLimit    uint64
 	GasLocked   uint64
 
-	ValueBytes      []byte
-	SuccessCallback string
-	ErrorCallback   string
+	ValueBytes           []byte
+	SuccessCallback      string
+	ErrorCallback        string
+	GasLimitsForCallback []uint64
 
 	CallbackClosure []byte
 
 	IsBuiltinFunctionCall bool
+
+	Results *FinishedAsyncCall
 }
 
 // Clone creates a deep clone of the AsyncCall
 func (ac *AsyncCall) Clone() *AsyncCall {
 	clone := &AsyncCall{
-		CallID:          ac.CallID,
-		Status:          ac.Status,
-		ExecutionMode:   ac.ExecutionMode,
-		Destination:     make([]byte, len(ac.Destination)),
-		Data:            make([]byte, len(ac.Data)),
-		GasLimit:        ac.GasLimit,
-		GasLocked:       ac.GasLocked,
-		ValueBytes:      make([]byte, len(ac.ValueBytes)),
-		SuccessCallback: ac.SuccessCallback,
-		ErrorCallback:   ac.ErrorCallback,
+		CallID:               ac.CallID,
+		Status:               ac.Status,
+		ExecutionMode:        ac.ExecutionMode,
+		Destination:          make([]byte, len(ac.Destination)),
+		Data:                 make([]byte, len(ac.Data)),
+		GasLimit:             ac.GasLimit,
+		GasLocked:            ac.GasLocked,
+		ValueBytes:           make([]byte, len(ac.ValueBytes)),
+		SuccessCallback:      ac.SuccessCallback,
+		ErrorCallback:        ac.ErrorCallback,
+		GasLimitsForCallback: make([]uint64, len(ac.GasLimitsForCallback)),
 	}
 
 	copy(clone.Destination, ac.Destination)
 	copy(clone.Data, ac.Data)
 	copy(clone.ValueBytes, ac.ValueBytes)
+	copy(clone.GasLimitsForCallback, ac.GasLimitsForCallback)
 
 	return clone
 }
@@ -135,17 +140,18 @@ func (ac *AsyncCall) IsInterfaceNil() bool {
 
 func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
 	return &SerializableAsyncCall{
-		CallID:          ac.CallID,
-		Status:          SerializableAsyncCallStatus(ac.Status),
-		ExecutionMode:   SerializableAsyncCallExecutionMode(ac.ExecutionMode),
-		Destination:     ac.Destination,
-		Data:            ac.Data,
-		GasLimit:        ac.GasLimit,
-		GasLocked:       ac.GasLocked,
-		ValueBytes:      ac.ValueBytes,
-		SuccessCallback: ac.SuccessCallback,
-		ErrorCallback:   ac.ErrorCallback,
-		CallbackClosure: ac.CallbackClosure,
+		CallID:               ac.CallID,
+		Status:               SerializableAsyncCallStatus(ac.Status),
+		ExecutionMode:        SerializableAsyncCallExecutionMode(ac.ExecutionMode),
+		Destination:          ac.Destination,
+		Data:                 ac.Data,
+		GasLimit:             ac.GasLimit,
+		GasLocked:            ac.GasLocked,
+		ValueBytes:           ac.ValueBytes,
+		SuccessCallback:      ac.SuccessCallback,
+		ErrorCallback:        ac.ErrorCallback,
+		CallbackClosure:      ac.CallbackClosure,
+		GasLimitsForCallback: ac.GasLimitsForCallback,
 	}
 }
 
@@ -159,16 +165,17 @@ func fromSerializableAsyncCalls(serializableAsyncCalls []*SerializableAsyncCall)
 
 func (serAsyncCall *SerializableAsyncCall) fromSerializable() *AsyncCall {
 	return &AsyncCall{
-		CallID:          serAsyncCall.CallID,
-		Status:          AsyncCallStatus(serAsyncCall.Status),
-		ExecutionMode:   AsyncCallExecutionMode(serAsyncCall.ExecutionMode),
-		Destination:     serAsyncCall.Destination,
-		Data:            serAsyncCall.Data,
-		GasLimit:        serAsyncCall.GasLimit,
-		GasLocked:       serAsyncCall.GasLocked,
-		ValueBytes:      serAsyncCall.ValueBytes,
-		SuccessCallback: serAsyncCall.SuccessCallback,
-		ErrorCallback:   serAsyncCall.ErrorCallback,
-		CallbackClosure: serAsyncCall.CallbackClosure,
+		CallID:               serAsyncCall.CallID,
+		Status:               AsyncCallStatus(serAsyncCall.Status),
+		ExecutionMode:        AsyncCallExecutionMode(serAsyncCall.ExecutionMode),
+		Destination:          serAsyncCall.Destination,
+		Data:                 serAsyncCall.Data,
+		GasLimit:             serAsyncCall.GasLimit,
+		GasLocked:            serAsyncCall.GasLocked,
+		ValueBytes:           serAsyncCall.ValueBytes,
+		SuccessCallback:      serAsyncCall.SuccessCallback,
+		ErrorCallback:        serAsyncCall.ErrorCallback,
+		CallbackClosure:      serAsyncCall.CallbackClosure,
+		GasLimitsForCallback: serAsyncCall.GasLimitsForCallback,
 	}
 }

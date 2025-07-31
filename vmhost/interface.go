@@ -8,6 +8,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
+	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
@@ -35,6 +36,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
+	Marshalizer() marshal.Marshalizer
 	Async() AsyncContext
 	ManagedTypes() ManagedTypesContext
 	Output() OutputContext
@@ -373,6 +375,9 @@ type AsyncContext interface {
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte
 	IsCrossShard() bool
+	GetCallType() vm.CallType
+	GetCallbackParentCall() *AsyncCall
+	GetAsyncCallGroups() []*AsyncCallGroup
 
 	Clone() AsyncContext
 

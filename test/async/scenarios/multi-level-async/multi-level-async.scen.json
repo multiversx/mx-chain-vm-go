@@ -1,0 +1,52 @@
+{
+    "name": "multi-level async call",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user": {
+                    "nonce": "0",
+                    "balance": "1,000,000"
+                },
+                "sc:A": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "file:../mock/contracts/A.wasm"
+                },
+                "sc:B": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "file:../mock/contracts/B.wasm"
+                },
+                "sc:C": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "file:../mock/contracts/C.wasm"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "tx": {
+                "from": "address:user",
+                "to": "sc:A",
+                "function": "callB",
+                "arguments": [
+                    "sc:B"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "logs": [
+                    "event:A_callB",
+                    "event:B_callC",
+                    "event:C_doSomething",
+                    "event:B_callback",
+                    "event:A_callback"
+                ]
+            }
+        }
+    ]
+}
