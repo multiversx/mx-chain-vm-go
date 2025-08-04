@@ -421,6 +421,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		vmOutput = host.doRunSmartContractCreate(input)
 		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DeploySmartContractString)
 
+		err = vmhost.CheckBalances(vmOutput, host.managedTypesContext, host)
+		if err != nil {
+			vmOutput = host.outputContext.CreateVMOutputInCaseOfError(err)
+		}
+
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
@@ -490,6 +495,11 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			vmOutput = host.doRunSmartContractDelete(input)
 		default:
 			vmOutput = host.doRunSmartContractCall(input)
+		}
+
+		err = vmhost.CheckBalances(vmOutput, host.managedTypesContext, host)
+		if err != nil {
+			vmOutput = host.outputContext.CreateVMOutputInCaseOfError(err)
 		}
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.RecipientAddr, input.Function)

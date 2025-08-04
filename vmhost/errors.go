@@ -334,3 +334,6 @@ var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
 // ErrInvalidSignature signals that a signature verification failed
 var ErrInvalidSignature = errors.New("signature is invalid")
+
+// ErrBalancesMismatch signals that the balances do not match
+var ErrBalancesMismatch = errors.New("balances mismatch")
