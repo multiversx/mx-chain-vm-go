@@ -120,7 +120,7 @@ var logEEI = logger.GetOrCreate("vm/eei")
 func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index || index < 0 {
-		FailExecution(host, vmhost.ErrInvalidTokenIndex)
+		FailExecutionConditionally(host, vmhost.ErrInvalidTokenIndex)
 		return nil
 	}
 	return esdtTransfers[index]
@@ -129,7 +129,7 @@ func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *
 func failIfMoreThanOneESDTTransfer(context *VMHooksImpl) bool {
 	runtime := context.GetRuntimeContext()
 	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
-		FailExecution(context.GetVMHost(), vmhost.ErrTooManyESDTTransfers)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrTooManyESDTTransfers)
 		return true
 	}
 	return false
@@ -398,7 +398,7 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 
@@ -423,7 +423,7 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 
@@ -448,7 +448,7 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
@@ -643,7 +643,7 @@ func (context *VMHooksImpl) TransferValue(
 	}
 
 	if host.IsBuiltinFunctionCall(data) {
-		context.FailExecution(vmhost.ErrTransferValueOnESDTCall)
+		context.FailExecutionConditionally(vmhost.ErrTransferValueOnESDTCall)
 		return 1
 	}
 
@@ -877,7 +877,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if contractCallInput != nil {
 		if host.IsBuiltinFunctionName(contractCallInput.Function) {
-			FailExecution(host, vmhost.ErrNilESDTData)
+			FailExecutionConditionally(host, vmhost.ErrNilESDTData)
 			return 1
 		}
 	}
@@ -890,7 +890,7 @@ func TransferValueExecuteWithTypedArgs(
 	lastRound := host.Blockchain().LastRound()
 	if host.IsBuiltinFunctionCall([]byte(data)) &&
 		lastRound >= uint64(host.EnableEpochsHandler().GetActivationEpoch(vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag)) {
-		FailExecution(host, vmhost.ErrTransferValueOnESDTCall)
+		FailExecutionConditionally(host, vmhost.ErrTransferValueOnESDTCall)
 		return 1
 	}
 
@@ -1003,7 +1003,7 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 	metering.StartGasTracing(multiTransferESDTNFTExecuteName)
 
 	if numTokenTransfers == 0 {
-		FailExecution(host, vmhost.ErrFailedTransfer)
+		FailExecutionConditionally(host, vmhost.ErrFailedTransfer)
 		return 1
 	}
 
@@ -1902,7 +1902,7 @@ func (context *VMHooksImpl) GetArgumentLength(id int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -1924,7 +1924,7 @@ func (context *VMHooksImpl) GetArgument(id int32, argOffset executor.MemPtr) int
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -2350,11 +2350,11 @@ func (context *VMHooksImpl) CheckNoPayment() {
 
 	vmInput := runtime.GetVMInput()
 	if vmInput.CallValue.Sign() > 0 {
-		context.FailExecution(vmhost.ErrNonPayableFunctionEgld)
+		context.FailExecutionConditionally(vmhost.ErrNonPayableFunctionEgld)
 		return
 	}
 	if len(vmInput.ESDTTransfers) > 0 {
-		context.FailExecution(vmhost.ErrNonPayableFunctionEsdt)
+		context.FailExecutionConditionally(vmhost.ErrNonPayableFunctionEsdt)
 		return
 	}
 }
@@ -3159,7 +3159,7 @@ func ExecuteOnSameContextWithTypedArgs(
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
+		FailExecutionConditionally(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
@@ -3376,7 +3376,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
+		FailExecutionConditionally(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
@@ -3670,7 +3670,7 @@ func (context *VMHooksImpl) GetReturnDataSize(resultID int32) int32 {
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return 0
 	}
 
@@ -3709,7 +3709,7 @@ func GetReturnDataWithHostAndTypedArgs(host vmhost.VMHost, resultID int32) []byt
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		FailExecution(host, vmhost.ErrInvalidArgument)
+		FailExecutionConditionally(host, vmhost.ErrInvalidArgument)
 		return nil
 	}
 

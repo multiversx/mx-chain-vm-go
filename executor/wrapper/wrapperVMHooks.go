@@ -2409,3 +2409,19 @@ func (w *WrapperVMHooks) ManagedVerifyBLSAggregatedSignature(keyHandle int32, me
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
+
+// ActivateUnsafeMode VM hook wrapper
+func (w *WrapperVMHooks) ActivateUnsafeMode() {
+	callInfo := "ActivateUnsafeMode()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ActivateUnsafeMode()
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// DeactivateUnsafeMode VM hook wrapper
+func (w *WrapperVMHooks) DeactivateUnsafeMode() {
+	callInfo := "DeactivateUnsafeMode()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.DeactivateUnsafeMode()
+	w.logger.LogVMHookCallAfter(callInfo)
+}

@@ -639,6 +639,19 @@ func (context *runtimeContext) FailExecution(err error) {
 	logRuntime.Trace("execution failed", "message", traceMessage)
 }
 
+// FailExecutionConditionally informs Wasmer to immediately stop the execution of the contract
+// with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly, if the unsafe mode is not active.
+// If unsafe mode is active, it just logs the error.
+func (context *runtimeContext) FailExecutionConditionally(err error) {
+	if context.host.IsUnsafeMode() {
+		logRuntime.Debug("execution would have failed, but unsafe mode is active", "err", err)
+		context.AddError(err)
+		return
+	}
+
+	context.FailExecution(err)
+}
+
 // SignalUserError informs Wasmer to immediately stop the execution of the contract
 // with BreakpointSignalError and sets the corresponding VMOutput fields accordingly
 func (context *runtimeContext) SignalUserError(message string) {

@@ -97,6 +97,11 @@ func (context *VMHooksImpl) FailExecution(err error) {
 	FailExecution(context.host, err)
 }
 
+// FailExecutionConditionally fails the execution with the provided error if the unsafe mode is not active
+func (context *VMHooksImpl) FailExecutionConditionally(err error) {
+	FailExecutionConditionally(context.host, err)
+}
+
 // GetEnableEpochsHandler returns the enable epochs handler
 func (context *VMHooksImpl) GetEnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return context.host.EnableEpochsHandler()
@@ -112,4 +117,14 @@ func FailExecution(host vmhost.VMHost, err error) {
 	metering := host.Metering()
 	_ = metering.UseGasBounded(metering.GasLeft())
 	runtime.FailExecution(err)
+}
+
+// FailExecutionConditionally fails the execution with the provided error if the unsafe mode is not active
+func FailExecutionConditionally(host vmhost.VMHost, err error) {
+	if err == nil {
+		return
+	}
+
+	runtime := host.Runtime()
+	runtime.FailExecutionConditionally(err)
 }

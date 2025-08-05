@@ -524,7 +524,7 @@ func (context *VMHooksImpl) BigIntGetInt64(destinationHandle int32) int64 {
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	if !value.IsInt64() {
-		context.FailExecution(vmhost.ErrBigIntCannotBeRepresentedAsInt64)
+		context.FailExecutionConditionally(vmhost.ErrBigIntCannotBeRepresentedAsInt64)
 		return -1
 	}
 	return value.Int64()
@@ -665,7 +665,7 @@ func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
@@ -699,7 +699,7 @@ func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
@@ -733,7 +733,7 @@ func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
@@ -767,7 +767,7 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
@@ -801,7 +801,7 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 	}
 
 	if a.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return
 	}
 	dest.Sqrt(a)
@@ -844,7 +844,7 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 	}
 
 	if b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return
 	}
 
@@ -878,7 +878,7 @@ func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 	}
 
 	if a.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return -1
 	}
 
@@ -1031,7 +1031,7 @@ func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 	}
 
 	if a.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Not(a)
@@ -1065,7 +1065,7 @@ func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle in
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.And(a, b)
@@ -1099,7 +1099,7 @@ func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Or(a, b)
@@ -1133,7 +1133,7 @@ func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle in
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Xor(a, b)
@@ -1167,7 +1167,7 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 	}
 
 	if a.Sign() < 0 || bits < 0 {
-		context.FailExecution(vmhost.ErrShiftNegative)
+		context.FailExecutionConditionally(vmhost.ErrShiftNegative)
 		return
 	}
 	dest.Rsh(a, uint(bits))
@@ -1208,7 +1208,7 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	}
 
 	if a.Sign() < 0 || bits < 0 {
-		context.FailExecution(vmhost.ErrShiftNegative)
+		context.FailExecutionConditionally(vmhost.ErrShiftNegative)
 		return
 	}
 

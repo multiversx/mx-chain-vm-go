@@ -54,6 +54,7 @@ type vmHost struct {
 	mutExecution     sync.RWMutex
 	closingInstance  bool
 	executionTimeout time.Duration
+	unsafeMode       bool
 
 	ethInput []byte
 
@@ -324,6 +325,7 @@ func (host *vmHost) Reset() {
 }
 
 func (host *vmHost) initContexts() {
+	host.unsafeMode = false
 	host.ClearContextStateStack()
 	host.managedTypesContext.InitState()
 	host.outputContext.InitState()
@@ -562,6 +564,21 @@ func (host *vmHost) IsAllowedToExecute(opcode string) bool {
 // IsInterfaceNil returns true if there is no value under the interface
 func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil
+}
+
+// SetUnsafeMode sets the unsafe mode flag
+func (host *vmHost) SetUnsafeMode(unsafeMode bool) {
+	host.unsafeMode = unsafeMode
+}
+
+// IsUnsafeMode returns true if the unsafe mode is enabled
+func (host *vmHost) IsUnsafeMode() bool {
+	return host.unsafeMode
+}
+
+// FailExecutionConditionally fails the execution with the provided error if the unsafe mode is not active
+func (host *vmHost) FailExecutionConditionally(err error) {
+	host.Runtime().FailExecutionConditionally(err)
 }
 
 // SetRuntimeContext sets the runtimeContext for this host, used in tests

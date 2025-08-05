@@ -349,7 +349,7 @@ func (context *VMHooksImpl) VerifyBLS(
 			invalidSigErr = vmhost.ErrBlsVerify
 		}
 
-		context.FailExecution(invalidSigErr)
+		context.FailExecutionConditionally(invalidSigErr)
 		return -1
 	}
 
@@ -466,7 +466,7 @@ func ManagedVerifyBLSWithHost(
 			invalidSigErr = vmhost.ErrBlsVerify
 		}
 
-		FailExecution(host, invalidSigErr)
+		FailExecutionConditionally(host, invalidSigErr)
 		return -1
 	}
 
@@ -524,7 +524,7 @@ func (context *VMHooksImpl) VerifyEd25519(
 			invalidSigErr = vmhost.ErrEd25519Verify
 		}
 
-		context.FailExecution(invalidSigErr)
+		context.FailExecutionConditionally(invalidSigErr)
 		return -1
 	}
 
@@ -600,7 +600,7 @@ func ManagedVerifyEd25519WithHost(
 			invalidSigErr = vmhost.ErrEd25519Verify
 		}
 
-		FailExecution(host, invalidSigErr)
+		FailExecutionConditionally(host, invalidSigErr)
 		return -1
 	}
 
@@ -675,7 +675,7 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 			invalidSigErr = vmhost.ErrSecp256k1Verify
 		}
 
-		context.FailExecution(invalidSigErr)
+		context.FailExecutionConditionally(invalidSigErr)
 		return -1
 	}
 
@@ -766,7 +766,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 			invalidSigErr = vmhost.ErrSecp256k1Verify
 		}
 
-		FailExecution(host, invalidSigErr)
+		FailExecutionConditionally(host, invalidSigErr)
 		return -1
 	}
 
@@ -949,7 +949,7 @@ func (context *VMHooksImpl) AddEC(
 	}
 
 	if !ec.IsOnCurve(x1, y1) || !ec.IsOnCurve(x2, y2) {
-		context.FailExecution(vmhost.ErrPointNotOnCurve)
+		context.FailExecutionConditionally(vmhost.ErrPointNotOnCurve)
 		return
 	}
 
@@ -1001,7 +1001,7 @@ func (context *VMHooksImpl) DoubleEC(
 		return
 	}
 	if !ec.IsOnCurve(x, y) {
-		context.FailExecution(vmhost.ErrPointNotOnCurve)
+		context.FailExecutionConditionally(vmhost.ErrPointNotOnCurve)
 		return
 	}
 
@@ -1187,7 +1187,7 @@ func commonScalarBaseMultEC(
 
 	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
 	if !ec.IsOnCurve(xResultSBM, yResultSBM) {
-		FailExecution(host, vmhost.ErrPointNotOnCurve)
+		FailExecutionConditionally(host, vmhost.ErrPointNotOnCurve)
 		return 1
 	}
 	xResult.Set(xResultSBM)
@@ -1324,7 +1324,7 @@ func commonScalarMultEC(
 		return 1
 	}
 	if !ec.IsOnCurve(x, y) {
-		FailExecution(host, vmhost.ErrPointNotOnCurve)
+		FailExecutionConditionally(host, vmhost.ErrPointNotOnCurve)
 		return 1
 	}
 
@@ -1336,7 +1336,7 @@ func commonScalarMultEC(
 
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
 	if !ec.IsOnCurve(xResultSM, yResultSM) {
-		FailExecution(host, vmhost.ErrPointNotOnCurve)
+		FailExecutionConditionally(host, vmhost.ErrPointNotOnCurve)
 		return 1
 	}
 	xResult.Set(xResultSM)
@@ -1673,7 +1673,7 @@ func commonUnmarshalEC(
 
 	xResultU, yResultU := elliptic.Unmarshal(ec, data)
 	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
-		FailExecution(host, vmhost.ErrPointNotOnCurve)
+		FailExecutionConditionally(host, vmhost.ErrPointNotOnCurve)
 		return 1
 	}
 	xResult.Set(xResultU)
@@ -1802,7 +1802,7 @@ func commonUnmarshalCompressedEC(
 
 	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
 	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
-		FailExecution(host, vmhost.ErrPointNotOnCurve)
+		FailExecutionConditionally(host, vmhost.ErrPointNotOnCurve)
 		return 1
 	}
 	xResult.Set(xResultUC)

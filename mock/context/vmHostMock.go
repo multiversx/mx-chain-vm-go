@@ -265,3 +265,16 @@ func (host *VMHostMock) SetGasTracing(enableGasTracing bool) {
 func (host *VMHostMock) GetGasTrace() map[string]map[string][]uint64 {
 	return make(map[string]map[string][]uint64)
 }
+
+// SetUnsafeMode -
+func (host *VMHostMock) SetUnsafeMode(unsafeMode bool) {
+}
+
+// IsUnsafeMode -
+func (host *VMHostMock) IsUnsafeMode() bool {
+	return false
+}
+
+// FailExecutionConditionally -
+func (host *VMHostMock) FailExecutionConditionally(err error) {
+}

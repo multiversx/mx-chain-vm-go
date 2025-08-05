@@ -45,13 +45,13 @@ func areAllZero(values ...*big.Float) bool {
 func setResultIfNotInfinity(host vmhost.VMHost, result *big.Float, destinationHandle int32) {
 	managedType := host.ManagedTypes()
 	if result.IsInf() {
-		FailExecution(host, vmhost.ErrInfinityFloatOperation)
+		FailExecutionConditionally(host, vmhost.ErrInfinityFloatOperation)
 		return
 	}
 
 	exponent := result.MantExp(nil)
 	if managedType.BigFloatExpIsNotValid(exponent) {
-		FailExecution(host, vmhost.ErrExponentTooBigOrTooSmall)
+		FailExecutionConditionally(host, vmhost.ErrExponentTooBigOrTooSmall)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 	}
 
 	if exponent > 0 {
-		context.FailExecution(vmhost.ErrPositiveExponent)
+		context.FailExecutionConditionally(vmhost.ErrPositiveExponent)
 		return -1
 	}
 
@@ -131,7 +131,7 @@ func (context *VMHooksImpl) BigFloatNewFromFrac(numerator, denominator int64) in
 	}
 
 	if denominator == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return -1
 	}
 
@@ -164,7 +164,7 @@ func (context *VMHooksImpl) BigFloatNewFromSci(significand, exponent int64) int3
 	}
 
 	if exponent > 0 {
-		context.FailExecution(vmhost.ErrPositiveExponent)
+		context.FailExecutionConditionally(vmhost.ErrPositiveExponent)
 		return -1
 	}
 	if exponent < -322 {
@@ -298,7 +298,7 @@ func (context *VMHooksImpl) BigFloatDiv(destinationHandle, op1Handle, op2Handle 
 		return
 	}
 	if areAllZero(op1, op2) {
-		context.FailExecution(vmhost.ErrAllOperandsAreEqualToZero)
+		context.FailExecutionConditionally(vmhost.ErrAllOperandsAreEqualToZero)
 		return
 	}
 
@@ -464,7 +464,7 @@ func (context *VMHooksImpl) BigFloatSqrt(destinationHandle, opHandle int32) {
 		return
 	}
 	if op.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return
 	}
 	resultSqrt, err := vmMath.SqrtBigFloat(op)
