@@ -706,7 +706,7 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	bigFloat := new(big.Float)
 	defer func() {
 		if r := recover(); r != nil {
-			context.FailExecution(fmt.Errorf("panic in GobDecode: %v", r))
+			context.FailExecution(fmt.Errorf("failed to decode big float from managed buffer: %v", r))
 		}
 	}()
 	err = bigFloat.GobDecode(managedBuffer)
