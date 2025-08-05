@@ -183,7 +183,7 @@ func (context *asyncContext) PushState() {
 		callbackData:       context.callbackData,
 		gasAccumulated:     context.gasAccumulated,
 		returnData:         context.returnData,
-		asyncCallGroups:    context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
+		asyncCallGroups:    context.asyncCallGroups, // TODO: verify why cloneCallGroups does not work.
 
 		callType:                     context.callType,
 		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,

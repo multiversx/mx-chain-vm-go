@@ -69,8 +69,6 @@ func Test_JustNewDeploy(t *testing.T) {
 	mockWorld, ownerAccount, host, err := prepare(t, owner)
 	require.Nil(t, err)
 
-	_ = logger.SetLogLevel("*:TRACE")
-
 	code, _ := os.ReadFile(filepath.Clean("world.wasm"))
 	// Deploy ERC20
 	deployInput := &vmcommon.ContractCreateInput{

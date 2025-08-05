@@ -61,7 +61,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err = host.performCodeDeploymentAtContractCreate(codeDeployInput)
+	vmOutput, err = host.performCodeDeployment(codeDeployInput, host.callInitFunction)
 	if err != nil {
 		log.Trace("doRunSmartContractCreate", "error", err)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -105,14 +105,6 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput, initFunc
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
-}
-
-func (host *vmHost) performCodeDeploymentAtContractCreate(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
-	return host.performCodeDeployment(input, host.callInitFunction)
-}
-
-func (host *vmHost) performCodeDeploymentAtContractUpgrade(input vmhost.CodeDeployInput) (*vmcommon.VMOutput, error) {
-	return host.performCodeDeployment(input, host.callUpgradeFunction)
 }
 
 // doRunSmartContractUpgrade upgrades a contract directly
@@ -159,7 +151,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err = host.performCodeDeploymentAtContractUpgrade(codeDeployInput)
+	vmOutput, err = host.performCodeDeployment(codeDeployInput, host.callUpgradeFunction)
 	if err != nil {
 		log.Trace("doRunSmartContractUpgrade", "error", err)
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
@@ -286,7 +278,10 @@ func copyTxHashesFromContext(runtime vmhost.RuntimeContext, input *vmcommon.Cont
 }
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
-// and initializes new contexts for executing the contract call with the given input
+// and initializes new contexts for executing the contract call with the given input.
+// This is used for handling nested contract calls to different addresses. It ensures
+// that the execution of the child contract is isolated from the parent, and that
+// the state is correctly merged or discarded after the execution finishes.
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
@@ -563,8 +558,10 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	return vmOutput
 }
 
-// ExecuteOnSameContext executes the contract call with the given input
-// on the same runtime context. Some other contexts are backed up.
+// ExecuteOnSameContext executes a contract call on the same address but with a different
+// code address (i.e., a library call). It preserves the storage and async contexts but
+// sets up new contexts for runtime, output, etc. The state of the modified contexts
+// is restored after the execution finishes.
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 

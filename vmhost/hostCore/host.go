@@ -381,15 +381,16 @@ func (host *vmHost) SetGasTracing(enableGasTracing bool) {
 	host.meteringContext.SetGasTracing(enableGasTracing)
 }
 
-// RunSmartContractCreate executes the deployment of a new contract
+// RunSmartContractCreate executes the deployment of a new contract.
+// It acquires an exclusive lock to ensure that no other executions are running in parallel on the same vmHost instance.
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	err = validateVMInput(&input.VMInput)
 	if err != nil {
 		return nil, err
 	}
 
-	host.mutExecution.RLock()
-	defer host.mutExecution.RUnlock()
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
 
 	if host.closingInstance {
 		return nil, vmhost.ErrVMIsClosing
@@ -447,15 +448,16 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	return
 }
 
-// RunSmartContractCall executes the call of an existing contract
+// RunSmartContractCall executes the call of an existing contract.
+// It acquires an exclusive lock to ensure that no other executions are running in parallel on the same vmHost instance.
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	err = validateVMInput(&input.VMInput)
 	if err != nil {
 		return nil, err
 	}
 
-	host.mutExecution.RLock()
-	defer host.mutExecution.RUnlock()
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
 
 	if host.closingInstance {
 		return nil, vmhost.ErrVMIsClosing
