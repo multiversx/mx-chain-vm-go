@@ -1589,6 +1589,71 @@ func (context *VMHooksImpl) UnmarshalEC(
 	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
+// UnmarshalECWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) UnmarshalECWithStatus(
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
+) int32 {
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
+	metering.StartGasTracing(unmarshalECName)
+
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle)
+		return -1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	data, err := context.MemLoad(dataOffset, length)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	host := context.GetVMHost()
+	ec, err := managedType.GetEllipticCurve(ecHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+	byteLen := (ec.BitSize + 7) / 8
+	if len(data) != 1+2*byteLen {
+		FailExecution(host, vmhost.ErrLengthOfBufferNotCorrect)
+		return -1
+	}
+
+	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	xResultU, yResultU := elliptic.Unmarshal(ec, data)
+	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
+		return 1 // Point not on curve
+	}
+	xResult.Set(xResultU)
+	yResult.Set(yResultU)
+
+	return 0
+}
+
 // ManagedUnmarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedUnmarshalEC(
@@ -1715,6 +1780,70 @@ func (context *VMHooksImpl) UnmarshalCompressedEC(
 
 	host := context.GetVMHost()
 	return commonUnmarshalCompressedEC(host, xResultHandle, yResultHandle, ecHandle, data)
+}
+
+// UnmarshalCompressedECWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) UnmarshalCompressedECWithStatus(
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
+) int32 {
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
+	metering.StartGasTracing(unmarshalCompressedECName)
+
+	curveMultiplier := managedType.GetUCompressed100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		context.FailExecution(vmhost.ErrNoEllipticCurveUnderThisHandle)
+		return -1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	data, err := context.MemLoad(dataOffset, length)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	host := context.GetVMHost()
+	ec, err := managedType.GetEllipticCurve(ecHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+	byteLen := (ec.BitSize+7)/8 + 1
+	if len(data) != byteLen {
+		FailExecution(host, vmhost.ErrLengthOfBufferNotCorrect)
+		return -1
+	}
+
+	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	err = managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
+	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
+		return 1
+	}
+	xResult.Set(xResultUC)
+	yResult.Set(yResultUC)
+	return 0
 }
 
 // ManagedUnmarshalCompressedEC VMHooks implementation.

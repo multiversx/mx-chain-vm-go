@@ -319,6 +319,65 @@ func (context *VMHooksImpl) GetBlockHash(nonce int64, resultOffset executor.MemP
 	return 0
 }
 
+// TransferValueWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) TransferValueWithStatus(
+	destOffset executor.MemPtr,
+	valueOffset executor.MemPtr,
+	dataOffset executor.MemPtr,
+	length executor.MemLength) int32 {
+
+	host := context.GetVMHost()
+	runtime := host.Runtime()
+	metering := host.Metering()
+	output := host.Output()
+	metering.StartGasTracing(transferValueName)
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		context.FailExecution(err)
+		return -1
+	}
+
+	sender := runtime.GetContextAddress()
+	dest, err := context.MemLoad(destOffset, vmhost.AddressLen)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	valueBytes, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		context.FailExecution(err)
+		return -1
+	}
+
+	data, err := context.MemLoad(dataOffset, length)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	if host.IsBuiltinFunctionCall(data) {
+		return 1 // Invalid call
+	}
+
+	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, data, vm.DirectCall)
+	if err != nil {
+		return 1 // Transfer failed
+	}
+
+	return 0
+}
+
 func getESDTDataFromBlockchainHook(
 	context *VMHooksImpl,
 	addressOffset executor.MemPtr,
@@ -574,6 +633,46 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	return getESDTRoles(data, enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag))
 }
 
+// GetESDTLocalRolesWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetESDTLocalRolesWithStatus(tokenIdHandle int32, resultHandle int32) int32 {
+	managedType := context.GetManagedTypesContext()
+	storage := context.GetStorageContext()
+	metering := context.GetMeteringContext()
+
+	tokenID, err := managedType.GetBytes(tokenIdHandle)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	esdtRoleKeyPrefix := []byte(core.ProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
+	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
+
+	data, trieDepth, usedCache, err := storage.GetStorage(key)
+	if err != nil {
+		return 1 // Not found
+	}
+
+	err = storage.UseGasForStorageLoad(
+		storageLoadName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	roles := getESDTRoles(data, enableEpochsHandler.IsFlagEnabled(vmhost.CryptoOpcodesV2Flag))
+
+	result := managedType.GetBigIntOrCreate(resultHandle)
+	result.SetInt64(roles)
+
+	return 0 // Success
+}
+
 // ValidateTokenIdentifier VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ValidateTokenIdentifier(
@@ -693,6 +792,43 @@ func (context *VMHooksImpl) extractIndirectContractCallArgumentsWithValue(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+}
+
+// StorageLoadWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) StorageLoadWithStatus(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+	host := context.GetVMHost()
+	storage := host.Storage()
+	metering := host.Metering()
+
+	key, err := context.MemLoad(keyOffset, keyLength)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	data, trieDepth, usedCache, err := storage.GetStorage(key)
+	if err != nil {
+		return 1 // Not found
+	}
+
+	err = storage.UseGasForStorageLoad(
+		storageLoadName,
+		int64(trieDepth),
+		metering.GasSchedule().BaseOpsAPICost.StorageLoad,
+		usedCache)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	err = context.MemStore(dataOffset, data)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return 0 // Success
 }
 
 func (context *VMHooksImpl) extractIndirectContractCallArgumentsWithoutValue(
@@ -1140,6 +1276,18 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	data [][]byte,
 ) int32 {
 	return TransferESDTNFTExecuteWithTypedArgsWithFailure(host, dest, transfers, gasLimit, function, data, true)
+}
+
+// TransferESDTNFTExecuteWithStatus defines the actual transfer ESDT execute logic
+func TransferESDTNFTExecuteWithStatus(
+	host vmhost.VMHost,
+	dest []byte,
+	transfers []*vmcommon.ESDTTransfer,
+	gasLimit int64,
+	function []byte,
+	data [][]byte,
+) int32 {
+	return TransferESDTNFTExecuteWithTypedArgsWithFailure(host, dest, transfers, gasLimit, function, data, false)
 }
 
 // TransferESDTNFTExecuteWithTypedArgsWithFailure defines the actual transfer ESDT execute logic

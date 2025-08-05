@@ -471,6 +471,46 @@ func (context *VMHooksImpl) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 	value.Set(esdtToken.Value)
 }
 
+// ManagedGetESDTBalanceWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetESDTBalanceWithStatus(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) int32 {
+	metering := context.GetMeteringContext()
+	blockchain := context.GetBlockchainContext()
+	managedType := context.GetManagedTypesContext()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
+	err := metering.UseGasBoundedAndAddTracedGas(managedGetESDTBalanceName, gasToUse)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		context.FailExecution(vmhost.ErrArgOutOfRange)
+		return -1
+	}
+	tokenID, err := managedType.GetBytes(tokenIDHandle)
+	if err != nil {
+		context.FailExecution(vmhost.ErrArgOutOfRange)
+		return -1
+	}
+
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
+	if err != nil {
+		context.FailExecution(vmhost.ErrArgOutOfRange)
+		return -1
+	}
+
+	if esdtToken == nil {
+		return 1
+	}
+
+	value := managedType.GetBigIntOrCreate(valueHandle)
+	value.Set(esdtToken.Value)
+	return 0
+}
+
 // ManagedGetESDTTokenData VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedGetESDTTokenData(
@@ -486,6 +526,89 @@ func (context *VMHooksImpl) ManagedGetESDTTokenData(
 		nonce,
 		valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 
+}
+
+// ManagedGetESDTTokenDataWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetESDTTokenDataWithStatus(
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) int32 {
+	host := context.GetVMHost()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(managedGetESDTTokenDataName)
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return -1
+	}
+	tokenID, err := managedType.GetBytes(tokenIDHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return -1
+	}
+
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return -1
+	}
+
+	if esdtToken == nil {
+		return 1 // Not found
+	}
+
+	value := managedType.GetBigIntOrCreate(valueHandle)
+	value.Set(esdtToken.Value)
+
+	managedType.SetBytes(propertiesHandle, esdtToken.Properties)
+	if esdtToken.TokenMetaData != nil {
+		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
+		if err != nil {
+			FailExecution(host, err)
+			return -1
+		}
+		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
+		if err != nil {
+			FailExecution(host, err)
+			return -1
+		}
+		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
+		if err != nil {
+			FailExecution(host, err)
+			return -1
+		}
+		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
+		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
+		if err != nil {
+			FailExecution(host, err)
+			return -1
+		}
+		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
+		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
+
+		err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
+		if err != nil {
+			FailExecution(host, err)
+			return -1
+		}
+	}
+
+	return 0 // Success
 }
 
 func ManagedGetESDTTokenDataWithHost(
@@ -582,6 +705,52 @@ func (context *VMHooksImpl) ManagedGetESDTTokenType(
 		tokenIDHandle,
 		nonce,
 		typeHandle)
+}
+
+// ManagedGetESDTTokenTypeWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetESDTTokenTypeWithStatus(
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	typeHandle int32) int32 {
+	host := context.GetVMHost()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(managedGetESDTTokenTypeName)
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return -1
+	}
+	tokenID, err := managedType.GetBytes(tokenIDHandle)
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return -1
+	}
+
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
+	if err != nil {
+		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return -1
+	}
+
+	if esdtToken == nil {
+		return 1 // Not found
+	}
+
+	esdtType := managedType.GetBigIntOrCreate(typeHandle)
+	esdtType.SetUint64(uint64(esdtToken.Type))
+	return 0 // Success
 }
 
 // ManagedGetESDTTokenTypeWithHost implements the ManagedGetESDTTokenType VMHook logic.
@@ -1316,6 +1485,43 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 	)
 }
 
+// ManagedMultiTransferESDTNFTExecuteWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithStatus(
+	dstHandle int32,
+	tokenTransfersHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteName)
+
+	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	return TransferESDTNFTExecuteWithStatus(
+		host,
+		vmInput.destination,
+		transfers,
+		gasLimit,
+		[]byte(vmInput.function),
+		vmInput.arguments,
+	)
+}
+
 // ManagedMultiTransferESDTNFTExecuteWithReturn VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithReturn(
@@ -1640,6 +1846,65 @@ func (context *VMHooksImpl) ManagedGetCodeHash(addressHandle int32, codeHashHand
 	}
 
 	managedType.SetBytes(codeHashHandle, codeHash)
+}
+
+// ManagedGetCodeHashWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetCodeHashWithStatus(addressHandle int32, codeHashHandle int32) int32 {
+	host := context.GetVMHost()
+	managedType := host.ManagedTypes()
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	codeHash, err := ManagedGetCodeHashTyped(host, address)
+	if err != nil {
+		return 1
+	}
+
+	managedType.SetBytes(codeHashHandle, codeHash)
+	return 0
+}
+
+// ManagedGetCodeMetadataWithStatus VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) ManagedGetCodeMetadataWithStatus(addressHandle int32, responseHandle int32) int32 {
+	host := context.GetVMHost()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCodeMetadata
+	err := metering.UseGasBoundedAndAddTracedGas(managedGetCodeMetadataName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	gasToUse = metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
+	err = metering.UseGasBoundedAndAddTracedGas(managedGetCodeMetadataName, gasToUse)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	mBuffAddress, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	contract, err := host.Blockchain().GetUserAccount(mBuffAddress)
+	if err != nil || check.IfNil(contract) {
+		return 1
+	}
+
+	codeMetadata := contract.GetCodeMetadata()
+
+	managedType.SetBytes(responseHandle, codeMetadata)
+	return 0
 }
 
 // ManagedGetCodeHashWithHost returns the code hash at some address
