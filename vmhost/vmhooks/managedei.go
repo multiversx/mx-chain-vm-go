@@ -321,7 +321,7 @@ func (context *VMHooksImpl) ManagedGetReturnData(resultID int32, resultHandle in
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -448,18 +448,18 @@ func (context *VMHooksImpl) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -504,18 +504,18 @@ func ManagedGetESDTTokenDataWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -597,18 +597,18 @@ func ManagedGetESDTTokenTypeWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -662,7 +662,7 @@ func ManagedAsyncCallWithHost(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -713,7 +713,7 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return 1
 	}
 
@@ -1359,7 +1359,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteByUser)
 
 	if !host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
-		FailExecution(host, vmhost.ErrOpcodeIsNotAllowed)
+		FailExecutionConditionally(host, vmhost.ErrOpcodeIsNotAllowed)
 		return -1
 	}
 

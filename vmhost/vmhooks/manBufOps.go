@@ -92,7 +92,7 @@ func (context *VMHooksImpl) MBufferGetLength(mBufferHandle int32) int32 {
 
 	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return -1
 	}
 
@@ -402,7 +402,7 @@ func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle in
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, dataBufferBytes)
 	if !isSuccess {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return 1
 	}
 
@@ -431,7 +431,7 @@ func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, data)
 	if !isSuccess {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return 1
 	}
 
@@ -590,7 +590,7 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 
 	bigInt := big.NewInt(0).SetBytes(data)
 	if !bigInt.IsUint64() {
-		context.FailExecution(vmhost.ErrBytesExceedUint64)
+		context.FailExecutionConditionally(vmhost.ErrBytesExceedUint64)
 		return 0
 	}
 	return int64(bigInt.Uint64())
@@ -624,7 +624,7 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 
 	bigInt := twos.SetBytes(big.NewInt(0), data)
 	if !bigInt.IsInt64() {
-		context.FailExecution(vmhost.ErrBytesExceedInt64)
+		context.FailExecutionConditionally(vmhost.ErrBytesExceedInt64)
 		return 0
 	}
 	return bigInt.Int64()
@@ -692,7 +692,7 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	}
 
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
-		context.FailExecution(vmhost.ErrBigFloatWrongPrecision)
+		context.FailExecutionConditionally(vmhost.ErrBigFloatWrongPrecision)
 		return 1
 	}
 
@@ -719,7 +719,7 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	}
 
 	if bigFloat.IsInf() {
-		context.FailExecution(vmhost.ErrInfinityFloatOperation)
+		context.FailExecutionConditionally(vmhost.ErrInfinityFloatOperation)
 		return 1
 	}
 
@@ -900,7 +900,7 @@ func (context *VMHooksImpl) MBufferGetArgument(id int32, destinationHandle int32
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])
@@ -946,7 +946,7 @@ func (context *VMHooksImpl) MBufferSetRandom(destinationHandle int32, length int
 	metering := context.GetMeteringContext()
 
 	if length < 1 {
-		context.FailExecution(vmhost.ErrLengthOfBufferNotCorrect)
+		context.FailExecutionConditionally(vmhost.ErrLengthOfBufferNotCorrect)
 		return -1
 	}
 

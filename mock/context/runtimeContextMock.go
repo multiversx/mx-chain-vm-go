@@ -324,6 +324,10 @@ func (r *RuntimeContextMock) UseGasBoundedShouldFailExecution() bool {
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
+// FailExecutionConditionally mocked method
+func (r *RuntimeContextMock) FailExecutionConditionally(_ error) {
+}
+
 // AddAsyncContextCall mocked method
 func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *vmhost.AsyncGeneratedCall) error {
 	return r.Err

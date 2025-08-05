@@ -389,6 +389,11 @@ func (contextWrapper *RuntimeContextWrapper) FailExecution(err error) {
 	contextWrapper.FailExecutionFunc(err)
 }
 
+// FailExecutionConditionally calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) FailExecutionConditionally(err error) {
+	contextWrapper.runtimeContext.FailExecutionConditionally(err)
+}
+
 // MustVerifyNextContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) MustVerifyNextContractCode() {
 	contextWrapper.MustVerifyNextContractCodeFunc()

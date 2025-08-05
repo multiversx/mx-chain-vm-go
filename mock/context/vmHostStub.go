@@ -333,3 +333,16 @@ func (vhs *VMHostStub) SetGasTracing(enableGasTracing bool) {
 func (vhs *VMHostStub) GetGasTrace() map[string]map[string][]uint64 {
 	return make(map[string]map[string][]uint64)
 }
+
+// SetUnsafeMode -
+func (host *VMHostStub) SetUnsafeMode(unsafeMode bool) {
+}
+
+// IsUnsafeMode -
+func (host *VMHostStub) IsUnsafeMode() bool {
+	return false
+}
+
+// FailExecutionConditionally -
+func (host *VMHostStub) FailExecutionConditionally(err error) {
+}

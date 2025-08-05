@@ -63,6 +63,9 @@ type VMHost interface {
 	Reset()
 	SetGasTracing(enableGasTracing bool)
 	GetGasTrace() map[string]map[string][]uint64
+	SetUnsafeMode(unsafeMode bool)
+	IsUnsafeMode() bool
+	FailExecutionConditionally(err error)
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -136,6 +139,7 @@ type RuntimeContext interface {
 	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
+	FailExecutionConditionally(err error)
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
