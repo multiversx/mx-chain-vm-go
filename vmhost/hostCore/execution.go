@@ -282,40 +282,51 @@ func copyTxHashesFromContext(runtime vmhost.RuntimeContext, input *vmcommon.Cont
 // This is used for handling nested contract calls to different addresses. It ensures
 // that the execution of the child contract is isolated from the parent, and that
 // the state is correctly merged or discarded after the execution finishes.
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
-	scExecutionInput := input
-
 	blockchain := host.Blockchain()
-
 	blockchain.PushState()
 
-	if host.IsBuiltinFunctionName(input.Function) {
-		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
+	var err error
+	var vmOutput *vmcommon.VMOutput
+	isChildComplete := true
+
+	defer func() {
 		if err != nil {
 			blockchain.PopSetActiveState()
-			host.Runtime().AddError(err, input.Function)
-			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
-			isChildComplete = true
-			return
+		} else {
+			blockchain.PopDiscard()
 		}
-		host.completeLogEntriesAfterBuiltinCall(input, vmOutput)
+	}()
+
+	if host.IsBuiltinFunctionName(input.Function) {
+		return host.executeBuiltinOnAndDestContext(input)
 	}
 
-	isChildComplete = true
+	vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(input)
+	host.addNewBackTransfersFromVMOutput(vmOutput, input.CallerAddr, input.RecipientAddr)
+
+	return vmOutput, isChildComplete, err
+}
+
+func (host *vmHost) executeBuiltinOnAndDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error) {
+	scExecutionInput, vmOutput, err := host.handleBuiltinFunctionCall(input)
+	if err != nil {
+		host.Runtime().AddError(err, input.Function)
+		vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
+		return vmOutput, true, err
+	}
+
+	host.completeLogEntriesAfterBuiltinCall(input, vmOutput)
+
+	isChildComplete := true
 	if scExecutionInput != nil {
 		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 		host.addNewBackTransfersFromVMOutput(vmOutput, scExecutionInput.CallerAddr, scExecutionInput.RecipientAddr)
 	}
 
-	if err != nil {
-		blockchain.PopSetActiveState()
-	} else {
-		blockchain.PopDiscard()
-	}
-
-	return
+	return vmOutput, isChildComplete, err
 }
 
 func (host *vmHost) isESDTTransferWithoutExecution(transferData []byte, parent, child []byte) (*vmcommon.ParsedESDTTransfers, bool) {
