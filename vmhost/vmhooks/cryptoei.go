@@ -1880,6 +1880,10 @@ func commonGenerateEC(
 	yPubKeyHandle int32,
 	ecHandle int32,
 ) ([]byte, error) {
+	if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+		return nil, vmhost.ErrOpcodeIsDeactivated
+	}
+
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(generateKeyECName)
