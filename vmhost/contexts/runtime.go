@@ -611,22 +611,24 @@ func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, err
 // with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly
 // FailExecution sets the returnMessage, returnCode and runtimeBreakpoint according to the given error.
 func (context *runtimeContext) FailExecution(err error) {
-	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
-
 	var message string
 	breakpoint := vmhost.BreakpointExecutionFailed
-
+	returnCode := vmcommon.ExecutionFailed
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
 		if errors.Is(err, vmhost.ErrNotEnoughGas) {
 			breakpoint = vmhost.BreakpointOutOfGas
+			if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+				returnCode = vmcommon.OutOfGas
+			}
 		}
 	} else {
 		message = "execution failed"
 		context.AddError(errors.New(message))
 	}
 
+	context.host.Output().SetReturnCode(returnCode)
 	context.host.Output().SetReturnMessage(message)
 	if !check.IfNil(context.iTracker.Instance()) {
 		context.SetRuntimeBreakpointValue(breakpoint)

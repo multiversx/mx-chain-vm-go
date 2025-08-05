@@ -82,7 +82,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 		if asyncCall.HasCallback() {
 			// Restore gas locked while still on the caller instance; otherwise, the
 			// locked gas will appear to have been used twice by the caller instance.
-			isCallbackComplete, callbackVMOutput := context.ExecuteSyncCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
+			isCallbackComplete, callbackVMOutput := context.ExecuteLocalCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
 			if callbackVMOutput == nil {
 				return vmhost.ErrAsyncNoOutputFromCallback
 			}
@@ -102,9 +102,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) 
 	return nil
 }
 
-// ExecuteSyncCallbackAndFinishOutput executes the callback and finishes the output
+// ExecuteLocalCallbackAndFinishOutput executes the callback and finishes the output
 // TODO rename to executeLocalCallbackAndFinishOutput
-func (context *asyncContext) ExecuteSyncCallbackAndFinishOutput(
+func (context *asyncContext) ExecuteLocalCallbackAndFinishOutput(
 	asyncCall *vmhost.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
 	_ *vmcommon.ContractCallInput,

@@ -411,12 +411,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 		postBuiltinInput.AsyncArguments = input.AsyncArguments
 	}
 
-	err = contexts.AddAsyncArgumentsToOutputTransfers(
-		host.Output(),
-		input.RecipientAddr,
-		input.AsyncArguments,
-		vm.AsynchronousCall,
-		builtinOutput)
+	err = contexts.AddAsyncArgumentsToOutputTransfers(input.AsyncArguments, builtinOutput)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
 		return nil, nil, err
