@@ -462,6 +462,10 @@ func (context *VMHooksImpl) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 		context.FailExecution(vmhost.ErrArgOutOfRange)
 		return
 	}
+	if esdtToken == nil {
+		context.FailExecution(vmhost.ErrNilESDTData)
+		return
+	}
 
 	value := managedType.GetBigIntOrCreate(valueHandle)
 	value.Set(esdtToken.Value)
@@ -516,6 +520,10 @@ func ManagedGetESDTTokenDataWithHost(
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
 		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+	if esdtToken == nil {
+		FailExecution(host, vmhost.ErrNilESDTData)
 		return
 	}
 
@@ -609,6 +617,10 @@ func ManagedGetESDTTokenTypeWithHost(
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
 		FailExecution(host, vmhost.ErrArgOutOfRange)
+		return
+	}
+	if esdtToken == nil {
+		FailExecution(host, vmhost.ErrNilESDTData)
 		return
 	}
 
@@ -1461,6 +1473,10 @@ func ManagedIsESDTFrozenWithHost(
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
 		FailExecution(host, err)
+		return -1
+	}
+	if esdtToken == nil {
+		FailExecution(host, vmhost.ErrNilESDTData)
 		return -1
 	}
 

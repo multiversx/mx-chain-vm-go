@@ -282,6 +282,7 @@ func (context *VMHooksImpl) BigIntGetESDTExternalBalance(
 		return
 	}
 	if esdtData == nil {
+		context.FailExecution(vmhost.ErrNilESDTData)
 		return
 	}
 

@@ -371,6 +371,10 @@ func (context *VMHooksImpl) GetESDTBalance(
 		context.FailExecution(err)
 		return -1
 	}
+	if esdtData == nil {
+		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		return -1
+	}
 	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
 	if err != nil {
 		context.FailExecution(err)
@@ -482,6 +486,10 @@ func (context *VMHooksImpl) GetESDTTokenData(
 
 	if err != nil {
 		context.FailExecution(err)
+		return -1
+	}
+	if esdtData == nil {
+		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return -1
 	}
 
