@@ -648,6 +648,9 @@ func (context *managedTypesContext) GetSlice(mBufferHandle int32, startPosition 
 	if len(mBuffer)-int(startPosition) < int(lengthOfSlice) {
 		return nil, vmhost.ErrBadBounds
 	}
+	if int64(startPosition)+int64(lengthOfSlice) > int64(basicMath.MaxInt32) || int64(startPosition)+int64(lengthOfSlice) < int64(startPosition) {
+		return nil, vmhost.ErrBadBounds
+	}
 	return mBuffer[startPosition:(startPosition + lengthOfSlice)], nil
 }
 
