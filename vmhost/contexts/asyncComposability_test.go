@@ -48,7 +48,7 @@ func TestAsyncContext_NotifyChildIsComplete(t *testing.T) {
 		host := &context.MockVMHost{}
 		storage := &context.MockStorageContext{}
 		host.On("Storage").Return(storage)
-		storage.On("SetProtectedStorageToAddressUnmetered", mock.Anything, mock.Anything).Return(nil)).Return(nil)).Return(nil)).Return(nil)).Return(nil)).Return(nil), mock.Anything).Return(vmhost.StorageModified, nil)
+		storage.On("SetProtectedStorageToAddressUnmetered", mock.Anything, mock.Anything).Return(vmhost.StorageModified, nil)
 
 		ac := &asyncContext{
 			callsCounter: 2,
