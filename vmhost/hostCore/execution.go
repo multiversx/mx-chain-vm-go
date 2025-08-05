@@ -689,16 +689,7 @@ func (host *vmHost) IsBuiltinFunctionCall(data []byte) bool {
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
-func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) (newContractAddress []byte, err error) {
-	newContractAddress = nil
-	err = nil
-
-	defer func() {
-		if err != nil {
-			newContractAddress = nil
-		}
-	}()
-
+func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error) {
 	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := vmhost.CodeDeployInput{
@@ -707,24 +698,22 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 		ContractAddress:      nil,
 		CodeDeployerAddress:  input.CallerAddr,
 	}
-	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
+	err := metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if runtime.ReadOnly() {
-		err = vmhost.ErrInvalidCallOnReadOnlyMode
-		return
+		return nil, vmhost.ErrInvalidCallOnReadOnlyMode
 	}
 
-	newContractAddress, err = blockchain.NewAddress(input.CallerAddr)
+	newContractAddress, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if blockchain.AccountExists(newContractAddress) {
-		err = vmhost.ErrDeploymentOverExistingAccount
-		return
+		return nil, vmhost.ErrDeploymentOverExistingAccount
 	}
 
 	codeDeployInput.ContractAddress = newContractAddress
@@ -746,10 +735,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	}
 
 	var isChildComplete bool
+	var initVmOutput *vmcommon.VMOutput
 	host.Async().SetAsyncArgumentsForCall(initCallInput)
-	initVmOutput, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
+	initVmOutput, isChildComplete, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if createContractCallType == vmhooks.DeployContract {
@@ -760,12 +750,12 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 
 	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 
-	return
+	return newContractAddress, nil
 }
 
 func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) error {
