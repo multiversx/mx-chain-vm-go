@@ -290,7 +290,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 
 	var err error
 	var vmOutput *vmcommon.VMOutput
-	isChildComplete := true
+	var isChildComplete bool
 
 	defer func() {
 		if err != nil {
