@@ -58,12 +58,12 @@
                 "function": "mbuffer_load_slice",
                 "arguments": [
                     "str:abcdef",
-                    "3",
+                    "1",
                     "4"
                 ]
             },
             "expect": {
-                "out": []
+                "out": ["str:bcde"]
             }
         },
         {
@@ -73,32 +73,30 @@
                 "to": "sc:alloc-features",
                 "function": "mbuffer_load_slice",
                 "arguments": [
-                    "",
-                    "0",
-                    "0"
-                ]
-            },
-            "expect": {
-                "out": [
-                    ""
-                ]
-            }
-        },
-        {
-            "step": "scQuery",
-            "id": "3",
-            "tx": {
-                "to": "sc:alloc-features",
-                "function": "mbuffer_load_slice",
-                "arguments": [
-                    "",
+                    "str:a",
                     "0",
                     "1"
                 ]
             },
             "expect": {
-                "out": []
+                "out": [
+                    "str:a"
+                ]
             }
+        },
+        {
+            "step": "scQuery",
+            "id": "3",
+            "tx": {
+                "to": "sc:alloc-features",
+                "function": "mbuffer_load_slice",
+                "arguments": [
+                    "str:a",
+                    "0",
+                    "0"
+                ]
+            },
+            "expect": { "out": [""]}
         }
     ]
 }

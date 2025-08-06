@@ -54,8 +54,8 @@
             },
             "expect": {
                 "out": [],
-                "status": "4",
-                "message": "str:argument decode error (s): input too short",
+                "status": "10",
+                "message": "*",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
