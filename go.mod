@@ -19,6 +19,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.27.1
 	golang.org/x/crypto v0.3.0
+	github.com/multiversx/mx-chain-vm-go/mock v0.0.0-00010101000000-000000000000
 )
 
 require (
