@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"encoding/hex"
 	"math/big"
 	"testing"
 
@@ -76,6 +77,6 @@ func TestCreateDataFromAsyncParams(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, data)
 		// a bit of a hack to check if the gas was encoded
-		require.Contains(t, string(data), string(big.NewInt(100).Bytes()))
+		require.Contains(t, string(data), hex.EncodeToString(big.NewInt(100).Bytes()))
 	})
 }

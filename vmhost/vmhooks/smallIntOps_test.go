@@ -30,6 +30,8 @@ func createTestVMHooks() (*VMHooksImpl, *mockery.MockVMHost, *mockery.MockRuntim
 
 	gasSchedule, _ := config.CreateGasConfig(config.MakeGasMapForTests())
 	metering.On("GasSchedule").Return(gasSchedule)
+	metering.On("StartGasTracing", mock.Anything)
+	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
 	hooks := NewVMHooksImpl(host)
 	return hooks, host, runtime, metering, output, storage

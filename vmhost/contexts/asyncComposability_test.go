@@ -25,6 +25,11 @@ func TestAsyncContext_NotifyChildIsComplete(t *testing.T) {
 			host:         host,
 		}
 		ac.callID = []byte("test")
+		ac.asyncCallGroups = make([]*vmhost.AsyncCallGroup, 1)
+		ac.asyncCallGroups[0] = &vmhost.AsyncCallGroup{AsyncCalls: make([]*vmhost.AsyncCall, 1)}
+		ac.asyncCallGroups[0].AsyncCalls[0] = &vmhost.AsyncCall{
+			CallID: []byte("child1"),
+		}
 
 		err := ac.NotifyChildIsComplete([]byte("child1"), 100)
 		require.Nil(t, err)
@@ -35,11 +40,16 @@ func TestAsyncContext_NotifyChildIsComplete(t *testing.T) {
 		host := &mockery.MockVMHost{}
 		storage := &mockery.MockStorageContext{}
 		host.On("Storage").Return(storage)
-		storage.On("SetProtectedStorageToAddressUnmetered", mock.Anything, mock.Anything).Return(vmhost.StorageModified, nil)
+		storage.On("SetProtectedStorageToAddressUnmetered", mock.Anything, mock.Anything, mock.Anything).Return(vmhost.StorageModified, nil)
 
 		ac := &asyncContext{
 			callsCounter: 2,
 			host:         host,
+		}
+		ac.asyncCallGroups = make([]*vmhost.AsyncCallGroup, 1)
+		ac.asyncCallGroups[0] = &vmhost.AsyncCallGroup{AsyncCalls: make([]*vmhost.AsyncCall, 1)}
+		ac.asyncCallGroups[0].AsyncCalls[0] = &vmhost.AsyncCall{
+			CallID: []byte("child1"),
 		}
 
 		err := ac.NotifyChildIsComplete([]byte("child1"), 100)
