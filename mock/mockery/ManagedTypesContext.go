@@ -531,7 +531,7 @@ func (_m *MockManagedTypesContext) GetScalarMult100xCurveGasCostMultiplier(ecHan
 	ret := _m.Called(ecHandle)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetScalarMult100xCurveGasCostMultiplier")
+		return 1
 	}
 
 	var r0 int32

@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/sha256"
 	"math/big"
 	"testing"
@@ -317,13 +318,19 @@ func TestVMHooksImpl_EllipticCurve(t *testing.T) {
 
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
+	host.On("FailExecution", mock.Anything).Return()
 
-	ec := elliptic.P256()
+	ec := elliptic.P256().Params()
 	managedType.On("GetEllipticCurve", mock.Anything).Return(ec, nil)
 	managedType.On("GetTwoBigInt", mock.Anything, mock.Anything).Return(big.NewInt(0), big.NewInt(0), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(0), nil)
 	managedType.On("Get100xCurveGasCostMultiplier", mock.Anything).Return(int32(100))
-	managedType.On("ConsumeGasForBigIntCopy", mock.Anything).Return(nil)
+	managedType.On("ConsumeGasForBigIntCopy", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	managedType.On("GetScalarMult100xCurveGasCostMultiplier", mock.Anything).Return(int32(1))
+	managedType.On("GetUCompressed100xCurveGasCostMultiplier", mock.Anything).Return(int32(1))
+	managedType.On("GetRandReader").Return(rand.Reader)
+	managedType.On("GetEllipticCurveSizeOfField", mock.Anything).Return(int32(1))
+	managedType.On("GetPrivateKeyByteLengthEC", mock.Anything).Return(int32(1))
 
 	hooks.AddEC(0, 0, 0, 0, 0, 0, 0)
 	hooks.DoubleEC(0, 0, 0, 0, 0)
