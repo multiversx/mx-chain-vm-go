@@ -770,31 +770,6 @@ func (context *VMHooksImpl) TransferValueExecute(
 	dataOffset executor.MemPtr,
 ) int32 {
 	host := context.GetVMHost()
-	return context.TransferValueExecuteWithHost(
-		host,
-		destOffset,
-		valueOffset,
-		gasLimit,
-		functionOffset,
-		functionLength,
-		numArguments,
-		argumentsLengthOffset,
-		dataOffset,
-	)
-}
-
-// TransferValueExecuteWithHost - transferValueExecute with host instead of pointer context
-func (context *VMHooksImpl) TransferValueExecuteWithHost(
-	host vmhost.VMHost,
-	destOffset executor.MemPtr,
-	valueOffset executor.MemPtr,
-	gasLimit int64,
-	functionOffset executor.MemPtr,
-	functionLength int32,
-	numArguments int32,
-	argumentsLengthOffset executor.MemPtr,
-	dataOffset executor.MemPtr,
-) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	metering.StartGasTracing(transferValueExecuteName)
@@ -848,17 +823,16 @@ func TransferValueExecuteWithTypedArgs(
 
 	var contractCallInput *vmcommon.ContractCallInput
 	if len(function) > 0 {
-		contractCallInput, err = prepareIndirectContractCallInput(
-			host,
-			sender,
-			value,
-			gasLimit,
-			dest,
-			function,
-			args,
-			gasToUse,
-			false,
-		)
+		indirectCall := &indirectCallInput{
+			host:        host,
+			sender:      sender,
+			value:       value,
+			gasLimit:    gasLimit,
+			destination: dest,
+			function:    function,
+			data:        args,
+		}
+		contractCallInput, err = prepareIndirectContractCallInput(indirectCall)
 		if err != nil {
 			FailExecution(host, err)
 			return 1
@@ -956,21 +930,47 @@ func (context *VMHooksImpl) TransferESDTNFTExecute(
 	dataOffset executor.MemPtr,
 ) int32 {
 	host := context.GetVMHost()
+	runtime := host.Runtime()
 	metering := host.Metering()
 	metering.StartGasTracing(transferESDTNFTExecuteName)
-	return context.TransferESDTNFTExecuteWithHost(
+
+	tokenIdentifier, executeErr := context.MemLoad(tokenIDOffset, tokenIDLen)
+	if executeErr != nil {
+		FailExecution(host, executeErr)
+		return 1
+	}
+
+	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
+		host, destOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	if err != nil {
+		FailExecution(host, err)
+		return 1
+	}
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(callArgs.actualLen))
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
+		FailExecution(host, err)
+		return 1
+	}
+
+	transfer := &vmcommon.ESDTTransfer{
+		ESDTValue:      callArgs.value,
+		ESDTTokenName:  tokenIdentifier,
+		ESDTTokenNonce: uint64(nonce),
+		ESDTTokenType:  uint32(core.Fungible),
+	}
+	if nonce > 0 {
+		transfer.ESDTTokenType = uint32(core.NonFungible)
+	}
+	return TransferESDTNFTExecuteWithTypedArgs(
 		host,
-		destOffset,
-		tokenIDOffset,
-		tokenIDLen,
-		valueOffset,
-		nonce,
+		callArgs.dest,
+		[]*vmcommon.ESDTTransfer{transfer},
 		gasLimit,
-		functionOffset,
-		functionLength,
-		numArguments,
-		argumentsLengthOffset,
-		dataOffset)
+		callArgs.function,
+		callArgs.args,
+	)
 }
 
 // MultiTransferESDTNFTExecute VMHooks implementation.
@@ -1055,62 +1055,6 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 	)
 }
 
-// TransferESDTNFTExecuteWithHost contains only memory reading of arguments
-func (context *VMHooksImpl) TransferESDTNFTExecuteWithHost(
-	host vmhost.VMHost,
-	destOffset executor.MemPtr,
-	tokenIDOffset executor.MemPtr,
-	tokenIDLen executor.MemLength,
-	valueOffset executor.MemPtr,
-	nonce int64,
-	gasLimit int64,
-	functionOffset executor.MemPtr,
-	functionLength executor.MemLength,
-	numArguments int32,
-	argumentsLengthOffset executor.MemPtr,
-	dataOffset executor.MemPtr,
-) int32 {
-	runtime := host.Runtime()
-	metering := host.Metering()
-
-	tokenIdentifier, executeErr := context.MemLoad(tokenIDOffset, tokenIDLen)
-	if executeErr != nil {
-		FailExecution(host, executeErr)
-		return 1
-	}
-
-	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
-		host, destOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(callArgs.actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return 1
-	}
-
-	transfer := &vmcommon.ESDTTransfer{
-		ESDTValue:      callArgs.value,
-		ESDTTokenName:  tokenIdentifier,
-		ESDTTokenNonce: uint64(nonce),
-		ESDTTokenType:  uint32(core.Fungible),
-	}
-	if nonce > 0 {
-		transfer.ESDTTokenType = uint32(core.NonFungible)
-	}
-	return TransferESDTNFTExecuteWithTypedArgs(
-		host,
-		callArgs.dest,
-		[]*vmcommon.ESDTTransfer{transfer},
-		gasLimit,
-		callArgs.function,
-		callArgs.args,
-	)
-}
 
 // TransferESDTNFTExecuteWithTypedArgs defines the actual transfer ESDT execute logic
 func TransferESDTNFTExecuteWithTypedArgs(
@@ -1152,17 +1096,16 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 
 	var contractCallInput *vmcommon.ContractCallInput
 	if len(function) > 0 {
-		contractCallInput, executeErr = prepareIndirectContractCallInput(
-			host,
-			sender,
-			big.NewInt(0),
-			gasLimit,
-			dest,
-			function,
-			data,
-			gasToUse,
-			false,
-		)
+		indirectCall := &indirectCallInput{
+			host:        host,
+			sender:      sender,
+			value:       big.NewInt(0),
+			gasLimit:    gasLimit,
+			destination: dest,
+			function:    function,
+			data:        data,
+		}
+		contractCallInput, executeErr = prepareIndirectContractCallInput(indirectCall)
 		if executeErr != nil {
 			FailExecution(host, executeErr)
 			return 1
@@ -1238,17 +1181,16 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 
 	var contractCallInput *vmcommon.ContractCallInput
 	if len(function) > 0 {
-		contractCallInput, executeErr = prepareIndirectContractCallInput(
-			host,
-			sender,
-			big.NewInt(0),
-			gasLimit,
-			dest,
-			function,
-			data,
-			gasToUse,
-			false,
-		)
+		indirectCall := &indirectCallInput{
+			host:        host,
+			sender:      sender,
+			value:       big.NewInt(0),
+			gasLimit:    gasLimit,
+			destination: dest,
+			function:    function,
+			data:        data,
+		}
+		contractCallInput, executeErr = prepareIndirectContractCallInput(indirectCall)
 		if executeErr != nil {
 			FailExecution(host, executeErr)
 			return 1
@@ -3136,17 +3078,17 @@ func ExecuteOnSameContextWithTypedArgs(
 
 	sender := runtime.GetContextAddress()
 
-	contractCallInput, err := prepareIndirectContractCallInput(
-		host,
-		sender,
-		value,
-		gasLimit,
-		dest,
-		function,
-		args,
-		gasToUse,
-		true,
-	)
+	indirectCall := &indirectCallInput{
+		host:                  host,
+		sender:                sender,
+		value:                 value,
+		gasLimit:              gasLimit,
+		destination:           dest,
+		function:              function,
+		data:                  args,
+		syncExecutionRequired: true,
+	}
+	contractCallInput, err := prepareIndirectContractCallInput(indirectCall)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -3248,17 +3190,17 @@ func ExecuteOnDestContextWithTypedArgs(
 
 	sender := runtime.GetContextAddress()
 
-	contractCallInput, err := prepareIndirectContractCallInput(
-		host,
-		sender,
-		value,
-		gasLimit,
-		dest,
-		function,
-		args,
-		gasToUse,
-		true,
-	)
+	indirectCall := &indirectCallInput{
+		host:                  host,
+		sender:                sender,
+		value:                 value,
+		gasLimit:              gasLimit,
+		destination:           dest,
+		function:              function,
+		data:                  args,
+		syncExecutionRequired: true,
+	}
+	contractCallInput, err := prepareIndirectContractCallInput(indirectCall)
 	if err != nil {
 		FailExecution(host, err)
 		return 1
@@ -3353,17 +3295,17 @@ func ExecuteReadOnlyWithTypedArguments(
 
 	sender := runtime.GetContextAddress()
 
-	contractCallInput, err := prepareIndirectContractCallInput(
-		host,
-		sender,
-		big.NewInt(0),
-		gasLimit,
-		dest,
-		function,
-		args,
-		gasToUse,
-		true,
-	)
+	indirectCall := &indirectCallInput{
+		host:                  host,
+		sender:                sender,
+		value:                 big.NewInt(0),
+		gasLimit:              gasLimit,
+		destination:           dest,
+		function:              function,
+		data:                  args,
+		syncExecutionRequired: true,
+	}
+	contractCallInput, err := prepareIndirectContractCallInput(indirectCall)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -3814,36 +3756,39 @@ func (context *VMHooksImpl) GetPrevTxHash(dataOffset executor.MemPtr) {
 	}
 }
 
-func prepareIndirectContractCallInput(
-	host vmhost.VMHost,
-	sender []byte,
-	value *big.Int,
-	gasLimit int64,
-	destination []byte,
-	function []byte,
-	data [][]byte,
-	_ uint64,
-	syncExecutionRequired bool,
-) (*vmcommon.ContractCallInput, error) {
-	runtime := host.Runtime()
-	metering := host.Metering()
+type indirectCallInput struct {
+	host                  vmhost.VMHost
+	sender                []byte
+	value                 *big.Int
+	gasLimit              int64
+	destination           []byte
+	function              []byte
+	data                  [][]byte
+	syncExecutionRequired bool
+}
 
-	if syncExecutionRequired && !host.AreInSameShard(runtime.GetContextAddress(), destination) {
+func prepareIndirectContractCallInput(
+	input *indirectCallInput,
+) (*vmcommon.ContractCallInput, error) {
+	runtime := input.host.Runtime()
+	metering := input.host.Metering()
+
+	if input.syncExecutionRequired && !input.host.AreInSameShard(runtime.GetContextAddress(), input.destination) {
 		return nil, vmhost.ErrSyncExecutionNotInSameShard
 	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			OriginalCallerAddr: host.Runtime().GetOriginalCallerAddress(),
-			CallerAddr:         sender,
-			Arguments:          data,
-			CallValue:          value,
+			OriginalCallerAddr: input.host.Runtime().GetOriginalCallerAddress(),
+			CallerAddr:         input.sender,
+			Arguments:          input.data,
+			CallValue:          input.value,
 			GasPrice:           0,
-			GasProvided:        metering.BoundGasLimit(gasLimit),
+			GasProvided:        metering.BoundGasLimit(input.gasLimit),
 			CallType:           vm.DirectCall,
 		},
-		RecipientAddr: destination,
-		Function:      string(function),
+		RecipientAddr: input.destination,
+		Function:      string(input.function),
 	}
 
 	currentVMInput := runtime.GetVMInput()
