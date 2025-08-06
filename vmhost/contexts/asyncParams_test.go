@@ -7,16 +7,6 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/mock/context"
-	"github.com/stretchr/testify/mock"
-
-
-
-
-
-
-
-
-
 	"github.com/stretchr/testify/require"
 )
 

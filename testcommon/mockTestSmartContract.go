@@ -1,10 +1,9 @@
 package testcommon
 
 import (
-	"testing"
-
-	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
+	"testing"
 )
 
 var WasmVirtualMachine = []byte{5, 0}

@@ -8,16 +8,6 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/mock/context"
-	"github.com/stretchr/testify/mock"
-
-
-
-
-
-
-
-
-
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
@@ -70,15 +60,14 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	host := &context.MockVMHost{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
 	}
-	host.On("Output").Return mockOutput
+	host.On("Output").Return(mockOutput)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
 	// Act as if the OutputContext has no OutputAccounts cached
 	// (mockOutput.GetOutputAccount() always returns "is new")
 	account := &vmcommon.OutputAccount{}
 	account.BalanceDelta = big.NewInt(0)
-	mockOutput.On("GetOutputAccount").Return account
-	true true
+	mockOutput.On("GetOutputAccount").Return(account)
 
 	// Test if error is propagated from BlockchainHook
 	mockWorld.Err = errTestError
@@ -97,7 +86,6 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 
 	// Act as if the OutputContext has the requested OutputAccount cached
 	account.Balance = big.NewInt(42)
-	true false
 	balanceBytes = blockchainContext.GetBalance([]byte("any account"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(42), value)
@@ -105,7 +93,6 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	// GetBalance must add Balance and BalanceDelta together
 	account.Balance = big.NewInt(10)
 	account.BalanceDelta = big.NewInt(32)
-	true false
 	balanceBytes = blockchainContext.GetBalance([]byte("any account"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(42), value)
@@ -122,7 +109,7 @@ func TestBlockchainContext_GetBalance_Updates(t *testing.T) {
 	host := &context.MockVMHost{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
 	}
-	host.On("Output").Return mockOutput
+	host.On("Output").Return(mockOutput)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
 	// Act as if the OutputContext has no OutputAccounts cached
@@ -135,8 +122,7 @@ func TestBlockchainContext_GetBalance_Updates(t *testing.T) {
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
 
-	mockOutput.On("GetOutputAccount").Return account
-	true false
+	mockOutput.On("GetOutputAccount").Return(account)
 
 	balanceBytes := blockchainContext.GetBalance([]byte("account_new_with_money"))
 	value := big.NewInt(0).SetBytes(balanceBytes)
@@ -154,7 +140,7 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 	host := &context.MockVMHost{}
 
 	mockOutput := &context.MockOutputContext{}
-	host.On("Output").Return mockOutput
+	host.On("Output").Return(mockOutput)
 
 	mockWorld := worldmock.NewMockWorld()
 	mockWorld.AcctMap.PutAccounts(testAccounts)
@@ -162,8 +148,7 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 
 	// GetNonce: Test if error is propagated from BlockchainHook, and that the
 	// cached OutputAccount doesn't lose its Nonce due to the error.
-	mockOutput.On("GetOutputAccount").Return account
-	true true
+	mockOutput.On("GetOutputAccount").Return(account)
 	mockWorld.Err = errTestError
 	nonce, err := blockchainContext.GetNonce([]byte("any account"))
 	require.Equal(t, errTestError, err)

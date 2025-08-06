@@ -7,8 +7,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
-	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,8 +62,8 @@ func (mockSC *InstanceTestSmartContract) WithCodeMetadata(metadata []byte) *Inst
 type InstanceCallTestTemplate struct {
 	testTemplateConfig
 	contracts     []*InstanceTestSmartContract
-	setup         func(vmhost.VMHost, *contextmock.BlockchainHookStub)
-	assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	setup         func(vmhost.VMHost, *mock.BlockchainHookStub)
+	assertResults func(vmhost.VMHost, *mock.BlockchainHookStub, *VMOutputVerifier)
 	host          vmhost.VMHost
 	hostBuilder   *TestHostBuilder
 }
@@ -77,7 +77,7 @@ func BuildInstanceCallTest(tb testing.TB) *InstanceCallTestTemplate {
 			wasmerSIGSEGVPassthrough: false,
 		},
 		hostBuilder: NewTestHostBuilder(tb),
-		setup:       func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
+		setup:       func(vmhost.VMHost, *mock.BlockchainHookStub) {},
 	}
 }
 
@@ -94,7 +94,7 @@ func (template *InstanceCallTestTemplate) WithInput(input *vmcommon.ContractCall
 }
 
 // WithSetup provides the setup function to be used by the contract call test
-func (template *InstanceCallTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstanceCallTestTemplate {
+func (template *InstanceCallTestTemplate) WithSetup(setup func(vmhost.VMHost, *mock.BlockchainHookStub)) *InstanceCallTestTemplate {
 	template.setup = setup
 	return template
 }
@@ -135,19 +135,19 @@ func (template *InstanceCallTestTemplate) GetVMHost() vmhost.VMHost {
 }
 
 // AndAssertResults starts the test and asserts the results
-func (template *InstanceCallTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+func (template *InstanceCallTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *mock.BlockchainHookStub, *VMOutputVerifier)) {
 	template.assertResults = assertResults
 	runTestWithInstances(template, true)
 }
 
 // AndAssertResultsWithoutReset starts the test and asserts the results
-func (template *InstanceCallTestTemplate) AndAssertResultsWithoutReset(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+func (template *InstanceCallTestTemplate) AndAssertResultsWithoutReset(assertResults func(vmhost.VMHost, *mock.BlockchainHookStub, *VMOutputVerifier)) {
 	template.assertResults = assertResults
 	runTestWithInstances(template, false)
 }
 
 func runTestWithInstances(template *InstanceCallTestTemplate, reset bool) {
-	var blhookStub *contextmock.BlockchainHookStub
+	blhookStub := &mock.BlockchainHookStub{}
 	if template.host == nil {
 		blhookStub = BlockchainHookStubForContracts(template.contracts)
 		template.hostBuilder.WithBlockchainHook(blhookStub)

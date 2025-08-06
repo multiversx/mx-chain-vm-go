@@ -18,14 +18,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/stretchr/testify/mock"
 
-
-
-
-
-
-
-
-
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
@@ -534,8 +526,8 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	require.Nil(t, err)
 
 	mockMetering := host.Metering().(*context.MockMeteringContext)
-	mockMetering.On("GasProvided").Return = 200
-	mockMetering.On("GasLeft").Return = 60
+	mockMetering.On("GasProvided").Return(200)
+	mockMetering.On("GasLeft").Return(60)
 
 	vmOutput := host.Output().GetVMOutput()
 	require.NotNil(t, vmOutput)

@@ -1,24 +1,11 @@
 package contexts
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/mock/context"
-	"github.com/stretchr/testify/mock"
-
-
-
-
-
-
-
-
-
-
-
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
