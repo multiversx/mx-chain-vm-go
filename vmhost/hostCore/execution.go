@@ -301,7 +301,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	}()
 
 	if host.IsBuiltinFunctionName(input.Function) {
-		return host.executeBuiltinOnAndDestContext(input)
+		vmOutput, isChildComplete, err = host.executeBuiltinOnAndDestContext(input)
+		return vmOutput, isChildComplete, err
 	}
 
 	vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(input)

@@ -1231,8 +1231,7 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 			WithFunction("testFunction").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok()
+			verify.UserError()
 		})
 	assert.Nil(t, err)
 }

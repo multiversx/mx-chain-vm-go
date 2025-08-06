@@ -183,7 +183,7 @@ func (context *asyncContext) PushState() {
 		callbackData:       context.callbackData,
 		gasAccumulated:     context.gasAccumulated,
 		returnData:         context.returnData,
-		asyncCallGroups:    context.asyncCallGroups, // TODO: verify why cloneCallGroups does not work.
+		asyncCallGroups:    context.asyncCallGroups,
 
 		callType:                     context.callType,
 		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
