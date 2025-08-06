@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
-	"github.com/multiversx/mx-chain-vm-go/mock"
+	mock2 "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -18,10 +18,10 @@ func TestVMHooksImpl_Sha256(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
-	host.On("Crypto").Return(crypto)
 	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
 	host.On("EnableEpochsHandler").Return(enableEpochs)
+	crypto := &mock2.CryptoHookMock{}
+	host.On("Crypto").Return(crypto)
 
 	data := []byte("test data")
 	hash := sha256.Sum256(data)
@@ -36,7 +36,7 @@ func TestVMHooksImpl_ManagedSha256(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
@@ -59,7 +59,7 @@ func TestVMHooksImpl_Keccak256(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
 	host.On("EnableEpochsHandler").Return(enableEpochs)
@@ -77,7 +77,7 @@ func TestVMHooksImpl_ManagedKeccak256(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
@@ -100,7 +100,7 @@ func TestVMHooksImpl_Ripemd160(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
 	host.On("EnableEpochsHandler").Return(enableEpochs)
@@ -118,7 +118,7 @@ func TestVMHooksImpl_ManagedRipemd160(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
@@ -141,7 +141,7 @@ func TestVMHooksImpl_VerifyBLS(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
 	host.On("EnableEpochsHandler").Return(enableEpochs)
@@ -157,7 +157,7 @@ func TestVMHooksImpl_ManagedVerifyBLS(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
@@ -177,7 +177,7 @@ func TestVMHooksImpl_VerifyEd25519(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
 	host.On("EnableEpochsHandler").Return(enableEpochs)
@@ -193,7 +193,7 @@ func TestVMHooksImpl_ManagedVerifyEd25519(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
@@ -213,7 +213,7 @@ func TestVMHooksImpl_VerifyCustomSecp256k1(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
 	host.On("EnableEpochsHandler").Return(enableEpochs)
@@ -232,7 +232,7 @@ func TestVMHooksImpl_ManagedVerifyCustomSecp256k1(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
@@ -252,7 +252,7 @@ func TestVMHooksImpl_EncodeSecp256k1DerSignature(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 
 	crypto.Result = []byte("signature")
@@ -266,7 +266,7 @@ func TestVMHooksImpl_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	crypto := &mock.CryptoHookMock{}
+	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
 	managedType := &mockery.MockManagedTypesContext{}
 	host.On("ManagedTypes").Return(managedType)
