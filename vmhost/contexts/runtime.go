@@ -591,20 +591,17 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-// ExtractCodeUpgradeFromArgs extracts the code and code metadata from the
+// RemoveCodeUpgradeFromArgs extracts the code and code metadata from the
 // current VMInput.Arguments, assuming a contract code upgrade has been requested.
-func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
+func (context *runtimeContext) RemoveCodeUpgradeFromArgs() {
 	const numMinUpgradeArguments = 2
 
 	arguments := context.vmInput.Arguments
 	if len(arguments) < numMinUpgradeArguments {
-		return nil, nil, vmhost.ErrInvalidUpgradeArguments
+		return
 	}
 
-	code := arguments[0]
-	codeMetadata := arguments[1]
 	context.vmInput.Arguments = context.vmInput.Arguments[numMinUpgradeArguments:]
-	return code, codeMetadata, nil
 }
 
 // FailExecution informs Wasmer to immediately stop the execution of the contract

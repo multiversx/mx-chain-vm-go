@@ -133,7 +133,7 @@ type RuntimeContext interface {
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
-	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
+	RemoveCodeUpgradeFromArgs()
 	SignalUserError(message string)
 	FailExecution(err error)
 	MustVerifyNextContractCode()
