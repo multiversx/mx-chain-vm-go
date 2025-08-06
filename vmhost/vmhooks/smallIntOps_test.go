@@ -4,38 +4,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/config"
-	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-func createTestVMHooks() (*VMHooksImpl, *mockery.MockVMHost, *mockery.MockRuntimeContext, *mockery.MockMeteringContext, *mockery.MockOutputContext, *mockery.MockStorageContext) {
-	host := &mockery.MockVMHost{}
-	runtime := &mockery.MockRuntimeContext{}
-	metering := &mockery.MockMeteringContext{}
-	output := &mockery.MockOutputContext{}
-	storage := &mockery.MockStorageContext{}
-	instance := &mockery.MockInstance{}
-
-	host.On("Runtime").Return(runtime)
-	host.On("Metering").Return(metering)
-	host.On("Output").Return(output)
-	host.On("Storage").Return(storage)
-	runtime.On("GetInstance").Return(instance)
-	instance.On("MemLoad", mock.Anything, mock.Anything).Return(nil, nil)
-	instance.On("MemStore", mock.Anything, mock.Anything).Return(nil)
-
-	gasSchedule, _ := config.CreateGasConfig(config.MakeGasMapForTests())
-	metering.On("GasSchedule").Return(gasSchedule)
-	metering.On("StartGasTracing", mock.Anything)
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
-
-	hooks := NewVMHooksImpl(host)
-	return hooks, host, runtime, metering, output, storage
-}
 
 func TestVMHooksImpl_SmallIntGetUnsignedArgument(t *testing.T) {
 	t.Parallel()

@@ -411,7 +411,7 @@ func (_m *MockVMHost) IsAllowedToExecute(opcode string) bool {
 	ret := _m.Called(opcode)
 
 	if len(ret) == 0 {
-		panic("no return value specified for IsAllowedToExecute")
+		return false
 	}
 
 	var r0 bool
@@ -429,7 +429,7 @@ func (_m *MockVMHost) IsBuiltinFunctionCall(data []byte) bool {
 	ret := _m.Called(data)
 
 	if len(ret) == 0 {
-		panic("no return value specified for IsBuiltinFunctionCall")
+		return false
 	}
 
 	var r0 bool
@@ -447,7 +447,7 @@ func (_m *MockVMHost) IsBuiltinFunctionName(functionName string) bool {
 	ret := _m.Called(functionName)
 
 	if len(ret) == 0 {
-		panic("no return value specified for IsBuiltinFunctionName")
+		return false
 	}
 
 	var r0 bool
