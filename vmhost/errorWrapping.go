@@ -148,18 +148,13 @@ func (werr *wrappableError) Error() string {
 
 // Unwrap - standard error function implementation for wrappable errors
 func (werr *wrappableError) Unwrap() error {
-	wrappingErr := werr.unwrapWrapping()
-	if len(wrappingErr.errsWithLocation) == 1 {
-		return wrappingErr.errsWithLocation[0].err
-	} else {
-		return wrappingErr
-	}
-}
-
-func (werr *wrappableError) unwrapWrapping() *wrappableError {
 	if len(werr.errsWithLocation) == 0 {
 		return nil
 	}
+	if len(werr.errsWithLocation) <= 1 {
+		return werr.errsWithLocation[0].err
+	}
+
 	return &wrappableError{
 		errsWithLocation: werr.errsWithLocation[:len(werr.errsWithLocation)-1],
 	}
