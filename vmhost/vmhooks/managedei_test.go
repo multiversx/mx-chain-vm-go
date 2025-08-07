@@ -12,11 +12,11 @@ import (
 
 func TestVMHooksImpl_ManagedSCAddress(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetContextAddress").Return([]byte("sc-address"))
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -26,13 +26,11 @@ func TestVMHooksImpl_ManagedSCAddress(t *testing.T) {
 
 func TestVMHooksImpl_ManagedOwnerAddress(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	blockchain.On("GetOwnerAddress").Return([]byte("owner-address"), nil)
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -42,11 +40,11 @@ func TestVMHooksImpl_ManagedOwnerAddress(t *testing.T) {
 
 func TestVMHooksImpl_ManagedCaller(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr: []byte("caller"),
@@ -60,11 +58,11 @@ func TestVMHooksImpl_ManagedCaller(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetOriginalCallerAddr(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			OriginalCallerAddr: []byte("original-caller"),
@@ -78,11 +76,11 @@ func TestVMHooksImpl_ManagedGetOriginalCallerAddr(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetRelayerAddr(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			RelayerAddr: []byte("relayer"),
@@ -96,11 +94,11 @@ func TestVMHooksImpl_ManagedGetRelayerAddr(t *testing.T) {
 
 func TestVMHooksImpl_ManagedSignalError(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("error"), nil)
 	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
 	runtime.On("SignalUserError", "error").Return()
@@ -111,11 +109,12 @@ func TestVMHooksImpl_ManagedSignalError(t *testing.T) {
 
 func TestVMHooksImpl_ManagedWriteLog(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, output, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("topic")}, uint64(1), nil)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
@@ -127,11 +126,11 @@ func TestVMHooksImpl_ManagedWriteLog(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetOriginalTxHash(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetOriginalTxHash").Return([]byte("tx-hash"))
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -141,13 +140,11 @@ func TestVMHooksImpl_ManagedGetOriginalTxHash(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetStateRootHash(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	blockchain.On("GetStateRootHash").Return([]byte("state-root-hash"))
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -157,13 +154,11 @@ func TestVMHooksImpl_ManagedGetStateRootHash(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetBlockRandomSeed(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	blockchain.On("CurrentRandomSeed").Return([]byte("random-seed"))
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -173,13 +168,11 @@ func TestVMHooksImpl_ManagedGetBlockRandomSeed(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetPrevBlockRandomSeed(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	blockchain.On("LastRandomSeed").Return([]byte("random-seed"))
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -189,11 +182,11 @@ func TestVMHooksImpl_ManagedGetPrevBlockRandomSeed(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetReturnData(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, output, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	output := vmHooks.output
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -203,11 +196,11 @@ func TestVMHooksImpl_ManagedGetReturnData(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetMultiESDTCallValue(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			ESDTTransfers: []*vmcommon.ESDTTransfer{},
@@ -221,11 +214,11 @@ func TestVMHooksImpl_ManagedGetMultiESDTCallValue(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetAllTransfersCallValue(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			ESDTTransfers: []*vmcommon.ESDTTransfer{},
@@ -240,11 +233,10 @@ func TestVMHooksImpl_ManagedGetAllTransfersCallValue(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetBackTransfers(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	managedType.On("GetBackTransfers").Return(nil, big.NewInt(0))
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
@@ -255,13 +247,11 @@ func TestVMHooksImpl_ManagedGetBackTransfers(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetESDTBalance(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	blockchain.On("GetESDTToken", mock.Anything, mock.Anything, mock.Anything).Return(&esdt.ESDigitalToken{Value: big.NewInt(100)}, nil)
 	managedType.On("GetBigIntOrCreate", mock.Anything).Return(big.NewInt(0))
@@ -271,13 +261,11 @@ func TestVMHooksImpl_ManagedGetESDTBalance(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetESDTTokenData(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	blockchain.On("GetESDTToken", mock.Anything, mock.Anything, mock.Anything).Return(&esdt.ESDigitalToken{
 		Value:         big.NewInt(100),
@@ -293,13 +281,11 @@ func TestVMHooksImpl_ManagedGetESDTTokenData(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetESDTTokenType(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	blockchain := vmHooks.blockchain
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	blockchain.On("GetESDTToken", mock.Anything, mock.Anything, mock.Anything).Return(&esdt.ESDigitalToken{Type: 1}, nil)
 	managedType.On("GetBigIntOrCreate", mock.Anything).Return(big.NewInt(0))
@@ -309,13 +295,11 @@ func TestVMHooksImpl_ManagedGetESDTTokenType(t *testing.T) {
 
 func TestVMHooksImpl_ManagedAsyncCall(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	async := vmHooks.async
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -326,13 +310,11 @@ func TestVMHooksImpl_ManagedAsyncCall(t *testing.T) {
 
 func TestVMHooksImpl_ManagedCreateAsyncCall(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	async := vmHooks.async
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -343,13 +325,11 @@ func TestVMHooksImpl_ManagedCreateAsyncCall(t *testing.T) {
 
 func TestVMHooksImpl_ManagedGetCallbackClosure(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	async := vmHooks.async
+	hooks := vmHooks.hooks
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
 	async.On("GetCallbackClosure").Return([]byte("closure"), nil)
 	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 
@@ -359,16 +339,17 @@ func TestVMHooksImpl_ManagedGetCallbackClosure(t *testing.T) {
 
 func TestVMHooksImpl_ManagedUpgradeFromSourceContract(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	async := vmHooks.async
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	blockchain := vmHooks.blockchain
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("SetRuntimeBreakpointValue", mock.Anything).Return()
+	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -380,14 +361,16 @@ func TestVMHooksImpl_ManagedUpgradeFromSourceContract(t *testing.T) {
 
 func TestVMHooksImpl_ManagedUpgradeContract(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	async := vmHooks.async
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("SetRuntimeBreakpointValue", mock.Anything).Return()
+	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -398,13 +381,12 @@ func TestVMHooksImpl_ManagedUpgradeContract(t *testing.T) {
 
 func TestVMHooksImpl_ManagedDeleteContract(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	async := vmHooks.async
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
 	runtime.On("SetRuntimeBreakpointValue", mock.Anything).Return()
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -415,16 +397,18 @@ func TestVMHooksImpl_ManagedDeleteContract(t *testing.T) {
 
 func TestVMHooksImpl_ManagedDeployFromSourceContract(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	blockchain := vmHooks.blockchain
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -437,14 +421,17 @@ func TestVMHooksImpl_ManagedDeployFromSourceContract(t *testing.T) {
 
 func TestVMHooksImpl_ManagedCreateContract(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
@@ -456,22 +443,26 @@ func TestVMHooksImpl_ManagedCreateContract(t *testing.T) {
 
 func TestVMHooksImpl_ManagedExecuteReadOnly(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	async := vmHooks.async
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
+	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
 	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
+	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
 	runtime.On("ReadOnly").Return(false)
 	runtime.On("SetReadOnly", mock.Anything).Return()
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
 	async.On("SetAsyncArgumentsForCall", mock.Anything).Return()
 	async.On("CompleteChildConditional", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	managedType.On("WriteManagedVecOfManagedBuffers", mock.Anything, mock.Anything).Return(nil)
@@ -481,19 +472,24 @@ func TestVMHooksImpl_ManagedExecuteReadOnly(t *testing.T) {
 
 func TestVMHooksImpl_ManagedExecuteOnSameContext(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
+	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
 	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnSameContext", mock.Anything).Return(nil)
+	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	managedType.On("WriteManagedVecOfManagedBuffers", mock.Anything, mock.Anything).Return(nil)
 
 	hooks.ManagedExecuteOnSameContext(0, 0, 0, 0, 0, 0)
@@ -501,24 +497,28 @@ func TestVMHooksImpl_ManagedExecuteOnSameContext(t *testing.T) {
 
 func TestVMHooksImpl_ManagedExecuteOnDestContext(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	async := vmHooks.async
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
 	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
 	host.On("CompleteLogEntriesWithCallType", mock.Anything, mock.Anything).Return()
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
+	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
 	async.On("SetAsyncArgumentsForCall", mock.Anything).Return()
 	async.On("CompleteChildConditional", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	managedType.On("WriteManagedVecOfManagedBuffers", mock.Anything, mock.Anything).Return(nil)
 
 	hooks.ManagedExecuteOnDestContext(0, 0, 0, 0, 0, 0)
@@ -526,22 +526,26 @@ func TestVMHooksImpl_ManagedExecuteOnDestContext(t *testing.T) {
 
 func TestVMHooksImpl_ManagedExecuteOnDestContextWithErrorReturn(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	async := vmHooks.async
+	output := vmHooks.output
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	output.On("ReturnData").Return([][]byte{[]byte("data")})
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("GetBigInt", mock.Anything).Return(big.NewInt(100), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
+	managedType.On("SetBytes", mock.Anything, mock.Anything).Return()
 	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
 	host.On("CompleteLogEntriesWithCallType", mock.Anything, mock.Anything).Return()
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
+	host.On("AreInSameShard", mock.Anything, mock.Anything).Return()
 	async.On("SetAsyncArgumentsForCall", mock.Anything).Return()
 	async.On("CompleteChildConditional", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	managedType.On("WriteManagedVecOfManagedBuffers", mock.Anything, mock.Anything).Return(nil)
@@ -551,21 +555,22 @@ func TestVMHooksImpl_ManagedExecuteOnDestContextWithErrorReturn(t *testing.T) {
 
 func TestVMHooksImpl_ManagedMultiTransferESDTNFTExecute(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
+	managedType := vmHooks.managedType
+	host := vmHooks.host
+	hooks := vmHooks.hooks
+	runtime := vmHooks.runtime
+	async := vmHooks.async
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("ReadManagedVecOfManagedBuffers", mock.Anything).Return([][]byte{[]byte("arg1")}, uint64(1), nil)
+	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
 	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
 	host.On("CompleteLogEntriesWithCallType", mock.Anything, mock.Anything).Return()
-	async := &mockery.MockAsyncContext{}
-	host.On("Async").Return(async)
 	async.On("SetAsyncArgumentsForCall", mock.Anything).Return()
 	async.On("CompleteChildConditional", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	managedType.On("WriteManagedVecOfManagedBuffers", mock.Anything, mock.Anything).Return(nil)
