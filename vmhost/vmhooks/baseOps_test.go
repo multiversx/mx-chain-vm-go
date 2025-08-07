@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
-	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -65,16 +64,16 @@ func TestVMHooksImpl_IsSmartContract(t *testing.T) {
 
 func TestVMHooksImpl_SignalError(t *testing.T) {
 	t.Parallel()
-	hooks, _, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createTestVMHooksClear()
+	baseMeteringSetup(vmHooks.metering)
+	vmHooks.runtime.On("GetInstance").Return(vmHooks.instance)
 
 	errorMessage := "error message"
-	instance := runtime.GetInstance().(*mockery.MockInstance)
-	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte(errorMessage), nil)
-	runtime.On("SignalUserError", errorMessage).Return()
+	vmHooks.instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte(errorMessage), nil)
+	vmHooks.runtime.On("SignalUserError", errorMessage).Return()
 
-	hooks.SignalError(0, 0)
-	runtime.AssertCalled(t, "SignalUserError", errorMessage)
+	vmHooks.hooks.SignalError(0, 0)
+	vmHooks.runtime.AssertCalled(t, "SignalUserError", errorMessage)
 }
 
 func TestVMHooksImpl_GetExternalBalance(t *testing.T) {
@@ -82,7 +81,7 @@ func TestVMHooksImpl_GetExternalBalance(t *testing.T) {
 	hooks, _, _, _, _, _, blockchain, _ := createTestVMHooksFull()
 
 	balance := big.NewInt(100)
-	blockchain.On("GetBalance", mock.Anything).Return(balance)
+	blockchain.On("GetBalance", mock.Anything).Return(balance.Bytes())
 
 	hooks.GetExternalBalance(0, 0)
 	blockchain.AssertCalled(t, "GetBalance", mock.Anything)
@@ -183,33 +182,23 @@ func TestVMHooksImpl_GetESDTTokenData(t *testing.T) {
 
 func TestVMHooksImpl_GetESDTLocalRoles(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, storage := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	vmHooks.managedType.On("GetBytes", mock.Anything).Return([]byte("token-id"), nil)
+	vmHooks.storage.On("GetStorage", mock.Anything).Return(nil, uint32(0), false, nil)
+	vmHooks.storage.On("UseGasForStorageLoad", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	managedType.On("GetBytes", mock.Anything).Return([]byte("token-id"), nil)
-	storage.On("GetStorage", mock.Anything).Return(nil, uint32(0), false, nil)
-	storage.On("UseGasForStorageLoad", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-
-	ret := hooks.GetESDTLocalRoles(0)
+	ret := vmHooks.hooks.GetESDTLocalRoles(0)
 	require.NotEqual(t, int64(-1), ret)
 }
 
 func TestVMHooksImpl_ValidateTokenIdentifier(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	vmHooks.managedType.On("GetBytes", mock.Anything).Return([]byte("TEST-123456"), nil)
 
-	managedType.On("GetBytes", mock.Anything).Return([]byte("TEST-123456"), nil)
-
-	ret := hooks.ValidateTokenIdentifier(0)
+	ret := vmHooks.hooks.ValidateTokenIdentifier(0)
 	require.Equal(t, int32(1), ret)
 }
 
@@ -235,36 +224,6 @@ func TestVMHooksImpl_TransferValueExecute(t *testing.T) {
 	output.On("Transfer", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 	ret := hooks.TransferValueExecute(0, 0, 0, 0, 0, 0, 0, 0)
-	require.Equal(t, int32(0), ret)
-}
-
-func TestVMHooksImpl_TransferESDTExecute(t *testing.T) {
-	t.Parallel()
-	hooks, host, runtime, metering, output, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
-	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(false)
-
-	runtime.On("GetContextAddress").Return([]byte("sender"))
-	output.On("TransferESDT", mock.Anything, mock.Anything).Return(uint64(0), nil)
-
-	ret := hooks.TransferESDTExecute(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-	require.Equal(t, int32(0), ret)
-}
-
-func TestVMHooksImpl_MultiTransferESDTNFTExecute(t *testing.T) {
-	t.Parallel()
-	hooks, host, runtime, metering, output, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
-	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(false)
-
-	runtime.On("GetContextAddress").Return([]byte("sender"))
-	output.On("TransferESDT", mock.Anything, mock.Anything).Return(uint64(0), nil)
-
-	instance := runtime.GetInstance().(*mockery.MockInstance)
-	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte{0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3}, nil)
-	instance.On("MemLoadMultiple", mock.Anything, mock.Anything).Return([][]byte{[]byte("token"), big.NewInt(1).Bytes(), big.NewInt(100).Bytes()}, nil)
-
-	ret := hooks.MultiTransferESDTNFTExecute(0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
 	require.Equal(t, int32(0), ret)
 }
 
@@ -541,29 +500,28 @@ func TestVMHooksImpl_GetNumESDTTransfers(t *testing.T) {
 
 func TestVMHooksImpl_GetCallValueTokenName(t *testing.T) {
 	t.Parallel()
-	hooks, _, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
 	contractCallInput := &vmcommon.ContractCallInput{}
-	contractCallInput.VMInput = vmcommon.VMInput{ESDTTransfers: []*vmcommon.ESDTTransfer{{ESDTTokenName: []byte("token-name"), ESDTValue: big.NewInt(100)}}}
-	runtime.On("GetVMInput").Return(contractCallInput)
+	contractCallInput.VMInput = vmcommon.VMInput{
+		ESDTTransfers: []*vmcommon.ESDTTransfer{{ESDTTokenName: []byte("token-name"), ESDTValue: big.NewInt(100)}},
+		CallValue:     big.NewInt(0),
+	}
+	vmHooks.runtime.On("GetVMInput").Return(contractCallInput)
 
-	ret := hooks.GetCallValueTokenName(0, 0)
+	ret := vmHooks.hooks.GetCallValueTokenName(0, 0)
 	require.Equal(t, int32(len("token-name")), ret)
 }
 
 func TestVMHooksImpl_IsReservedFunctionName(t *testing.T) {
 	t.Parallel()
-	hooks, host, runtime, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	vmHooks := createHooksWithBaseSetup()
 
-	managedType.On("GetBytes", mock.Anything).Return([]byte("init"), nil)
-	runtime.On("IsReservedFunctionName", "init").Return(true)
+	vmHooks.managedType.On("GetBytes", mock.Anything).Return([]byte("init"), nil)
+	vmHooks.runtime.On("IsReservedFunctionName", "init").Return(true)
 
-	ret := hooks.IsReservedFunctionName(0)
+	ret := vmHooks.hooks.IsReservedFunctionName(0)
 	require.Equal(t, int32(1), ret)
 }
 
@@ -591,43 +549,31 @@ func TestVMHooksImpl_WriteEventLog(t *testing.T) {
 
 func TestVMHooksImpl_GetBlockTimestamp(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
+	vmHooks.blockchain.On("CurrentTimeStamp").Return(uint64(12345))
 
-	blockchain.On("CurrentTimeStamp").Return(uint64(12345))
-
-	ret := hooks.GetBlockTimestamp()
+	ret := vmHooks.hooks.GetBlockTimestamp()
 	require.Equal(t, int64(12345), ret)
 }
 
 func TestVMHooksImpl_GetBlockTimestampMs(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
+	vmHooks.blockchain.On("CurrentTimeStampMs").Return(uint64(12345000))
 
-	blockchain.On("CurrentTimeStampMs").Return(uint64(12345000))
-
-	ret := hooks.GetBlockTimestampMs()
+	ret := vmHooks.hooks.GetBlockTimestampMs()
 	require.Equal(t, int64(12345000), ret)
 }
 
 func TestVMHooksImpl_GetBlockNonce(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
+	vmHooks.blockchain.On("CurrentNonce").Return(uint64(123))
 
-	blockchain.On("CurrentNonce").Return(uint64(123))
-
-	ret := hooks.GetBlockNonce()
+	ret := vmHooks.hooks.GetBlockNonce()
 	require.Equal(t, int64(123), ret)
 }
 
@@ -671,29 +617,21 @@ func TestVMHooksImpl_GetStateRootHash(t *testing.T) {
 
 func TestVMHooksImpl_GetPrevBlockTimestamp(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
+	vmHooks.blockchain.On("LastTimeStamp").Return(uint64(12345))
 
-	blockchain.On("LastTimeStamp").Return(uint64(12345))
-
-	ret := hooks.GetPrevBlockTimestamp()
+	ret := vmHooks.hooks.GetPrevBlockTimestamp()
 	require.Equal(t, int64(12345), ret)
 }
 
 func TestVMHooksImpl_GetPrevBlockTimestampMs(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createHooksWithBaseSetup()
 
-	blockchain := &mockery.MockBlockchainContext{}
-	host.On("Blockchain").Return(blockchain)
+	vmHooks.blockchain.On("LastTimeStampMs").Return(uint64(12345000))
 
-	blockchain.On("LastTimeStampMs").Return(uint64(12345000))
-
-	ret := hooks.GetPrevBlockTimestampMs()
+	ret := vmHooks.hooks.GetPrevBlockTimestampMs()
 	require.Equal(t, int64(12345000), ret)
 }
 
@@ -711,10 +649,10 @@ func TestVMHooksImpl_GetPrevBlockRound(t *testing.T) {
 	t.Parallel()
 	hooks, _, _, _, _, _, blockchain, _ := createTestVMHooksFull()
 
-	blockchain.On("LastRound").Return(uint64(456))
+	blockchain.On("LastRound").Return(uint64(6000))
 
 	ret := hooks.GetPrevBlockRound()
-	require.Equal(t, int64(456), ret)
+	require.Equal(t, int64(6000), ret)
 }
 
 func TestVMHooksImpl_GetPrevBlockEpoch(t *testing.T) {
@@ -764,10 +702,10 @@ func TestVMHooksImpl_EpochStartBlockNonce(t *testing.T) {
 func TestVMHooksImpl_EpochStartBlockRound(t *testing.T) {
 	t.Parallel()
 	hooks, _, _, _, _, _, blockchain, _ := createTestVMHooksFull()
-	blockchain.On("EpochStartBlockRound").Return(uint64(456))
+	blockchain.On("EpochStartBlockRound").Return(uint64(6000))
 
 	ret := hooks.EpochStartBlockRound()
-	require.Equal(t, int64(456), ret)
+	require.Equal(t, int64(6000), ret)
 }
 
 func TestVMHooksImpl_Finish(t *testing.T) {

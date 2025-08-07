@@ -1,6 +1,7 @@
 package vmhooks
 
 import (
+	mock2 "github.com/multiversx/mx-chain-vm-common-go/mock"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
 	"github.com/stretchr/testify/mock"
@@ -72,6 +73,7 @@ func createTestVMHooksClear() *mockeryStruct {
 	vmHooksMockery.host.On("Blockchain").Return(vmHooksMockery.blockchain)
 	vmHooksMockery.host.On("ManagedTypes").Return(vmHooksMockery.managedType)
 	vmHooksMockery.host.On("Async").Return(vmHooksMockery.async)
+	vmHooksMockery.host.On("EnableEpochsHandler").Return(&mock2.EnableEpochsHandlerStub{})
 
 	vmHooksMockery.hooks = NewVMHooksImpl(vmHooksMockery.host)
 	return vmHooksMockery
