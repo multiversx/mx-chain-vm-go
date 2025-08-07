@@ -1,0 +1,74 @@
+package vmhooks
+
+import (
+	"testing"
+
+	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func TestVMHooksImpl_ManagedMapNew(t *testing.T) {
+	t.Parallel()
+	hooks, host, _, metering, _, _ := createTestVMHooks()
+	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+
+	managedType := &mockery.MockManagedTypesContext{}
+	host.On("ManagedTypes").Return(managedType)
+	managedType.On("NewManagedMap").Return(int32(1))
+
+	ret := hooks.ManagedMapNew()
+	require.Equal(t, int32(1), ret)
+}
+
+func TestVMHooksImpl_ManagedMapPut(t *testing.T) {
+	t.Parallel()
+	hooks, host, _, metering, _, _ := createTestVMHooks()
+	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+
+	managedType := &mockery.MockManagedTypesContext{}
+	host.On("ManagedTypes").Return(managedType)
+	managedType.On("ManagedMapPut", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ret := hooks.ManagedMapPut(0, 0, 0)
+	require.Equal(t, int32(0), ret)
+}
+
+func TestVMHooksImpl_ManagedMapGet(t *testing.T) {
+	t.Parallel()
+	hooks, host, _, metering, _, _ := createTestVMHooks()
+	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+
+	managedType := &mockery.MockManagedTypesContext{}
+	host.On("ManagedTypes").Return(managedType)
+	managedType.On("ManagedMapGet", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ret := hooks.ManagedMapGet(0, 0, 0)
+	require.Equal(t, int32(0), ret)
+}
+
+func TestVMHooksImpl_ManagedMapRemove(t *testing.T) {
+	t.Parallel()
+	hooks, host, _, metering, _, _ := createTestVMHooks()
+	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+
+	managedType := &mockery.MockManagedTypesContext{}
+	host.On("ManagedTypes").Return(managedType)
+	managedType.On("ManagedMapRemove", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ret := hooks.ManagedMapRemove(0, 0, 0)
+	require.Equal(t, int32(0), ret)
+}
+
+func TestVMHooksImpl_ManagedMapContains(t *testing.T) {
+	t.Parallel()
+	hooks, host, _, metering, _, _ := createTestVMHooks()
+	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+
+	managedType := &mockery.MockManagedTypesContext{}
+	host.On("ManagedTypes").Return(managedType)
+	managedType.On("ManagedMapContains", mock.Anything, mock.Anything).Return(true, nil)
+
+	ret := hooks.ManagedMapContains(0, 0)
+	require.Equal(t, int32(1), ret)
+}
