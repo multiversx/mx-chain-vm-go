@@ -39,10 +39,7 @@ func TestVMHooksImpl_ManagedSha256(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	data := []byte("test data")
 	hash := sha256.Sum256(data)
@@ -62,8 +59,6 @@ func TestVMHooksImpl_Keccak256(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
 
 	data := []byte("test data")
 	hash := sha256.Sum256(data) // just a placeholder
@@ -80,10 +75,7 @@ func TestVMHooksImpl_ManagedKeccak256(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	data := []byte("test data")
 	hash := sha256.Sum256(data) // just a placeholder
@@ -121,10 +113,7 @@ func TestVMHooksImpl_ManagedRipemd160(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	data := []byte("test data")
 	hash := sha256.Sum256(data) // just a placeholder
@@ -160,10 +149,7 @@ func TestVMHooksImpl_ManagedVerifyBLS(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
@@ -196,10 +182,7 @@ func TestVMHooksImpl_ManagedVerifyEd25519(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
@@ -211,20 +194,17 @@ func TestVMHooksImpl_ManagedVerifyEd25519(t *testing.T) {
 
 func TestVMHooksImpl_VerifyCustomSecp256k1(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooks := createTestVMHooksClear()
+	baseMeteringSetup(vmHooks.metering)
 
 	crypto := &mock2.CryptoHookMock{}
-	host.On("Crypto").Return(crypto)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	vmHooks.host.On("Crypto").Return(crypto)
 
 	crypto.Err = nil
+	vmHooks.runtime.On("GetInstance").Return(vmHooks.instance)
+	vmHooks.instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte{0x30, 0x0}, nil)
 
-	instance := host.Runtime().GetInstance().(*mockery.MockInstance)
-	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte{0x30, 0x0}, nil)
-
-	ret := hooks.VerifyCustomSecp256k1(0, secp256k1CompressedPublicKeyLength, 0, 0, 0, 0)
+	ret := vmHooks.hooks.VerifyCustomSecp256k1(0, secp256k1CompressedPublicKeyLength, 0, 0, 0, 0)
 	require.Equal(t, int32(0), ret)
 }
 
@@ -235,10 +215,7 @@ func TestVMHooksImpl_ManagedVerifyCustomSecp256k1(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	enableEpochs := &worldmock.EnableEpochsHandlerStub{}
-	host.On("EnableEpochsHandler").Return(enableEpochs)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
@@ -269,8 +246,7 @@ func TestVMHooksImpl_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 
 	crypto := &mock2.CryptoHookMock{}
 	host.On("Crypto").Return(crypto)
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	managedType.On("GetBytes", mock.Anything).Return([]byte("data"), nil)
 	crypto.Result = []byte("signature")
@@ -282,17 +258,14 @@ func TestVMHooksImpl_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 
 func TestVMHooksImpl_CreateEC(t *testing.T) {
 	t.Parallel()
-	hooks, host, _, metering, _, _ := createTestVMHooks()
-	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
+	vmHooks := createTestVMHooksClear()
+	baseMeteringSetup(vmHooks.metering)
+	vmHooks.runtime.On("GetInstance").Return(vmHooks.instance)
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	vmHooks.managedType.On("PutEllipticCurve", mock.Anything).Return(int32(1))
+	vmHooks.instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte("p256"), nil)
 
-	managedType.On("PutEllipticCurve", mock.Anything).Return(int32(1))
-	instance := host.Runtime().GetInstance().(*mockery.MockInstance)
-	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte("p256"), nil)
-
-	ret := hooks.CreateEC(0, 4)
+	ret := vmHooks.hooks.CreateEC(0, 4)
 	require.Equal(t, int32(1), ret)
 }
 
@@ -301,8 +274,7 @@ func TestVMHooksImpl_ManagedCreateEC(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	managedType.On("GetBytes", mock.Anything).Return([]byte("p256"), nil)
 	managedType.On("PutEllipticCurve", mock.Anything).Return(int32(1))
@@ -316,9 +288,7 @@ func TestVMHooksImpl_EllipticCurve(t *testing.T) {
 	hooks, host, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	managedType := &mockery.MockManagedTypesContext{}
-	host.On("ManagedTypes").Return(managedType)
-	host.On("FailExecution", mock.Anything).Return()
+	managedType := host.ManagedTypes().(*mockery.MockManagedTypesContext)
 
 	ec := elliptic.P256().Params()
 	managedType.On("GetEllipticCurve", mock.Anything).Return(ec, nil)
