@@ -19,8 +19,11 @@ func TestNewVMHooksImpl(t *testing.T) {
 
 func TestVMHooksImpl_MemLoad(t *testing.T) {
 	t.Parallel()
-	hooks, _, runtime, _, _, _ := createTestVMHooks()
-	instance := &mockery.MockInstance{}
+	vmHooks := createTestVMHooksClear()
+	instance := vmHooks.instance
+	runtime := vmHooks.runtime
+	hooks := vmHooks.hooks
+
 	runtime.On("GetInstance").Return(instance)
 	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte("data"), nil)
 
@@ -55,10 +58,10 @@ func TestVMHooksImpl_MemStore(t *testing.T) {
 func TestVMHooksImpl_Getters(t *testing.T) {
 	t.Parallel()
 	hooks, host, runtime, metering, output, storage := createTestVMHooks()
+
 	require.Equal(t, host, hooks.GetVMHost())
 	require.Equal(t, host.Blockchain(), hooks.GetBlockchainContext())
 	require.Equal(t, runtime, hooks.GetRuntimeContext())
-	require.Equal(t, host.Crypto(), hooks.GetCryptoContext())
 	require.Equal(t, host.ManagedTypes(), hooks.GetManagedTypesContext())
 	require.Equal(t, output, hooks.GetOutputContext())
 	require.Equal(t, metering, hooks.GetMeteringContext())

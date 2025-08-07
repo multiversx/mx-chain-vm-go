@@ -712,7 +712,6 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 			if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
 				err = vmhost.ErrBigFloatDecode
 			}
-
 			context.FailExecution(err)
 			return 1
 		}
