@@ -17,10 +17,9 @@ func TestVMHooksImpl_GetGasLeft(t *testing.T) {
 	t.Parallel()
 	hooks, _, _, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
-	metering.On("GasLeft").Return(uint64(12345))
 
 	gasLeft := hooks.GetGasLeft()
-	require.Equal(t, int64(12345), gasLeft)
+	require.Equal(t, int64(100), gasLeft)
 }
 
 func TestVMHooksImpl_GetSCAddress(t *testing.T) {
@@ -956,6 +955,7 @@ func TestVMHooksImpl_ExecuteReadOnly(t *testing.T) {
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
 	runtime.On("ReadOnly").Return(false)
 	runtime.On("SetReadOnly", mock.Anything).Return()
+	runtime.On("GetOriginalCallerAddress").Return([]byte("address"))
 
 	async := &mockery.MockAsyncContext{}
 	host.On("Async").Return(async)
