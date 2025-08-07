@@ -83,13 +83,12 @@ func TestVMHooksImpl_SignalError(t *testing.T) {
 	hooks, _, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
-	errorMessage := "error message"
 	instance := runtime.GetInstance().(*mockery.MockInstance)
-	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte(errorMessage), nil)
-	runtime.On("SignalUserError", errorMessage).Return()
+	instance.On("MemLoad", mock.Anything, mock.Anything).Return([]byte(""), nil)
+	runtime.On("SignalUserError", "").Return()
 
 	hooks.SignalError(0, 0)
-	runtime.AssertCalled(t, "SignalUserError", errorMessage)
+	runtime.AssertCalled(t, "SignalUserError", "")
 }
 
 func TestVMHooksImpl_GetExternalBalance(t *testing.T) {
@@ -101,7 +100,7 @@ func TestVMHooksImpl_GetExternalBalance(t *testing.T) {
 	host.On("Blockchain").Return(blockchain)
 
 	balance := big.NewInt(100)
-	blockchain.On("GetBalance", mock.Anything).Return(balance)
+	blockchain.On("GetBalance", mock.Anything).Return(balance.Bytes())
 
 	hooks.GetExternalBalance(0, 0)
 	blockchain.AssertCalled(t, "GetBalance", mock.Anything)
@@ -261,9 +260,10 @@ func TestVMHooksImpl_ValidateTokenIdentifier(t *testing.T) {
 
 func TestVMHooksImpl_TransferValue(t *testing.T) {
 	t.Parallel()
-	hooks, _, runtime, metering, output, _ := createTestVMHooks()
+	hooks, host, runtime, metering, output, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 
+	host.On("IsBuiltinFunctionCall", mock.Anything).Return(false)
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	output.On("Transfer", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
@@ -276,6 +276,10 @@ func TestVMHooksImpl_TransferValueExecute(t *testing.T) {
 	hooks, host, runtime, metering, output, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(false)
+	blockchain := &mockery.MockBlockchainContext{}
+	host.On("Blockchain").Return(blockchain)
+	blockchain.On("LastRound").Return(uint64(0))
+	host.On("IsBuiltinFunctionCall", mock.Anything).Return(false)
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	output.On("Transfer", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -289,6 +293,9 @@ func TestVMHooksImpl_TransferESDTExecute(t *testing.T) {
 	hooks, host, runtime, metering, output, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(false)
+	blockchain := &mockery.MockBlockchainContext{}
+	host.On("Blockchain").Return(blockchain)
+	blockchain.On("GetSnapshot").Return(0)
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
 	output.On("TransferESDT", mock.Anything, mock.Anything).Return(uint64(0), nil)
@@ -302,8 +309,12 @@ func TestVMHooksImpl_MultiTransferESDTNFTExecute(t *testing.T) {
 	hooks, host, runtime, metering, output, _ := createTestVMHooks()
 	metering.On("UseGasBounded", mock.Anything).Return(nil)
 	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(false)
+	blockchain := &mockery.MockBlockchainContext{}
+	host.On("Blockchain").Return(blockchain)
+	blockchain.On("GetSnapshot").Return(0)
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
+	runtime.On("GetOriginalCallerAddress").Return([]byte("address"))
 	output.On("TransferESDT", mock.Anything, mock.Anything).Return(uint64(0), nil)
 
 	instance := runtime.GetInstance().(*mockery.MockInstance)
@@ -497,8 +508,10 @@ func TestVMHooksImpl_GetCaller(t *testing.T) {
 	hooks, _, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		CallerAddr: []byte("caller"),
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr: []byte("caller"),
+		},
 	})
 
 	hooks.GetCaller(0)
@@ -509,9 +522,11 @@ func TestVMHooksImpl_CheckNoPayment(t *testing.T) {
 	hooks, _, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		CallValue:     big.NewInt(0),
-		ESDTTransfers: []*vmcommon.ESDTTransfer{},
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallValue:     big.NewInt(0),
+			ESDTTransfers: []*vmcommon.ESDTTransfer{},
+		},
 	})
 
 	hooks.CheckNoPayment()
@@ -522,8 +537,10 @@ func TestVMHooksImpl_GetCallValue(t *testing.T) {
 	hooks, _, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		CallValue: big.NewInt(100),
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallValue: big.NewInt(100),
+		},
 	})
 
 	ret := hooks.GetCallValue(0)
@@ -535,10 +552,12 @@ func TestVMHooksImpl_GetESDTValue(t *testing.T) {
 	hooks, host, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		ESDTTransfers: []*vmcommon.ESDTTransfer{
-			{
-				ESDTValue: big.NewInt(100),
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			ESDTTransfers: []*vmcommon.ESDTTransfer{
+				{
+					ESDTValue: big.NewInt(100),
+				},
 			},
 		},
 	})
@@ -553,10 +572,12 @@ func TestVMHooksImpl_GetESDTTokenName(t *testing.T) {
 	hooks, host, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		ESDTTransfers: []*vmcommon.ESDTTransfer{
-			{
-				ESDTTokenName: []byte("token-name"),
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			ESDTTransfers: []*vmcommon.ESDTTransfer{
+				{
+					ESDTTokenName: []byte("token-name"),
+				},
 			},
 		},
 	})
@@ -571,10 +592,12 @@ func TestVMHooksImpl_GetESDTTokenNonce(t *testing.T) {
 	hooks, host, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		ESDTTransfers: []*vmcommon.ESDTTransfer{
-			{
-				ESDTTokenNonce: 123,
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			ESDTTransfers: []*vmcommon.ESDTTransfer{
+				{
+					ESDTTokenNonce: 123,
+				},
 			},
 		},
 	})
@@ -601,10 +624,12 @@ func TestVMHooksImpl_GetESDTTokenType(t *testing.T) {
 	hooks, host, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		ESDTTransfers: []*vmcommon.ESDTTransfer{
-			{
-				ESDTTokenType: 1,
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			ESDTTransfers: []*vmcommon.ESDTTransfer{
+				{
+					ESDTTokenType: 1,
+				},
 			},
 		},
 	})
@@ -619,10 +644,12 @@ func TestVMHooksImpl_GetNumESDTTransfers(t *testing.T) {
 	hooks, _, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		ESDTTransfers: []*vmcommon.ESDTTransfer{
-			{},
-			{},
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			ESDTTransfers: []*vmcommon.ESDTTransfer{
+				{},
+				{},
+			},
 		},
 	})
 
@@ -635,12 +662,15 @@ func TestVMHooksImpl_GetCallValueTokenName(t *testing.T) {
 	hooks, host, runtime, metering, _, _ := createTestVMHooks()
 	metering.On("UseGasBoundedAndAddTracedGas", mock.Anything, mock.Anything).Return(nil)
 
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{
-		ESDTTransfers: []*vmcommon.ESDTTransfer{
-			{
-				ESDTTokenName: []byte("token-name"),
-				ESDTValue:     big.NewInt(100),
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			ESDTTransfers: []*vmcommon.ESDTTransfer{
+				{
+					ESDTTokenName: []byte("token-name"),
+					ESDTValue:     big.NewInt(100),
+				},
 			},
+			CallValue: big.NewInt(0),
 		},
 	})
 	host.On("FailExecution", mock.Anything, mock.Anything).Return()
@@ -938,6 +968,10 @@ func TestVMHooksImpl_ExecuteOnSameContext(t *testing.T) {
 	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
+	runtime.On("GetOriginalCallerAddress").Return([]byte("address"))
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
+	metering.On("BoundGasLimit", mock.Anything).Return(uint64(0))
+	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnSameContext", mock.Anything).Return(nil)
 
 	ret := hooks.ExecuteOnSameContext(0, 0, 0, 0, 0, 0, 0, 0)
@@ -951,6 +985,10 @@ func TestVMHooksImpl_ExecuteOnDestContext(t *testing.T) {
 	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
+	runtime.On("GetOriginalCallerAddress").Return([]byte("address"))
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
+	metering.On("BoundGasLimit", mock.Anything).Return(uint64(0))
+	host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
 	host.On("CompleteLogEntriesWithCallType", mock.Anything, mock.Anything).Return()
 
@@ -970,6 +1008,9 @@ func TestVMHooksImpl_ExecuteReadOnly(t *testing.T) {
 	host.On("AreInSameShard", mock.Anything, mock.Anything).Return(true)
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
+	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
+	metering.On("BoundGasLimit", mock.Anything).Return(uint64(0))
 	host.On("ExecuteOnDestContext", mock.Anything).Return(&vmcommon.VMOutput{}, true, nil)
 	runtime.On("ReadOnly").Return(false)
 	runtime.On("SetReadOnly", mock.Anything).Return()
@@ -990,8 +1031,8 @@ func TestVMHooksImpl_CreateContract(t *testing.T) {
 	metering.On("BoundGasLimit", mock.Anything).Return(uint64(1000000))
 
 	runtime.On("GetContextAddress").Return([]byte("sender"))
-	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetOriginalCallerAddress").Return([]byte("address"))
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	host.On("CreateNewContract", mock.Anything, mock.Anything).Return([]byte("new-address"), nil)
 
 	ret := hooks.CreateContract(0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -1007,8 +1048,8 @@ func TestVMHooksImpl_DeployFromSourceContract(t *testing.T) {
 	blockchain := &mockery.MockBlockchainContext{}
 	host.On("Blockchain").Return(blockchain)
 	runtime.On("GetContextAddress").Return([]byte("sender"))
-	runtime.On("GetOriginalCallerAddress").Return([]byte("original-caller"))
-	runtime.On("GetVMInput").Return(&vmcommon.VMInput{})
+	runtime.On("GetOriginalCallerAddress").Return([]byte("address"))
+	runtime.On("GetVMInput").Return(&vmcommon.ContractCallInput{})
 	blockchain.On("GetCode", mock.Anything).Return([]byte("code"), nil)
 	host.On("CreateNewContract", mock.Anything, mock.Anything).Return([]byte("new-address"), nil)
 
