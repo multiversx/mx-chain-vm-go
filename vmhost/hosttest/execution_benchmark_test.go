@@ -4,6 +4,8 @@ import (
 	"math"
 	"math/big"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -61,6 +63,41 @@ func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
 	}
 
 	runMemoryUsageFuzzyBenchmark(t, 100, 100)
+}
+
+func Test_JustNewDeploy(t *testing.T) {
+	mockWorld, ownerAccount, host, err := prepare(t, owner)
+	require.Nil(t, err)
+
+	code, _ := os.ReadFile(filepath.Clean("world.wasm"))
+	// Deploy ERC20
+	deployInput := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  owner,
+			Arguments:   [][]byte{{1}},
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    0,
+			GasProvided: math.MaxInt64,
+		},
+		ContractCode: code,
+	}
+
+	mockWorld.NewAddressMocks = append(mockWorld.NewAddressMocks, &worldmock.NewAddressMock{
+		CreatorAddress: owner,
+		CreatorNonce:   ownerAccount.Nonce,
+		NewAddress:     scAddress,
+	})
+	ownerAccount.Nonce++ // nonce increases before deploy
+	vmOutput, err := host.RunSmartContractCreate(deployInput)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	// Ensure the deployment persists in the mock BlockchainHook
+	_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {

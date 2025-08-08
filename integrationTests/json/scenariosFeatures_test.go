@@ -181,3 +181,11 @@ func TestBalanceAfterGet(t *testing.T) {
 		Run().
 		CheckNoError()
 }
+
+func TestNFTDecode(t *testing.T) {
+	ScenariosTest(t).
+		Folder("features/composability/scenarios").
+		File("forwarder_nft_decode_complex_attributes.scen.json").
+		Run().
+		CheckNoError()
+}
