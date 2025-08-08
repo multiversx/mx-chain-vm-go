@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.59.0"
+            "version": "0.59.1"
         }
     },
     "abi": {
@@ -120,6 +120,31 @@
                     {
                         "name": "amount",
                         "type": "BigUint"
+                    }
+                ]
+            },
+            "EsdtTokenType": {
+                "type": "enum",
+                "variants": [
+                    {
+                        "name": "Fungible",
+                        "discriminant": 0
+                    },
+                    {
+                        "name": "NonFungible",
+                        "discriminant": 1
+                    },
+                    {
+                        "name": "SemiFungible",
+                        "discriminant": 2
+                    },
+                    {
+                        "name": "Meta",
+                        "discriminant": 3
+                    },
+                    {
+                        "name": "Invalid",
+                        "discriminant": 4
                     }
                 ]
             },
@@ -263,7 +288,7 @@
         ],
         "isMemGrow": false,
         "eiCheck": {
-            "eiVersion": "1.4",
+            "eiVersion": "1.5",
             "ok": true
         },
         "codeReport": {
