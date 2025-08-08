@@ -56,6 +56,7 @@ type runtimeContext struct {
 	readOnly             bool
 	verifyCode           bool
 	maxInstanceStackSize uint64
+	unsafeMode           bool
 
 	vmExecutor executor.Executor
 
@@ -124,6 +125,7 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
+	context.unsafeMode = false
 	context.iTracker.InitState()
 	context.errors = nil
 
@@ -398,6 +400,7 @@ func (context *runtimeContext) PushState() {
 		codeAddress:  context.codeAddress,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
+		unsafeMode:   context.unsafeMode,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -426,6 +429,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.codeAddress = prevState.codeAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
+	context.unsafeMode = prevState.unsafeMode
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -637,6 +641,29 @@ func (context *runtimeContext) FailExecution(err error) {
 		traceMessage = err.Error()
 	}
 	logRuntime.Trace("execution failed", "message", traceMessage)
+}
+
+// FailExecutionConditionally informs Wasmer to immediately stop the execution of the contract
+// with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly, if the unsafe mode is not active.
+// If unsafe mode is active, it just logs the error.
+func (context *runtimeContext) FailExecutionConditionally(err error) {
+	if context.IsUnsafeMode() {
+		logRuntime.Debug("execution would have failed, but unsafe mode is active", "err", err)
+		context.AddError(err)
+		return
+	}
+
+	context.FailExecution(err)
+}
+
+// IsUnsafeMode returns true if mode is unsafe
+func (context *runtimeContext) IsUnsafeMode() bool {
+	return context.unsafeMode
+}
+
+// SetUnsafeMode sets the current mode of running
+func (context *runtimeContext) SetUnsafeMode(unsafeMode bool) {
+	context.unsafeMode = unsafeMode
 }
 
 // SignalUserError informs Wasmer to immediately stop the execution of the contract

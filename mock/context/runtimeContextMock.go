@@ -19,6 +19,7 @@ type RuntimeContextMock struct {
 	CallFunction             string
 	VMType                   []byte
 	ReadOnlyFlag             bool
+	UnsafeModeFlag           bool
 	VerifyCode               bool
 	CurrentBreakpointValue   vmhost.BreakpointValue
 	PointsUsed               uint64
@@ -318,6 +319,16 @@ func (r *RuntimeContextMock) ManagedMapAPIErrorShouldFailExecution() bool {
 // UseGasBoundedShouldFailExecution mocked method
 func (r *RuntimeContextMock) UseGasBoundedShouldFailExecution() bool {
 	return true
+}
+
+// IsUnsafeMode mocked method
+func (r *RuntimeContextMock) IsUnsafeMode() bool {
+	return r.UnsafeModeFlag
+}
+
+// SetUnsafeMode mocked method
+func (r *RuntimeContextMock) SetUnsafeMode(unsafeMode bool) {
+	r.UnsafeModeFlag = unsafeMode
 }
 
 // FailExecution mocked method

@@ -54,8 +54,7 @@ type vmHost struct {
 	mutExecution     sync.RWMutex
 	closingInstance  bool
 	executionTimeout time.Duration
-
-	ethInput []byte
+	ethInput         []byte
 
 	blockchainContext   vmhost.BlockchainContext
 	runtimeContext      vmhost.RuntimeContext

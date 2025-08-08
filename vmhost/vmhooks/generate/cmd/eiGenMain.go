@@ -27,6 +27,7 @@ func initEIMetadata() *eapigen.EIMetadata {
 			{SourcePath: "manMapOps.go", Name: "ManagedMap"},
 			{SourcePath: "smallIntOps.go", Name: "SmallInt"},
 			{SourcePath: "cryptoei.go", Name: "Crypto"},
+			{SourcePath: "unsafeOps.go", Name: "Unsafe"},
 		},
 		AllFunctions: nil,
 	}
