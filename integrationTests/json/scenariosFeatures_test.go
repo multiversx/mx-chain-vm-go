@@ -1,7 +1,6 @@
 package vmjsonintegrationtest
 
 import (
-	"path/filepath"
 	"testing"
 )
 
@@ -92,26 +91,6 @@ func TestRustPayableFeatures(t *testing.T) {
 
 	ScenariosTest(t).
 		Folder("features/payable-features/scenarios").
-		Run().
-		CheckNoError()
-}
-
-func TestRustPayableFeaturesBarnard(t *testing.T) {
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	// we run the exact same tests, but on a different compiled contract,
-	// this contract uses the new "managedGetAllTransfersCallValue" VM hook,
-	// which is only available in Barnard
-	// this will become the only test
-
-	ScenariosTest(t).
-		Folder("features/payable-features/scenarios").
-		ReplacePath(
-			"../output/payable-features.mxsc.json",
-			filepath.Join(getTestRoot(), "features/payable-features/output/payable-features-barnard.mxsc.json"),
-		).
 		Run().
 		CheckNoError()
 }
