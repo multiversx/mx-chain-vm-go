@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.87.0",
-            "commitHash": "17067e9ac6d7ecb70e50f92c1944e545188d2359",
-            "commitDate": "2025-05-09",
+            "version": "1.89.0",
+            "commitHash": "29483883eed69d5fb4db01964cdf2af4d86e9cb2",
+            "commitDate": "2025-08-04",
             "channel": "Stable",
-            "short": "rustc 1.87.0 (17067e9ac 2025-05-09)"
+            "short": "rustc 1.89.0 (29483883e 2025-08-04)"
         },
         "contractCrate": {
             "name": "payable-features",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.59.1"
+            "version": "0.60.0"
         }
     },
     "abi": {
