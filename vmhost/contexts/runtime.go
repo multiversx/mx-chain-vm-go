@@ -45,6 +45,11 @@ var mapBarnardOpcodes = map[string]struct{}{
 	"managedGetESDTTokenType":                      {},
 }
 
+var mapFailConditionalOpcodes = map[string]struct{}{
+	"ActivateUnsafeMode":   {},
+	"DeactivateUnsafeMode": {},
+}
+
 const warmCacheSize = 100
 
 type runtimeContext struct {
@@ -732,6 +737,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.FailConditionallyFlag) {
+		err = context.checkIfContainsFailConditionalOpcodes()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -748,6 +761,15 @@ func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
 
 func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
 	for funcName := range mapBarnardOpcodes {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsFailConditionalOpcodes() error {
+	for funcName := range mapFailConditionalOpcodes {
 		if context.iTracker.Instance().IsFunctionImported(funcName) {
 			return vmhost.ErrContractInvalid
 		}

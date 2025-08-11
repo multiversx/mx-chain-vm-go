@@ -30,5 +30,8 @@ const (
 	// FixGetBalanceFlag defines the flag that activates the fix for get balance from the Barnard release
 	FixGetBalanceFlag core.EnableEpochFlag = "FixGetBalanceFlag"
 
+	// FailConditionallyFlag defines the flag that activates the new opcodes and possibility for failing conditionally
+	FailConditionallyFlag core.EnableEpochFlag = "FailConditionallyFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

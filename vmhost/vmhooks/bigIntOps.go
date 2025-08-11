@@ -199,8 +199,9 @@ func (context *VMHooksImpl) BigIntGetCallValue(destinationHandle int32) {
 // BigIntGetESDTCallValue VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntGetESDTCallValue(destination int32) {
-	isFail := failIfMoreThanOneESDTTransfer(context)
-	if isFail {
+	err := failIfMoreThanOneESDTTransfer(context)
+	if err != nil {
+		context.FailExecution(err)
 		return
 	}
 	context.BigIntGetESDTCallValueByIndex(destination, 0)
@@ -219,13 +220,14 @@ func (context *VMHooksImpl) BigIntGetESDTCallValueByIndex(destinationHandle int3
 		return
 	}
 
-	value := managedType.GetBigIntOrCreate(destinationHandle)
-	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
-	if esdtTransfer != nil {
-		value.Set(esdtTransfer.ESDTValue)
-	} else {
-		value.Set(big.NewInt(0))
+	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
+	if err != nil {
+		context.FailExecution(err)
+		return
 	}
+
+	value := managedType.GetBigIntOrCreate(destinationHandle)
+	value.Set(esdtTransfer.ESDTValue)
 }
 
 // BigIntGetExternalBalance VMHooks implementation.

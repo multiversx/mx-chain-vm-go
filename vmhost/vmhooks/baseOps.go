@@ -44,11 +44,6 @@ const (
 	getCallerName                    = "getCaller"
 	checkNoPaymentName               = "checkNoPayment"
 	callValueName                    = "callValue"
-	getESDTValueName                 = "getESDTValue"
-	getESDTTokenNameName             = "getESDTTokenName"
-	getESDTTokenNonceName            = "getESDTTokenNonce"
-	getESDTTokenTypeName             = "getESDTTokenType"
-	getCallValueTokenNameName        = "getCallValueTokenName"
 	getESDTValueByIndexName          = "getESDTValueByIndex"
 	getESDTTokenNameByIndexName      = "getESDTTokenNameByIndex"
 	getESDTTokenNonceByIndexName     = "getESDTTokenNonceByIndex"
@@ -117,22 +112,20 @@ const (
 
 var logEEI = logger.GetOrCreate("vm/eei")
 
-func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
+func getESDTTransferFromInput(host vmhost.VMHost, index int32) (*vmcommon.ESDTTransfer, error) {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index || index < 0 {
-		FailExecution(host, vmhost.ErrInvalidTokenIndex)
-		return nil
+		return nil, vmhost.ErrInvalidTokenIndex
 	}
-	return esdtTransfers[index]
+	return esdtTransfers[index], nil
 }
 
-func failIfMoreThanOneESDTTransfer(context *VMHooksImpl) bool {
+func failIfMoreThanOneESDTTransfer(context *VMHooksImpl) error {
 	runtime := context.GetRuntimeContext()
 	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
-		FailExecution(context.GetVMHost(), vmhost.ErrTooManyESDTTransfers)
-		return true
+		return vmhost.ErrTooManyESDTTransfers
 	}
-	return false
+	return nil
 }
 
 // GetGasLeft VMHooks implementation.
@@ -2387,8 +2380,9 @@ func (context *VMHooksImpl) GetCallValue(resultOffset executor.MemPtr) int32 {
 // GetESDTValue VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTValue(resultOffset executor.MemPtr) int32 {
-	isFail := failIfMoreThanOneESDTTransfer(context)
-	if isFail {
+	err := failIfMoreThanOneESDTTransfer(context)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	return context.GetESDTValueByIndex(resultOffset, 0)
@@ -2408,7 +2402,12 @@ func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, in
 
 	var value []byte
 
-	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
+	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
 	if esdtTransfer != nil && esdtTransfer.ESDTValue.Cmp(vmhost.Zero) > 0 {
 		value = esdtTransfer.ESDTValue.Bytes()
 		value = vmhost.PadBytesLeft(value, vmhost.BalanceLen)
@@ -2426,8 +2425,9 @@ func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, in
 // GetESDTTokenName VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
-	isFail := failIfMoreThanOneESDTTransfer(context)
-	if isFail {
+	err := failIfMoreThanOneESDTTransfer(context)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	return context.GetESDTTokenNameByIndex(resultOffset, 0)
@@ -2445,26 +2445,27 @@ func (context *VMHooksImpl) GetESDTTokenNameByIndex(resultOffset executor.MemPtr
 		return -1
 	}
 
-	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
-	var tokenName []byte
-	if esdtTransfer != nil {
-		tokenName = esdtTransfer.ESDTTokenName
-	}
-
-	err = context.MemStore(resultOffset, tokenName)
+	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
 	if err != nil {
 		context.FailExecution(err)
 		return -1
 	}
 
-	return int32(len(tokenName))
+	err = context.MemStore(resultOffset, esdtTransfer.ESDTTokenName)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
+	return int32(len(esdtTransfer.ESDTTokenName))
 }
 
 // GetESDTTokenNonce VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTTokenNonce() int64 {
-	isFail := failIfMoreThanOneESDTTransfer(context)
-	if isFail {
+	err := failIfMoreThanOneESDTTransfer(context)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	return context.GetESDTTokenNonceByIndex(0)
@@ -2482,12 +2483,13 @@ func (context *VMHooksImpl) GetESDTTokenNonceByIndex(index int32) int64 {
 		return -1
 	}
 
-	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
-	nonce := uint64(0)
-	if esdtTransfer != nil {
-		nonce = esdtTransfer.ESDTTokenNonce
+	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
 	}
-	return int64(nonce)
+
+	return int64(esdtTransfer.ESDTTokenNonce)
 }
 
 // GetCurrentESDTNFTNonce VMHooks implementation.
@@ -2536,8 +2538,9 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 // GetESDTTokenType VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetESDTTokenType() int32 {
-	isFail := failIfMoreThanOneESDTTransfer(context)
-	if isFail {
+	err := failIfMoreThanOneESDTTransfer(context)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	return context.GetESDTTokenTypeByIndex(0)
@@ -2555,11 +2558,13 @@ func (context *VMHooksImpl) GetESDTTokenTypeByIndex(index int32) int32 {
 		return -1
 	}
 
-	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
-	if esdtTransfer != nil {
-		return int32(esdtTransfer.ESDTTokenType)
+	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
 	}
-	return 0
+
+	return int32(esdtTransfer.ESDTTokenType)
 }
 
 // GetNumESDTTransfers VMHooks implementation.
@@ -2581,8 +2586,9 @@ func (context *VMHooksImpl) GetNumESDTTransfers() int32 {
 // GetCallValueTokenName VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) int32 {
-	isFail := failIfMoreThanOneESDTTransfer(context)
-	if isFail {
+	err := failIfMoreThanOneESDTTransfer(context)
+	if err != nil {
+		context.FailExecution(err)
 		return -1
 	}
 	return context.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, 0)
@@ -2607,13 +2613,16 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 
 	callValue := runtime.GetVMInput().CallValue.Bytes()
 	tokenName := make([]byte, 0)
-	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
 
-	if esdtTransfer != nil {
-		tokenName = make([]byte, len(esdtTransfer.ESDTTokenName))
-		copy(tokenName, esdtTransfer.ESDTTokenName)
-		callValue = esdtTransfer.ESDTValue.Bytes()
+	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
+	if err != nil {
+		context.FailExecution(err)
+		return -1
 	}
+
+	tokenName = make([]byte, len(esdtTransfer.ESDTTokenName))
+	copy(tokenName, esdtTransfer.ESDTTokenName)
+	callValue = esdtTransfer.ESDTValue.Bytes()
 	callValue = vmhost.PadBytesLeft(callValue, vmhost.BalanceLen)
 
 	err = context.MemStore(tokenNameOffset, tokenName)
