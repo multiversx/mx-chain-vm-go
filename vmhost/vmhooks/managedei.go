@@ -93,7 +93,7 @@ func (context *VMHooksImpl) ManagedOwnerAddress(destinationHandle int32) {
 
 	owner, err := blockchain.GetOwnerAddress()
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -205,13 +205,13 @@ func (context *VMHooksImpl) ManagedWriteLog(
 
 	topics, sumOfTopicByteLengths, err := managedType.ReadManagedVecOfManagedBuffers(topicsHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
 	dataBytes, err := managedType.GetBytes(dataHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -321,7 +321,7 @@ func (context *VMHooksImpl) ManagedGetReturnData(resultID int32, resultHandle in
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -346,7 +346,7 @@ func (context *VMHooksImpl) ManagedGetMultiESDTCallValue(multiCallValueHandle in
 	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
 	err = managedType.ConsumeGasForBytes(multiCallBytes)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -361,7 +361,7 @@ func (context *VMHooksImpl) ManagedGetAllTransfersCallValue(transferCallValuesLi
 
 	allTransfers, err := ManagedGetAllTransfersCallValueTyped(host)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -448,18 +448,18 @@ func (context *VMHooksImpl) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -504,18 +504,18 @@ func ManagedGetESDTTokenDataWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -527,25 +527,25 @@ func ManagedGetESDTTokenDataWithHost(
 		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
 		if err != nil {
-			FailExecution(host, err)
+			FailExecutionConditionally(host, err)
 			return
 		}
 		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
 		if err != nil {
-			FailExecution(host, err)
+			FailExecutionConditionally(host, err)
 			return
 		}
 		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
 		if err != nil {
-			FailExecution(host, err)
+			FailExecutionConditionally(host, err)
 			return
 		}
 		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
 		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
 		if err != nil {
-			FailExecution(host, err)
+			FailExecutionConditionally(host, err)
 			return
 		}
 		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
@@ -553,7 +553,7 @@ func ManagedGetESDTTokenDataWithHost(
 
 		err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
 		if err != nil {
-			FailExecution(host, err)
+			FailExecutionConditionally(host, err)
 			return
 		}
 	}
@@ -597,18 +597,18 @@ func ManagedGetESDTTokenTypeWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -654,7 +654,7 @@ func ManagedAsyncCallWithHost(
 
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -662,7 +662,7 @@ func ManagedAsyncCallWithHost(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecutionConditionally(host, vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -705,7 +705,7 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -713,25 +713,25 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return 1
 	}
 
 	successFunc, err := context.MemLoad(successOffset, successLength)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	errorFunc, err := context.MemLoad(errorOffset, errorLength)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	callbackClosure, err := managedType.GetBytes(callbackClosureHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -774,7 +774,7 @@ func GetCallbackClosureWithHost(
 
 	callbackClosure, err := async.GetCallbackClosure()
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -807,19 +807,19 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 
 	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	sourceContractAddress, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -867,24 +867,24 @@ func (context *VMHooksImpl) ManagedUpgradeContract(
 
 	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -934,13 +934,13 @@ func ManagedDeleteContractWithHost(
 
 	calledSCAddress, err := managedType.GetBytes(destHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	data, _, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -978,13 +978,13 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 
 	vmInput, err := readDestinationValueArguments(host, addressHandle, valueHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -999,7 +999,7 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 		gas,
 	)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1040,13 +1040,13 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	sender := runtime.GetContextAddress()
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1059,20 +1059,20 @@ func (context *VMHooksImpl) ManagedCreateContract(
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
 	newAddress, err := createContract(sender, data, value, gas, code, codeMetadata, host, CreateContract)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1115,7 +1115,7 @@ func (context *VMHooksImpl) ManagedExecuteReadOnly(
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1152,7 +1152,7 @@ func (context *VMHooksImpl) ManagedExecuteOnSameContext(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1190,7 +1190,7 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1227,7 +1227,7 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContextWithErrorReturn(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1284,13 +1284,13 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1321,13 +1321,13 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithReturn(
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1359,25 +1359,25 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteByUser)
 
 	if !host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
-		FailExecution(host, vmhost.ErrOpcodeIsNotAllowed)
+		FailExecutionConditionally(host, vmhost.ErrOpcodeIsNotAllowed)
 		return -1
 	}
 
 	user, err := managedType.GetBytes(userHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, runtime, tokenTransfersHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1407,7 +1407,7 @@ func (context *VMHooksImpl) ManagedTransferValueExecute(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1449,18 +1449,18 @@ func ManagedIsESDTFrozenWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1492,7 +1492,7 @@ func ManagedIsESDTLimitedTransferWithHost(host vmhost.VMHost, tokenIDHandle int3
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1524,7 +1524,7 @@ func ManagedIsESDTPausedWithHost(host vmhost.VMHost, tokenIDHandle int32) int32 
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -1555,7 +1555,7 @@ func ManagedBufferToHexWithHost(host vmhost.VMHost, sourceHandle int32, destHand
 
 	mBuff, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1590,13 +1590,13 @@ func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, res
 
 	mBuffAddress, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	contract, err := host.Blockchain().GetUserAccount(mBuffAddress)
 	if err != nil || check.IfNil(contract) {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1613,13 +1613,13 @@ func (context *VMHooksImpl) ManagedGetCodeHash(addressHandle int32, codeHashHand
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	codeHash, err := ManagedGetCodeHashTyped(host, address)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1665,7 +1665,7 @@ func ManagedIsBuiltinFunctionWithHost(host vmhost.VMHost, functionNameHandle int
 
 	mBuffFunctionName, err := managedType.GetBytes(functionNameHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 

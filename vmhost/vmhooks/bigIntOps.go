@@ -320,7 +320,7 @@ func (context *VMHooksImpl) BigIntUnsignedByteLength(referenceHandle int32) int3
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -343,7 +343,7 @@ func (context *VMHooksImpl) BigIntSignedByteLength(referenceHandle int32) int32 
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -367,7 +367,7 @@ func (context *VMHooksImpl) BigIntGetUnsignedBytes(referenceHandle int32, byteOf
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	bytes := value.Bytes()
@@ -404,7 +404,7 @@ func (context *VMHooksImpl) BigIntGetSignedBytes(referenceHandle int32, byteOffs
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	bytes := twos.ToBytes(value)
@@ -502,7 +502,7 @@ func (context *VMHooksImpl) BigIntIsInt64(destinationHandle int32) int32 {
 
 	value, err := managedType.GetBigInt(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	if value.IsInt64() {
@@ -526,7 +526,7 @@ func (context *VMHooksImpl) BigIntGetInt64(destinationHandle int32) int64 {
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	if !value.IsInt64() {
-		context.FailExecution(vmhost.ErrBigIntCannotBeRepresentedAsInt64)
+		context.FailExecutionConditionally(vmhost.ErrBigIntCannotBeRepresentedAsInt64)
 		return -1
 	}
 	return value.Int64()
@@ -566,7 +566,7 @@ func (context *VMHooksImpl) BigIntAdd(destinationHandle, op1Handle, op2Handle in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -596,7 +596,7 @@ func (context *VMHooksImpl) BigIntSub(destinationHandle, op1Handle, op2Handle in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -626,7 +626,7 @@ func (context *VMHooksImpl) BigIntMul(destinationHandle, op1Handle, op2Handle in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -656,7 +656,7 @@ func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle i
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -667,7 +667,7 @@ func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
@@ -690,7 +690,7 @@ func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle i
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -701,7 +701,7 @@ func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
@@ -724,7 +724,7 @@ func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle i
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -735,7 +735,7 @@ func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
@@ -758,7 +758,7 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -769,7 +769,7 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	}
 
 	if b.Sign() == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
+		context.FailExecutionConditionally(vmhost.ErrDivZero)
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
@@ -792,7 +792,7 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -803,7 +803,7 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 	}
 
 	if a.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return
 	}
 	dest.Sqrt(a)
@@ -826,7 +826,7 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -846,7 +846,7 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 	}
 
 	if b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return
 	}
 
@@ -869,7 +869,7 @@ func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 
 	a, err := managedType.GetBigInt(op1Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -880,7 +880,7 @@ func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 	}
 
 	if a.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
+		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
 		return -1
 	}
 
@@ -904,7 +904,7 @@ func (context *VMHooksImpl) BigIntAbs(destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -934,7 +934,7 @@ func (context *VMHooksImpl) BigIntNeg(destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -963,7 +963,7 @@ func (context *VMHooksImpl) BigIntSign(opHandle int32) int32 {
 
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -2
 	}
 
@@ -992,7 +992,7 @@ func (context *VMHooksImpl) BigIntCmp(op1Handle, op2Handle int32) int32 {
 
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -2
 	}
 
@@ -1022,7 +1022,7 @@ func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1033,7 +1033,7 @@ func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 	}
 
 	if a.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Not(a)
@@ -1056,7 +1056,7 @@ func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1067,7 +1067,7 @@ func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle in
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.And(a, b)
@@ -1090,7 +1090,7 @@ func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1101,7 +1101,7 @@ func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Or(a, b)
@@ -1124,7 +1124,7 @@ func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1135,7 +1135,7 @@ func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle in
 	}
 
 	if a.Sign() < 0 || b.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBitwiseNegative)
+		context.FailExecutionConditionally(vmhost.ErrBitwiseNegative)
 		return
 	}
 	dest.Xor(a, b)
@@ -1158,7 +1158,7 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1169,7 +1169,7 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 	}
 
 	if a.Sign() < 0 || bits < 0 {
-		context.FailExecution(vmhost.ErrShiftNegative)
+		context.FailExecutionConditionally(vmhost.ErrShiftNegative)
 		return
 	}
 	dest.Rsh(a, uint(bits))
@@ -1199,7 +1199,7 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1210,7 +1210,7 @@ func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	}
 
 	if a.Sign() < 0 || bits < 0 {
-		context.FailExecution(vmhost.ErrShiftNegative)
+		context.FailExecutionConditionally(vmhost.ErrShiftNegative)
 		return
 	}
 
@@ -1256,7 +1256,7 @@ func (context *VMHooksImpl) BigIntFinishUnsigned(referenceHandle int32) {
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 	bigIntBytes := value.Bytes()
@@ -1288,7 +1288,7 @@ func (context *VMHooksImpl) BigIntFinishSigned(referenceHandle int32) {
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 	bigInt2cBytes := twos.ToBytes(value)
@@ -1323,7 +1323,7 @@ func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationH
 
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 

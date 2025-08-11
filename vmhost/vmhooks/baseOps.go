@@ -179,7 +179,7 @@ func (context *VMHooksImpl) GetOwnerAddress(resultOffset executor.MemPtr) {
 
 	owner, err := blockchain.GetOwnerAddress()
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -361,7 +361,7 @@ func (context *VMHooksImpl) GetESDTBalance(
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
@@ -387,11 +387,11 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 
@@ -412,11 +412,11 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 
@@ -437,11 +437,11 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
 		return 0
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
@@ -474,7 +474,7 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -532,7 +532,7 @@ func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -576,7 +576,7 @@ func (context *VMHooksImpl) ValidateTokenIdentifier(
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -636,7 +636,7 @@ func (context *VMHooksImpl) TransferValue(
 	}
 
 	if host.IsBuiltinFunctionCall(data) {
-		context.FailExecution(vmhost.ErrTransferValueOnESDTCall)
+		context.FailExecutionConditionally(vmhost.ErrTransferValueOnESDTCall)
 		return 1
 	}
 
@@ -812,7 +812,7 @@ func (context *VMHooksImpl) TransferValueExecuteWithHost(
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, destOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -863,14 +863,14 @@ func TransferValueExecuteWithTypedArgs(
 			false,
 		)
 		if err != nil {
-			FailExecution(host, err)
+			FailExecutionConditionally(host, err)
 			return 1
 		}
 	}
 
 	if contractCallInput != nil {
 		if host.IsBuiltinFunctionName(contractCallInput.Function) {
-			FailExecution(host, vmhost.ErrNilESDTData)
+			FailExecutionConditionally(host, vmhost.ErrNilESDTData)
 			return 1
 		}
 	}
@@ -883,7 +883,7 @@ func TransferValueExecuteWithTypedArgs(
 	lastRound := host.Blockchain().LastRound()
 	if host.IsBuiltinFunctionCall([]byte(data)) &&
 		lastRound >= uint64(host.EnableEpochsHandler().GetActivationEpoch(vmhost.CheckBuiltInCallOnTransferValueAndFailExecutionFlag)) {
-		FailExecution(host, vmhost.ErrTransferValueOnESDTCall)
+		FailExecutionConditionally(host, vmhost.ErrTransferValueOnESDTCall)
 		return 1
 	}
 
@@ -996,14 +996,14 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 	metering.StartGasTracing(multiTransferESDTNFTExecuteName)
 
 	if numTokenTransfers == 0 {
-		FailExecution(host, vmhost.ErrFailedTransfer)
+		FailExecutionConditionally(host, vmhost.ErrFailedTransfer)
 		return 1
 	}
 
 	callArgs, err := context.extractIndirectContractCallArgumentsWithoutValue(
 		host, destOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1022,7 +1022,7 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 	)
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1085,7 +1085,7 @@ func (context *VMHooksImpl) TransferESDTNFTExecuteWithHost(
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, destOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1167,7 +1167,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 			false,
 		)
 		if executeErr != nil {
-			FailExecution(host, executeErr)
+			FailExecutionConditionally(host, executeErr)
 			return 1
 		}
 
@@ -1253,7 +1253,7 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 			false,
 		)
 		if executeErr != nil {
-			FailExecution(host, executeErr)
+			FailExecutionConditionally(host, executeErr)
 			return 1
 		}
 
@@ -1352,31 +1352,31 @@ func (context *VMHooksImpl) CreateAsyncCallWithHost(host vmhost.VMHost,
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	successFunc, err := context.MemLoad(successOffset, successLength)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
 	errorFunc, err := context.MemLoad(errorOffset, errorLength)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1438,7 +1438,7 @@ func CreateAsyncCallWithTypedArgs(host vmhost.VMHost,
 
 	err = async.RegisterAsyncCall("", asyncCall)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -1484,7 +1484,7 @@ func (context *VMHooksImpl) SetAsyncContextCallback(
 		dataBytes,
 		uint64(gas))
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -1542,7 +1542,7 @@ func (context *VMHooksImpl) UpgradeContract(
 		dataOffset,
 	)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1554,13 +1554,13 @@ func (context *VMHooksImpl) UpgradeContract(
 	}
 
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1613,7 +1613,7 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if err != nil {
-		context.FailExecution(err)
+		FailExecution(host, err)
 		return
 	}
 
@@ -1624,7 +1624,7 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 		dataOffset,
 	)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1636,13 +1636,13 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 	}
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if err != nil {
-		FailExecution(host, err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -1671,7 +1671,7 @@ func UpgradeFromSourceContractWithTypedArgs(
 
 	code, err := blockchain.GetCode(sourceContractAddress)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1719,7 +1719,7 @@ func upgradeContract(
 		return
 	}
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 }
@@ -1752,7 +1752,7 @@ func (context *VMHooksImpl) DeleteContract(
 		dataOffset,
 	)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1764,13 +1764,13 @@ func (context *VMHooksImpl) DeleteContract(
 	}
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
 	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if err != nil {
-		FailExecution(host, err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -1817,7 +1817,7 @@ func deleteContract(
 		return
 	}
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 }
@@ -1875,7 +1875,7 @@ func (context *VMHooksImpl) AsyncCall(
 		return
 	}
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 }
@@ -1895,7 +1895,7 @@ func (context *VMHooksImpl) GetArgumentLength(id int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -1917,7 +1917,7 @@ func (context *VMHooksImpl) GetArgument(id int32, argOffset executor.MemPtr) int
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -2103,7 +2103,7 @@ func (context *VMHooksImpl) StorageLoadFromAddressWithHost(
 
 	data, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -2159,7 +2159,7 @@ func (context *VMHooksImpl) StorageLoadWithHost(host vmhost.VMHost, keyOffset ex
 
 	data, err := StorageLoadWithWithTypedArgs(host, key)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -2233,7 +2233,7 @@ func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp i
 	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
 	storageStatus, err := storage.SetProtectedStorage(timeLockKey, bigTimestamp.Bytes())
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 	return int32(storageStatus)
@@ -2263,7 +2263,7 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 
 	data, trieDepth, usedCache, err := storage.GetStorage(timeLockKey)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2343,11 +2343,11 @@ func (context *VMHooksImpl) CheckNoPayment() {
 
 	vmInput := runtime.GetVMInput()
 	if vmInput.CallValue.Sign() > 0 {
-		context.FailExecution(vmhost.ErrNonPayableFunctionEgld)
+		context.FailExecutionConditionally(vmhost.ErrNonPayableFunctionEgld)
 		return
 	}
 	if len(vmInput.ESDTTransfers) > 0 {
-		context.FailExecution(vmhost.ErrNonPayableFunctionEsdt)
+		context.FailExecutionConditionally(vmhost.ErrNonPayableFunctionEsdt)
 		return
 	}
 }
@@ -2382,7 +2382,7 @@ func (context *VMHooksImpl) GetCallValue(resultOffset executor.MemPtr) int32 {
 func (context *VMHooksImpl) GetESDTValue(resultOffset executor.MemPtr) int32 {
 	err := failIfMoreThanOneESDTTransfer(context)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	return context.GetESDTValueByIndex(resultOffset, 0)
@@ -2404,7 +2404,7 @@ func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, in
 
 	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2427,7 +2427,7 @@ func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, in
 func (context *VMHooksImpl) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
 	err := failIfMoreThanOneESDTTransfer(context)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	return context.GetESDTTokenNameByIndex(resultOffset, 0)
@@ -2447,7 +2447,7 @@ func (context *VMHooksImpl) GetESDTTokenNameByIndex(resultOffset executor.MemPtr
 
 	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2465,7 +2465,7 @@ func (context *VMHooksImpl) GetESDTTokenNameByIndex(resultOffset executor.MemPtr
 func (context *VMHooksImpl) GetESDTTokenNonce() int64 {
 	err := failIfMoreThanOneESDTTransfer(context)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	return context.GetESDTTokenNonceByIndex(0)
@@ -2485,7 +2485,7 @@ func (context *VMHooksImpl) GetESDTTokenNonceByIndex(index int32) int64 {
 
 	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2540,7 +2540,7 @@ func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 func (context *VMHooksImpl) GetESDTTokenType() int32 {
 	err := failIfMoreThanOneESDTTransfer(context)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	return context.GetESDTTokenTypeByIndex(0)
@@ -2560,7 +2560,7 @@ func (context *VMHooksImpl) GetESDTTokenTypeByIndex(index int32) int32 {
 
 	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2588,7 +2588,7 @@ func (context *VMHooksImpl) GetNumESDTTransfers() int32 {
 func (context *VMHooksImpl) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) int32 {
 	err := failIfMoreThanOneESDTTransfer(context)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	return context.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, 0)
@@ -2616,7 +2616,7 @@ func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 
 	esdtTransfer, err := getESDTTransferFromInput(context.GetVMHost(), index)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2657,7 +2657,7 @@ func (context *VMHooksImpl) IsReservedFunctionName(nameHandle int32) int32 {
 
 	name, err := managedTypes.GetBytes(nameHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 
@@ -2687,7 +2687,7 @@ func (context *VMHooksImpl) WriteLog(
 
 	if numTopics < 0 || dataLength < 0 {
 		err := vmhost.ErrNegativeLength
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -2737,7 +2737,7 @@ func (context *VMHooksImpl) WriteEventLog(
 		topicOffset,
 	)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -3116,7 +3116,7 @@ func (context *VMHooksImpl) ExecuteOnSameContextWithHost(
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3163,18 +3163,18 @@ func ExecuteOnSameContextWithTypedArgs(
 		true,
 	)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
+		FailExecutionConditionally(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -3226,7 +3226,7 @@ func (context *VMHooksImpl) ExecuteOnDestContextWithHost(
 	callArgs, err := context.extractIndirectContractCallArgumentsWithValue(
 		host, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3275,7 +3275,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		true,
 	)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3335,7 +3335,7 @@ func (context *VMHooksImpl) ExecuteReadOnlyWithHost(
 	callArgs, err := context.extractIndirectContractCallArgumentsWithoutValue(
 		host, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -3380,12 +3380,12 @@ func ExecuteReadOnlyWithTypedArguments(
 		true,
 	)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
+		FailExecutionConditionally(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
@@ -3395,7 +3395,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	runtime.SetReadOnly(wasReadOnly)
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -3469,7 +3469,7 @@ func (context *VMHooksImpl) createContractWithHost(
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3480,7 +3480,7 @@ func (context *VMHooksImpl) createContractWithHost(
 		dataOffset,
 	)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3495,7 +3495,7 @@ func (context *VMHooksImpl) createContractWithHost(
 	newAddress, err := createContract(sender, data, valueAsInt, gasLimit, code, codeMetadata, host, CreateContract)
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3546,7 +3546,7 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 
 	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if err != nil {
-		context.FailExecution(err)
+		FailExecution(host, err)
 		return 1
 	}
 
@@ -3557,7 +3557,7 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 		dataOffset,
 	)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3578,7 +3578,7 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 	)
 
 	if err != nil {
-		context.FailExecution(err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -3606,7 +3606,7 @@ func DeployFromSourceContractWithTypedArgs(
 	blockchain := host.Blockchain()
 	code, err := blockchain.GetCode(sourceContractAddress)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return nil, err
 	}
 
@@ -3679,7 +3679,7 @@ func (context *VMHooksImpl) GetReturnDataSize(resultID int32) int32 {
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return 0
 	}
 
@@ -3718,7 +3718,7 @@ func GetReturnDataWithHostAndTypedArgs(host vmhost.VMHost, resultID int32) []byt
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		FailExecution(host, vmhost.ErrInvalidArgument)
+		FailExecutionConditionally(host, vmhost.ErrInvalidArgument)
 		return nil
 	}
 

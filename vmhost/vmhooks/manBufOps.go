@@ -92,7 +92,7 @@ func (context *VMHooksImpl) MBufferGetLength(mBufferHandle int32) int32 {
 
 	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return -1
 	}
 
@@ -115,7 +115,7 @@ func (context *VMHooksImpl) MBufferGetBytes(mBufferHandle int32, resultOffset ex
 
 	mBufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 	err = managedType.ConsumeGasForBytes(mBufferBytes)
@@ -154,7 +154,7 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 	err = managedType.ConsumeGasForBytes(sourceBytes)
@@ -200,7 +200,7 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 	err = managedType.ConsumeGasForBytes(sourceBytes)
@@ -243,7 +243,7 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 
 	bytes1, err := managedType.GetBytes(mBufferHandle1)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	err = managedType.ConsumeGasForBytes(bytes1)
@@ -254,7 +254,7 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 
 	bytes2, err := managedType.GetBytes(mBufferHandle2)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return -1
 	}
 	err = managedType.ConsumeGasForBytes(bytes2)
@@ -354,7 +354,7 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 
 	bufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return 1
 	}
 
@@ -390,7 +390,7 @@ func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle in
 
 	dataBufferBytes, err := managedType.GetBytes(dataHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -402,7 +402,7 @@ func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle in
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, dataBufferBytes)
 	if !isSuccess {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return 1
 	}
 
@@ -431,7 +431,7 @@ func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, data)
 	if !isSuccess {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return 1
 	}
 
@@ -461,7 +461,7 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -496,7 +496,7 @@ func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -530,7 +530,7 @@ func (context *VMHooksImpl) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIn
 
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -554,7 +554,7 @@ func (context *VMHooksImpl) MBufferFromBigIntSigned(mBufferHandle int32, bigIntH
 
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -577,7 +577,7 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 
 	data, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -590,7 +590,7 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 
 	bigInt := big.NewInt(0).SetBytes(data)
 	if !bigInt.IsUint64() {
-		context.FailExecution(vmhost.ErrBytesExceedUint64)
+		context.FailExecutionConditionally(vmhost.ErrBytesExceedUint64)
 		return 0
 	}
 	return int64(bigInt.Uint64())
@@ -611,7 +611,7 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 
 	data, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -624,7 +624,7 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 
 	bigInt := twos.SetBytes(big.NewInt(0), data)
 	if !bigInt.IsInt64() {
-		context.FailExecution(vmhost.ErrBytesExceedInt64)
+		context.FailExecutionConditionally(vmhost.ErrBytesExceedInt64)
 		return 0
 	}
 	return bigInt.Int64()
@@ -681,7 +681,7 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -692,13 +692,13 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	}
 
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
-		context.FailExecution(vmhost.ErrBigFloatWrongPrecision)
+		context.FailExecutionConditionally(vmhost.ErrBigFloatWrongPrecision)
 		return 1
 	}
 
 	value, err := managedType.GetBigFloatOrCreate(bigFloatHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -713,13 +713,13 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 				err = vmhost.ErrBigFloatDecode
 			}
 
-			context.FailExecution(err)
+			context.FailExecutionConditionally(err)
 			return 1
 		}
 	}
 
 	if bigFloat.IsInf() {
-		context.FailExecution(vmhost.ErrInfinityFloatOperation)
+		context.FailExecutionConditionally(vmhost.ErrInfinityFloatOperation)
 		return 1
 	}
 
@@ -764,7 +764,7 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 
 	value, err := managedType.GetBigFloat(bigFloatHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -773,7 +773,7 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
 			err = vmhost.ErrBigFloatEncode
 		}
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -804,13 +804,13 @@ func (context *VMHooksImpl) MBufferStorageStore(keyHandle int32, sourceHandle in
 
 	key, err := managedType.GetBytes(keyHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -832,7 +832,7 @@ func (context *VMHooksImpl) MBufferStorageLoad(keyHandle int32, destinationHandl
 
 	key, err := managedType.GetBytes(keyHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -865,19 +865,19 @@ func (context *VMHooksImpl) MBufferStorageLoadFromAddress(addressHandle, keyHand
 
 	key, err := managedType.GetBytes(keyHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
 	storageBytes, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return
 	}
 
@@ -900,7 +900,7 @@ func (context *VMHooksImpl) MBufferGetArgument(id int32, destinationHandle int32
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])
@@ -924,7 +924,7 @@ func (context *VMHooksImpl) MBufferFinish(sourceHandle int32) int32 {
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -946,7 +946,7 @@ func (context *VMHooksImpl) MBufferSetRandom(destinationHandle int32, length int
 	metering := context.GetMeteringContext()
 
 	if length < 1 {
-		context.FailExecution(vmhost.ErrLengthOfBufferNotCorrect)
+		context.FailExecutionConditionally(vmhost.ErrLengthOfBufferNotCorrect)
 		return -1
 	}
 

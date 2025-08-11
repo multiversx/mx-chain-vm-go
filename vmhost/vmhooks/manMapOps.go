@@ -39,7 +39,7 @@ func (context *VMHooksImpl) ManagedMapPut(mMapHandle int32, keyHandle int32, val
 
 	err = managedType.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -61,7 +61,7 @@ func (context *VMHooksImpl) ManagedMapGet(mMapHandle int32, keyHandle int32, out
 
 	err = managedType.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -83,7 +83,7 @@ func (context *VMHooksImpl) ManagedMapRemove(mMapHandle int32, keyHandle int32, 
 
 	err = managedType.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 1
 	}
 
@@ -105,7 +105,7 @@ func (context *VMHooksImpl) ManagedMapContains(mMapHandle int32, keyHandle int32
 
 	foundValue, err := managedType.ManagedMapContains(mMapHandle, keyHandle)
 	if err != nil {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 		return 2
 	}
 
