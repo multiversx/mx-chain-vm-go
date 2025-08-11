@@ -45,19 +45,19 @@ func areAllZero(values ...*big.Float) bool {
 func setResultIfNotInfinity(host vmhost.VMHost, result *big.Float, destinationHandle int32) {
 	managedType := host.ManagedTypes()
 	if result.IsInf() {
-		FailExecutionConditionally(host, vmhost.ErrInfinityFloatOperation)
+		FailExecution(host, vmhost.ErrInfinityFloatOperation)
 		return
 	}
 
 	exponent := result.MantExp(nil)
 	if managedType.BigFloatExpIsNotValid(exponent) {
-		FailExecutionConditionally(host, vmhost.ErrExponentTooBigOrTooSmall)
+		FailExecution(host, vmhost.ErrExponentTooBigOrTooSmall)
 		return
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		FailExecutionConditionally(host, err)
+		FailExecution(host, err)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 	}
 
 	if exponent > 0 {
-		context.FailExecutionConditionally(vmhost.ErrPositiveExponent)
+		context.FailExecution(vmhost.ErrPositiveExponent)
 		return -1
 	}
 
@@ -90,7 +90,7 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 		bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
 		bigFractional, err = vmMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
 		if err != nil {
-			context.FailExecutionConditionally(err)
+			context.FailExecution(err)
 			return -1
 		}
 	}
@@ -99,19 +99,19 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 	if integralPart >= 0 {
 		value, err = vmMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if err != nil {
-			context.FailExecutionConditionally(err)
+			context.FailExecution(err)
 			return -1
 		}
 	} else {
 		value, err = vmMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if err != nil {
-			context.FailExecutionConditionally(err)
+			context.FailExecution(err)
 			return -1
 		}
 	}
 	handle, err := managedType.PutBigFloat(value)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -1
 	}
 	return handle
@@ -131,7 +131,7 @@ func (context *VMHooksImpl) BigFloatNewFromFrac(numerator, denominator int64) in
 	}
 
 	if denominator == 0 {
-		context.FailExecutionConditionally(vmhost.ErrDivZero)
+		context.FailExecution(vmhost.ErrDivZero)
 		return -1
 	}
 
@@ -139,12 +139,12 @@ func (context *VMHooksImpl) BigFloatNewFromFrac(numerator, denominator int64) in
 	bigDenominator := big.NewFloat(float64(denominator))
 	value, err := vmMath.QuoBigFloat(bigNumerator, bigDenominator)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -1
 	}
 	handle, err := managedType.PutBigFloat(value)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -1
 	}
 	return handle
@@ -164,13 +164,13 @@ func (context *VMHooksImpl) BigFloatNewFromSci(significand, exponent int64) int3
 	}
 
 	if exponent > 0 {
-		context.FailExecutionConditionally(vmhost.ErrPositiveExponent)
+		context.FailExecution(vmhost.ErrPositiveExponent)
 		return -1
 	}
 	if exponent < -322 {
 		handle, err := managedType.PutBigFloat(big.NewFloat(0))
 		if err != nil {
-			context.FailExecutionConditionally(err)
+			context.FailExecution(err)
 			return -1
 		}
 		return handle
@@ -180,12 +180,12 @@ func (context *VMHooksImpl) BigFloatNewFromSci(significand, exponent int64) int3
 	bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
 	value, err := vmMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -1
 	}
 	handle, err := managedType.PutBigFloat(value)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -1
 	}
 	return handle
@@ -207,13 +207,13 @@ func (context *VMHooksImpl) BigFloatAdd(destinationHandle, op1Handle, op2Handle 
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
 	resultAdd, err := vmMath.AddBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -236,13 +236,13 @@ func (context *VMHooksImpl) BigFloatSub(destinationHandle, op1Handle, op2Handle 
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
 	resultSub, err := vmMath.SubBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	setResultIfNotInfinity(context.GetVMHost(), resultSub, destinationHandle)
@@ -265,13 +265,13 @@ func (context *VMHooksImpl) BigFloatMul(destinationHandle, op1Handle, op2Handle 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
 	resultMul, err := vmMath.MulBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	setResultIfNotInfinity(context.GetVMHost(), resultMul, destinationHandle)
@@ -294,17 +294,17 @@ func (context *VMHooksImpl) BigFloatDiv(destinationHandle, op1Handle, op2Handle 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	if areAllZero(op1, op2) {
-		context.FailExecutionConditionally(vmhost.ErrAllOperandsAreEqualToZero)
+		context.FailExecution(vmhost.ErrAllOperandsAreEqualToZero)
 		return
 	}
 
 	resultDiv, err := vmMath.QuoBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	setResultIfNotInfinity(context.GetVMHost(), resultDiv, destinationHandle)
@@ -326,13 +326,13 @@ func (context *VMHooksImpl) BigFloatNeg(destinationHandle, opHandle int32) {
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	dest.Neg(op)
@@ -354,13 +354,13 @@ func (context *VMHooksImpl) BigFloatClone(destinationHandle, opHandle int32) {
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	dest.Copy(op)
@@ -383,7 +383,7 @@ func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -2
 	}
 	return int32(op1.Cmp(op2))
@@ -405,13 +405,13 @@ func (context *VMHooksImpl) BigFloatAbs(destinationHandle, opHandle int32) {
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	dest.Abs(op)
@@ -432,7 +432,7 @@ func (context *VMHooksImpl) BigFloatSign(opHandle int32) int32 {
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -2
 	}
 	return int32(op.Sign())
@@ -454,22 +454,22 @@ func (context *VMHooksImpl) BigFloatSqrt(destinationHandle, opHandle int32) {
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	if op.Sign() < 0 {
-		context.FailExecutionConditionally(vmhost.ErrBadLowerBounds)
+		context.FailExecution(vmhost.ErrBadLowerBounds)
 		return
 	}
 	resultSqrt, err := vmMath.SqrtBigFloat(op)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	dest.Set(resultSqrt)
@@ -496,7 +496,7 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -511,13 +511,13 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
 	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
 	powResult, err := context.pow(op, exponent)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	setResultIfNotInfinity(context.GetVMHost(), powResult, destinationHandle)
@@ -558,14 +558,14 @@ func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -594,14 +594,14 @@ func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -630,14 +630,14 @@ func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -659,7 +659,7 @@ func (context *VMHooksImpl) BigFloatSetInt64(destinationHandle int32, value int6
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	dest.SetInt64(value)
@@ -681,7 +681,7 @@ func (context *VMHooksImpl) BigFloatIsInt(opHandle int32) int32 {
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return -1
 	}
 	if op.IsInt() {
@@ -706,13 +706,13 @@ func (context *VMHooksImpl) BigFloatSetBigInt(destinationHandle, bigIntHandle in
 
 	bigIntValue, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 
@@ -735,7 +735,7 @@ func (context *VMHooksImpl) BigFloatGetConstPi(destinationHandle int32) {
 
 	pi, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	pi.SetFloat64(math.Pi)
@@ -756,7 +756,7 @@ func (context *VMHooksImpl) BigFloatGetConstE(destinationHandle int32) {
 
 	e, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecutionConditionally(err)
+		context.FailExecution(err)
 		return
 	}
 	e.SetFloat64(math.E)
