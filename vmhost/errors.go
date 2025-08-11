@@ -334,3 +334,6 @@ var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
 // ErrInvalidSignature signals that a signature verification failed
 var ErrInvalidSignature = errors.New("signature is invalid")
+
+// ErrWrongType signals that wrong type is read from buffer
+var ErrWrongType = errors.New("incompatible type")
