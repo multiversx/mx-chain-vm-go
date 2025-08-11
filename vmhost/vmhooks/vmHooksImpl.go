@@ -125,12 +125,8 @@ func FailExecutionConditionally(host vmhost.VMHost, err error) {
 		return
 	}
 
-	if !host.EnableEpochsHandler().IsFlagEnabled(vmhost.FailConditionallyFlag) {
-		return
-	}
-
 	runtime := host.Runtime()
-	if !runtime.IsUnsafeMode() {
+	if !runtime.IsUnsafeMode() || !host.EnableEpochsHandler().IsFlagEnabled(vmhost.FailConditionallyFlag) {
 		FailExecution(host, err)
 		return
 	}
