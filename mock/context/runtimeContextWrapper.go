@@ -443,12 +443,12 @@ func (contextWrapper *RuntimeContextWrapper) SetReadOnly(readOnly bool) {
 
 // IsUnsafeMode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) IsUnsafeMode() bool {
-	return contextWrapper.IsUnsafeMode()
+	return contextWrapper.IsUnsafeModeFunc()
 }
 
 // SetUnsafeMode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) SetUnsafeMode(unsafeMode bool) {
-	contextWrapper.SetUnsafeMode(unsafeMode)
+	contextWrapper.SetUnsafeModeFunc(unsafeMode)
 }
 
 // StartWasmerInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
