@@ -123,6 +123,9 @@ package wasmer2
 // extern void      w2_managedUpgradeContract(void* context, int32_t destHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void      w2_managedDeleteContract(void* context, int32_t destHandle, long long gasLimit, int32_t argumentsHandle);
 // extern int32_t   w2_managedDeployFromSourceContract(void* context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
+// extern int32_t   w2_managedGetNumErrors(void* context);
+// extern void      w2_managedGetErrorWithIndex(void* context, int32_t index, int32_t errorHandle);
+// extern void      w2_managedGetLastError(void* context, int32_t errorHandle);
 // extern int32_t   w2_managedCreateContract(void* context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteReadOnly(void* context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedExecuteOnSameContext(void* context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
@@ -413,6 +416,9 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_upgrade_contract_func_ptr:                            funcPointer(C.w2_managedUpgradeContract),
 		managed_delete_contract_func_ptr:                             funcPointer(C.w2_managedDeleteContract),
 		managed_deploy_from_source_contract_func_ptr:                 funcPointer(C.w2_managedDeployFromSourceContract),
+		managed_get_num_errors_func_ptr:                              funcPointer(C.w2_managedGetNumErrors),
+		managed_get_error_with_index_func_ptr:                        funcPointer(C.w2_managedGetErrorWithIndex),
+		managed_get_last_error_func_ptr:                              funcPointer(C.w2_managedGetLastError),
 		managed_create_contract_func_ptr:                             funcPointer(C.w2_managedCreateContract),
 		managed_execute_read_only_func_ptr:                           funcPointer(C.w2_managedExecuteReadOnly),
 		managed_execute_on_same_context_func_ptr:                     funcPointer(C.w2_managedExecuteOnSameContext),
@@ -1253,6 +1259,24 @@ func w2_managedDeleteContract(context unsafe.Pointer, destHandle int32, gasLimit
 func w2_managedDeployFromSourceContract(context unsafe.Pointer, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+}
+
+//export w2_managedGetNumErrors
+func w2_managedGetNumErrors(context unsafe.Pointer) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedGetNumErrors()
+}
+
+//export w2_managedGetErrorWithIndex
+func w2_managedGetErrorWithIndex(context unsafe.Pointer, index int32, errorHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetErrorWithIndex(index, errorHandle)
+}
+
+//export w2_managedGetLastError
+func w2_managedGetLastError(context unsafe.Pointer, errorHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetLastError(errorHandle)
 }
 
 //export w2_managedCreateContract

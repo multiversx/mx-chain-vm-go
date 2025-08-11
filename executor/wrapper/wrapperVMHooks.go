@@ -982,6 +982,31 @@ func (w *WrapperVMHooks) ManagedDeployFromSourceContract(gas int64, valueHandle 
 	return result
 }
 
+// ManagedGetNumErrors VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetNumErrors() int32 {
+	callInfo := "ManagedGetNumErrors()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedGetNumErrors()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedGetErrorWithIndex VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetErrorWithIndex(index int32, errorHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetErrorWithIndex(%d, %d)", index, errorHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetErrorWithIndex(index, errorHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetLastError VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetLastError(errorHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetLastError(%d)", errorHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetLastError(errorHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
 // ManagedCreateContract VM hook wrapper
 func (w *WrapperVMHooks) ManagedCreateContract(gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
 	callInfo := fmt.Sprintf("ManagedCreateContract(%d, %d, %d, %d, %d, %d, %d)", gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
