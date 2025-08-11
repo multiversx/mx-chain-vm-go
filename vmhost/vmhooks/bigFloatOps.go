@@ -329,12 +329,13 @@ func (context *VMHooksImpl) BigFloatNeg(destinationHandle, opHandle int32) {
 		context.FailExecution(err)
 		return
 	}
-	op, err := managedType.GetBigFloat(opHandle)
 
+	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
 		context.FailExecution(err)
 		return
 	}
+
 	dest.Neg(op)
 }
 
@@ -357,12 +358,13 @@ func (context *VMHooksImpl) BigFloatClone(destinationHandle, opHandle int32) {
 		context.FailExecution(err)
 		return
 	}
-	op, err := managedType.GetBigFloat(opHandle)
 
+	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
 		context.FailExecution(err)
 		return
 	}
+
 	dest.Copy(op)
 }
 
@@ -381,11 +383,11 @@ func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -2
 	}
+
 	return int32(op1.Cmp(op2))
 }
 
@@ -408,12 +410,13 @@ func (context *VMHooksImpl) BigFloatAbs(destinationHandle, opHandle int32) {
 		context.FailExecution(err)
 		return
 	}
-	op, err := managedType.GetBigFloat(opHandle)
 
+	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
 		context.FailExecution(err)
 		return
 	}
+
 	dest.Abs(op)
 }
 
@@ -435,6 +438,7 @@ func (context *VMHooksImpl) BigFloatSign(opHandle int32) int32 {
 		context.FailExecution(err)
 		return -2
 	}
+
 	return int32(op.Sign())
 }
 
@@ -633,8 +637,8 @@ func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 		context.FailExecution(err)
 		return
 	}
-	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 
+	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if err != nil {
 		context.FailExecution(err)

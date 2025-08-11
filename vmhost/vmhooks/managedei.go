@@ -321,7 +321,7 @@ func (context *VMHooksImpl) ManagedGetReturnData(resultID int32, resultHandle in
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return
 	}
 
@@ -560,7 +560,7 @@ func ManagedGetESDTTokenDataWithHost(
 
 }
 
-// ManagedGetESDTTokenData VMHooks implementation.
+// ManagedGetESDTTokenType VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedGetESDTTokenType(
 	addressHandle int32,
@@ -1596,7 +1596,7 @@ func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, res
 
 	contract, err := host.Blockchain().GetUserAccount(mBuffAddress)
 	if err != nil || check.IfNil(contract) {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return
 	}
 
@@ -1626,7 +1626,7 @@ func (context *VMHooksImpl) ManagedGetCodeHash(addressHandle int32, codeHashHand
 	managedType.SetBytes(codeHashHandle, codeHash)
 }
 
-// ManagedGetCodeHashWithHost returns the code hash at some address
+// ManagedGetCodeHashTyped returns the code hash at some address
 func ManagedGetCodeHashTyped(
 	host vmhost.VMHost,
 	address []byte,

@@ -359,11 +359,11 @@ func (context *VMHooksImpl) GetESDTBalance(
 	metering.StartGasTracing(getESDTBalanceName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -1
 	}
+
 	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
 	if err != nil {
 		context.FailExecution(err)
@@ -385,14 +385,14 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 	metering.StartGasTracing(getESDTNFTNameLengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -1
 	}
+
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
-		return 0
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
+		return -1
 	}
 
 	return int32(len(esdtData.TokenMetaData.Name))
@@ -410,14 +410,14 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	metering.StartGasTracing(getESDTNFTAttributeLengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -1
 	}
+
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
-		return 0
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
+		return -1
 	}
 
 	return int32(len(esdtData.TokenMetaData.Attributes))
@@ -435,14 +435,14 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 	metering.StartGasTracing(getESDTNFTURILengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -1
 	}
+
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		FailExecution(context.GetVMHost(), vmhost.ErrNilESDTData)
-		return 0
+		FailExecutionConditionally(context.GetVMHost(), vmhost.ErrNilESDTData)
+		return -1
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
 		return 0
@@ -472,7 +472,6 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	metering.StartGasTracing(getESDTTokenDataName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -1
@@ -1895,7 +1894,7 @@ func (context *VMHooksImpl) GetArgumentLength(id int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -1917,7 +1916,7 @@ func (context *VMHooksImpl) GetArgument(id int32, argOffset executor.MemPtr) int
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.FailExecution(vmhost.ErrInvalidArgument)
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return -1
 	}
 
@@ -3168,13 +3167,13 @@ func ExecuteOnSameContextWithTypedArgs(
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
-		return 1
+		FailExecutionConditionally(host, vmhost.ErrInvalidBuiltInFunctionCall)
+		return -1
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 
@@ -3385,7 +3384,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		FailExecution(host, vmhost.ErrInvalidBuiltInFunctionCall)
+		FailExecutionConditionally(host, vmhost.ErrInvalidBuiltInFunctionCall)
 		return 1
 	}
 
@@ -3395,7 +3394,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	runtime.SetReadOnly(wasReadOnly)
 
 	if err != nil {
-		FailExecution(host, err)
+		FailExecutionConditionally(host, err)
 		return -1
 	}
 

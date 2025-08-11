@@ -70,6 +70,7 @@ func (context *VMHooksImpl) BigIntGetUnsignedArgument(id int32, destinationHandl
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return
 	}
 
@@ -95,6 +96,7 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return
 	}
 
@@ -281,9 +283,6 @@ func (context *VMHooksImpl) BigIntGetESDTExternalBalance(
 		context.FailExecution(err)
 		return
 	}
-	if esdtData == nil {
-		return
-	}
 
 	value := managedType.GetBigIntOrCreate(resultHandle)
 	value.Set(esdtData.Value)
@@ -370,8 +369,8 @@ func (context *VMHooksImpl) BigIntGetUnsignedBytes(referenceHandle int32, byteOf
 		context.FailExecution(err)
 		return -1
 	}
-	bytes := value.Bytes()
 
+	bytes := value.Bytes()
 	err = context.MemStore(byteOffset, bytes)
 	if err != nil {
 		context.FailExecution(err)
@@ -407,8 +406,8 @@ func (context *VMHooksImpl) BigIntGetSignedBytes(referenceHandle int32, byteOffs
 		context.FailExecution(err)
 		return -1
 	}
-	bytes := twos.ToBytes(value)
 
+	bytes := twos.ToBytes(value)
 	err = context.MemStore(byteOffset, bytes)
 	if err != nil {
 		context.FailExecution(err)
@@ -832,7 +831,6 @@ func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle in
 
 	//this calculates the length of the result in bytes
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(b, big.NewInt(int64(a.BitLen()))), big.NewInt(8))
-
 	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 	if err != nil {
 		context.FailExecution(err)

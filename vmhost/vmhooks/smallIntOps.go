@@ -66,7 +66,7 @@ func (context *VMHooksImpl) SmallIntGetSignedArgument(id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgIndexOutOfRange)
 		return 0
 	}
 

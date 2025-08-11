@@ -92,7 +92,7 @@ func (context *VMHooksImpl) MBufferGetLength(mBufferHandle int32) int32 {
 
 	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
-		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
+		context.FailExecutionConditionally(vmhost.ErrNoManagedBufferUnderThisHandle)
 		return -1
 	}
 
@@ -164,7 +164,7 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
-		// does not fail execution if slice exceeds bounds
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return 1
 	}
 
@@ -210,7 +210,7 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
-		// does not fail execution if slice exceeds bounds
+		FailExecutionConditionally(host, vmhost.ErrInvalidArgument)
 		return 1
 	}
 
@@ -359,7 +359,7 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 	}
 
 	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
-		// does not fail execution if slice exceeds bounds
+		FailExecutionConditionally(host, vmhost.ErrInvalidArgument)
 		return 1
 	}
 
@@ -900,7 +900,7 @@ func (context *VMHooksImpl) MBufferGetArgument(id int32, destinationHandle int32
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecutionConditionally(vmhost.ErrArgOutOfRange)
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])

@@ -71,7 +71,6 @@ func (context *VMHooksImpl) Sha256(
 
 	result, err := crypto.Sha256(data)
 	if err != nil {
-
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
 			err = vmhost.ErrSha256Hash
 		}
@@ -349,7 +348,7 @@ func (context *VMHooksImpl) VerifyBLS(
 			invalidSigErr = vmhost.ErrBlsVerify
 		}
 
-		context.FailExecution(invalidSigErr)
+		context.FailExecutionConditionally(invalidSigErr)
 		return -1
 	}
 
@@ -466,7 +465,7 @@ func ManagedVerifyBLSWithHost(
 			invalidSigErr = vmhost.ErrBlsVerify
 		}
 
-		FailExecution(host, invalidSigErr)
+		FailExecutionConditionally(host, invalidSigErr)
 		return -1
 	}
 
@@ -524,7 +523,7 @@ func (context *VMHooksImpl) VerifyEd25519(
 			invalidSigErr = vmhost.ErrEd25519Verify
 		}
 
-		context.FailExecution(invalidSigErr)
+		context.FailExecutionConditionally(invalidSigErr)
 		return -1
 	}
 
@@ -600,7 +599,7 @@ func ManagedVerifyEd25519WithHost(
 			invalidSigErr = vmhost.ErrEd25519Verify
 		}
 
-		FailExecution(host, invalidSigErr)
+		FailExecutionConditionally(host, invalidSigErr)
 		return -1
 	}
 
@@ -675,7 +674,7 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 			invalidSigErr = vmhost.ErrSecp256k1Verify
 		}
 
-		context.FailExecution(invalidSigErr)
+		context.FailExecutionConditionally(invalidSigErr)
 		return -1
 	}
 
@@ -766,7 +765,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 			invalidSigErr = vmhost.ErrSecp256k1Verify
 		}
 
-		FailExecution(host, invalidSigErr)
+		FailExecutionConditionally(host, invalidSigErr)
 		return -1
 	}
 
