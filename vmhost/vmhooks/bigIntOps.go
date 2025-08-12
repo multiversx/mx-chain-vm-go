@@ -55,7 +55,7 @@ const (
 
 func (context *VMHooksImpl) failExecutionWithAsyncV3Fixes(err error) {
 	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
-		context.FailExecution(err)
+		context.FailExecutionConditionally(err)
 	}
 }
 

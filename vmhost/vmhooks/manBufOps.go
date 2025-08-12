@@ -211,7 +211,7 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
-			FailExecution(host, vmhost.ErrBadBounds)
+			FailExecutionConditionally(host, vmhost.ErrBadBounds)
 		}
 		return -1
 	}
@@ -362,7 +362,7 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 
 	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
 		if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
-			FailExecution(host, vmhost.ErrBadBounds)
+			FailExecutionConditionally(host, vmhost.ErrBadBounds)
 		}
 		return -1
 	}

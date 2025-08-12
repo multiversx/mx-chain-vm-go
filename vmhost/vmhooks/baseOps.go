@@ -2275,7 +2275,7 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 
 	isTimeLockCheckEnabled := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag)
 	if isTimeLockCheckEnabled && timeLock <= context.GetBlockTimestamp() {
-		context.FailExecution(vmhost.ErrTimeLockExpired)
+		context.FailExecutionConditionally(vmhost.ErrTimeLockExpired)
 		return -1
 	}
 
