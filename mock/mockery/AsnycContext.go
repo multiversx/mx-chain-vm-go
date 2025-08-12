@@ -92,8 +92,8 @@ func (_m *MockAsyncContext) Execute() error {
 }
 
 // ExecuteLocalCallbackAndFinishOutput provides a mock function with given fields: asyncCall, vmOutput, destinationCallInput, gasAccumulated, err
-func (_m *MockAsyncContext) ExecuteLocalCallbackAndFinishOutput(asyncCall *vmhost.AsyncCall, vmOutput *vmcommon.VMOutput, destinationCallInput *vmcommon.ContractCallInput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
-	ret := _m.Called(asyncCall, vmOutput, destinationCallInput, gasAccumulated, err)
+func (_m *MockAsyncContext) ExecuteLocalCallbackAndFinishOutput(asyncCall *vmhost.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
+	ret := _m.Called(asyncCall, vmOutput, gasAccumulated, err)
 
 	if len(ret) == 0 {
 		return true, &vmcommon.VMOutput{}
@@ -101,17 +101,17 @@ func (_m *MockAsyncContext) ExecuteLocalCallbackAndFinishOutput(asyncCall *vmhos
 
 	var r0 bool
 	var r1 *vmcommon.VMOutput
-	if rf, ok := ret.Get(0).(func(*vmhost.AsyncCall, *vmcommon.VMOutput, *vmcommon.ContractCallInput, uint64, error) (bool, *vmcommon.VMOutput)); ok {
-		return rf(asyncCall, vmOutput, destinationCallInput, gasAccumulated, err)
+	if rf, ok := ret.Get(0).(func(*vmhost.AsyncCall, *vmcommon.VMOutput, uint64, error) (bool, *vmcommon.VMOutput)); ok {
+		return rf(asyncCall, vmOutput, gasAccumulated, err)
 	}
-	if rf, ok := ret.Get(0).(func(*vmhost.AsyncCall, *vmcommon.VMOutput, *vmcommon.ContractCallInput, uint64, error) bool); ok {
-		r0 = rf(asyncCall, vmOutput, destinationCallInput, gasAccumulated, err)
+	if rf, ok := ret.Get(0).(func(*vmhost.AsyncCall, *vmcommon.VMOutput, uint64, error) bool); ok {
+		r0 = rf(asyncCall, vmOutput, gasAccumulated, err)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(*vmhost.AsyncCall, *vmcommon.VMOutput, *vmcommon.ContractCallInput, uint64, error) *vmcommon.VMOutput); ok {
-		r1 = rf(asyncCall, vmOutput, destinationCallInput, gasAccumulated, err)
+	if rf, ok := ret.Get(1).(func(*vmhost.AsyncCall, *vmcommon.VMOutput, uint64, error) *vmcommon.VMOutput); ok {
+		r1 = rf(asyncCall, vmOutput, gasAccumulated, err)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*vmcommon.VMOutput)

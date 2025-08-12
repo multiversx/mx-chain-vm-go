@@ -35,7 +35,6 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 	return nil
 }
 
-// TODO split this method into smaller ones
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) error {
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
@@ -105,7 +104,7 @@ func (context *asyncContext) handleCallbackForLocalCall(
 	destinationCallInput *vmcommon.ContractCallInput,
 	err error,
 ) error {
-	isCallbackComplete, callbackVMOutput := context.ExecuteLocalCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
+	isCallbackComplete, callbackVMOutput := context.ExecuteLocalCallbackAndFinishOutput(asyncCall, vmOutput, 0, err)
 	if callbackVMOutput == nil {
 		return vmhost.ErrAsyncNoOutputFromCallback
 	}
@@ -121,13 +120,12 @@ func (context *asyncContext) handleCallbackForLocalCall(
 	return nil
 }
 
-// ExecuteLocalCallbackAndFinishOutput executes the callback and finishes the output
 func (context *asyncContext) ExecuteLocalCallbackAndFinishOutput(
 	asyncCall *vmhost.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
-	_ *vmcommon.ContractCallInput,
 	gasAccumulated uint64,
-	err error) (bool, *vmcommon.VMOutput) {
+	err error,
+) (bool, *vmcommon.VMOutput) {
 	callbackVMOutput, isComplete, _ := context.executeLocalCallback(asyncCall, vmOutput, gasAccumulated, err)
 	context.finishAsyncLocalCallbackExecution()
 	return isComplete, callbackVMOutput
