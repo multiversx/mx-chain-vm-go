@@ -91,8 +91,8 @@ func (_m *MockAsyncContext) Execute() error {
 	return r0
 }
 
-// ExecuteSyncCallbackAndFinishOutput provides a mock function with given fields: asyncCall, vmOutput, destinationCallInput, gasAccumulated, err
-func (_m *MockAsyncContext) ExecuteSyncCallbackAndFinishOutput(asyncCall *vmhost.AsyncCall, vmOutput *vmcommon.VMOutput, destinationCallInput *vmcommon.ContractCallInput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
+// ExecuteLocalCallbackAndFinishOutput provides a mock function with given fields: asyncCall, vmOutput, destinationCallInput, gasAccumulated, err
+func (_m *MockAsyncContext) ExecuteLocalCallbackAndFinishOutput(asyncCall *vmhost.AsyncCall, vmOutput *vmcommon.VMOutput, destinationCallInput *vmcommon.ContractCallInput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
 	ret := _m.Called(asyncCall, vmOutput, destinationCallInput, gasAccumulated, err)
 
 	if len(ret) == 0 {
