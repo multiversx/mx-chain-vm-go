@@ -958,19 +958,19 @@ func (context *VMHooksImpl) BigIntSign(opHandle int32) int32 {
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	a, err := managedType.GetBigInt(opHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	return int32(a.Sign())
@@ -987,19 +987,19 @@ func (context *VMHooksImpl) BigIntCmp(op1Handle, op2Handle int32) int32 {
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(a, b)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	return int32(a.Cmp(b))

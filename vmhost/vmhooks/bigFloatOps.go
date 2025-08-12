@@ -377,14 +377,14 @@ func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 	return int32(op1.Cmp(op2))
 }
@@ -427,13 +427,13 @@ func (context *VMHooksImpl) BigFloatSign(opHandle int32) int32 {
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatSignName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return -2
+		return -1
 	}
 	return int32(op.Sign())
 }

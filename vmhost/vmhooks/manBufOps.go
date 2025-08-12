@@ -110,24 +110,24 @@ func (context *VMHooksImpl) MBufferGetBytes(mBufferHandle int32, resultOffset ex
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	mBufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 	err = managedType.ConsumeGasForBytes(mBufferBytes)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = context.MemStore(resultOffset, mBufferBytes)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -149,30 +149,30 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 	err = managedType.ConsumeGasForBytes(sourceBytes)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		// does not fail execution if slice exceeds bounds
-		return 1
+		return -1
 	}
 
 	slice := sourceBytes[startingPosition : startingPosition+sliceLength]
 	err = context.MemStore(resultOffset, slice)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -195,23 +195,23 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 	err = managedType.ConsumeGasForBytes(sourceBytes)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		// does not fail execution if slice exceeds bounds
-		return 1
+		return -1
 	}
 
 	slice := sourceBytes[startingPosition : startingPosition+sliceLength]
@@ -221,7 +221,7 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -238,7 +238,7 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	bytes1, err := managedType.GetBytes(mBufferHandle1)
@@ -249,7 +249,7 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 	err = managedType.ConsumeGasForBytes(bytes1)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	bytes2, err := managedType.GetBytes(mBufferHandle2)
@@ -260,7 +260,7 @@ func (context *VMHooksImpl) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 	err = managedType.ConsumeGasForBytes(bytes2)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	if bytes.Equal(bytes1, bytes2) {
@@ -281,19 +281,19 @@ func (context *VMHooksImpl) MBufferSetBytes(mBufferHandle int32, dataOffset exec
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ConsumeGasForBytes(data)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	managedType.SetBytes(mBufferHandle, data)
@@ -328,13 +328,13 @@ func (context *VMHooksImpl) ManagedBufferSetByteSliceWithHost(
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	return ManagedBufferSetByteSliceWithTypedArgs(host, mBufferHandle, startingPosition, dataLength, data)
@@ -349,18 +349,18 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 	err := managedType.ConsumeGasForBytes(data)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	bufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
 		// does not fail execution if slice exceeds bounds
-		return 1
+		return -1
 	}
 
 	start := int(startingPosition)
@@ -385,25 +385,25 @@ func (context *VMHooksImpl) MBufferAppend(accumulatorHandle int32, dataHandle in
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	dataBufferBytes, err := managedType.GetBytes(dataHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ConsumeGasForBytes(dataBufferBytes)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, dataBufferBytes)
 	if !isSuccess {
 		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -420,26 +420,26 @@ func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	data, err := context.MemLoad(dataOffset, dataLength)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, data)
 	if !isSuccess {
 		context.FailExecution(vmhost.ErrNoManagedBufferUnderThisHandle)
-		return 1
+		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -462,7 +462,7 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
@@ -470,7 +470,7 @@ func (context *VMHooksImpl) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 		err = metering.UseGasBounded(gasToUse)
 		if err != nil {
 			context.FailExecution(err)
-			return 1
+			return -1
 		}
 	}
 
@@ -497,7 +497,7 @@ func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
@@ -505,7 +505,7 @@ func (context *VMHooksImpl) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 		err = metering.UseGasBounded(gasToUse)
 		if err != nil {
 			context.FailExecution(err)
-			return 1
+			return -1
 		}
 	}
 
@@ -531,7 +531,7 @@ func (context *VMHooksImpl) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIn
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	managedType.SetBytes(mBufferHandle, value.Bytes())
@@ -555,7 +555,7 @@ func (context *VMHooksImpl) MBufferFromBigIntSigned(mBufferHandle int32, bigIntH
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	managedType.SetBytes(mBufferHandle, twos.ToBytes(value))
@@ -572,26 +572,26 @@ func (context *VMHooksImpl) MBufferToSmallIntUnsigned(mBufferHandle int32) int64
 	err := metering.UseGasBoundedAndAddTracedGas(mBufferToSmallIntUnsignedName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	data, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	bigInt := big.NewInt(0).SetBytes(data)
 	if !bigInt.IsUint64() {
 		context.FailExecution(vmhost.ErrBytesExceedUint64)
-		return 0
+		return -1
 	}
 	return int64(bigInt.Uint64())
 }
@@ -606,26 +606,26 @@ func (context *VMHooksImpl) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
 	err := metering.UseGasBoundedAndAddTracedGas(mBufferToSmallIntSignedName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	data, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	bigInt := twos.SetBytes(big.NewInt(0), data)
 	if !bigInt.IsInt64() {
 		context.FailExecution(vmhost.ErrBytesExceedInt64)
-		return 0
+		return -1
 	}
 	return bigInt.Int64()
 }
@@ -676,30 +676,30 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ConsumeGasForBytes(managedBuffer)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
 		context.FailExecution(vmhost.ErrBigFloatWrongPrecision)
-		return 1
+		return -1
 	}
 
 	value, err := managedType.GetBigFloatOrCreate(bigFloatHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	bigFloat := new(big.Float)
@@ -714,13 +714,13 @@ func (context *VMHooksImpl) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 			}
 
 			context.FailExecution(err)
-			return 1
+			return -1
 		}
 	}
 
 	if bigFloat.IsInf() {
 		context.FailExecution(vmhost.ErrInfinityFloatOperation)
-		return 1
+		return -1
 	}
 
 	value.Set(bigFloat)
@@ -759,13 +759,13 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	value, err := managedType.GetBigFloat(bigFloatHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	encodedFloat, err := value.GobEncode()
@@ -774,13 +774,13 @@ func (context *VMHooksImpl) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 			err = vmhost.ErrBigFloatEncode
 		}
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ConsumeGasForBytes(encodedFloat)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	managedType.SetBytes(mBufferHandle, encodedFloat)
@@ -805,19 +805,19 @@ func (context *VMHooksImpl) MBufferStorageStore(keyHandle int32, sourceHandle in
 	key, err := managedType.GetBytes(keyHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	_, err = storage.SetStorage(key, sourceBytes)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -833,13 +833,13 @@ func (context *VMHooksImpl) MBufferStorageLoad(keyHandle int32, destinationHandl
 	key, err := managedType.GetBytes(keyHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	storageBytes, trieDepth, usedCache, err := storage.GetStorage(key)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	err = storage.UseGasForStorageLoad(
@@ -901,7 +901,7 @@ func (context *VMHooksImpl) MBufferGetArgument(id int32, destinationHandle int32
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
 		context.FailExecution(vmhost.ErrArgOutOfRange)
-		return 1
+		return -1
 	}
 	managedType.SetBytes(destinationHandle, args[id])
 	return 0
@@ -919,20 +919,20 @@ func (context *VMHooksImpl) MBufferFinish(sourceHandle int32) int32 {
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(sourceBytes)))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	output.Finish(sourceBytes)
