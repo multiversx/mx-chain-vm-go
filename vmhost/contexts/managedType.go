@@ -639,9 +639,23 @@ func (context *managedTypesContext) GetSlice(mBufferHandle int32, startPosition 
 	if !ok {
 		return nil, vmhost.ErrNoManagedBufferUnderThisHandle
 	}
-	if int(lengthOfSlice) > len(mBuffer)-int(startPosition) || lengthOfSlice < 0 || startPosition < 0 {
+	if startPosition < 0 || lengthOfSlice < 0 {
 		return nil, vmhost.ErrBadBounds
 	}
+	if len(mBuffer)-int(startPosition) < int(lengthOfSlice) {
+		return nil, vmhost.ErrBadBounds
+	}
+
+	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+		if len(mBuffer) < int(startPosition) {
+			return nil, vmhost.ErrBadBounds
+		}
+		if int64(startPosition)+int64(lengthOfSlice) > int64(basicMath.MaxInt32) ||
+			int64(startPosition)+int64(lengthOfSlice) < int64(startPosition) {
+			return nil, vmhost.ErrBadBounds
+		}
+	}
+
 	return mBuffer[startPosition:(startPosition + lengthOfSlice)], nil
 }
 

@@ -53,7 +53,7 @@ func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 }
 
 // ReplaceVMExecutor mocked method
-func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.Executor) {
+func (context *RuntimeContextMock) ReplaceVMExecutor(_ executor.Executor) {
 }
 
 // GetInstanceTracker mocked method
@@ -197,14 +197,8 @@ func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
 	return r.OriginalTxHash
 }
 
-// ExtractCodeUpgradeFromArgs mocked method
-func (r *RuntimeContextMock) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
-	arguments := r.VMInput.Arguments
-	if len(arguments) < 2 {
-		panic("ExtractCodeUpgradeFromArgs: bad test setup")
-	}
-
-	return r.VMInput.Arguments[0], r.VMInput.Arguments[1], nil
+// RemoveCodeUpgradeFromArgs mocked method
+func (r *RuntimeContextMock) RemoveCodeUpgradeFromArgs() {
 }
 
 // SignalExit mocked method
@@ -260,7 +254,7 @@ func (r *RuntimeContextMock) GetInstance() executor.Instance {
 }
 
 // GetWarmInstance mocked method
-func (r *RuntimeContextMock) GetWarmInstance(codeHash []byte) (executor.Instance, bool) {
+func (r *RuntimeContextMock) GetWarmInstance(_ []byte) (executor.Instance, bool) {
 	return nil, false
 }
 

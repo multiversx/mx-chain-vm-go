@@ -42,7 +42,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetOriginalTxHashFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ExtractCodeUpgradeFromArgsFunc func() ([]byte, []byte, error)
+	RemoveCodeUpgradeFromArgsFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SignalUserErrorFunc func(message string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -188,8 +188,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		return runtimeWrapper.runtimeContext.GetOriginalTxHash()
 	}
 
-	runtimeWrapper.ExtractCodeUpgradeFromArgsFunc = func() ([]byte, []byte, error) {
-		return runtimeWrapper.runtimeContext.ExtractCodeUpgradeFromArgs()
+	runtimeWrapper.RemoveCodeUpgradeFromArgsFunc = func() {
+		runtimeWrapper.runtimeContext.RemoveCodeUpgradeFromArgs()
 	}
 
 	runtimeWrapper.SignalUserErrorFunc = func(message string) {
@@ -386,9 +386,9 @@ func (contextWrapper *RuntimeContextWrapper) GetOriginalTxHash() []byte {
 	return contextWrapper.GetOriginalTxHashFunc()
 }
 
-// ExtractCodeUpgradeFromArgs calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
-	return contextWrapper.ExtractCodeUpgradeFromArgsFunc()
+// RemoveCodeUpgradeFromArgs calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) RemoveCodeUpgradeFromArgs() {
+	contextWrapper.RemoveCodeUpgradeFromArgsFunc()
 }
 
 // SignalUserError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

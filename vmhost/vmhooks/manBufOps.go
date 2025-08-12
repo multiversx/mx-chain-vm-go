@@ -164,7 +164,7 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
-		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
+		context.failExecutionWithAsyncV3Fixes(vmhost.ErrArgOutOfRange)
 		return -1
 	}
 
@@ -210,7 +210,9 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 	}
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
-		FailExecutionConditionally(host, vmhost.ErrInvalidArgument)
+		if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+			FailExecution(host, vmhost.ErrBadBounds)
+		}
 		return -1
 	}
 
@@ -359,7 +361,9 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 	}
 
 	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
-		FailExecutionConditionally(host, vmhost.ErrInvalidArgument)
+		if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+			FailExecution(host, vmhost.ErrBadBounds)
+		}
 		return -1
 	}
 
