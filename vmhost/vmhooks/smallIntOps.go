@@ -33,20 +33,20 @@ func (context *VMHooksImpl) SmallIntGetUnsignedArgument(id int32) int64 {
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
 		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
-		return 0
+		return -1
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
 		context.FailExecution(vmhost.ErrArgOutOfRange)
-		return 0
+		return -1
 	}
 	return int64(argBigInt.Uint64())
 }
@@ -61,20 +61,20 @@ func (context *VMHooksImpl) SmallIntGetSignedArgument(id int32) int64 {
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		context.FailExecutionConditionally(vmhost.ErrArgIndexOutOfRange)
-		return 0
+		context.FailExecution(vmhost.ErrArgIndexOutOfRange)
+		return -1
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
 		context.FailExecution(vmhost.ErrArgOutOfRange)
-		return 0
+		return -1
 	}
 	return argBigInt.Int64()
 }
@@ -180,13 +180,13 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 	key, err := context.MemLoad(keyOffset, keyLength)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	data, trieDepth, usedCache, err := storage.GetStorage(key)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	err = storage.UseGasForStorageLoad(
@@ -202,7 +202,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
 		context.FailExecution(vmhost.ErrStorageValueOutOfRange)
-		return 0
+		return -1
 	}
 
 	return int64(valueBigInt.Uint64())
@@ -217,13 +217,13 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 	key, err := context.MemLoad(keyOffset, keyLength)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	data, trieDepth, usedCache, err := storage.GetStorage(key)
 	if err != nil {
 		context.FailExecution(err)
-		return 0
+		return -1
 	}
 
 	err = storage.UseGasForStorageLoad(
@@ -239,7 +239,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
 		context.FailExecution(vmhost.ErrStorageValueOutOfRange)
-		return 0
+		return -1
 	}
 
 	return valueBigInt.Int64()

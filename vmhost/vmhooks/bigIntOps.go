@@ -1170,8 +1170,8 @@ func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 		context.FailExecution(vmhost.ErrShiftNegative)
 		return
 	}
-	dest.Rsh(a, uint(bits))
 
+	dest.Rsh(a, uint(bits))
 	err = managedType.ConsumeGasForBigIntCopy(dest)
 	if err != nil {
 		context.FailExecution(err)
@@ -1289,8 +1289,8 @@ func (context *VMHooksImpl) BigIntFinishSigned(referenceHandle int32) {
 		context.FailExecution(err)
 		return
 	}
-	bigInt2cBytes := twos.ToBytes(value)
 
+	bigInt2cBytes := twos.ToBytes(value)
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bigInt2cBytes)))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {

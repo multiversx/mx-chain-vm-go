@@ -63,7 +63,7 @@ func (context *VMHooksImpl) ManagedGetNumErrors() int32 {
 	wrappableErr, ok := allErrorsWrapper.(vmhost.WrappableError)
 	if !ok {
 		context.FailExecution(vmhost.ErrWrongType)
-		return 1
+		return -1
 	}
 
 	return int32(len(wrappableErr.GetAllErrors()))

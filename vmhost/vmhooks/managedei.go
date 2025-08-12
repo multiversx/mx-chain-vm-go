@@ -706,7 +706,7 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	data := makeCrossShardCallFromInput(vmInput.function, vmInput.arguments)
@@ -714,25 +714,25 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
 		context.FailExecution(vmhost.ErrArgOutOfRange)
-		return 1
+		return -1
 	}
 
 	successFunc, err := context.MemLoad(successOffset, successLength)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	errorFunc, err := context.MemLoad(errorOffset, errorLength)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	callbackClosure, err := managedType.GetBytes(callbackClosureHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	return CreateAsyncCallWithTypedArgs(host,
@@ -979,13 +979,13 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 	vmInput, err := readDestinationValueArguments(host, addressHandle, valueHandle, argumentsHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
@@ -1000,14 +1000,14 @@ func (context *VMHooksImpl) ManagedDeployFromSourceContract(
 	)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -1041,13 +1041,13 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
@@ -1060,27 +1060,27 @@ func (context *VMHooksImpl) ManagedCreateContract(
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
 	newAddress, err := createContract(sender, data, value, gas, code, codeMetadata, host, CreateContract)
 	if err != nil {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -1641,7 +1641,6 @@ func ManagedGetCodeHashTyped(
 	}
 
 	codeHash := blockchain.GetCodeHash(address)
-
 	return codeHash, nil
 }
 
