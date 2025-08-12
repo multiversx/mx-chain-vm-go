@@ -2425,3 +2425,28 @@ func (w *WrapperVMHooks) DeactivateUnsafeMode() {
 	w.wrappedVMHooks.DeactivateUnsafeMode()
 	w.logger.LogVMHookCallAfter(callInfo)
 }
+
+// ManagedGetNumErrors VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetNumErrors() int32 {
+	callInfo := "ManagedGetNumErrors()"
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedGetNumErrors()
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedGetErrorWithIndex VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetErrorWithIndex(index int32, errorHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetErrorWithIndex(%d, %d)", index, errorHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetErrorWithIndex(index, errorHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}
+
+// ManagedGetLastError VM hook wrapper
+func (w *WrapperVMHooks) ManagedGetLastError(errorHandle int32) {
+	callInfo := fmt.Sprintf("ManagedGetLastError(%d)", errorHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	w.wrappedVMHooks.ManagedGetLastError(errorHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+}

@@ -288,4 +288,7 @@ var functionNames = map[string]struct{}{
 	"managedVerifyBLSAggregatedSignature":          empty,
 	"activateUnsafeMode":                           empty,
 	"deactivateUnsafeMode":                         empty,
+	"managedGetNumErrors":                          empty,
+	"managedGetErrorWithIndex":                     empty,
+	"managedGetLastError":                          empty,
 }

@@ -323,4 +323,7 @@ type CryptoVMHooks interface {
 type UnsafeVMHooks interface {
 	ActivateUnsafeMode()
 	DeactivateUnsafeMode()
+	ManagedGetNumErrors() int32
+	ManagedGetErrorWithIndex(index int32, errorHandle int32)
+	ManagedGetLastError(errorHandle int32)
 }

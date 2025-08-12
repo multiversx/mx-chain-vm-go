@@ -48,7 +48,7 @@ func (context *VMHooksImpl) ManagedGetNumErrors() int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument // Re-using gas cost for a simple getter
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetArgument
 	err := metering.UseGasBoundedAndAddTracedGas(managedGetNumErrorsName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -85,7 +85,7 @@ func (context *VMHooksImpl) ManagedGetErrorWithIndex(index int32, errorHandle in
 
 	allErrorsWrapper := runtime.GetAllErrors()
 	if allErrorsWrapper == nil {
-		context.FailExecution(vmhost.ErrInvalidArgument) // Index out of bounds
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return
 	}
 
@@ -97,7 +97,7 @@ func (context *VMHooksImpl) ManagedGetErrorWithIndex(index int32, errorHandle in
 
 	allErrors := wrappableErr.GetAllErrors()
 	if index < 0 || int(index) >= len(allErrors) {
-		context.FailExecutionConditionally(vmhost.ErrInvalidArgument) // Index out of bounds
+		context.FailExecutionConditionally(vmhost.ErrInvalidArgument)
 		return
 	}
 
@@ -129,19 +129,19 @@ func (context *VMHooksImpl) ManagedGetLastError(errorHandle int32) {
 
 	allErrorsWrapper := runtime.GetAllErrors()
 	if allErrorsWrapper == nil {
-		managedType.SetBytes(errorHandle, []byte{}) // No errors, set empty buffer
+		managedType.SetBytes(errorHandle, []byte{})
 		return
 	}
 
 	wrappableErr, ok := allErrorsWrapper.(vmhost.WrappableError)
 	if !ok {
-		context.FailExecution(vmhost.ErrWrongType) // Should not happen
+		context.FailExecution(vmhost.ErrWrongType)
 		return
 	}
 
 	lastError := wrappableErr.GetLastError()
 	if lastError == nil {
-		managedType.SetBytes(errorHandle, []byte{}) // No errors, set empty buffer
+		managedType.SetBytes(errorHandle, []byte{})
 		return
 	}
 
