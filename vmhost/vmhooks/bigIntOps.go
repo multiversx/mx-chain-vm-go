@@ -1,7 +1,6 @@
 package vmhooks
 
 import (
-	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"

@@ -14,6 +14,21 @@ type MockRuntimeContext struct {
 	mock.Mock
 }
 
+// RemoveCodeUpgradeFromArgs provides a mock function with given fields
+func (_m *MockRuntimeContext) RemoveCodeUpgradeFromArgs() {
+	return
+}
+
+// IsUnsafeMode provides a mock function with given fields
+func (_m *MockRuntimeContext) IsUnsafeMode() bool {
+	return false
+}
+
+// SetUnsafeMode provides a mock function with given fields
+func (_m *MockRuntimeContext) SetUnsafeMode(_ bool) {
+	return
+}
+
 // AddError provides a mock function with given fields: err, otherInfo
 func (_m *MockRuntimeContext) AddError(err error, otherInfo ...string) {
 	_va := make([]interface{}, len(otherInfo))
