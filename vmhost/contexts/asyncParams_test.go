@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"encoding/hex"
-	"math/big"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
@@ -45,10 +44,10 @@ func TestAddAsyncArgumentsToOutputTransfers(t *testing.T) {
 func TestCreateDataFromAsyncParams(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil async params", func(t *testing.T) {
+	t.Run("empty async params", func(t *testing.T) {
 		t.Parallel()
-		data := createDataFromAsyncParams(nil)
-		require.Nil(t, data)
+		data := createDataFromAsyncParams(&vmcommon.AsyncArguments{})
+		require.NotNil(t, data)
 	})
 
 	t.Run("async call", func(t *testing.T) {
@@ -71,7 +70,6 @@ func TestCreateDataFromAsyncParams(t *testing.T) {
 		}
 		data := createDataFromAsyncParams(asyncParams)
 		require.NotNil(t, data)
-		// a bit of a hack to check if the gas was encoded
-		require.Contains(t, string(data), hex.EncodeToString(big.NewInt(100).Bytes()))
+		require.Contains(t, string(data), hex.EncodeToString([]byte("callID")))
 	})
 }

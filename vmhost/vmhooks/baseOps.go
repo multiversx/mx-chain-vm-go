@@ -1183,7 +1183,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 		if withFailure {
 			FailExecution(host, executeErr)
 		}
-		return -1
+		return 1
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
@@ -1198,7 +1198,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 				FailExecution(host, executeErr)
 			}
 
-			return -1
+			return 1
 		}
 
 		return 0
@@ -3283,7 +3283,7 @@ func ExecuteOnDestContextWithTypedArgs(
 			FailExecution(host, err)
 		}
 
-		return -1
+		return 1
 	}
 
 	host.CompleteLogEntriesWithCallType(vmOutput, vmhost.ExecuteOnDestContextString)
