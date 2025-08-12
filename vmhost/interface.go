@@ -403,7 +403,6 @@ type AsyncContext interface {
 	ExecuteLocalCallbackAndFinishOutput(
 		asyncCall *AsyncCall,
 		vmOutput *vmcommon.VMOutput,
-		destinationCallInput *vmcommon.ContractCallInput,
 		gasAccumulated uint64,
 		err error) (bool, *vmcommon.VMOutput)
 
