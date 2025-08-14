@@ -1,6 +1,7 @@
 package vmhooks
 
 import (
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -47,12 +48,17 @@ const (
 	bigIntGetUnsignedArgumentName     = "bigIntGetUnsignedArgument"
 	bigIntGetSignedArgumentName       = "bigIntGetSignedArgument"
 	bigIntGetCallValueName            = "bigIntGetCallValue"
-	bigIntGetESDTCallValueName        = "bigIntGetESDTCallValue"
 	bigIntGetESDTCallValueByIndexName = "bigIntGetESDTCallValueByIndex"
 	bigIntGetESDTExternalBalanceName  = "bigIntGetESDTExternalBalance"
 	bigIntGetExternalBalanceName      = "bigIntGetExternalBalance"
 	bigIntToStringName                = "bigIntToString"
 )
+
+func (context *VMHooksImpl) failExecutionWithAsyncV3Fixes(err error) {
+	if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+		context.FailExecution(err)
+	}
+}
 
 // BigIntGetUnsignedArgument VMHooks implementation.
 // @autogenerate(VMHooks)
@@ -70,11 +76,11 @@ func (context *VMHooksImpl) BigIntGetUnsignedArgument(id int32, destinationHandl
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		context.failExecutionWithAsyncV3Fixes(vmhost.ErrArgIndexOutOfRange)
 		return
 	}
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
-
 	value.SetBytes(args[id])
 }
 
@@ -95,6 +101,7 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		context.failExecutionWithAsyncV3Fixes(vmhost.ErrArgIndexOutOfRange)
 		return
 	}
 
@@ -280,7 +287,10 @@ func (context *VMHooksImpl) BigIntGetESDTExternalBalance(
 		return
 	}
 	if esdtData == nil {
-		return
+		if !context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+			return
+		}
+		esdtData = &esdt.ESDigitalToken{Value: big.NewInt(0)}
 	}
 
 	value := managedType.GetBigIntOrCreate(resultHandle)

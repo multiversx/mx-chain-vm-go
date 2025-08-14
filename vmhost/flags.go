@@ -30,5 +30,11 @@ const (
 	// FixGetBalanceFlag defines the flag that activates the fix for get balance from the Barnard release
 	FixGetBalanceFlag core.EnableEpochFlag = "FixGetBalanceFlag"
 
+	// AsyncV3FixesFlag defines the flag that activates the fix for get balance from the Barnard release
+	AsyncV3FixesFlag core.EnableEpochFlag = "AsyncV3FixesFlag"
+
+	// AsyncV3Flag defines the flag that activates the fix for get balance from the Barnard release
+	AsyncV3Flag core.EnableEpochFlag = "AsyncV3Flag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

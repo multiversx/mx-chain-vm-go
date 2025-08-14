@@ -1081,10 +1081,10 @@ func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	runTestMBufferSetByteSlice(t, true, 0, 26, vmcommon.Ok, []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 
 	// Bounds exceeded, source remains unchanged lowercase.
-	runTestMBufferSetByteSlice(t, true, 18, 9, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, true, -1, 2, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, true, 25, 2, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, true, 0, 27, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 18, 9, vmcommon.ExecutionFailed, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, -1, 2, vmcommon.ExecutionFailed, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 25, 2, vmcommon.ExecutionFailed, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 0, 27, vmcommon.ExecutionFailed, []byte("abcdefghijklmnopqrstuvwxyz"))
 }
 
 func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
@@ -1979,7 +1979,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *test
 
 						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
-							[]byte(test.ChildAddress),
+							test.ChildAddress,
 							[]*vmcommon.ESDTTransfer{
 								&vmcommon.ESDTTransfer{
 									ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),

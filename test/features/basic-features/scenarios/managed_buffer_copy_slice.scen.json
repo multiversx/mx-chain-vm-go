@@ -63,7 +63,12 @@
                 ]
             },
             "expect": {
-                "out": []
+                "out": [],
+                "status": "10",
+                "message": "*",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -79,9 +84,7 @@
                 ]
             },
             "expect": {
-                "out": [
-                    ""
-                ]
+                "out": [""]
             }
         },
         {
@@ -97,7 +100,12 @@
                 ]
             },
             "expect": {
-                "out": []
+                "out": [],
+                "status": "10",
+                "message": "*",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
             }
         }
     ]

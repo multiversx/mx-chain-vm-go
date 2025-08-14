@@ -1,7 +1,9 @@
 package mock
 
 import (
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
+	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
@@ -165,7 +167,9 @@ func (vhs *VMHostStub) EnableEpochsHandler() vmhost.EnableEpochsHandler {
 	if vhs.EnableEpochsHandlerCalled != nil {
 		return vhs.EnableEpochsHandlerCalled()
 	}
-	return nil
+	return &worldmock.EnableEpochsHandlerStub{IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+		return true
+	}}
 }
 
 // Async mocked method

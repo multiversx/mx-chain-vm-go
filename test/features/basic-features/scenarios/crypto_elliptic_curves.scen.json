@@ -933,12 +933,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "*",
-                    "*",
-                    "*"
-                ],
-                "status": "0",
+                "status": "10",
                 "message": "*"
             }
         },
@@ -956,12 +951,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "*",
-                    "*",
-                    "*"
-                ],
-                "status": "0",
+                "status": "10",
                 "message": "*"
             }
         },
@@ -979,12 +969,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "*",
-                    "*",
-                    "*"
-                ],
-                "status": "0",
+                "status": "10",
                 "message": "*"
             }
         },
@@ -1002,12 +987,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "*",
-                    "*",
-                    "*"
-                ],
-                "status": "0",
+                "status": "10",
                 "message": "*"
             }
         },
