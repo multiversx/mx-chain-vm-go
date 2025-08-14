@@ -288,6 +288,11 @@ package wasmer2
 // extern int32_t   w2_managedVerifySecp256r1(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
 // extern int32_t   w2_managedVerifyBLSSignatureShare(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
 // extern int32_t   w2_managedVerifyBLSAggregatedSignature(void* context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern void      w2_activateUnsafeMode(void* context);
+// extern void      w2_deactivateUnsafeMode(void* context);
+// extern int32_t   w2_managedGetNumErrors(void* context);
+// extern void      w2_managedGetErrorWithIndex(void* context, int32_t index, int32_t errorHandle);
+// extern void      w2_managedGetLastError(void* context, int32_t errorHandle);
 import "C"
 
 import (
@@ -576,6 +581,11 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_verify_secp256r1_func_ptr:                            funcPointer(C.w2_managedVerifySecp256r1),
 		managed_verify_blssignature_share_func_ptr:                   funcPointer(C.w2_managedVerifyBLSSignatureShare),
 		managed_verify_blsaggregated_signature_func_ptr:              funcPointer(C.w2_managedVerifyBLSAggregatedSignature),
+		activate_unsafe_mode_func_ptr:                                funcPointer(C.w2_activateUnsafeMode),
+		deactivate_unsafe_mode_func_ptr:                              funcPointer(C.w2_deactivateUnsafeMode),
+		managed_get_num_errors_func_ptr:                              funcPointer(C.w2_managedGetNumErrors),
+		managed_get_error_with_index_func_ptr:                        funcPointer(C.w2_managedGetErrorWithIndex),
+		managed_get_last_error_func_ptr:                              funcPointer(C.w2_managedGetLastError),
 	}
 }
 
@@ -2239,4 +2249,34 @@ func w2_managedVerifyBLSSignatureShare(context unsafe.Pointer, keyHandle int32, 
 func w2_managedVerifyBLSAggregatedSignature(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	return vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
+}
+
+//export w2_activateUnsafeMode
+func w2_activateUnsafeMode(context unsafe.Pointer) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ActivateUnsafeMode()
+}
+
+//export w2_deactivateUnsafeMode
+func w2_deactivateUnsafeMode(context unsafe.Pointer) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.DeactivateUnsafeMode()
+}
+
+//export w2_managedGetNumErrors
+func w2_managedGetNumErrors(context unsafe.Pointer) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedGetNumErrors()
+}
+
+//export w2_managedGetErrorWithIndex
+func w2_managedGetErrorWithIndex(context unsafe.Pointer, index int32, errorHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetErrorWithIndex(index, errorHandle)
+}
+
+//export w2_managedGetLastError
+func w2_managedGetLastError(context unsafe.Pointer, errorHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetLastError(errorHandle)
 }

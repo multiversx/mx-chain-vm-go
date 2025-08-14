@@ -286,4 +286,9 @@ var functionNames = map[string]struct{}{
 	"managedVerifySecp256r1":                       empty,
 	"managedVerifyBLSSignatureShare":               empty,
 	"managedVerifyBLSAggregatedSignature":          empty,
+	"activateUnsafeMode":                           empty,
+	"deactivateUnsafeMode":                         empty,
+	"managedGetNumErrors":                          empty,
+	"managedGetErrorWithIndex":                     empty,
+	"managedGetLastError":                          empty,
 }

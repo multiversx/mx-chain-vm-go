@@ -315,6 +315,11 @@ typedef struct {
   int32_t (*managed_verify_secp256r1_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
   int32_t (*managed_verify_blssignature_share_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
   int32_t (*managed_verify_blsaggregated_signature_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
+  void (*activate_unsafe_mode_func_ptr)(void *context);
+  void (*deactivate_unsafe_mode_func_ptr)(void *context);
+  int32_t (*managed_get_num_errors_func_ptr)(void *context);
+  void (*managed_get_error_with_index_func_ptr)(void *context, int32_t index, int32_t error_handle);
+  void (*managed_get_last_error_func_ptr)(void *context, int32_t error_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
 typedef struct {

@@ -18,7 +18,7 @@ func (context *VMHooksImpl) ManagedMapNew() int32 {
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapNewName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return managedType.NewManagedMap()
@@ -34,13 +34,13 @@ func (context *VMHooksImpl) ManagedMapPut(mMapHandle int32, keyHandle int32, val
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapPutName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -56,13 +56,13 @@ func (context *VMHooksImpl) ManagedMapGet(mMapHandle int32, keyHandle int32, out
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapGetName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -78,13 +78,13 @@ func (context *VMHooksImpl) ManagedMapRemove(mMapHandle int32, keyHandle int32, 
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapRemoveName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	err = managedType.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 1
+		return -1
 	}
 
 	return 0
@@ -100,13 +100,13 @@ func (context *VMHooksImpl) ManagedMapContains(mMapHandle int32, keyHandle int32
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapContainsName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
-		return 2
+		return -1
 	}
 
 	foundValue, err := managedType.ManagedMapContains(mMapHandle, keyHandle)
 	if err != nil {
 		context.FailExecution(err)
-		return 2
+		return -1
 	}
 
 	if foundValue {
