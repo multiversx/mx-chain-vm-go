@@ -1881,7 +1881,7 @@ func commonGenerateEC(
 	ecHandle int32,
 ) ([]byte, error) {
 	if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
-		return nil, vmhost.ErrOpcodeIsDeactivated
+		return nil, vmhost.ErrVMHookIsDeactivated
 	}
 
 	metering := host.Metering()
