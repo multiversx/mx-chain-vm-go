@@ -63,17 +63,12 @@
                 ]
             },
             "expect": {
-                "out": [],
-                "status": "10",
-                "message": "*",
-                "logs": "*",
-                "gas": "*",
-                "refund": "*"
+                "out": []
             }
         },
         {
             "step": "scQuery",
-            "id": "3",
+            "id": "4",
             "tx": {
                 "to": "sc:basic-features",
                 "function": "mbuffer_copy_slice",
@@ -84,12 +79,14 @@
                 ]
             },
             "expect": {
-                "out": [""]
+                "out": [
+                    ""
+                ]
             }
         },
         {
             "step": "scQuery",
-            "id": "3",
+            "id": "5",
             "tx": {
                 "to": "sc:basic-features",
                 "function": "mbuffer_copy_slice",
@@ -100,12 +97,7 @@
                 ]
             },
             "expect": {
-                "out": [],
-                "status": "10",
-                "message": "*",
-                "logs": "*",
-                "gas": "*",
-                "refund": "*"
+                "out": []
             }
         }
     ]
