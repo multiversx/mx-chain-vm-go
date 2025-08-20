@@ -26,12 +26,10 @@ const (
 	getExternalBalanceName           = "getExternalBalance"
 	blockHashName                    = "blockHash"
 	transferValueName                = "transferValue"
-	transferESDTExecuteName          = "transferESDTExecute"
 	transferESDTNFTExecuteName       = "transferESDTNFTExecute"
 	multiTransferESDTNFTExecuteName  = "multiTransferESDTNFTExecute"
 	transferValueExecuteName         = "transferValueExecute"
 	createAsyncCallName              = "createAsyncCall"
-	setAsyncGroupCallbackName        = "setAsyncGroupCallback"
 	setAsyncContextCallbackName      = "setAsyncContextCallback"
 	getArgumentLengthName            = "getArgumentLength"
 	getArgumentName                  = "getArgument"
@@ -44,11 +42,6 @@ const (
 	getCallerName                    = "getCaller"
 	checkNoPaymentName               = "checkNoPayment"
 	callValueName                    = "callValue"
-	getESDTValueName                 = "getESDTValue"
-	getESDTTokenNameName             = "getESDTTokenName"
-	getESDTTokenNonceName            = "getESDTTokenNonce"
-	getESDTTokenTypeName             = "getESDTTokenType"
-	getCallValueTokenNameName        = "getCallValueTokenName"
 	getESDTValueByIndexName          = "getESDTValueByIndex"
 	getESDTTokenNameByIndexName      = "getESDTTokenNameByIndex"
 	getESDTTokenNonceByIndexName     = "getESDTTokenNonceByIndex"
@@ -66,7 +59,6 @@ const (
 	getESDTNFTAttributeLengthName    = "getESDTNFTAttributeLength"
 	getESDTNFTURILengthName          = "getESDTNFTURILength"
 	getESDTTokenDataName             = "getESDTTokenData"
-	getESDTLocalRolesName            = "getESDTLocalRoles"
 	validateTokenIdentifierName      = "validateTokenIdentifier"
 	executeOnDestContextName         = "executeOnDestContext"
 	executeOnSameContextName         = "executeOnSameContext"
@@ -84,8 +76,6 @@ const (
 	deleteFromReturnDataName         = "deleteFromReturnData"
 	setStorageLockName               = "setStorageLock"
 	getStorageLockName               = "getStorageLock"
-	isStorageLockedName              = "isStorageLocked"
-	clearStorageLockName             = "clearStorageLock"
 	getBlockTimestampName            = "getBlockTimestamp"
 	getBlockTimestampMsName          = "getBlockTimestampMs"
 	getBlockNonceName                = "getBlockNonce"
@@ -2246,9 +2236,7 @@ func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp i
 	return int32(storageStatus)
 }
 
-// GetStorageLock VMHooks implementation.
-// @autogenerate(VMHooks)
-func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (context *VMHooksImpl) getStorageLockUnchecked(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
 	metering := context.GetMeteringContext()
 	storage := context.GetStorageContext()
 
@@ -2285,8 +2273,22 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 	}
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
+	return timeLock
+}
 
-	// TODO if timelock <= currentTimeStamp { fail somehow }
+// GetStorageLock VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+	timeLock := context.getStorageLockUnchecked(keyOffset, keyLength)
+
+	timelockExpired := timeLock <= context.GetBlockTimestamp()
+	if timelockExpired {
+		isTimeLockCheckEnabled := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag)
+		if isTimeLockCheckEnabled {
+			context.FailExecution(vmhost.ErrTimeLockExpired)
+		}
+		return -1
+	}
 
 	return timeLock
 }
@@ -2294,13 +2296,11 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 // IsStorageLocked VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) IsStorageLocked(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
-	timeLock := context.GetStorageLock(keyOffset, keyLength)
-	if timeLock < 0 {
-		return -1
-	}
+	timeLock := context.getStorageLockUnchecked(keyOffset, keyLength)
 
-	currentTimestamp := context.GetBlockTimestamp()
-	if timeLock <= currentTimestamp {
+	timelockExpired := timeLock <= context.GetBlockTimestamp()
+
+	if timelockExpired {
 		return 0
 	}
 

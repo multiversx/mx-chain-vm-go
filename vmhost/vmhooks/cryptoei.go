@@ -345,6 +345,9 @@ func (context *VMHooksImpl) VerifyBLS(
 
 	invalidSigErr := crypto.VerifyBLS(key, message, sig)
 	if invalidSigErr != nil {
+		// It is important to not leak information about the internal cryptographic libraries.
+		// If the MaskInternalDependenciesErrorsFlag is enabled, we replace the specific
+		// error from the library with a generic verification error.
 		if enableEpochsHandler.IsFlagEnabled(vmhost.MaskInternalDependenciesErrorsFlag) {
 			invalidSigErr = vmhost.ErrBlsVerify
 		}
@@ -1877,6 +1880,10 @@ func commonGenerateEC(
 	yPubKeyHandle int32,
 	ecHandle int32,
 ) ([]byte, error) {
+	if host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+		return nil, vmhost.ErrVMHookIsDeactivated
+	}
+
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(generateKeyECName)

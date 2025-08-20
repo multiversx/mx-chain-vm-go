@@ -14,6 +14,10 @@ type MockRuntimeContext struct {
 	mock.Mock
 }
 
+// RemoveCodeUpgradeFromArgs -
+func (_m *MockRuntimeContext) RemoveCodeUpgradeFromArgs() {
+}
+
 // AddError provides a mock function with given fields: err, otherInfo
 func (_m *MockRuntimeContext) AddError(err error, otherInfo ...string) {
 	_va := make([]interface{}, len(otherInfo))
