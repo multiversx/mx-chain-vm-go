@@ -240,6 +240,24 @@ func (_m *MockInstance) IsFunctionImported(name string) bool {
 	return r0
 }
 
+// IsOpcodeUsed provides a mock function with given fields: opcode
+func (_m *MockInstance) IsOpcodeUsed(opcode executor.OpcodeUsed) bool {
+	ret := _m.Called(opcode)
+
+	if len(ret) == 0 {
+		return false
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(executor.OpcodeUsed) bool); ok {
+		r0 = rf(opcode)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // IsInterfaceNil provides a mock function with no fields
 func (_m *MockInstance) IsInterfaceNil() bool {
 	ret := _m.Called()

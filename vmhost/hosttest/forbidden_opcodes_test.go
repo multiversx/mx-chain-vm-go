@@ -61,3 +61,38 @@ func TestBarnardOpcodesActivation(t *testing.T) {
 				ContractInvalid()
 		})
 }
+
+func TestBulkMemoryOpcodesActivation(t *testing.T) {
+	wasmModules := []string{"memory-copy", "memory-fill"}
+
+	for _, moduleName := range wasmModules {
+		testcommon.BuildInstanceCreatorTest(t).
+			WithInput(testcommon.CreateTestContractCreateInputBuilder().
+				WithGasProvided(100000000).
+				WithContractCode(testcommon.GetTestSCCodeModule("forbidden-opcodes/"+moduleName, moduleName, "../../")).
+				Build()).
+			WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
+				IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+					return flag != vmhost.AsyncV3Flag
+				},
+			}).
+			AndAssertResults(func(stubBlockchainHook *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
+				verify.
+					ContractInvalid()
+			})
+
+		testcommon.BuildInstanceCreatorTest(t).
+			WithInput(testcommon.CreateTestContractCreateInputBuilder().
+				WithGasProvided(100000000).
+				WithContractCode(testcommon.GetTestSCCodeModule("forbidden-opcodes/"+moduleName, moduleName, "../../")).
+				Build()).
+			WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
+				IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+					return true
+				},
+			}).
+			AndAssertResults(func(stubBlockchainHook *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
+				verify.FunctionNotFound()
+			})
+	}
+}

@@ -68,6 +68,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	IsFunctionImportedFunc func(name string) bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	IsOpcodeUsedFunc func(opcode executor.OpcodeUsed) bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ReadOnlyFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetReadOnlyFunc func(readOnly bool)
@@ -214,6 +216,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 
 	runtimeWrapper.IsFunctionImportedFunc = func(name string) bool {
 		return runtimeWrapper.runtimeContext.IsFunctionImported(name)
+	}
+
+	runtimeWrapper.IsOpcodeUsedFunc = func(opcode executor.OpcodeUsed) bool {
+		return runtimeWrapper.runtimeContext.IsOpcodeUsed(opcode)
 	}
 
 	runtimeWrapper.ReadOnlyFunc = func() bool {
@@ -417,6 +423,11 @@ func (contextWrapper *RuntimeContextWrapper) GetInstanceStackSize() uint64 {
 // IsFunctionImported calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) IsFunctionImported(name string) bool {
 	return contextWrapper.IsFunctionImportedFunc(name)
+}
+
+// IsOpcodeUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) IsOpcodeUsed(opcode executor.OpcodeUsed) bool {
+	return contextWrapper.IsOpcodeUsedFunc(opcode)
 }
 
 // ReadOnly calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

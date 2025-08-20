@@ -168,6 +168,13 @@ func cWasmerInstanceHasImportedFunction(
 	))
 }
 
+func cWasmerInstanceIsOpcodeUsed(instance *cWasmerInstanceT, opcode uint32) cInt {
+	return (cInt)(C.vm_exec_instance_is_opcode_used(
+		(*C.vm_exec_instance_t)(instance),
+		(C.uint32_t)(opcode),
+	))
+}
+
 func cWasmerInstanceExportedFunctionNamesLength(instance *cWasmerInstanceT) cInt {
 	return (cInt)(C.vm_exported_function_names_length(
 		(*C.vm_exec_instance_t)(instance),
