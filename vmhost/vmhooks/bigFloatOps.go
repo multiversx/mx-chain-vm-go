@@ -381,11 +381,11 @@ func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
-
 	if err != nil {
 		context.FailExecution(err)
 		return -2
 	}
+
 	return int32(op1.Cmp(op2))
 }
 

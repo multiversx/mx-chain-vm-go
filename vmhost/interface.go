@@ -133,7 +133,7 @@ type RuntimeContext interface {
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
-	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
+	RemoveCodeUpgradeFromArgs()
 	SignalUserError(message string)
 	FailExecution(err error)
 	MustVerifyNextContractCode()
@@ -400,10 +400,9 @@ type AsyncContext interface {
 
 	GetAsyncCallByCallID(callID []byte) AsyncCallLocation
 	LoadParentContextFromStackOrStorage() (AsyncContext, error)
-	ExecuteSyncCallbackAndFinishOutput(
+	ExecuteLocalCallbackAndFinishOutput(
 		asyncCall *AsyncCall,
 		vmOutput *vmcommon.VMOutput,
-		destinationCallInput *vmcommon.ContractCallInput,
 		gasAccumulated uint64,
 		err error) (bool, *vmcommon.VMOutput)
 
