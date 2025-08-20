@@ -652,7 +652,7 @@ func (context *runtimeContext) FailExecution(err error) {
 // If unsafe mode is active, it just logs the error.
 func (context *runtimeContext) FailExecutionConditionally(err error) {
 	if context.IsUnsafeMode() {
-		logRuntime.Debug("execution would have failed, but unsafe mode is active", "err", err)
+		logRuntime.Trace("execution would have failed, but unsafe mode is active", "err", err)
 		context.AddError(err)
 		return
 	}
