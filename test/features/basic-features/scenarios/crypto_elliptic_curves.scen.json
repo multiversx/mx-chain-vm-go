@@ -934,7 +934,7 @@
             },
             "expect": {
                 "status": "10",
-                "message": "*"
+                "message": "str:VM hook is deactivated"
             }
         },
         {
@@ -952,7 +952,7 @@
             },
             "expect": {
                 "status": "10",
-                "message": "*"
+                "message": "str:VM hook is deactivated"
             }
         },
         {
@@ -970,7 +970,7 @@
             },
             "expect": {
                 "status": "10",
-                "message": "*"
+                "message": "str:VM hook is deactivated"
             }
         },
         {
@@ -988,7 +988,7 @@
             },
             "expect": {
                 "status": "10",
-                "message": "*"
+                "message": "str:VM hook is deactivated"
             }
         },
         {

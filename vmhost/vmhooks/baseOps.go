@@ -2233,9 +2233,7 @@ func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp i
 	return int32(storageStatus)
 }
 
-// GetStorageLock VMHooks implementation.
-// @autogenerate(VMHooks)
-func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (context *VMHooksImpl) getStorageLockUnchecked(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
 	metering := context.GetMeteringContext()
 	storage := context.GetStorageContext()
 
@@ -2272,10 +2270,20 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 	}
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
+	return timeLock
+}
 
-	isTimeLockCheckEnabled := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag)
-	if isTimeLockCheckEnabled && timeLock <= context.GetBlockTimestamp() {
-		context.FailExecutionConditionally(vmhost.ErrTimeLockExpired)
+// GetStorageLock VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+	timeLock := context.getStorageLockUnchecked(keyOffset, keyLength)
+
+	timelockExpired := timeLock <= context.GetBlockTimestamp()
+	if timelockExpired {
+		isTimeLockCheckEnabled := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag)
+		if isTimeLockCheckEnabled {
+			context.FailExecutionConditionally(vmhost.ErrTimeLockExpired)
+		}
 		return -1
 	}
 
@@ -2285,13 +2293,9 @@ func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength 
 // IsStorageLocked VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) IsStorageLocked(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
-	timeLock := context.GetStorageLock(keyOffset, keyLength)
-	if timeLock < 0 {
-		return -1
-	}
-
-	currentTimestamp := context.GetBlockTimestamp()
-	if timeLock <= currentTimestamp {
+	timeLock := context.getStorageLockUnchecked(keyOffset, keyLength)
+	timelockExpired := timeLock <= context.GetBlockTimestamp()
+	if timelockExpired {
 		return 0
 	}
 

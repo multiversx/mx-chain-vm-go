@@ -329,8 +329,8 @@ var ErrNilMapOpcodeAddress = errors.New("nil map opcode address")
 // ErrOpcodeIsNotAllowed signals that opcode is not allowed for the address
 var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
-// ErrOpcodeIsDeactivated signals that opcode is deactivated
-var ErrOpcodeIsDeactivated = errors.New("opcode is deactivated")
+// ErrVMHookIsDeactivated signals that opcode is deactivated
+var ErrVMHookIsDeactivated = errors.New("VM hook is deactivated")
 
 // ErrTooManyTransfersFromBuiltInFunction signals that too many transfers are in the built in function
 var ErrTooManyTransfersFromBuiltInFunction = errors.New("too many transfers from built in function")

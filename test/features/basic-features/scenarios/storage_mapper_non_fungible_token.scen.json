@@ -383,12 +383,11 @@
                 ]
             },
             "expect": {
-                "out": [],
-                "status": "10",
-                "message": "*",
-                "logs": "*",
-                "gas": "*",
-                "refund": "*"
+                "out": [
+                    "u8:1|u8:2|u8:3"
+                ],
+                "status": "",
+                "logs": "*"
             }
         },
         {
