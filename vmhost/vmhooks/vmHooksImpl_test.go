@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
+	vmcommonmock "github.com/multiversx/mx-chain-vm-common-go/mock"
 	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -89,4 +91,133 @@ func TestFailExecution(t *testing.T) {
 
 	FailExecution(hooks.GetVMHost(), errors.New("test error"))
 	runtime.AssertCalled(t, "FailExecution", mock.Anything)
+}
+
+func TestVMHooksImpl_FailExecutionConditionally(t *testing.T) {
+	t.Parallel()
+
+	errTest := errors.New("test error")
+
+	t.Run("nil error", func(t *testing.T) {
+		t.Parallel()
+
+		wasCalled := false
+		mockRuntime := &mockRuntimeContext{
+			failExecutionCalled: func(err error) {
+				wasCalled = true
+			},
+			addErrorCalled: func(err error, otherInfo ...string) {
+				wasCalled = true
+			},
+		}
+
+		host := &mockery.MockVMHost{}
+		host.On("Runtime").Return(mockRuntime)
+		hooks := NewVMHooksImpl(host)
+
+		hooks.FailExecutionConditionally(nil)
+
+		require.False(t, wasCalled)
+	})
+
+	t.Run("unsafe mode OFF", func(t *testing.T) {
+		t.Parallel()
+
+		failExecutionCalled := false
+		addErrorCalled := false
+		mockRuntime := &mockRuntimeContext{
+			isUnsafeModeCalled: func() bool {
+				return false
+			},
+			failExecutionCalled: func(err error) {
+				failExecutionCalled = true
+			},
+			addErrorCalled: func(err error, otherInfo ...string) {
+				addErrorCalled = true
+			},
+		}
+
+		host := &mockery.MockVMHost{}
+		host.On("Runtime").Return(mockRuntime)
+		metering := &mockery.MockMeteringContext{}
+		metering.On("GasLeft").Return(uint64(1000))
+		metering.On("UseGasBounded", mock.Anything).Return(nil)
+		host.On("Metering").Return(metering)
+		hooks := NewVMHooksImpl(host)
+
+		hooks.FailExecutionConditionally(errTest)
+
+		require.True(t, failExecutionCalled)
+		require.False(t, addErrorCalled)
+	})
+
+	t.Run("unsafe mode ON, flag OFF", func(t *testing.T) {
+		t.Parallel()
+
+		failExecutionCalled := false
+		addErrorCalled := false
+		mockRuntime := &mockRuntimeContext{
+			isUnsafeModeCalled: func() bool {
+				return true
+			},
+			failExecutionCalled: func(err error) {
+				failExecutionCalled = true
+			},
+			addErrorCalled: func(err error, otherInfo ...string) {
+				addErrorCalled = true
+			},
+		}
+
+		host := &mockery.MockVMHost{}
+		host.On("Runtime").Return(mockRuntime)
+		metering := &mockery.MockMeteringContext{}
+		metering.On("GasLeft").Return(uint64(1000))
+		metering.On("UseGasBounded", mock.Anything).Return(nil)
+		host.On("Metering").Return(metering)
+		enableEpochsHandler := &vmcommonmock.EnableEpochsHandlerStub{
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return false
+			},
+		}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+		hooks := NewVMHooksImpl(host)
+
+		hooks.FailExecutionConditionally(errTest)
+
+		require.True(t, failExecutionCalled)
+		require.False(t, addErrorCalled)
+	})
+
+	t.Run("unsafe mode ON, flag ON", func(t *testing.T) {
+		t.Parallel()
+
+		failExecutionCalled := false
+		addErrorCalled := false
+		mockRuntime := &mockRuntimeContext{
+			isUnsafeModeCalled: func() bool {
+				return true
+			},
+			failExecutionCalled: func(err error) {
+				failExecutionCalled = true
+			},
+			addErrorCalled: func(err error, otherInfo ...string) {
+				addErrorCalled = true
+			},
+		}
+
+		host := &mockery.MockVMHost{}
+		host.On("Runtime").Return(mockRuntime)
+		enableEpochsHandler := &vmcommonmock.EnableEpochsHandlerStub{
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return true
+			},
+		}
+		host.On("EnableEpochsHandler").Return(enableEpochsHandler)
+		hooks := NewVMHooksImpl(host)
+
+		hooks.FailExecutionConditionally(errTest)
+
+		require.False(t, failExecutionCalled)
+		require.True(t, addErrorCalled)
+	})
 }
