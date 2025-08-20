@@ -340,3 +340,6 @@ var ErrTimeLockExpired = errors.New("time lock expired")
 
 // ErrWrongType signals that wrong type is read from buffer
 var ErrWrongType = errors.New("incompatible type")
+
+// ErrZKVerify signals that groth16 verification errors
+var ErrZKVerify = errors.New("zkVerify failed")
