@@ -20,6 +20,7 @@ type InstanceMock struct {
 	Exports         map[string]string
 	DefaultErrors   map[string]error
 	Methods         map[string]mockMethod
+	OpcodeUsed      map[executor.OpcodeUsed]bool
 	Points          uint64
 	Data            executor.VMHooks
 	GasLimit        uint64
@@ -181,6 +182,12 @@ func (instance *InstanceMock) MemDump() []byte {
 func (instance *InstanceMock) IsFunctionImported(name string) bool {
 	_, ok := instance.Exports[name]
 	return ok
+}
+
+// IsOpcodeUsed mocked method
+func (instance *InstanceMock) IsOpcodeUsed(opcode executor.OpcodeUsed) bool {
+	used, ok := instance.OpcodeUsed[opcode]
+	return ok && used
 }
 
 // GetMockInstance gets the mock instance from the runtime of the provided host

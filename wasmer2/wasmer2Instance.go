@@ -122,6 +122,11 @@ func (instance *Wasmer2Instance) IsFunctionImported(name string) bool {
 	return result == 1
 }
 
+// IsOpcodeUsed returns true if the WASM module uses the specified opcode.
+func (instance *Wasmer2Instance) IsOpcodeUsed(opcode executor.OpcodeUsed) bool {
+	return cWasmerInstanceIsOpcodeUsed(instance.cgoInstance, uint32(opcode)) == 1
+}
+
 // CallFunction executes given function from loaded contract.
 func (instance *Wasmer2Instance) CallFunction(functionName string) error {
 	var wasmFunctionName = cCString(functionName)

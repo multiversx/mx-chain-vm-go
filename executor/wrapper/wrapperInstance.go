@@ -131,6 +131,12 @@ func (inst *WrapperInstance) IsFunctionImported(name string) bool {
 	return result
 }
 
+// IsOpcodeUsed wraps the call to the underlying instance.
+func (inst *WrapperInstance) IsOpcodeUsed(opcode executor.OpcodeUsed) bool {
+	result := inst.wrappedInstance.IsOpcodeUsed(opcode)
+	return result
+}
+
 // IsInterfaceNil returns true if there is no value under the interface.
 func (inst *WrapperInstance) IsInterfaceNil() bool {
 	return inst == nil

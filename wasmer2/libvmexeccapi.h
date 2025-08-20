@@ -457,6 +457,15 @@ int vm_exec_instance_has_imported_function(vm_exec_instance_t *instance_ptr,
                                            const char *func_name_ptr);
 
 /**
+ * Checks whether the given opcode is used in the wasm module.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+int vm_exec_instance_is_opcode_used(vm_exec_instance_t *instance_ptr, uint32_t opcode_value);
+
+/**
  * Gets a pointer to the beginning of the contiguous memory data
  * bytes.
  *

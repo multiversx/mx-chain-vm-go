@@ -332,6 +332,11 @@ func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
 	return true
 }
 
+// IsOpcodeUsed mocked method
+func (r *RuntimeContextMock) IsOpcodeUsed(_ executor.OpcodeUsed) bool {
+	return false
+}
+
 // AddError mocked method
 func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 }

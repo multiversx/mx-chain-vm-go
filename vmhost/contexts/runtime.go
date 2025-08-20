@@ -704,6 +704,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.AsyncV3Flag) {
+		err = context.checkIfContainsBulkMemoryOpcodes()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -724,6 +732,18 @@ func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
 			return vmhost.ErrContractInvalid
 		}
 	}
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsBulkMemoryOpcodes() error {
+	if context.iTracker.Instance().IsOpcodeUsed(executor.OpcodeUsedMemoryCopy) {
+		return vmhost.ErrContractInvalid
+	}
+
+	if context.iTracker.Instance().IsOpcodeUsed(executor.OpcodeUsedMemoryFill) {
+		return vmhost.ErrContractInvalid
+	}
+
 	return nil
 }
 
@@ -829,6 +849,11 @@ func (context *runtimeContext) CallSCFunction(functionName string) error {
 // IsFunctionImported returns true if the WASM module imports the specified function.
 func (context *runtimeContext) IsFunctionImported(name string) bool {
 	return context.iTracker.Instance().IsFunctionImported(name)
+}
+
+// IsOpcodeUsed returns true if the WASM module uses the specified opcode.
+func (context *runtimeContext) IsOpcodeUsed(opcode executor.OpcodeUsed) bool {
+	return context.iTracker.Instance().IsOpcodeUsed(opcode)
 }
 
 // AddError adds an error to the global error list on runtime context
