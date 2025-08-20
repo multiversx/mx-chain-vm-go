@@ -839,3 +839,24 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	require.Equal(t, 0, len(runtimeCtx.stateStack))
 }
+
+func TestRuntimeContext_UnSafeMode(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	runtimeCtx := makeDefaultRuntimeContext(t, host)
+	defer runtimeCtx.ClearWarmInstanceCache()
+
+	runtimeCtx.vmInput = nil
+	runtimeCtx.codeAddress = []byte("some address")
+	runtimeCtx.callFunction = "a function"
+	runtimeCtx.iTracker.codeSize = 1024
+
+	runtimeCtx.InitState()
+
+	require.False(t, runtimeCtx.IsUnsafeMode())
+	runtimeCtx.SetUnsafeMode(true)
+
+	require.True(t, runtimeCtx.IsUnsafeMode())
+
+	runtimeCtx.SetUnsafeMode(false)
+	require.False(t, runtimeCtx.IsUnsafeMode())
+}

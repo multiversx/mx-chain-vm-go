@@ -2,6 +2,8 @@ package vmhooks
 
 import (
 	"errors"
+	"github.com/multiversx/mx-chain-core-go/core"
+	mock2 "github.com/multiversx/mx-chain-vm-common-go/mock"
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/mock/mockery"
@@ -89,4 +91,67 @@ func TestFailExecution(t *testing.T) {
 
 	FailExecution(hooks.GetVMHost(), errors.New("test error"))
 	runtime.AssertCalled(t, "FailExecution", mock.Anything)
+}
+
+func TestVMHooksImpl_FailExecutionConditionally_SafeMode(t *testing.T) {
+	t.Parallel()
+	hooks, _, runtime, metering, _, _ := createTestVMHooks()
+	metering.On("GasLeft").Return(uint64(1000))
+	metering.On("UseGasBounded", mock.Anything).Return(nil)
+	runtime.On("FailExecution", mock.Anything).Return()
+
+	hooks.FailExecutionConditionally(errors.New("test error"))
+	runtime.AssertCalled(t, "FailExecution", mock.Anything)
+}
+
+func TestVMHooksImpl_FailExecutionConditionally_NotActive(t *testing.T) {
+	t.Parallel()
+	vmHooksMockery := &mockeryStruct{}
+
+	vmHooksMockery.host = &mockery.MockVMHost{}
+	vmHooksMockery.runtime = &mockery.MockRuntimeContext{}
+	vmHooksMockery.metering = &mockery.MockMeteringContext{}
+
+	vmHooksMockery.host.On("Metering").Return(vmHooksMockery.metering)
+	vmHooksMockery.host.On("Runtime").Return(vmHooksMockery.runtime)
+	vmHooksMockery.runtime.On("FailExecution", mock.Anything).Return()
+	vmHooksMockery.host.On("EnableEpochsHandler").Return(&mock2.EnableEpochsHandlerStub{
+		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+			return false
+		},
+	})
+	vmHooksMockery.metering.On("GasLeft").Return(uint64(1000))
+	vmHooksMockery.metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooksMockery.hooks = NewVMHooksImpl(vmHooksMockery.host)
+
+	vmHooksMockery.runtime.On("IsUnsafeMode").Return(true)
+	vmHooksMockery.hooks.FailExecutionConditionally(errors.New("test error"))
+	vmHooksMockery.runtime.AssertCalled(t, "FailExecution", mock.Anything)
+}
+
+func TestVMHooksImpl_FailExecutionConditionally_UnSafeMode(t *testing.T) {
+	t.Parallel()
+
+	vmHooksMockery := &mockeryStruct{}
+	vmHooksMockery.host = &mockery.MockVMHost{}
+	vmHooksMockery.runtime = &mockery.MockRuntimeContext{}
+	vmHooksMockery.metering = &mockery.MockMeteringContext{}
+
+	vmHooksMockery.host.On("Metering").Return(vmHooksMockery.metering)
+	vmHooksMockery.host.On("Runtime").Return(vmHooksMockery.runtime)
+	vmHooksMockery.runtime.On("FailExecution", mock.Anything).Return()
+	vmHooksMockery.host.On("EnableEpochsHandler").Return(&mock2.EnableEpochsHandlerStub{
+		IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+			return true
+		},
+	})
+	vmHooksMockery.metering.On("GasLeft").Return(uint64(1000))
+	vmHooksMockery.metering.On("UseGasBounded", mock.Anything).Return(nil)
+	vmHooksMockery.hooks = NewVMHooksImpl(vmHooksMockery.host)
+
+	vmHooksMockery.runtime.On("IsUnsafeMode").Return(true)
+	vmHooksMockery.runtime.On("AddError", mock.Anything, mock.Anything)
+	vmHooksMockery.hooks.FailExecutionConditionally(errors.New("test error"))
+	vmHooksMockery.runtime.AssertNotCalled(t, "FailExecution", mock.Anything)
+	vmHooksMockery.runtime.AssertCalled(t, "AddError", mock.Anything, mock.Anything)
 }
