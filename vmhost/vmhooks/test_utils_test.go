@@ -38,6 +38,7 @@ func createTestVMHooksFull() (*VMHooksImpl, *mockery.MockVMHost, *mockery.MockRu
 	vmHooks.host.On("IsBuiltinFunctionName", mock.Anything).Return(false)
 	vmHooks.host.On("IsBuiltinFunctionCall", mock.Anything).Return(false)
 	vmHooks.runtime.On("FailExecution", mock.Anything).Return()
+	vmHooks.runtime.On("IsUnsafeMode").Return(false)
 
 	baseInstanceSetup(vmHooks.runtime, vmHooks.instance)
 
