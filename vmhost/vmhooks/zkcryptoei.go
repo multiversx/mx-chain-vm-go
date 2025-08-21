@@ -249,6 +249,32 @@ func (context *VMHooksImpl) ManagedMapToCurveEC(
 	)
 }
 
+func readManagedVectorsAndConsumeGas(
+	host vmhost.VMHost,
+	handle1, handle2 int32,
+) ([][]byte, [][]byte, error) {
+	managedType := host.ManagedTypes()
+	metering := host.Metering()
+
+	vec1, len1, err := managedType.ReadManagedVecOfManagedBuffers(handle1)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vec2, len2, err := managedType.ReadManagedVecOfManagedBuffers(handle2)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, len1+len2)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vec1, vec2, nil
+}
+
 // ManagedMultiExpEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMultiExpEC(
@@ -270,28 +296,13 @@ func ManagedMultiExpECWithHost(
 	resultHandle int32,
 ) int32 {
 	metering := host.Metering()
-	managedType := host.ManagedTypes()
-
 	err := metering.UseGasBoundedAndAddTracedGas(managedMultiExpEC, metering.GasSchedule().CryptoAPICost.AddECC)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
-	pointsVec, actualLenPoints, err := managedType.ReadManagedVecOfManagedBuffers(pointsHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	scalarsVec, actualLenScalars, err := managedType.ReadManagedVecOfManagedBuffers(scalarsHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLenPoints+actualLenScalars)
-	err = metering.UseGasBounded(gasToUse)
+	pointsVec, scalarsVec, err := readManagedVectorsAndConsumeGas(host, pointsHandle, scalarsHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -312,6 +323,7 @@ func ManagedMultiExpECWithHost(
 		return -1
 	}
 
+	managedType := host.ManagedTypes()
 	err = managedType.ConsumeGasForBytes(result)
 	if err != nil {
 		FailExecution(host, err)
@@ -340,28 +352,13 @@ func ManagedPairingChecksECWithHost(
 	pointsG1Handle, pointsG2Handle int32,
 ) int32 {
 	metering := host.Metering()
-	managedType := host.ManagedTypes()
-
 	err := metering.UseGasBoundedAndAddTracedGas(managedPairingCheckEC, metering.GasSchedule().CryptoAPICost.AddECC)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
-	pointsG1Vec, actualLenPoints, err := managedType.ReadManagedVecOfManagedBuffers(pointsG1Handle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	pointsG2Vec, actualLenScalars, err := managedType.ReadManagedVecOfManagedBuffers(pointsG2Handle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLenPoints+actualLenScalars)
-	err = metering.UseGasBounded(gasToUse)
+	pointsG1Vec, pointsG2Vec, err := readManagedVectorsAndConsumeGas(host, pointsG1Handle, pointsG2Handle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
