@@ -343,3 +343,5 @@ var ErrWrongType = errors.New("incompatible type")
 
 // ErrZKVerify signals that groth16 verification errors
 var ErrZKVerify = errors.New("zkVerify failed")
+
+var ErrEllipticCurveAddFailed = errors.New("elliptic curve add failed")
