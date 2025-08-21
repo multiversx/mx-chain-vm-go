@@ -39,5 +39,8 @@ const (
 	// FailConditionallyFlag defines the flag that activates the new opcodes and possibility for failing conditionally
 	FailConditionallyFlag core.EnableEpochFlag = "FailConditionallyFlag"
 
+	// ZKCryptoFlag defines the flag that activates the new zk crypto opcodes
+	ZKCryptoFlag core.EnableEpochFlag = "ZKCryptoFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

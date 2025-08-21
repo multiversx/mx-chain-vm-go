@@ -296,6 +296,6 @@ var functionNames = map[string]struct{}{
 	"managedAddEC":                                 empty,
 	"managedMulEC":                                 empty,
 	"managedMultiExpEC":                            empty,
-	"managedMapToCurve":                            empty,
+	"managedMapToCurveEC":                          empty,
 	"managedPairingChecksEC":                       empty,
 }

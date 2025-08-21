@@ -298,7 +298,7 @@ package wasmer2
 // extern int32_t   w2_managedAddEC(void* context, int32_t curveID, int32_t groupID, int32_t point1Handle, int32_t point2Handle, int32_t resultHandle);
 // extern int32_t   w2_managedMulEC(void* context, int32_t curveID, int32_t groupID, int32_t pointHandle, int32_t scalarHandle, int32_t resultHandle);
 // extern int32_t   w2_managedMultiExpEC(void* context, int32_t curveID, int32_t groupID, int32_t pointsHandle, int32_t scalarsHandle, int32_t resultHandle);
-// extern int32_t   w2_managedMapToCurve(void* context, int32_t curveID, int32_t groupID, int32_t elementHandle, int32_t resultHandle);
+// extern int32_t   w2_managedMapToCurveEC(void* context, int32_t curveID, int32_t groupID, int32_t elementHandle, int32_t resultHandle);
 // extern int32_t   w2_managedPairingChecksEC(void* context, int32_t curveID, int32_t pointsG1Handle, int32_t pointsG2Handle);
 import "C"
 
@@ -598,7 +598,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_add_ec_func_ptr:                                      funcPointer(C.w2_managedAddEC),
 		managed_mul_ec_func_ptr:                                      funcPointer(C.w2_managedMulEC),
 		managed_multi_exp_ec_func_ptr:                                funcPointer(C.w2_managedMultiExpEC),
-		managed_map_to_curve_func_ptr:                                funcPointer(C.w2_managedMapToCurve),
+		managed_map_to_curve_ec_func_ptr:                             funcPointer(C.w2_managedMapToCurveEC),
 		managed_pairing_checks_ec_func_ptr:                           funcPointer(C.w2_managedPairingChecksEC),
 	}
 }
@@ -2325,10 +2325,10 @@ func w2_managedMultiExpEC(context unsafe.Pointer, curveID int32, groupID int32, 
 	return vmHooks.ManagedMultiExpEC(curveID, groupID, pointsHandle, scalarsHandle, resultHandle)
 }
 
-//export w2_managedMapToCurve
-func w2_managedMapToCurve(context unsafe.Pointer, curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32 {
+//export w2_managedMapToCurveEC
+func w2_managedMapToCurveEC(context unsafe.Pointer, curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapToCurve(curveID, groupID, elementHandle, resultHandle)
+	return vmHooks.ManagedMapToCurveEC(curveID, groupID, elementHandle, resultHandle)
 }
 
 //export w2_managedPairingChecksEC

@@ -323,20 +323,20 @@ func ManagedMultiExpECWithHost(
 	return 0
 }
 
-// ManagedMapToCurve VMHooks implementation.
+// ManagedMapToCurveEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) ManagedMapToCurve(
+func (context *VMHooksImpl) ManagedMapToCurveEC(
 	curveID int32,
 	groupID int32,
 	elementHandle int32,
 	resultHandle int32,
 ) int32 {
 	host := context.GetVMHost()
-	return ManagedMapToCurveWithHost(host, curveID, groupID, elementHandle, resultHandle)
+	return ManagedMapToCurveECWithHost(host, curveID, groupID, elementHandle, resultHandle)
 }
 
-// ManagedMapToCurveWithHost implements the map to curve elliptic curves operation on the set of defined curves and group
-func ManagedMapToCurveWithHost(
+// ManagedMapToCurveECWithHost implements the map to curve elliptic curves operation on the set of defined curves and group
+func ManagedMapToCurveECWithHost(
 	host vmhost.VMHost,
 	curveID int32,
 	groupID int32,

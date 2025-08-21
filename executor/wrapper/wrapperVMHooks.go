@@ -2496,11 +2496,11 @@ func (w *WrapperVMHooks) ManagedMultiExpEC(curveID int32, groupID int32, pointsH
 	return result
 }
 
-// ManagedMapToCurve VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapToCurve(curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32 {
-	callInfo := fmt.Sprintf("ManagedMapToCurve(%d, %d, %d, %d)", curveID, groupID, elementHandle, resultHandle)
+// ManagedMapToCurveEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapToCurveEC(curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapToCurveEC(%d, %d, %d, %d)", curveID, groupID, elementHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapToCurve(curveID, groupID, elementHandle, resultHandle)
+	result := w.wrappedVMHooks.ManagedMapToCurveEC(curveID, groupID, elementHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
