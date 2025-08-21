@@ -112,7 +112,7 @@ func managedECOperationWithHost(
 	groupID int32,
 	inputHandles []int32,
 	resultHandle int32,
-	execute func(definedEC lowLevelFeatures.ECGroup, inputs [][]byte) ([]byte, error),
+	execute func(curveID int32, groupID int32, inputs [][]byte) ([]byte, error),
 ) int32 {
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
@@ -133,20 +133,7 @@ func managedECOperationWithHost(
 		inputsBytes = append(inputsBytes, bytes)
 	}
 
-	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
-	if !ok {
-		FailExecutionConditionally(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
-		return -1
-	}
-
-	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
-	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
-	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
-	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
-	// 3. Update this function to use the new gas cost parameters based on the curve ID.
-
-	result, err := execute(definedEC, inputsBytes)
+	result, err := execute(curveID, groupID, inputsBytes)
 	if err != nil {
 		FailExecutionConditionally(host, failureError)
 		return -1
@@ -162,25 +149,25 @@ func managedECOperationWithHost(
 	return 0
 }
 
-func addEC(definedEC lowLevelFeatures.ECGroup, inputs [][]byte) ([]byte, error) {
+func addEC(curveID int32, groupID int32, inputs [][]byte) ([]byte, error) {
 	if len(inputs) != 2 {
 		return nil, vmhost.ErrArgIndexOutOfRange
 	}
-	return definedEC.Add(inputs[0], inputs[1])
+	return lowLevelFeatures.PointAdd(lowLevelFeatures.ID(curveID), lowLevelFeatures.GroupID(groupID), inputs[0], inputs[1])
 }
 
-func mulEC(definedEC lowLevelFeatures.ECGroup, inputs [][]byte) ([]byte, error) {
+func mulEC(curveID int32, groupID int32, inputs [][]byte) ([]byte, error) {
 	if len(inputs) != 2 {
 		return nil, vmhost.ErrArgIndexOutOfRange
 	}
-	return definedEC.Mul(inputs[0], inputs[1])
+	return lowLevelFeatures.ScalarMul(lowLevelFeatures.ID(curveID), lowLevelFeatures.GroupID(groupID), inputs[0], inputs[1])
 }
 
-func mapToCurveEC(definedEC lowLevelFeatures.ECGroup, inputs [][]byte) ([]byte, error) {
+func mapToCurveEC(curveID int32, groupID int32, inputs [][]byte) ([]byte, error) {
 	if len(inputs) != 1 {
 		return nil, vmhost.ErrArgIndexOutOfRange
 	}
-	return definedEC.MapToCurve(inputs[0])
+	return lowLevelFeatures.MapToCurve(lowLevelFeatures.ID(curveID), lowLevelFeatures.GroupID(groupID), inputs[0])
 }
 
 // ManagedAddEC VMHooks implementation.
@@ -308,16 +295,7 @@ func ManagedMultiExpECWithHost(
 		return -1
 	}
 
-	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
-	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
-		return -1
-	}
-
-	// TODO: use more gas depending on scalar and curve type
-
-	result, err := definedEC.MultiExp(pointsVec, scalarsVec)
+	result, err := lowLevelFeatures.MultiExp(lowLevelFeatures.ID(curveID), lowLevelFeatures.GroupID(groupID), pointsVec, scalarsVec)
 	if err != nil {
 		FailExecutionConditionally(host, vmhost.ErrEllipticCurveMultiExpFailed)
 		return -1
@@ -364,15 +342,7 @@ func ManagedPairingChecksECWithHost(
 		return -1
 	}
 
-	definedPairingRegistry, ok := lowLevelFeatures.PairingRegistry[lowLevelFeatures.ID(curveID)]
-	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
-		return -1
-	}
-
-	// TODO: use more gas depending on scalar and curve type
-
-	verified, err := definedPairingRegistry.PairingCheck(pointsG1Vec, pointsG2Vec)
+	verified, err := lowLevelFeatures.PairingCheck(lowLevelFeatures.ID(curveID), pointsG1Vec, pointsG2Vec)
 	if err != nil || !verified {
 		FailExecutionConditionally(host, vmhost.ErrEllipticCurvePairingCheckFailed)
 		return -1
