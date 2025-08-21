@@ -320,6 +320,13 @@ typedef struct {
   int32_t (*managed_get_num_errors_func_ptr)(void *context);
   void (*managed_get_error_with_index_func_ptr)(void *context, int32_t index, int32_t error_handle);
   void (*managed_get_last_error_func_ptr)(void *context, int32_t error_handle);
+  int32_t (*managed_verify_groth16_func_ptr)(void *context, int32_t curve_id, int32_t proof_handle, int32_t vk_handle, int32_t pub_witness_handle);
+  int32_t (*managed_verify_plonk_func_ptr)(void *context, int32_t curve_id, int32_t proof_handle, int32_t vk_handle, int32_t pub_witness_handle);
+  int32_t (*managed_add_ec_func_ptr)(void *context, int32_t curve_id, int32_t group_id, int32_t point1_handle, int32_t point2_handle, int32_t result_handle);
+  int32_t (*managed_mul_ec_func_ptr)(void *context, int32_t curve_id, int32_t group_id, int32_t point_handle, int32_t scalar_handle, int32_t result_handle);
+  int32_t (*managed_multi_exp_ec_func_ptr)(void *context, int32_t curve_id, int32_t group_id, int32_t points_handle, int32_t scalars_handle, int32_t result_handle);
+  int32_t (*managed_map_to_curve_ec_func_ptr)(void *context, int32_t curve_id, int32_t group_id, int32_t element_handle, int32_t result_handle);
+  int32_t (*managed_pairing_checks_ec_func_ptr)(void *context, int32_t curve_id, int32_t points_g1_handle, int32_t points_g2_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
 typedef struct {
