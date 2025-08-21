@@ -29,6 +29,8 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
 	github.com/consensys/bavard v0.1.29 // indirect
+	github.com/consensys/gnark v0.12.0 // indirect
+	github.com/consensys/gnark-crypto v0.17.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
