@@ -336,5 +336,5 @@ type ZKCryptoVMHooks interface {
 	ManagedMulEC(curveID int32, groupID int32, pointHandle int32, scalarHandle int32, resultHandle int32) int32
 	ManagedMultiExpEC(curveID int32, groupID int32, pointsHandle int32, scalarsHandle int32, resultHandle int32) int32
 	ManagedMapToCurveEC(curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32
-	ManagedPairingChecksEC(curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32
+	ManagedPairingCheckEC(curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32
 }

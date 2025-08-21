@@ -299,7 +299,7 @@ package wasmer2
 // extern int32_t   w2_managedMulEC(void* context, int32_t curveID, int32_t groupID, int32_t pointHandle, int32_t scalarHandle, int32_t resultHandle);
 // extern int32_t   w2_managedMultiExpEC(void* context, int32_t curveID, int32_t groupID, int32_t pointsHandle, int32_t scalarsHandle, int32_t resultHandle);
 // extern int32_t   w2_managedMapToCurveEC(void* context, int32_t curveID, int32_t groupID, int32_t elementHandle, int32_t resultHandle);
-// extern int32_t   w2_managedPairingChecksEC(void* context, int32_t curveID, int32_t pointsG1Handle, int32_t pointsG2Handle);
+// extern int32_t   w2_managedPairingCheckEC(void* context, int32_t curveID, int32_t pointsG1Handle, int32_t pointsG2Handle);
 import "C"
 
 import (
@@ -599,7 +599,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_mul_ec_func_ptr:                                      funcPointer(C.w2_managedMulEC),
 		managed_multi_exp_ec_func_ptr:                                funcPointer(C.w2_managedMultiExpEC),
 		managed_map_to_curve_ec_func_ptr:                             funcPointer(C.w2_managedMapToCurveEC),
-		managed_pairing_checks_ec_func_ptr:                           funcPointer(C.w2_managedPairingChecksEC),
+		managed_pairing_check_ec_func_ptr:                            funcPointer(C.w2_managedPairingCheckEC),
 	}
 }
 
@@ -2331,8 +2331,8 @@ func w2_managedMapToCurveEC(context unsafe.Pointer, curveID int32, groupID int32
 	return vmHooks.ManagedMapToCurveEC(curveID, groupID, elementHandle, resultHandle)
 }
 
-//export w2_managedPairingChecksEC
-func w2_managedPairingChecksEC(context unsafe.Pointer, curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32 {
+//export w2_managedPairingCheckEC
+func w2_managedPairingCheckEC(context unsafe.Pointer, curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedPairingChecksEC(curveID, pointsG1Handle, pointsG2Handle)
+	return vmHooks.ManagedPairingCheckEC(curveID, pointsG1Handle, pointsG2Handle)
 }

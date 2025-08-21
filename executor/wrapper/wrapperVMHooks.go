@@ -2505,11 +2505,11 @@ func (w *WrapperVMHooks) ManagedMapToCurveEC(curveID int32, groupID int32, eleme
 	return result
 }
 
-// ManagedPairingChecksEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedPairingChecksEC(curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32 {
-	callInfo := fmt.Sprintf("ManagedPairingChecksEC(%d, %d, %d)", curveID, pointsG1Handle, pointsG2Handle)
+// ManagedPairingCheckEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedPairingCheckEC(curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedPairingCheckEC(%d, %d, %d)", curveID, pointsG1Handle, pointsG2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedPairingChecksEC(curveID, pointsG1Handle, pointsG2Handle)
+	result := w.wrappedVMHooks.ManagedPairingCheckEC(curveID, pointsG1Handle, pointsG2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
