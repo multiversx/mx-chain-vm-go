@@ -120,6 +120,93 @@ func TestManagedVerifyPlonk_Success(t *testing.T) {
 	runtime.AssertNotCalled(t, "FailExecution", mock.Anything)
 }
 
+func TestManagedVerifyGroth16_InvalidProof(t *testing.T) {
+	css, err := frontend.Compile(ecc.BLS12_381.ScalarField(), r1cs.NewBuilder, &exponentiate.Circuit{})
+	require.Nil(t, err)
+
+	_, vk, err := gnarkgroth16.Setup(css)
+	require.Nil(t, err)
+
+	homework := &exponentiate.Circuit{
+		X: 2,
+		Y: 16,
+		E: 4,
+	}
+	witness, err := frontend.NewWitness(homework, ecc.BLS12_381.ScalarField())
+	require.Nil(t, err)
+
+	var serializedVK bytes.Buffer
+	_, err = vk.WriteTo(&serializedVK)
+	require.Nil(t, err)
+
+	pubW, err := witness.Public()
+	require.Nil(t, err)
+	pubWBytes, err := pubW.MarshalBinary()
+	require.Nil(t, err)
+
+	vmHooks := createHooksWithBaseSetup()
+	hooks := vmHooks.hooks
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+
+	managedType.On("GetBytes", int32(1)).Return([]byte("invalid proof"), nil)
+	managedType.On("GetBytes", int32(2)).Return(serializedVK.Bytes(), nil)
+	managedType.On("GetBytes", int32(3)).Return(pubWBytes, nil)
+	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
+	runtime.On("IsUnsafeMode").Return(false)
+	runtime.On("FailExecution", mock.Anything).Return()
+
+	ret := hooks.ManagedVerifyGroth16(int32(ecc.BLS12_381), 1, 2, 3)
+
+	assert.Equal(t, int32(-1), ret)
+	runtime.AssertCalled(t, "FailExecution", mock.Anything)
+}
+
+func TestManagedVerifyPlonk_InvalidProof(t *testing.T) {
+	css, err := frontend.Compile(ecc.BLS12_381.ScalarField(), scs.NewBuilder, &exponentiate.Circuit{})
+	require.Nil(t, err)
+
+	srs, srsLagrange, err := unsafekzg.NewSRS(css)
+	require.Nil(t, err)
+
+	_, vk, err := gnarkplonk.Setup(css, srs, srsLagrange)
+	require.Nil(t, err)
+
+	homework := &exponentiate.Circuit{
+		X: 2,
+		Y: 16,
+		E: 4,
+	}
+	witness, err := frontend.NewWitness(homework, ecc.BLS12_381.ScalarField())
+	require.Nil(t, err)
+
+	var serializedVK bytes.Buffer
+	_, err = vk.WriteTo(&serializedVK)
+	require.Nil(t, err)
+
+	pubW, err := witness.Public()
+	require.Nil(t, err)
+	pubWBytes, err := pubW.MarshalBinary()
+	require.Nil(t, err)
+
+	vmHooks := createHooksWithBaseSetup()
+	hooks := vmHooks.hooks
+	managedType := vmHooks.managedType
+	runtime := vmHooks.runtime
+
+	managedType.On("GetBytes", int32(1)).Return([]byte("invalid proof"), nil)
+	managedType.On("GetBytes", int32(2)).Return(serializedVK.Bytes(), nil)
+	managedType.On("GetBytes", int32(3)).Return(pubWBytes, nil)
+	managedType.On("ConsumeGasForBytes", mock.Anything).Return(nil)
+	runtime.On("IsUnsafeMode").Return(false)
+	runtime.On("FailExecution", mock.Anything).Return()
+
+	ret := hooks.ManagedVerifyPlonk(int32(ecc.BLS12_381), 1, 2, 3)
+
+	assert.Equal(t, int32(-1), ret)
+	runtime.AssertCalled(t, "FailExecution", mock.Anything)
+}
+
 func TestManagedAddEC_Success(t *testing.T) {
 	vmHooks := createHooksWithBaseSetup()
 	hooks := vmHooks.hooks
