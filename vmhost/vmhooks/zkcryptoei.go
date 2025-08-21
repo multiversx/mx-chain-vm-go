@@ -153,12 +153,7 @@ func managedECOperationWithHost(
 		return -1
 	}
 
-	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
-	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
-	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
-	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
-	// 3. Update this function to use the new gas cost parameters based on the curve ID.
-
+	// Gas cost is a placeholder. A more accurate gas cost would require changes to the gas schedule.
 	result, err := execute(definedEC, inputsBytes)
 	if err != nil {
 		FailExecutionConditionally(host, failureError)
@@ -246,6 +241,32 @@ func (context *VMHooksImpl) ManagedMultiExpEC(
 	return ManagedMultiExpECWithHost(host, curveID, groupID, pointsHandle, scalarsHandle, resultHandle)
 }
 
+func readManagedVectorsAndConsumeGas(
+	host vmhost.VMHost,
+	handle1, handle2 int32,
+) ([][]byte, [][]byte, error) {
+	managedType := host.ManagedTypes()
+	metering := host.Metering()
+
+	vec1, len1, err := managedType.ReadManagedVecOfManagedBuffers(handle1)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vec2, len2, err := managedType.ReadManagedVecOfManagedBuffers(handle2)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, len1+len2)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return vec1, vec2, nil
+}
+
 // ManagedMultiExpECWithHost implements the MultiExp elliptic curves operation on the set of defined curves and group
 func ManagedMultiExpECWithHost(
 	host vmhost.VMHost,
@@ -257,26 +278,13 @@ func ManagedMultiExpECWithHost(
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 
-	err := metering.UseGasBoundedAndAddTracedGas(managedMultiExpEC, metering.GasSchedule().CryptoAPICost.AddECC)
+	err := metering.UseGasBoundedAndAddTracedGas(managedMultiExpEC, metering.GasSchedule().CryptoAPICost.VerifyBLSMultiSig)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
-	pointsVec, actualLenPoints, err := managedType.ReadManagedVecOfManagedBuffers(pointsHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	scalarsVec, actualLenScalars, err := managedType.ReadManagedVecOfManagedBuffers(scalarsHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLenPoints+actualLenScalars)
-	err = metering.UseGasBounded(gasToUse)
+	pointsVec, scalarsVec, err := readManagedVectorsAndConsumeGas(host, pointsHandle, scalarsHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -289,11 +297,7 @@ func ManagedMultiExpECWithHost(
 		return -1
 	}
 
-	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
-	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
-	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
-	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
-	// 3. Update this function to use the new gas cost parameters based on the curve ID.
+	// Gas cost is a placeholder. A more accurate gas cost would require changes to the gas schedule.
 	result, err := definedEC.MultiExp(pointsVec, scalarsVec)
 	if err != nil {
 		FailExecutionConditionally(host, vmhost.ErrEllipticCurveMultiExpFailed)
@@ -363,28 +367,14 @@ func ManagedPairingCheckECWithHost(
 	pointsG1Handle, pointsG2Handle int32,
 ) int32 {
 	metering := host.Metering()
-	managedType := host.ManagedTypes()
 
-	err := metering.UseGasBoundedAndAddTracedGas(managedPairingCheckEC, metering.GasSchedule().CryptoAPICost.AddECC)
+	err := metering.UseGasBoundedAndAddTracedGas(managedPairingCheckEC, metering.GasSchedule().CryptoAPICost.VerifyBLSMultiSig)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
-	pointsG1Vec, actualLenPoints, err := managedType.ReadManagedVecOfManagedBuffers(pointsG1Handle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	pointsG2Vec, actualLenScalars, err := managedType.ReadManagedVecOfManagedBuffers(pointsG2Handle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLenPoints+actualLenScalars)
-	err = metering.UseGasBounded(gasToUse)
+	pointsG1Vec, pointsG2Vec, err := readManagedVectorsAndConsumeGas(host, pointsG1Handle, pointsG2Handle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -396,11 +386,7 @@ func ManagedPairingCheckECWithHost(
 		return -1
 	}
 
-	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
-	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
-	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
-	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
-	// 3. Update this function to use the new gas cost parameters based on the curve ID.
+	// Gas cost is a placeholder. A more accurate gas cost would require changes to the gas schedule.
 	verified, err := definedPairingRegistry.PairingCheck(pointsG1Vec, pointsG2Vec)
 	if err != nil || !verified {
 		FailExecutionConditionally(host, vmhost.ErrEllipticCurvePairingCheckFailed)
