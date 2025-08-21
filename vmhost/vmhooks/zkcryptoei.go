@@ -33,7 +33,7 @@ const (
 // ManagedVerifyGroth16 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedVerifyGroth16(
-	curveID uint16, proofHandle, vkHandle, pubWitnessHandle int32,
+	curveID int32, proofHandle, vkHandle, pubWitnessHandle int32,
 ) int32 {
 	host := context.GetVMHost()
 	return ManagedVerifyZKFunctionWithHost(
@@ -43,7 +43,7 @@ func (context *VMHooksImpl) ManagedVerifyGroth16(
 // ManagedVerifyPlonk VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedVerifyPlonk(
-	curveID uint16, proofHandle, vkHandle, pubWitnessHandle int32,
+	curveID int32, proofHandle, vkHandle, pubWitnessHandle int32,
 ) int32 {
 	host := context.GetVMHost()
 	return ManagedVerifyZKFunctionWithHost(
@@ -68,7 +68,7 @@ func getBytesAndConsumeGas(managedType vmhost.ManagedTypesContext, handle int32)
 func ManagedVerifyZKFunctionWithHost(
 	host vmhost.VMHost,
 	zkFunc string,
-	curveID uint16,
+	curveID int32,
 	proofHandle, vkHandle, pubWitnessHandle int32,
 ) int32 {
 	metering := host.Metering()
@@ -102,9 +102,9 @@ func ManagedVerifyZKFunctionWithHost(
 	invalidSigErr := vmhost.ErrInvalidArgument
 	switch zkFunc {
 	case managedVerifyGroth16:
-		verified, invalidSigErr = groth16.VerifyGroth16(curveID, proofBytes, vkBytes, pubWitnessBytes)
+		verified, invalidSigErr = groth16.VerifyGroth16(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
 	case managedVerifyPlonk:
-		verified, invalidSigErr = groth16.VerifyGroth16(curveID, proofBytes, vkBytes, pubWitnessBytes)
+		verified, invalidSigErr = groth16.VerifyGroth16(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
 	}
 
 	if invalidSigErr != nil || !verified {
@@ -118,8 +118,8 @@ func ManagedVerifyZKFunctionWithHost(
 // ManagedAddEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedAddEC(
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	point1Handle, point2Handle int32,
 	resultHandle int32,
 ) int32 {
@@ -130,8 +130,8 @@ func (context *VMHooksImpl) ManagedAddEC(
 // ManagedAddECWithHost implements the Add elliptic curves operation on the set of defined curves and group
 func ManagedAddECWithHost(
 	host vmhost.VMHost,
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	point1Handle, point2Handle int32,
 	resultHandle int32,
 ) int32 {
@@ -185,8 +185,8 @@ func ManagedAddECWithHost(
 // ManagedMulEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMulEC(
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	pointHandle, scalarHandle int32,
 	resultHandle int32,
 ) int32 {
@@ -197,8 +197,8 @@ func (context *VMHooksImpl) ManagedMulEC(
 // ManagedMulECWithHost implements the Multiply elliptic curves operation on the set of defined curves and group
 func ManagedMulECWithHost(
 	host vmhost.VMHost,
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	pointHandle, scalarHandle int32,
 	resultHandle int32,
 ) int32 {
@@ -252,8 +252,8 @@ func ManagedMulECWithHost(
 // ManagedMultiExpEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMultiExpEC(
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	pointsHandle, scalarsHandle int32,
 	resultHandle int32,
 ) int32 {
@@ -264,8 +264,8 @@ func (context *VMHooksImpl) ManagedMultiExpEC(
 // ManagedMultiExpECWithHost implements the MultiExp elliptic curves operation on the set of defined curves and group
 func ManagedMultiExpECWithHost(
 	host vmhost.VMHost,
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	pointsHandle, scalarsHandle int32,
 	resultHandle int32,
 ) int32 {
@@ -326,8 +326,8 @@ func ManagedMultiExpECWithHost(
 // ManagedMapToCurve VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedMapToCurve(
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	elementHandle int32,
 	resultHandle int32,
 ) int32 {
@@ -338,8 +338,8 @@ func (context *VMHooksImpl) ManagedMapToCurve(
 // ManagedMapToCurveWithHost implements the map to curve elliptic curves operation on the set of defined curves and group
 func ManagedMapToCurveWithHost(
 	host vmhost.VMHost,
-	curveID uint16,
-	groupID uint16,
+	curveID int32,
+	groupID int32,
 	elementHandle int32,
 	resultHandle int32,
 ) int32 {
@@ -387,7 +387,7 @@ func ManagedMapToCurveWithHost(
 // ManagedPairingChecksEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedPairingChecksEC(
-	curveID uint16,
+	curveID int32,
 	pointsG1Handle, pointsG2Handle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -397,7 +397,7 @@ func (context *VMHooksImpl) ManagedPairingChecksEC(
 // ManagedPairingChecksECWithHost implements the pairing checks elliptic curves operation on the set of defined curves
 func ManagedPairingChecksECWithHost(
 	host vmhost.VMHost,
-	curveID uint16,
+	curveID int32,
 	pointsG1Handle, pointsG2Handle int32,
 ) int32 {
 	metering := host.Metering()

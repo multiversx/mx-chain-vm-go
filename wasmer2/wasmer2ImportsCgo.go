@@ -293,6 +293,13 @@ package wasmer2
 // extern int32_t   w2_managedGetNumErrors(void* context);
 // extern void      w2_managedGetErrorWithIndex(void* context, int32_t index, int32_t errorHandle);
 // extern void      w2_managedGetLastError(void* context, int32_t errorHandle);
+// extern int32_t   w2_managedVerifyGroth16(void* context, int32_t curveID, int32_t proofHandle, int32_t vkHandle, int32_t pubWitnessHandle);
+// extern int32_t   w2_managedVerifyPlonk(void* context, int32_t curveID, int32_t proofHandle, int32_t vkHandle, int32_t pubWitnessHandle);
+// extern int32_t   w2_managedAddEC(void* context, int32_t curveID, int32_t groupID, int32_t point1Handle, int32_t point2Handle, int32_t resultHandle);
+// extern int32_t   w2_managedMulEC(void* context, int32_t curveID, int32_t groupID, int32_t pointHandle, int32_t scalarHandle, int32_t resultHandle);
+// extern int32_t   w2_managedMultiExpEC(void* context, int32_t curveID, int32_t groupID, int32_t pointsHandle, int32_t scalarsHandle, int32_t resultHandle);
+// extern int32_t   w2_managedMapToCurve(void* context, int32_t curveID, int32_t groupID, int32_t elementHandle, int32_t resultHandle);
+// extern int32_t   w2_managedPairingChecksEC(void* context, int32_t curveID, int32_t pointsG1Handle, int32_t pointsG2Handle);
 import "C"
 
 import (
@@ -586,6 +593,13 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 		managed_get_num_errors_func_ptr:                              funcPointer(C.w2_managedGetNumErrors),
 		managed_get_error_with_index_func_ptr:                        funcPointer(C.w2_managedGetErrorWithIndex),
 		managed_get_last_error_func_ptr:                              funcPointer(C.w2_managedGetLastError),
+		managed_verify_groth16_func_ptr:                              funcPointer(C.w2_managedVerifyGroth16),
+		managed_verify_plonk_func_ptr:                                funcPointer(C.w2_managedVerifyPlonk),
+		managed_add_ec_func_ptr:                                      funcPointer(C.w2_managedAddEC),
+		managed_mul_ec_func_ptr:                                      funcPointer(C.w2_managedMulEC),
+		managed_multi_exp_ec_func_ptr:                                funcPointer(C.w2_managedMultiExpEC),
+		managed_map_to_curve_func_ptr:                                funcPointer(C.w2_managedMapToCurve),
+		managed_pairing_checks_ec_func_ptr:                           funcPointer(C.w2_managedPairingChecksEC),
 	}
 }
 
@@ -2279,4 +2293,46 @@ func w2_managedGetErrorWithIndex(context unsafe.Pointer, index int32, errorHandl
 func w2_managedGetLastError(context unsafe.Pointer, errorHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedGetLastError(errorHandle)
+}
+
+//export w2_managedVerifyGroth16
+func w2_managedVerifyGroth16(context unsafe.Pointer, curveID int32, proofHandle int32, vkHandle int32, pubWitnessHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyGroth16(curveID, proofHandle, vkHandle, pubWitnessHandle)
+}
+
+//export w2_managedVerifyPlonk
+func w2_managedVerifyPlonk(context unsafe.Pointer, curveID int32, proofHandle int32, vkHandle int32, pubWitnessHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyPlonk(curveID, proofHandle, vkHandle, pubWitnessHandle)
+}
+
+//export w2_managedAddEC
+func w2_managedAddEC(context unsafe.Pointer, curveID int32, groupID int32, point1Handle int32, point2Handle int32, resultHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedAddEC(curveID, groupID, point1Handle, point2Handle, resultHandle)
+}
+
+//export w2_managedMulEC
+func w2_managedMulEC(context unsafe.Pointer, curveID int32, groupID int32, pointHandle int32, scalarHandle int32, resultHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMulEC(curveID, groupID, pointHandle, scalarHandle, resultHandle)
+}
+
+//export w2_managedMultiExpEC
+func w2_managedMultiExpEC(context unsafe.Pointer, curveID int32, groupID int32, pointsHandle int32, scalarsHandle int32, resultHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMultiExpEC(curveID, groupID, pointsHandle, scalarsHandle, resultHandle)
+}
+
+//export w2_managedMapToCurve
+func w2_managedMapToCurve(context unsafe.Pointer, curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMapToCurve(curveID, groupID, elementHandle, resultHandle)
+}
+
+//export w2_managedPairingChecksEC
+func w2_managedPairingChecksEC(context unsafe.Pointer, curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedPairingChecksEC(curveID, pointsG1Handle, pointsG2Handle)
 }

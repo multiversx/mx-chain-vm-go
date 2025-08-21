@@ -291,4 +291,11 @@ var functionNames = map[string]struct{}{
 	"managedGetNumErrors":                          empty,
 	"managedGetErrorWithIndex":                     empty,
 	"managedGetLastError":                          empty,
+	"managedVerifyGroth16":                         empty,
+	"managedVerifyPlonk":                           empty,
+	"managedAddEC":                                 empty,
+	"managedMulEC":                                 empty,
+	"managedMultiExpEC":                            empty,
+	"managedMapToCurve":                            empty,
+	"managedPairingChecksEC":                       empty,
 }
