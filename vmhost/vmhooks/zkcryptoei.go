@@ -7,6 +7,14 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
+var (
+	groth16Verify = groth16.VerifyGroth16
+	plonkVerify   = groth16.VerifyGroth16
+
+	ecRegistry      = lowLevelFeatures.EcRegistry
+	pairingRegistry = lowLevelFeatures.PairingRegistry
+)
+
 const (
 	managedVerifyGroth16  = "ManagedVerifyGroth16"
 	managedVerifyPlonk    = "ManagedVerifyPlonk"
@@ -102,9 +110,9 @@ func ManagedVerifyZKFunctionWithHost(
 	invalidSigErr := vmhost.ErrInvalidArgument
 	switch zkFunc {
 	case managedVerifyGroth16:
-		verified, invalidSigErr = groth16.VerifyGroth16(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
+		verified, invalidSigErr = groth16Verify(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
 	case managedVerifyPlonk:
-		verified, invalidSigErr = groth16.VerifyGroth16(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
+		verified, invalidSigErr = plonkVerify(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
 	}
 
 	if invalidSigErr != nil || !verified {
@@ -157,7 +165,7 @@ func ManagedAddECWithHost(
 	}
 
 	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
+	definedEC, ok := ecRegistry[definedECParam]
 	if !ok {
 		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
@@ -224,7 +232,7 @@ func ManagedMulECWithHost(
 	}
 
 	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
+	definedEC, ok := ecRegistry[definedECParam]
 	if !ok {
 		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
@@ -298,7 +306,7 @@ func ManagedMultiExpECWithHost(
 	}
 
 	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
+	definedEC, ok := ecRegistry[definedECParam]
 	if !ok {
 		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
@@ -359,7 +367,7 @@ func ManagedMapToCurveECWithHost(
 	}
 
 	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
+	definedEC, ok := ecRegistry[definedECParam]
 	if !ok {
 		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
@@ -428,7 +436,7 @@ func ManagedPairingChecksECWithHost(
 		return -1
 	}
 
-	definedPairingRegistry, ok := lowLevelFeatures.PairingRegistry[lowLevelFeatures.ID(curveID)]
+	definedPairingRegistry, ok := pairingRegistry[lowLevelFeatures.ID(curveID)]
 	if !ok {
 		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
