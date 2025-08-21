@@ -341,7 +341,20 @@ var ErrTimeLockExpired = errors.New("time lock expired")
 // ErrWrongType signals that wrong type is read from buffer
 var ErrWrongType = errors.New("incompatible type")
 
-// ErrZKVerify signals that groth16 verification errors
-var ErrZKVerify = errors.New("zkVerify failed")
+// ErrZKVerify signals that zk verification errors
+var ErrZKVerify = errors.New("zk verification failed")
 
+// ErrEllipticCurveAddFailed signals that add operation failed
 var ErrEllipticCurveAddFailed = errors.New("elliptic curve add failed")
+
+// ErrEllipticCurveMulFailed signals that mul operation failed
+var ErrEllipticCurveMulFailed = errors.New("elliptic curve multiple failed")
+
+// ErrEllipticCurveMultiExpFailed signals that multi exp operation failed
+var ErrEllipticCurveMultiExpFailed = errors.New("elliptic curve multi exp failed")
+
+// ErrEllipticCurveMapToCurveFailed signals that map to curve operation failed
+var ErrEllipticCurveMapToCurveFailed = errors.New("elliptic curve map to curve failed")
+
+// ErrEllipticCurvePairingCheckFailed signals that pairing check operation failed
+var ErrEllipticCurvePairingCheckFailed = errors.New("elliptic curve pair checking failed")
