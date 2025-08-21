@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"github.com/multiversx/mx-chain-crypto-go/zk/groth16"
+	"github.com/multiversx/mx-chain-crypto-go/zk/plonk"
 	"github.com/multiversx/mx-chain-crypto-go/zk/lowLevelFeatures"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -17,18 +18,6 @@ const (
 	managedPairingCheckEC = "ManagedPairingCheckEC"
 )
 
-/*
-	BN254
-	BLS12_377
-	BLS12_381
-	BLS24_315
-	BLS24_317
-	BW6_761
-	BW6_633
-	STARK_CURVE
-	SECP256K1
-	GRUMPKIN
-*/
 
 // ManagedVerifyGroth16 VMHooks implementation.
 // @autogenerate(VMHooks)
@@ -104,7 +93,7 @@ func ManagedVerifyZKFunctionWithHost(
 	case managedVerifyGroth16:
 		verified, invalidSigErr = groth16.VerifyGroth16(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
 	case managedVerifyPlonk:
-		verified, invalidSigErr = groth16.VerifyGroth16(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
+		verified, invalidSigErr = plonk.VerifyPlonk(uint16(curveID), proofBytes, vkBytes, pubWitnessBytes)
 	}
 
 	if invalidSigErr != nil || !verified {
@@ -127,47 +116,52 @@ func (context *VMHooksImpl) ManagedAddEC(
 	return ManagedAddECWithHost(host, curveID, groupID, point1Handle, point2Handle, resultHandle)
 }
 
-// ManagedAddECWithHost implements the Add elliptic curves operation on the set of defined curves and group
-func ManagedAddECWithHost(
+func managedECOperationWithHost(
 	host vmhost.VMHost,
+	operationName string,
+	gasCost uint64,
+	failureError error,
 	curveID int32,
 	groupID int32,
-	point1Handle, point2Handle int32,
+	inputHandles []int32,
 	resultHandle int32,
+	execute func(definedEC lowLevelFeatures.EllipticCurve, inputs [][]byte) ([]byte, error),
 ) int32 {
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 
-	err := metering.UseGasBoundedAndAddTracedGas(managedAddEC, metering.GasSchedule().CryptoAPICost.AddECC)
+	err := metering.UseGasBoundedAndAddTracedGas(operationName, gasCost)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
-	point1Bytes, err := getBytesAndConsumeGas(managedType, point1Handle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	point2Bytes, err := getBytesAndConsumeGas(managedType, point2Handle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
+	var inputsBytes [][]byte
+	for _, handle := range inputHandles {
+		bytes, err := getBytesAndConsumeGas(managedType, handle)
+		if err != nil {
+			FailExecution(host, err)
+			return -1
+		}
+		inputsBytes = append(inputsBytes, bytes)
 	}
 
 	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
 	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
 	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
+		FailExecutionConditionally(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
 	}
 
-	// TODO: use more gas depending on type
+	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
+	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
+	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
+	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
+	// 3. Update this function to use the new gas cost parameters based on the curve ID.
 
-	result, err := definedEC.Add(point1Bytes, point2Bytes)
+	result, err := execute(definedEC, inputsBytes)
 	if err != nil {
-		FailExecutionConditionally(host, vmhost.ErrEllipticCurveAddFailed)
+		FailExecutionConditionally(host, failureError)
 		return -1
 	}
 
@@ -180,6 +174,29 @@ func ManagedAddECWithHost(
 	managedType.SetBytes(resultHandle, result)
 
 	return 0
+}
+
+// ManagedAddECWithHost implements the Add elliptic curves operation on the set of defined curves and group
+func ManagedAddECWithHost(
+	host vmhost.VMHost,
+	curveID int32,
+	groupID int32,
+	point1Handle, point2Handle int32,
+	resultHandle int32,
+) int32 {
+	return managedECOperationWithHost(
+		host,
+		managedAddEC,
+		host.Metering().GasSchedule().CryptoAPICost.AddECC,
+		vmhost.ErrEllipticCurveAddFailed,
+		curveID,
+		groupID,
+		[]int32{point1Handle, point2Handle},
+		resultHandle,
+		func(definedEC lowLevelFeatures.EllipticCurve, inputs [][]byte) ([]byte, error) {
+			return definedEC.Add(inputs[0], inputs[1])
+		},
+	)
 }
 
 // ManagedMulEC VMHooks implementation.
@@ -202,51 +219,19 @@ func ManagedMulECWithHost(
 	pointHandle, scalarHandle int32,
 	resultHandle int32,
 ) int32 {
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-
-	err := metering.UseGasBoundedAndAddTracedGas(managedMulEC, metering.GasSchedule().CryptoAPICost.AddECC)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	pointBytes, err := getBytesAndConsumeGas(managedType, pointHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	scalarBytes, err := getBytesAndConsumeGas(managedType, scalarHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
-	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
-		return -1
-	}
-
-	// TODO: use more gas depending on scalar and curve type
-
-	result, err := definedEC.Mul(pointBytes, scalarBytes)
-	if err != nil {
-		FailExecutionConditionally(host, vmhost.ErrEllipticCurveMulFailed)
-		return -1
-	}
-
-	err = managedType.ConsumeGasForBytes(result)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	managedType.SetBytes(resultHandle, result)
-
-	return 0
+	return managedECOperationWithHost(
+		host,
+		managedMulEC,
+		host.Metering().GasSchedule().CryptoAPICost.ScalarMultECC,
+		vmhost.ErrEllipticCurveMulFailed,
+		curveID,
+		groupID,
+		[]int32{pointHandle, scalarHandle},
+		resultHandle,
+		func(definedEC lowLevelFeatures.EllipticCurve, inputs [][]byte) ([]byte, error) {
+			return definedEC.Mul(inputs[0], inputs[1])
+		},
+	)
 }
 
 // ManagedMultiExpEC VMHooks implementation.
@@ -300,12 +285,15 @@ func ManagedMultiExpECWithHost(
 	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
 	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
 	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
+		FailExecutionConditionally(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
 	}
 
-	// TODO: use more gas depending on scalar and curve type
-
+	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
+	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
+	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
+	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
+	// 3. Update this function to use the new gas cost parameters based on the curve ID.
 	result, err := definedEC.MultiExp(pointsVec, scalarsVec)
 	if err != nil {
 		FailExecutionConditionally(host, vmhost.ErrEllipticCurveMultiExpFailed)
@@ -343,59 +331,33 @@ func ManagedMapToCurveECWithHost(
 	elementHandle int32,
 	resultHandle int32,
 ) int32 {
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-
-	err := metering.UseGasBoundedAndAddTracedGas(managedMapToCurveEC, metering.GasSchedule().CryptoAPICost.AddECC)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	element, err := getBytesAndConsumeGas(managedType, elementHandle)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	definedECParam := lowLevelFeatures.ECParams{Curve: lowLevelFeatures.ID(curveID), Group: lowLevelFeatures.GroupID(groupID)}
-	definedEC, ok := lowLevelFeatures.EcRegistry[definedECParam]
-	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
-		return -1
-	}
-
-	// TODO: use more gas depending on scalar and curve type
-
-	result, err := definedEC.MapToCurve(element)
-	if err != nil {
-		FailExecutionConditionally(host, vmhost.ErrEllipticCurveMapToCurveFailed)
-		return -1
-	}
-
-	err = managedType.ConsumeGasForBytes(result)
-	if err != nil {
-		FailExecution(host, err)
-		return -1
-	}
-
-	managedType.SetBytes(resultHandle, result)
-
-	return 0
+	return managedECOperationWithHost(
+		host,
+		managedMapToCurveEC,
+		host.Metering().GasSchedule().CryptoAPICost.AddECC,
+		vmhost.ErrEllipticCurveMapToCurveFailed,
+		curveID,
+		groupID,
+		[]int32{elementHandle},
+		resultHandle,
+		func(definedEC lowLevelFeatures.EllipticCurve, inputs [][]byte) ([]byte, error) {
+			return definedEC.MapToCurve(inputs[0])
+		},
+	)
 }
 
-// ManagedPairingChecksEC VMHooks implementation.
+// ManagedPairingCheckEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) ManagedPairingChecksEC(
+func (context *VMHooksImpl) ManagedPairingCheckEC(
 	curveID int32,
 	pointsG1Handle, pointsG2Handle int32,
 ) int32 {
 	host := context.GetVMHost()
-	return ManagedPairingChecksECWithHost(host, curveID, pointsG1Handle, pointsG2Handle)
+	return ManagedPairingCheckECWithHost(host, curveID, pointsG1Handle, pointsG2Handle)
 }
 
-// ManagedPairingChecksECWithHost implements the pairing checks elliptic curves operation on the set of defined curves
-func ManagedPairingChecksECWithHost(
+// ManagedPairingCheckECWithHost implements the pairing checks elliptic curves operation on the set of defined curves
+func ManagedPairingCheckECWithHost(
 	host vmhost.VMHost,
 	curveID int32,
 	pointsG1Handle, pointsG2Handle int32,
@@ -430,12 +392,15 @@ func ManagedPairingChecksECWithHost(
 
 	definedPairingRegistry, ok := lowLevelFeatures.PairingRegistry[lowLevelFeatures.ID(curveID)]
 	if !ok {
-		FailExecution(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
+		FailExecutionConditionally(host, vmhost.ErrNoEllipticCurveUnderThisHandle)
 		return -1
 	}
 
-	// TODO: use more gas depending on scalar and curve type
-
+	// TODO: use more gas depending on scalar and curve type. This would require changes to the gas schedule and the VM's core logic.
+	// The gas cost should be dependent on the curve type and other parameters. To implement this, we would need to:
+	// 1. Define new gas cost parameters in the `CryptoAPICost` struct for each curve type and operation.
+	// 2. Update the `FillGasMapCryptoAPICosts` function to initialize these new parameters.
+	// 3. Update this function to use the new gas cost parameters based on the curve ID.
 	verified, err := definedPairingRegistry.PairingCheck(pointsG1Vec, pointsG2Vec)
 	if err != nil || !verified {
 		FailExecutionConditionally(host, vmhost.ErrEllipticCurvePairingCheckFailed)
