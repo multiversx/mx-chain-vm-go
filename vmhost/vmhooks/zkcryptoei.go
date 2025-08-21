@@ -22,7 +22,7 @@ const (
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedVerifyGroth16(
 	curveID int32, proofHandle, vkHandle, pubWitnessHandle int32,
-) int32 {
+) (ret int32) {
 	host := context.GetVMHost()
 	return ManagedVerifyZKFunctionWithHost(
 		host, managedVerifyGroth16, curveID, proofHandle, vkHandle, pubWitnessHandle)
@@ -32,7 +32,7 @@ func (context *VMHooksImpl) ManagedVerifyGroth16(
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedVerifyPlonk(
 	curveID int32, proofHandle, vkHandle, pubWitnessHandle int32,
-) int32 {
+) (ret int32) {
 	host := context.GetVMHost()
 	return ManagedVerifyZKFunctionWithHost(
 		host, managedVerifyPlonk, curveID, proofHandle, vkHandle, pubWitnessHandle)
@@ -58,7 +58,14 @@ func ManagedVerifyZKFunctionWithHost(
 	zkFunc string,
 	curveID int32,
 	proofHandle, vkHandle, pubWitnessHandle int32,
-) int32 {
+) (ret int32) {
+	defer func() {
+		if r := recover(); r != nil {
+			ret = -1
+			FailExecutionConditionally(host, vmhost.ErrExecutionPanicked)
+		}
+	}()
+
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 

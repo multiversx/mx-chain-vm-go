@@ -68,6 +68,7 @@ func TestManagedVerifyGroth16_Success(t *testing.T) {
 	runtime.AssertNotCalled(t, "FailExecution", mock.Anything)
 }
 
+
 func TestManagedVerifyPlonk_Success(t *testing.T) {
 	css, err := frontend.Compile(ecc.BLS12_381.ScalarField(), scs.NewBuilder, &exponentiate.Circuit{})
 	require.Nil(t, err)
