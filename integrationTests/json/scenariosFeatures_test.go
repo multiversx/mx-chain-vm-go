@@ -1,7 +1,6 @@
 package vmjsonintegrationtest
 
 import (
-	"path/filepath"
 	"testing"
 )
 
@@ -16,18 +15,6 @@ func TestRustAllocFeatures(t *testing.T) {
 		CheckNoError()
 }
 
-func TestRustBarnardFeatures(t *testing.T) {
-	// TODO: will get merged into basic-features after barnard mainnet release
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	ScenariosTest(t).
-		Folder("features/barnard-features/scenarios").
-		Run().
-		CheckNoError()
-}
-
 func TestRustBasicFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
@@ -37,23 +24,6 @@ func TestRustBasicFeaturesLatest(t *testing.T) {
 		Folder("features/basic-features/scenarios").
 		Exclude("features/basic-features/scenarios/storage_mapper_fungible_token.scen.json").
 		Exclude("features/basic-features/scenarios/get_shard_of_address.scen.json").
-		Run().
-		CheckNoError()
-}
-
-func TestRustBasicFeaturesBarnard(t *testing.T) {
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	ScenariosTest(t).
-		Folder("features/basic-features/scenarios").
-		Exclude("features/basic-features/scenarios/storage_mapper_fungible_token.scen.json").
-		Exclude("features/basic-features/scenarios/get_shard_of_address.scen.json").
-		ReplacePath(
-			"../output/basic-features.mxsc.json",
-			filepath.Join(getTestRoot(), "features/basic-features/output/basic-features-barnard.mxsc.json"),
-		).
 		Run().
 		CheckNoError()
 }
@@ -125,26 +95,6 @@ func TestRustPayableFeatures(t *testing.T) {
 		CheckNoError()
 }
 
-func TestRustPayableFeaturesBarnard(t *testing.T) {
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	// we run the exact same tests, but on a different compiled contract,
-	// this contract uses the new "managedGetAllTransfersCallValue" VM hook,
-	// which is only available in Barnard
-	// this will become the only test
-
-	ScenariosTest(t).
-		Folder("features/payable-features/scenarios").
-		ReplacePath(
-			"../output/payable-features.mxsc.json",
-			filepath.Join(getTestRoot(), "features/payable-features/output/payable-features-barnard.mxsc.json"),
-		).
-		Run().
-		CheckNoError()
-}
-
 func TestRustComposability(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
@@ -178,6 +128,14 @@ func TestBalanceAfterGet(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forwarder_call_sync_retrieve_bt_multi.scen.json").
+		Run().
+		CheckNoError()
+}
+
+func TestNFTDecode(t *testing.T) {
+	ScenariosTest(t).
+		Folder("features/composability/scenarios").
+		File("forwarder_nft_decode_complex_attributes.scen.json").
 		Run().
 		CheckNoError()
 }

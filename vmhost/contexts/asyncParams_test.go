@@ -1,0 +1,75 @@
+package contexts
+
+import (
+	"encoding/hex"
+	"testing"
+
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/require"
+)
+
+func TestAddAsyncArgumentsToOutputTransfers(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil async params", func(t *testing.T) {
+		t.Parallel()
+		err := AddAsyncArgumentsToOutputTransfers(nil, nil)
+		require.Nil(t, err)
+	})
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+		vmOutput := &vmcommon.VMOutput{
+			OutputAccounts: map[string]*vmcommon.OutputAccount{
+				"addr1": {
+					OutputTransfers: []vmcommon.OutputTransfer{
+						{
+							CallType: vm.AsynchronousCall,
+						},
+					},
+				},
+			},
+		}
+		asyncParams := &vmcommon.AsyncArguments{
+			CallID: []byte("callID"),
+		}
+
+		err := AddAsyncArgumentsToOutputTransfers(asyncParams, vmOutput)
+		require.Nil(t, err)
+		require.NotNil(t, vmOutput.OutputAccounts["addr1"].OutputTransfers[0].AsyncData)
+	})
+}
+
+func TestCreateDataFromAsyncParams(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty async params", func(t *testing.T) {
+		t.Parallel()
+		data := createDataFromAsyncParams(&vmcommon.AsyncArguments{})
+		require.NotNil(t, data)
+	})
+
+	t.Run("async call", func(t *testing.T) {
+		t.Parallel()
+		asyncParams := &vmcommon.AsyncArguments{
+			CallID:       []byte("callID"),
+			CallerCallID: []byte("callerCallID"),
+		}
+		data := createDataFromAsyncParams(asyncParams)
+		require.NotNil(t, data)
+	})
+
+	t.Run("async callback", func(t *testing.T) {
+		t.Parallel()
+		asyncParams := &vmcommon.AsyncArguments{
+			CallID:                       []byte("callID"),
+			CallerCallID:                 []byte("callerCallID"),
+			CallbackAsyncInitiatorCallID: []byte("initiator"),
+			GasAccumulated:               100,
+		}
+		data := createDataFromAsyncParams(asyncParams)
+		require.NotNil(t, data)
+		require.Contains(t, string(data), hex.EncodeToString([]byte("callID")))
+	})
+}

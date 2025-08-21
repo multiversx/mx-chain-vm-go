@@ -45,6 +45,11 @@ var mapBarnardOpcodes = map[string]struct{}{
 	"managedGetESDTTokenType":                      {},
 }
 
+var mapFailConditionalOpcodes = map[string]struct{}{
+	"ActivateUnsafeMode":   {},
+	"DeactivateUnsafeMode": {},
+}
+
 const warmCacheSize = 100
 
 type runtimeContext struct {
@@ -56,6 +61,7 @@ type runtimeContext struct {
 	readOnly             bool
 	verifyCode           bool
 	maxInstanceStackSize uint64
+	unsafeMode           bool
 
 	vmExecutor executor.Executor
 
@@ -124,6 +130,7 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
+	context.unsafeMode = false
 	context.iTracker.InitState()
 	context.errors = nil
 
@@ -398,6 +405,7 @@ func (context *runtimeContext) PushState() {
 		codeAddress:  context.codeAddress,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
+		unsafeMode:   context.unsafeMode,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -426,6 +434,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.codeAddress = prevState.codeAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
+	context.unsafeMode = prevState.unsafeMode
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -591,42 +600,41 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-// ExtractCodeUpgradeFromArgs extracts the code and code metadata from the
+// RemoveCodeUpgradeFromArgs extracts the code and code metadata from the
 // current VMInput.Arguments, assuming a contract code upgrade has been requested.
-func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
+func (context *runtimeContext) RemoveCodeUpgradeFromArgs() {
 	const numMinUpgradeArguments = 2
 
 	arguments := context.vmInput.Arguments
 	if len(arguments) < numMinUpgradeArguments {
-		return nil, nil, vmhost.ErrInvalidUpgradeArguments
+		return
 	}
 
-	code := arguments[0]
-	codeMetadata := arguments[1]
 	context.vmInput.Arguments = context.vmInput.Arguments[numMinUpgradeArguments:]
-	return code, codeMetadata, nil
 }
 
 // FailExecution informs Wasmer to immediately stop the execution of the contract
 // with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly
 // FailExecution sets the returnMessage, returnCode and runtimeBreakpoint according to the given error.
 func (context *runtimeContext) FailExecution(err error) {
-	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
-
 	var message string
 	breakpoint := vmhost.BreakpointExecutionFailed
-
+	returnCode := vmcommon.ExecutionFailed
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
 		if errors.Is(err, vmhost.ErrNotEnoughGas) {
 			breakpoint = vmhost.BreakpointOutOfGas
+			if context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AsyncV3FixesFlag) {
+				returnCode = vmcommon.OutOfGas
+			}
 		}
 	} else {
 		message = "execution failed"
 		context.AddError(errors.New(message))
 	}
 
+	context.host.Output().SetReturnCode(returnCode)
 	context.host.Output().SetReturnMessage(message)
 	if !check.IfNil(context.iTracker.Instance()) {
 		context.SetRuntimeBreakpointValue(breakpoint)
@@ -637,6 +645,16 @@ func (context *runtimeContext) FailExecution(err error) {
 		traceMessage = err.Error()
 	}
 	logRuntime.Trace("execution failed", "message", traceMessage)
+}
+
+// IsUnsafeMode returns true if mode is unsafe
+func (context *runtimeContext) IsUnsafeMode() bool {
+	return context.unsafeMode
+}
+
+// SetUnsafeMode sets the current mode of running
+func (context *runtimeContext) SetUnsafeMode(unsafeMode bool) {
+	context.unsafeMode = unsafeMode
 }
 
 // SignalUserError informs Wasmer to immediately stop the execution of the contract
@@ -705,6 +723,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.FailConditionallyFlag) {
+		err = context.checkIfContainsFailConditionalOpcodes()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -721,6 +747,15 @@ func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
 
 func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
 	for funcName := range mapBarnardOpcodes {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsFailConditionalOpcodes() error {
+	for funcName := range mapFailConditionalOpcodes {
 		if context.iTracker.Instance().IsFunctionImported(funcName) {
 			return vmhost.ErrContractInvalid
 		}
