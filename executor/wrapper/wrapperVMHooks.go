@@ -2450,3 +2450,66 @@ func (w *WrapperVMHooks) ManagedGetLastError(errorHandle int32) {
 	w.wrappedVMHooks.ManagedGetLastError(errorHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
 }
+
+// ManagedVerifyGroth16 VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifyGroth16(curveID int32, proofHandle int32, vkHandle int32, pubWitnessHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifyGroth16(%d, %d, %d, %d)", curveID, proofHandle, vkHandle, pubWitnessHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifyGroth16(curveID, proofHandle, vkHandle, pubWitnessHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedVerifyPlonk VM hook wrapper
+func (w *WrapperVMHooks) ManagedVerifyPlonk(curveID int32, proofHandle int32, vkHandle int32, pubWitnessHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedVerifyPlonk(%d, %d, %d, %d)", curveID, proofHandle, vkHandle, pubWitnessHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedVerifyPlonk(curveID, proofHandle, vkHandle, pubWitnessHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedAddEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedAddEC(curveID int32, groupID int32, point1Handle int32, point2Handle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedAddEC(%d, %d, %d, %d, %d)", curveID, groupID, point1Handle, point2Handle, resultHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedAddEC(curveID, groupID, point1Handle, point2Handle, resultHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMulEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedMulEC(curveID int32, groupID int32, pointHandle int32, scalarHandle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMulEC(%d, %d, %d, %d, %d)", curveID, groupID, pointHandle, scalarHandle, resultHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMulEC(curveID, groupID, pointHandle, scalarHandle, resultHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMultiExpEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedMultiExpEC(curveID int32, groupID int32, pointsHandle int32, scalarsHandle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMultiExpEC(%d, %d, %d, %d, %d)", curveID, groupID, pointsHandle, scalarsHandle, resultHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMultiExpEC(curveID, groupID, pointsHandle, scalarsHandle, resultHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedMapToCurveEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedMapToCurveEC(curveID int32, groupID int32, elementHandle int32, resultHandle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedMapToCurveEC(%d, %d, %d, %d)", curveID, groupID, elementHandle, resultHandle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedMapToCurveEC(curveID, groupID, elementHandle, resultHandle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
+
+// ManagedPairingChecksEC VM hook wrapper
+func (w *WrapperVMHooks) ManagedPairingChecksEC(curveID int32, pointsG1Handle int32, pointsG2Handle int32) int32 {
+	callInfo := fmt.Sprintf("ManagedPairingChecksEC(%d, %d, %d)", curveID, pointsG1Handle, pointsG2Handle)
+	w.logger.LogVMHookCallBefore(callInfo)
+	result := w.wrappedVMHooks.ManagedPairingChecksEC(curveID, pointsG1Handle, pointsG2Handle)
+	w.logger.LogVMHookCallAfter(callInfo)
+	return result
+}
