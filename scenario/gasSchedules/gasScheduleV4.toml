@@ -240,6 +240,11 @@
     VerifySecp256r1 = 2000000
     VerifyBLSSignatureShare = 2000000
     VerifyBLSMultiSig = 2000000
+    VerifyPlonkSig = 2000000
+    VerifyGroth16Sig = 2000000
+    MapToCurveECC = 2000000
+    PairingCheckECC = 2000000
+    MultiExpECC = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000

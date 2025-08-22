@@ -25,7 +25,13 @@ func (context *VMHooksImpl) ManagedVerifyGroth16(
 ) int32 {
 	host := context.GetVMHost()
 	return ManagedVerifyZKFunctionWithHost(
-		host, managedVerifyGroth16, curveID, proofHandle, vkHandle, pubWitnessHandle)
+		host,
+		managedVerifyGroth16,
+		host.Metering().GasSchedule().CryptoAPICost.VerifyGroth16Sig,
+		curveID,
+		proofHandle,
+		vkHandle,
+		pubWitnessHandle)
 }
 
 // ManagedVerifyPlonk VMHooks implementation.
@@ -35,7 +41,13 @@ func (context *VMHooksImpl) ManagedVerifyPlonk(
 ) int32 {
 	host := context.GetVMHost()
 	return ManagedVerifyZKFunctionWithHost(
-		host, managedVerifyPlonk, curveID, proofHandle, vkHandle, pubWitnessHandle)
+		host,
+		managedVerifyPlonk,
+		host.Metering().GasSchedule().CryptoAPICost.VerifyPlonkSig,
+		curveID,
+		proofHandle,
+		vkHandle,
+		pubWitnessHandle)
 }
 
 func getBytesAndConsumeGas(managedType vmhost.ManagedTypesContext, handle int32) ([]byte, error) {
@@ -56,13 +68,14 @@ func getBytesAndConsumeGas(managedType vmhost.ManagedTypesContext, handle int32)
 func ManagedVerifyZKFunctionWithHost(
 	host vmhost.VMHost,
 	zkFunc string,
+	gasToUse uint64,
 	curveID int32,
 	proofHandle, vkHandle, pubWitnessHandle int32,
 ) int32 {
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 
-	err := metering.UseGasBoundedAndAddTracedGas(zkFunc, metering.GasSchedule().CryptoAPICost.VerifyBLSMultiSig)
+	err := metering.UseGasBoundedAndAddTracedGas(zkFunc, gasToUse)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -226,7 +239,7 @@ func (context *VMHooksImpl) ManagedMapToCurveEC(
 	return managedECOperationWithHost(
 		host,
 		managedMapToCurveEC,
-		host.Metering().GasSchedule().CryptoAPICost.AddECC,
+		host.Metering().GasSchedule().CryptoAPICost.MapToCurveECC,
 		vmhost.ErrEllipticCurveMapToCurveFailed,
 		curveID,
 		groupID,
@@ -283,13 +296,20 @@ func ManagedMultiExpECWithHost(
 	resultHandle int32,
 ) int32 {
 	metering := host.Metering()
-	err := metering.UseGasBoundedAndAddTracedGas(managedMultiExpEC, metering.GasSchedule().CryptoAPICost.AddECC)
+
+	err := metering.UseGasBoundedAndAddTracedGas(managedMultiExpEC, metering.GasSchedule().CryptoAPICost.MultiExpECC)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
 	pointsVec, scalarsVec, err := readManagedVectorsAndConsumeGas(host, pointsHandle, scalarsHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	err = metering.UseGasBoundedAndAddTracedGas(managedMultiExpEC, uint64(len(pointsVec))*metering.GasSchedule().CryptoAPICost.ScalarMultECC)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -329,14 +349,14 @@ func ManagedPairingChecksECWithHost(
 	curveID int32,
 	pointsG1Handle, pointsG2Handle int32,
 ) int32 {
-	metering := host.Metering()
-	err := metering.UseGasBoundedAndAddTracedGas(managedPairingCheckEC, metering.GasSchedule().CryptoAPICost.AddECC)
+	pointsG1Vec, pointsG2Vec, err := readManagedVectorsAndConsumeGas(host, pointsG1Handle, pointsG2Handle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
 
-	pointsG1Vec, pointsG2Vec, err := readManagedVectorsAndConsumeGas(host, pointsG1Handle, pointsG2Handle)
+	metering := host.Metering()
+	err = metering.UseGasBoundedAndAddTracedGas(managedPairingCheckEC, uint64(len(pointsG1Vec))*metering.GasSchedule().CryptoAPICost.PairingCheckECC)
 	if err != nil {
 		FailExecution(host, err)
 		return -1

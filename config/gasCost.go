@@ -200,6 +200,11 @@ type CryptoAPICost struct {
 	VerifySecp256r1         uint64
 	VerifyBLSSignatureShare uint64
 	VerifyBLSMultiSig       uint64
+	VerifyPlonkSig          uint64
+	VerifyGroth16Sig        uint64
+	MapToCurveECC           uint64
+	PairingCheckECC         uint64
+	MultiExpECC             uint64
 }
 
 // ManagedBufferAPICost defines the managed buffer operations gas cost config structure
