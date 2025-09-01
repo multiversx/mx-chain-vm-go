@@ -48,12 +48,13 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 	return wasmerExecutor, nil
 }
 
-// SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *executor.WASMOpcodeCost) {
+// SetOpcodeConfig sets the opcode version and opcode costs, based on the gas schedule.
+func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) {
 	// extract only wasmer2 opcodes
 	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
-	cWasmerExecutorSetOpcodeCost(
+	cWasmerExecutorSetOpcodeConfig(
 		wasmerExecutor.cgoExecutor,
+		(int32)(opcodeVersion),
 		(*cWasmerOpcodeCostT)(unsafe.Pointer(wasmerExecutor.opcodeCost)),
 	)
 }

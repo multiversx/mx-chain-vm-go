@@ -628,8 +628,9 @@ vm_exec_result_t vm_exec_set_log_level(uint64_t value);
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_result_t vm_exec_set_opcode_costs(vm_exec_executor_t *executor_ptr,
-                                          const vm_exec_opcode_cost_t *opcode_cost_ptr);
+vm_exec_result_t vm_exec_set_opcode_config(vm_exec_executor_t *executor_ptr,
+                                           int32_t opcode_vesion_code,
+                                           const vm_exec_opcode_cost_t *opcode_cost_ptr);
 
 /**
  * Returns all SC endpoint names, separated by pipes.

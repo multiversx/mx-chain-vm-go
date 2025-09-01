@@ -2,9 +2,10 @@ package contexts
 
 import (
 	"errors"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"math/big"
 	"testing"
+
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/marshal"
@@ -59,7 +60,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	wasmerExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
