@@ -142,7 +142,6 @@ type RuntimeContext interface {
 	GetInstanceStackSize() uint64
 	CountSameContractInstancesOnStack(address []byte) uint64
 	IsFunctionImported(name string) bool
-	IsOpcodeUsed(opcode executor.OpcodeUsed) bool
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error

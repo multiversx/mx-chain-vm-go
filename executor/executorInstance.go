@@ -20,7 +20,6 @@ type Instance interface {
 	MemGrow(pages uint32) error
 	MemDump() []byte
 	IsFunctionImported(name string) bool
-	IsOpcodeUsed(opcode OpcodeUsed) bool
 	IsInterfaceNil() bool
 	Reset() bool
 	SetVMHooksPtr(vmHooksPtr uintptr)

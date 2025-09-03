@@ -220,8 +220,10 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	} else {
 		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
+
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
 		VMHooks:                  vmHooks,
+		OpcodeVersion:            host.getOpcodeVersionForCurrentEpoch(),
 		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
