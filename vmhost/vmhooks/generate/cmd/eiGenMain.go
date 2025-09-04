@@ -69,7 +69,8 @@ func main() {
 	writeWASMOpcodeCostConfigHelpers()
 	writeOpcodeCostFuncHelpers()
 	writeRustOpcodeCost()
-	writeRustWasmerMeteringHelpers()
+	writeRustWasmerOpcodeCost()
+	writeRustWasmerExperimentalOpcodeCost()
 
 	fmt.Println("Generated code for opcodes and metering helpers.")
 
@@ -209,10 +210,16 @@ func writeRustOpcodeCost() {
 	eapigen.WriteRustOpcodeCost(out)
 }
 
-func writeRustWasmerMeteringHelpers() {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/wasmer_metering_helpers.rs")
+func writeRustWasmerOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/wasmer_opcode_cost.rs")
 	defer out.Close()
-	eapigen.WriteRustWasmerMeteringHelpers(out)
+	eapigen.WriteRustWasmerOpcodeCost(out)
+}
+
+func writeRustWasmerExperimentalOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/we_opcode_cost.rs")
+	defer out.Close()
+	eapigen.WriteRustWasmerExperimentalOpcodeCost(out)
 }
 
 func tryCopyFilesToRustExecutorRepo() {
@@ -259,8 +266,12 @@ func tryCopyFilesToRustExecutorRepo() {
 		filepath.Join(rustExecutorPath, "vm-executor-experimental/src/we_imports.rs"),
 	)
 	copyFile(
-		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_metering_helpers.rs"),
-		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_metering_helpers.rs"),
+		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_opcode_cost.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/we_opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-experimental/src/middlewares/we_opcode_cost.rs"),
 	)
 }
 

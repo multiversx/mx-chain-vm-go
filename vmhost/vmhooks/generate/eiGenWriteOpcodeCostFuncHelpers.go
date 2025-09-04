@@ -1,9 +1,7 @@
 package vmhooksgenerate
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 )
 
 // WriteOpcodeCostFuncHelpers generates code for extractOpcodeCost.txt
@@ -21,19 +19,12 @@ func WriteOpcodeCostFuncHelpers(out *eiGenWriter) {
 	out.WriteString("func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {\n")
 	out.WriteString("\treturn &OpcodeCost {\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes_short.txt")
-	if err != nil {
-		panic(err)
-	}
-	defer readFile.Close()
+	allowedOpcodes := LoadOpcodeNames()
 
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-
-	for fileScanner.Scan() {
-		opcode := fileScanner.Text()
+	for _, opcode := range allowedOpcodes.RelevantCodes {
 		out.WriteString(fmt.Sprintf("\t\t%s: wasmOps.%s,\n", opcode, opcode))
 	}
+
 	out.WriteString("\t}\n")
 	out.WriteString("}\n")
 }
