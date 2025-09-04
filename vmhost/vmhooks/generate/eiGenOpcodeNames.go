@@ -38,3 +38,14 @@ func LoadOpcodeNames() *OpcodeNames {
 		RelevantCodes: loadOpcodeNamesForVersion("generate/cmd/input/wasmer2_relevant_opcodes.txt"),
 	}
 }
+
+// MaxNameLength helps with aligning to the right
+func (on *OpcodeNames) MaxNameLength() int {
+	var max int
+	for _, name := range on.RelevantCodes {
+		if len(name) > max {
+			max = len(name)
+		}
+	}
+	return max
+}

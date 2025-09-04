@@ -252,6 +252,8 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		Loop:               wasmOps.Loop,
 		MemoryGrow:         wasmOps.MemoryGrow,
 		MemorySize:         wasmOps.MemorySize,
+		MemoryCopy:         wasmOps.MemoryCopy,
+		MemoryFill:         wasmOps.MemoryFill,
 		Nop:                wasmOps.Nop,
 		RefFunc:            wasmOps.RefFunc,
 		RefIsNull:          wasmOps.RefIsNull,
