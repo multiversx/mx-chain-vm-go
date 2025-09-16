@@ -14,7 +14,8 @@ import (
 )
 
 const pathToApiPackage = "./"
-const pathToRustRepoConfigFile = "wasm-vm-executor-rs-path.txt"
+const pathVmExecutorRsFile = "path-to-vm-executor-rs.txt"
+const pathToMxSdkRsFile = "path-to-mx-sdk-rs.txt"
 
 func initEIMetadata() *eapigen.EIMetadata {
 	return &eapigen.EIMetadata{
@@ -69,11 +70,13 @@ func main() {
 	writeWASMOpcodeCostConfigHelpers()
 	writeRustOpcodeCost()
 	writeRustWasmerOpcodeCost()
+	writeOpcodeWhitelisted()
 	writeRustWasmerExperimentalOpcodeCost()
 
 	fmt.Println("Generated code for opcodes and metering helpers.")
 
-	tryCopyFilesToRustExecutorRepo()
+	tryCopyFilesToMxExecutorRsRepo()
+	tryCopyFilesToMxSdkRsRepo()
 }
 
 func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
@@ -209,15 +212,21 @@ func writeRustWasmerOpcodeCost() {
 	eapigen.WriteRustWasmerOpcodeCost(out)
 }
 
+func writeOpcodeWhitelisted() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/opcode_whitelist.rs")
+	defer out.Close()
+	eapigen.WriteOpcodeWhitelisted(out)
+}
+
 func writeRustWasmerExperimentalOpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/we_opcode_cost.rs")
 	defer out.Close()
 	eapigen.WriteRustWasmerExperimentalOpcodeCost(out)
 }
 
-func tryCopyFilesToRustExecutorRepo() {
-	fullPathToRustRepoConfigFile := filepath.Join(pathToApiPackage, "generate/cmd/", pathToRustRepoConfigFile)
-	contentBytes, err := os.ReadFile(fullPathToRustRepoConfigFile)
+func tryCopyFilesToMxExecutorRsRepo() {
+	fullPathToConfigFile := filepath.Join(pathToApiPackage, "generate/cmd/", pathVmExecutorRsFile)
+	contentBytes, err := os.ReadFile(fullPathToConfigFile)
 	if err != nil {
 		// this feature is optional
 		fmt.Println("Rust files not copied to wasm-vm-executor-rs. Add a wasm-vm-executor-rs-path.txt with the path to enable feature.")
@@ -265,6 +274,23 @@ func tryCopyFilesToRustExecutorRepo() {
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/we_opcode_cost.rs"),
 		filepath.Join(rustExecutorPath, "vm-executor-experimental/src/middlewares/we_opcode_cost.rs"),
+	)
+}
+
+func tryCopyFilesToMxSdkRsRepo() {
+	fullPathToConfigFile := filepath.Join(pathToApiPackage, "generate/cmd/", pathToMxSdkRsFile)
+	contentBytes, err := os.ReadFile(fullPathToConfigFile)
+	if err != nil {
+		// this feature is optional
+		fmt.Println("Rust files not copied to wasm-vm-executor-rs. Add a wasm-vm-executor-rs-path.txt with the path to enable feature.")
+		return
+	}
+	rustExecutorPath := strings.Trim(string(contentBytes), " \n\t")
+
+	fmt.Printf("Copying generated Rust files to '%s':\n", rustExecutorPath)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_whitelist.rs"),
+		filepath.Join(rustExecutorPath, "framework/meta-lib/src/tools/wasm_extractor/opcode_whitelist.rs"),
 	)
 }
 

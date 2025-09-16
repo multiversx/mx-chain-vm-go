@@ -1,5 +1,9 @@
 # generated files that belong to other repos:
 output
 
-# optional path where to copy rust files
+# optional path where to copy rust files (deprecated)
 wasm-vm-executor-rs-path.txt
+
+# optional path where to copy rust files
+path-to-mx-sdk-rs.txt
+path-to-vm-executor-rs.txt
