@@ -56,6 +56,7 @@ func main() {
 	writeRustVMHooksTrait(eiMetadata)
 	writeRustVMHooksLegacyTrait(eiMetadata)
 	writeRustVMHooksLegacyAdapter(eiMetadata)
+	writeRustVMHooksSignatures(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
 	writeRustWasmerProdImports(eiMetadata)
@@ -176,6 +177,12 @@ func writeRustVHDispatcherLegacy(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustVHDispatcherLegacy(out, eiMetadata)
 }
 
+func writeRustVMHooksSignatures(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hook_signature_list.rs")
+	defer out.Close()
+	eapigen.WriteRustVMHooksSignatures(out, eiMetadata)
+}
+
 func writeExecutorOpcodeCosts() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/gasCostWASM.go")
 	defer out.Close()
@@ -291,6 +298,10 @@ func tryCopyFilesToMxSdkRsRepo() {
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_whitelist.rs"),
 		filepath.Join(rustExecutorPath, "framework/meta-lib/src/tools/wasm_extractor/opcode_whitelist.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hook_signature_list.rs"),
+		filepath.Join(rustExecutorPath, "framework/meta-lib/src/ei/vm_hook_signature_list.rs"),
 	)
 }
 
