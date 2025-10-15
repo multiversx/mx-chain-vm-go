@@ -42,7 +42,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetOriginalTxHashFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ExtractCodeUpgradeFromArgsFunc func() ([]byte, []byte, error)
+	RemoveCodeUpgradeFromArgsFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SignalUserErrorFunc func(message string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -71,6 +71,10 @@ type RuntimeContextWrapper struct {
 	ReadOnlyFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetReadOnlyFunc func(readOnly bool)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	IsUnsafeModeFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetUnsafeModeFunc func(readOnly bool)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	StartWasmerInstanceFunc func(contract []byte, gasLimit uint64, newCode bool) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -184,8 +188,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		return runtimeWrapper.runtimeContext.GetOriginalTxHash()
 	}
 
-	runtimeWrapper.ExtractCodeUpgradeFromArgsFunc = func() ([]byte, []byte, error) {
-		return runtimeWrapper.runtimeContext.ExtractCodeUpgradeFromArgs()
+	runtimeWrapper.RemoveCodeUpgradeFromArgsFunc = func() {
+		runtimeWrapper.runtimeContext.RemoveCodeUpgradeFromArgs()
 	}
 
 	runtimeWrapper.SignalUserErrorFunc = func(message string) {
@@ -222,6 +226,14 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 
 	runtimeWrapper.SetReadOnlyFunc = func(readOnly bool) {
 		runtimeWrapper.runtimeContext.SetReadOnly(readOnly)
+	}
+
+	runtimeWrapper.IsUnsafeModeFunc = func() bool {
+		return runtimeWrapper.runtimeContext.IsUnsafeMode()
+	}
+
+	runtimeWrapper.SetUnsafeModeFunc = func(unSafe bool) {
+		runtimeWrapper.runtimeContext.SetUnsafeMode(unSafe)
 	}
 
 	runtimeWrapper.StartWasmerInstanceFunc = func(contract []byte, gasLimit uint64, newCode bool) error {
@@ -374,9 +386,9 @@ func (contextWrapper *RuntimeContextWrapper) GetOriginalTxHash() []byte {
 	return contextWrapper.GetOriginalTxHashFunc()
 }
 
-// ExtractCodeUpgradeFromArgs calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
-	return contextWrapper.ExtractCodeUpgradeFromArgsFunc()
+// RemoveCodeUpgradeFromArgs calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) RemoveCodeUpgradeFromArgs() {
+	contextWrapper.RemoveCodeUpgradeFromArgsFunc()
 }
 
 // SignalUserError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -427,6 +439,16 @@ func (contextWrapper *RuntimeContextWrapper) ReadOnly() bool {
 // SetReadOnly calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) SetReadOnly(readOnly bool) {
 	contextWrapper.SetReadOnlyFunc(readOnly)
+}
+
+// IsUnsafeMode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) IsUnsafeMode() bool {
+	return contextWrapper.IsUnsafeModeFunc()
+}
+
+// SetUnsafeMode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetUnsafeMode(unsafeMode bool) {
+	contextWrapper.SetUnsafeModeFunc(unsafeMode)
 }
 
 // StartWasmerInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

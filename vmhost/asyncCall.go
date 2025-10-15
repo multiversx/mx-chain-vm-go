@@ -38,11 +38,13 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		ValueBytes:      make([]byte, len(ac.ValueBytes)),
 		SuccessCallback: ac.SuccessCallback,
 		ErrorCallback:   ac.ErrorCallback,
+		CallbackClosure: make([]byte, len(ac.CallbackClosure)),
 	}
 
 	copy(clone.Destination, ac.Destination)
 	copy(clone.Data, ac.Data)
 	copy(clone.ValueBytes, ac.ValueBytes)
+	copy(clone.CallbackClosure, ac.CallbackClosure)
 
 	return clone
 }

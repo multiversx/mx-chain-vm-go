@@ -52,9 +52,6 @@ var ErrBadBounds = errors.New("bad bounds")
 // ErrBadLowerBounds signals that a certain variable is lower than allowed
 var ErrBadLowerBounds = fmt.Errorf("%w (lower)", ErrBadBounds)
 
-// ErrBadUpperBounds signals that a certain variable is higher than allowed
-var ErrBadUpperBounds = fmt.Errorf("%w (upper)", ErrBadBounds)
-
 // ErrNegativeLength signals that the given length is less than 0
 var ErrNegativeLength = errors.New("negative length")
 
@@ -332,5 +329,14 @@ var ErrNilMapOpcodeAddress = errors.New("nil map opcode address")
 // ErrOpcodeIsNotAllowed signals that opcode is not allowed for the address
 var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
-// ErrInvalidSignature signals that a signature verification failed
-var ErrInvalidSignature = errors.New("signature is invalid")
+// ErrVMHookIsDeactivated signals that opcode is deactivated
+var ErrVMHookIsDeactivated = errors.New("VM hook is deactivated")
+
+// ErrTooManyTransfersFromBuiltInFunction signals that too many transfers are in the built in function
+var ErrTooManyTransfersFromBuiltInFunction = errors.New("too many transfers from built in function")
+
+// ErrTimeLockExpired signals that timelock has expired
+var ErrTimeLockExpired = errors.New("time lock expired")
+
+// ErrWrongType signals that wrong type is read from buffer
+var ErrWrongType = errors.New("incompatible type")

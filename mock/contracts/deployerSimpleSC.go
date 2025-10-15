@@ -1,6 +1,9 @@
 package contracts
 
 import (
+	"errors"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"math/big"
 
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
@@ -39,7 +42,12 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 			)
 
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			if errors.Is(err, vmhost.ErrNotEnoughGas) {
+				host.Output().SetReturnCode(vmcommon.OutOfGas)
+			} else {
+				host.Runtime().FailExecution(err)
+			}
+
 			return instance
 		}
 

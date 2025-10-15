@@ -300,9 +300,6 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	if err != nil {
 		return vmhost.StorageUnchanged, err
 	}
-	metering := context.host.Metering()
-
-	length := len(value)
 
 	storageUpdates := context.GetStorageUpdates(address)
 	oldValue, usedCache, err := context.getOldValue(storageUpdates, key)
@@ -310,51 +307,82 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 		return vmhost.StorageUnchanged, err
 	}
 
-	gasForKey := context.computeGasForKey(key, usedCache)
-	err = metering.UseGasBounded(gasForKey)
+	err = context.consumeGasForKey(key, usedCache)
 	if err != nil {
 		return vmhost.StorageUnchanged, err
 	}
 
 	if bytes.Equal(oldValue, value) {
-		return context.storageUnchanged(length, usedCache, key)
+		return context.storageUnchanged(len(value), usedCache, key)
 	}
 
-	deltaBytes := len(value) - len(oldValue)
-	context.addDeltaBytes(deltaBytes)
+	return context.handleChangedStorage(key, value, oldValue, storageUpdates)
+}
 
+func (context *storageContext) consumeGasForKey(key []byte, usedCache bool) error {
+	gasForKey := context.computeGasForKey(key, usedCache)
+	return context.host.Metering().UseGasBounded(gasForKey)
+}
+
+func (context *storageContext) handleChangedStorage(
+	key []byte,
+	value []byte,
+	oldValue []byte,
+	storageUpdates map[string]*vmcommon.StorageUpdate,
+) (vmhost.StorageStatus, error) {
+	context.addDeltaBytes(len(value) - len(oldValue))
 	context.changeStorageUpdate(key, value, storageUpdates)
 
 	if len(oldValue) == 0 {
-		return context.storageAdded(length, key, value)
+		return context.storageAdded(len(value), key, value)
 	}
 
-	lengthOldValue := len(oldValue)
 	if len(value) == 0 {
-		return context.storageDeleted(lengthOldValue, key)
+		return context.storageDeleted(len(oldValue), key)
 	}
 
+	return context.handleModifiedStorage(key, value, oldValue)
+}
+
+func (context *storageContext) handleModifiedStorage(
+	key []byte,
+	value []byte,
+	oldValue []byte,
+) (vmhost.StorageStatus, error) {
+	length := len(value)
+	lengthOldValue := len(oldValue)
 	newValueExtraLength := math.SubInt(length, lengthOldValue)
 
-	var gasToUseForValue, gasToFreeForValue uint64
-	switch {
-	case newValueExtraLength > 0:
-		gasToUseForValue, gasToFreeForValue = context.computeGasForBiggerValues(lengthOldValue, newValueExtraLength)
-	case newValueExtraLength < 0:
-		gasToUseForValue, gasToFreeForValue = context.computeGasForSmallerValues(newValueExtraLength, length)
-	case newValueExtraLength == 0:
-		gasToUseForValue, gasToFreeForValue = 0, 0
-	}
-
-	err = metering.UseGasBounded(gasToUseForValue)
+	gasToUseForValue, gasToFreeForValue, err := context.computeGasForModifiedValue(lengthOldValue, newValueExtraLength, length)
 	if err != nil {
 		return vmhost.StorageUnchanged, err
 	}
 
-	metering.FreeGas(gasToFreeForValue)
+	if err = context.host.Metering().UseGasBounded(gasToUseForValue); err != nil {
+		return vmhost.StorageUnchanged, err
+	}
+
+	context.host.Metering().FreeGas(gasToFreeForValue)
 
 	logStorage.Trace("storage modified", "key", key, "value", value, "lengthDelta", newValueExtraLength)
 	return vmhost.StorageModified, nil
+}
+
+func (context *storageContext) computeGasForModifiedValue(
+	lengthOldValue int,
+	newValueExtraLength int,
+	length int,
+) (uint64, uint64, error) {
+	switch {
+	case newValueExtraLength > 0:
+		gasToUse, gasToFree := context.computeGasForBiggerValues(lengthOldValue, newValueExtraLength)
+		return gasToUse, gasToFree, nil
+	case newValueExtraLength < 0:
+		gasToUse, gasToFree := context.computeGasForSmallerValues(newValueExtraLength, length)
+		return gasToUse, gasToFree, nil
+	default:
+		return 0, 0, nil
+	}
 }
 
 func (context *storageContext) setStorageToAddressUnmetered(address []byte, key []byte, value []byte) (vmhost.StorageStatus, error) {
