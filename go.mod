@@ -2,12 +2,10 @@ module github.com/multiversx/mx-chain-vm-go
 
 go 1.23.0
 
-toolchain go1.24.9
-
 replace (
 	github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20251016085427-f3e9cd4fff15
-	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251016125103-7f445f048cdb
-	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251016124943-32d6d364bf74
+	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251017112020-13e0da713fbd
+	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251017111745-78d274090d98
 )
 
 require (

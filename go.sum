@@ -371,12 +371,12 @@ github.com/multiversx/mx-chain-crypto-go v1.3.1-0.20251016113715-522462f8de2c h1
 github.com/multiversx/mx-chain-crypto-go v1.3.1-0.20251016113715-522462f8de2c/go.mod h1:uQRpb30oxGpvqsbnMzAYEBJ6vt8OzaoH8Sh3s/2MGZ4=
 github.com/multiversx/mx-chain-logger-go v1.1.0 h1:97x84A6L4RfCa6YOx1HpAFxZp1cf/WI0Qh112whgZNM=
 github.com/multiversx/mx-chain-logger-go v1.1.0/go.mod h1:K9XgiohLwOsNACETMNL0LItJMREuEvTH6NsoXWXWg7g=
-github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251016125103-7f445f048cdb h1:9oEr8zcUhN90Z0pWD0kROaIIg1bOPpPmcy1F7D2ESi8=
-github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251016125103-7f445f048cdb/go.mod h1:r+230VfnOwCFyYo9XWOlnmUNdZU3TUDEbYdzXRWZuag=
+github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251017112020-13e0da713fbd h1:1VnoyU5nTUC1xEWAm1ApzWQgDjAn96QKk4jLkA9IaOM=
+github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251017112020-13e0da713fbd/go.mod h1:fUkPC77cz1xb/J6HsD1eGzKGPA03i22BHf2AC3LEk0c=
 github.com/multiversx/mx-chain-storage-go v1.1.0 h1:M1Y9DqMrJ62s7Zw31+cyuqsnPIvlG4jLBJl5WzeZLe8=
 github.com/multiversx/mx-chain-storage-go v1.1.0/go.mod h1:o6Jm7cjfPmcc6XpyihYWrd6sx3sgqwurrunw3ZrfyxI=
-github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251016124943-32d6d364bf74 h1:6EF2RdDp0GXSpBshl5q38ijhThbEc4RyTb3NAAVZXCY=
-github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251016124943-32d6d364bf74/go.mod h1:MAxpPWt9mbKFi1TuA/cK/yzl639Uz9CzjHEFubySMr0=
+github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251017111745-78d274090d98 h1:MuRpIbb1u6K6oz54/D/GvU1K0m//t3YYiy4D6dywyqI=
+github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251017111745-78d274090d98/go.mod h1:MAxpPWt9mbKFi1TuA/cK/yzl639Uz9CzjHEFubySMr0=
 github.com/multiversx/mx-components-big-int v1.1.0 h1:7aSJKago6vJQy9JeMOBRDYKHvsrj9OmrFWOucFUV+Kg=
 github.com/multiversx/mx-components-big-int v1.1.0/go.mod h1:kcWw7hDe6cSz1wcBAqj/6sFH6ouSPsNeH9P7XlpZRcw=
 github.com/multiversx/mx-sdk-abi-go v0.3.1-0.20250423092559-f01fdd10b35d h1:1GZdV0gNxxOBQG3BhJmTn0/a57o1pv2MstFL16eXbnI=
