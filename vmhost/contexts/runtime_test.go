@@ -14,6 +14,8 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -21,7 +23,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/stretchr/testify/require"
 )
 
 var defaultHasher = blake2b.NewBlake2b()
@@ -34,14 +35,15 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	wasmerExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
+	wasmerExecutor.SetOpcodeCosts(opcodeCosts)
 
 	host := &contextmock.VMHostMock{}
 
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
-	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
+	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld(), false)
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook, _ = factory.NewVMCrypto()
 	return host
@@ -59,6 +61,7 @@ func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
+		false,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeCtx)
@@ -77,27 +80,27 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Run("NilHost", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(nil, vmType, bfc, exec, hasher)
+		runtimeCtx, err := NewRuntimeContext(nil, vmType, bfc, exec, hasher, false)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilVMHost)
 	})
 	t.Run("NilVMType", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, nil, bfc, exec, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, nil, bfc, exec, hasher, false)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilVMType)
 	})
 	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, exec, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, exec, hasher, false)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilBuiltInFunctionsContainer)
 	})
 	t.Run("NilExecutor", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, nil, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, nil, hasher, false)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilExecutor)
 	})
 	t.Run("NilHasher", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, exec, nil)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, exec, nil, false)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilHasher)
 	})
@@ -372,6 +375,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
+		false,
 	)
 
 	vmInput := vmcommon.VMInput{

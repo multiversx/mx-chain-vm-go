@@ -118,7 +118,7 @@ func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput, _ int
 }
 
 // ExecuteOnSameContext mocked method
-func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) error {
+func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractSameContextCallInput) error {
 	return nil
 }
 
@@ -145,6 +145,11 @@ func (host *VMHostMock) PopState() {
 
 // ClearStateStack mocked method
 func (host *VMHostMock) ClearStateStack() {
+}
+
+// IsOutOfVMFunctionExecution mocked method
+func (host *VMHostMock) IsOutOfVMFunctionExecution(_ *vmcommon.ContractCallInput) bool {
+	return false
 }
 
 // IsBuiltinFunctionName mocked method

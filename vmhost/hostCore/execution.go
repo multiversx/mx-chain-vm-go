@@ -52,13 +52,15 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	output.AddTxValueToAccount(address, input.CallValue)
+	output.SetIsCreatedInTransactionFlag(address)
 	storage.SetAddress(runtime.GetContextAddress())
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
-		ContractCodeMetadata: input.ContractCodeMetadata,
-		ContractAddress:      address,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           input.ContractCode,
+		ContractCodeMetadata:   input.ContractCodeMetadata,
+		ContractAddress:        address,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: host.omitDefaultCodeChanges,
 	}
 
 	vmOutput, err = host.performCodeDeploymentAtContractCreate(codeDeployInput)
@@ -153,10 +155,11 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	}
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         code,
-		ContractCodeMetadata: codeMetadata,
-		ContractAddress:      input.RecipientAddr,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           code,
+		ContractCodeMetadata:   codeMetadata,
+		ContractAddress:        input.RecipientAddr,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: host.omitDefaultCodeChanges,
 	}
 
 	vmOutput, err = host.performCodeDeploymentAtContractUpgrade(codeDeployInput)
@@ -570,7 +573,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 // ExecuteOnSameContext executes the contract call with the given input
 // on the same runtime context. Some other contexts are backed up.
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) ExecuteOnSameContext(sameContextCallInput *vmcommon.ContractSameContextCallInput) error {
+	input := &sameContextCallInput.ContractCallInput
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
@@ -585,14 +589,10 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	managedTypes.InitState()
 	output.PushState()
 
-	librarySCAddress := make([]byte, len(input.RecipientAddr))
-	copy(librarySCAddress, input.RecipientAddr)
-
-	input.RecipientAddr = input.CallerAddr
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
-	runtime.SetCodeAddress(librarySCAddress)
+	runtime.SetCodeAddress(sameContextCallInput.CodeAddress)
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -601,14 +601,18 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	var err error
 
-	defer host.finishExecuteOnSameContext(err)
+	defer func() {
+		host.finishExecuteOnSameContext(err)
+	}()
 
-	// Perform a value transfer to the called SC. If the execution fails, this
-	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
-	if err != nil {
-		runtime.AddError(err, input.Function)
-		return err
+	if sameContextCallInput.DoTransfer {
+		// Perform a value transfer to the called SC. If the execution fails, this
+		// transfer will not persist.
+		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
+		if err != nil {
+			runtime.AddError(err, input.Function)
+			return err
+		}
 	}
 	output.WriteLogWithIdentifier(
 		input.CallerAddr,
@@ -699,15 +703,17 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
-		ContractCodeMetadata: input.ContractCodeMetadata,
-		ContractAddress:      nil,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           input.ContractCode,
+		ContractCodeMetadata:   input.ContractCodeMetadata,
+		ContractAddress:        nil,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: false,
 	}
-	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
+	initialCost, err := metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
 		return
 	}
+	input.GasProvided -= initialCost
 
 	if runtime.ReadOnly() {
 		err = vmhost.ErrInvalidCallOnReadOnlyMode
@@ -726,6 +732,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 
 	codeDeployInput.ContractAddress = newContractAddress
 	output.DeployCode(codeDeployInput)
+	output.SetIsCreatedInTransactionFlag(newContractAddress)
 
 	defer func() {
 		if err != nil {
@@ -736,10 +743,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	runtime.MustVerifyNextContractCode()
 
 	initCallInput := &vmcommon.ContractCallInput{
-		RecipientAddr:     newContractAddress,
-		Function:          vmhost.InitFunctionName,
-		AllowInitFunction: true,
-		VMInput:           input.VMInput,
+		RecipientAddr:      newContractAddress,
+		RecipientAliasAddr: input.AliasAddress,
+		Function:           vmhost.InitFunctionName,
+		AllowInitFunction:  true,
+		VMInput:            input.VMInput,
 	}
 
 	var isChildComplete bool
@@ -803,10 +811,11 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	}
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         code,
-		ContractCodeMetadata: codeMetadata,
-		ContractAddress:      input.RecipientAddr,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractCode:           code,
+		ContractCodeMetadata:   codeMetadata,
+		ContractAddress:        input.RecipientAddr,
+		CodeDeployerAddress:    input.CallerAddr,
+		OmitDefaultCodeChanges: host.omitDefaultCodeChanges,
 	}
 
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)

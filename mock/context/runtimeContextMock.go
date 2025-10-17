@@ -16,6 +16,7 @@ type RuntimeContextMock struct {
 	SCAddress                []byte
 	SCCode                   []byte
 	SCCodeSize               uint64
+	SCCodeHash               []byte
 	CallFunction             string
 	VMType                   []byte
 	ReadOnlyFlag             bool
@@ -166,6 +167,15 @@ func (r *RuntimeContextMock) SetOriginalCallerAddress(scAddress []byte) {
 	r.OriginalCallerAddr = scAddress
 }
 
+// ComputeCodeHash mocked method
+func (r *RuntimeContextMock) ComputeCodeHash([]byte) []byte {
+	return make([]byte, 0)
+}
+
+// SetTrackerCode mocked method
+func (r *RuntimeContextMock) SetTrackerCode([]byte) {
+}
+
 // GetSCCode mocked method
 func (r *RuntimeContextMock) GetSCCode() ([]byte, error) {
 	return r.SCCode, r.Err
@@ -175,6 +185,14 @@ func (r *RuntimeContextMock) GetSCCode() ([]byte, error) {
 func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
 	return r.SCCodeSize
 }
+
+// GetSCCodeHash mocked method
+func (r *RuntimeContextMock) GetSCCodeHash() []byte {
+	return r.SCCodeHash
+}
+
+// SaveCompiledCode mocked method
+func (r *RuntimeContextMock) SaveCompiledCode() {}
 
 // FunctionName mocked method
 func (r *RuntimeContextMock) FunctionName() string {

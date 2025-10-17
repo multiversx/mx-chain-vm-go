@@ -2,6 +2,7 @@ package hostCore
 
 import (
 	"context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/evmhooks"
 	"math"
 	"runtime/debug"
 	"sync"
@@ -74,6 +75,8 @@ type vmHost struct {
 
 	transferLogIdentifiers    map[string]bool
 	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
+
+	omitDefaultCodeChanges bool
 }
 
 // NewVMHost creates a new VM vmHost
@@ -133,13 +136,14 @@ func NewVMHost(
 		executionTimeout:          minExecutionTimeout,
 		enableEpochsHandler:       hostParameters.EnableEpochsHandler,
 		mapOpcodeAddressIsAllowed: hostParameters.MapOpcodeAddressIsAllowed,
+		omitDefaultCodeChanges:    hostParameters.OmitDefaultCodeChanges,
 	}
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
+	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook, hostParameters.UsePseudoAddresses)
 	if err != nil {
 		return nil, err
 	}
@@ -155,6 +159,7 @@ func NewVMHost(
 		host.builtInFuncContainer,
 		vmExecutor,
 		hostParameters.Hasher,
+		hostParameters.OmitFunctionNameChecks,
 	)
 	if err != nil {
 		return nil, err
@@ -205,6 +210,7 @@ func NewVMHost(
 
 // Creates a new executor instance. Should only be called once per VM host instantiation.
 func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.Executor, error) {
+	evmHooks := evmhooks.NewEVMHooksImpl(host)
 	vmHooks := vmhooks.NewVMHooksImpl(host)
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
@@ -218,9 +224,11 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	} else {
 		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
+		EvmHooks:                 evmHooks,
 		VMHooks:                  vmHooks,
-		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
+		OpcodeCosts:              opcodeCosts,
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
 	}
@@ -358,7 +366,8 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 		return
 	}
 
-	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
+	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 	host.runtimeContext.ClearWarmInstanceCache()

@@ -16,7 +16,7 @@ type WrapperExecutor struct {
 }
 
 // SetOpcodeCosts wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
+func (wexec *WrapperExecutor) SetOpcodeCosts(opcodeCosts executor.VMOpcodeCost) {
 	wexec.wrappedExecutor.SetOpcodeCosts(opcodeCosts)
 }
 

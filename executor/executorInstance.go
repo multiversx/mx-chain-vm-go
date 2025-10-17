@@ -7,6 +7,7 @@ type Instance interface {
 	SetGasLimit(gasLimit uint64)
 	SetBreakpointValue(value uint64)
 	GetBreakpointValue() uint64
+	HasCompiledCode() bool
 	Cache() ([]byte, error)
 	Clean() bool
 	CallFunction(functionName string) error

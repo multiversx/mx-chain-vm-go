@@ -98,6 +98,10 @@ func (o *OutputContextMock) GetOutputAccount(_ []byte) (*vmcommon.OutputAccount,
 	return o.OutputAccountMock, o.OutputAccountIsNew
 }
 
+// DeleteAccount mocked method
+func (o *OutputContextMock) DeleteAccount(_ []byte) {
+}
+
 // DeleteOutputAccount mocked method
 func (o *OutputContextMock) DeleteOutputAccount(_ []byte) {
 }
@@ -200,6 +204,14 @@ func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 
 // DeployCode mocked method
 func (o *OutputContextMock) DeployCode(_ vmhost.CodeDeployInput) {
+}
+
+// ChangeAccountCode mocked method
+func (o *OutputContextMock) ChangeAccountCode(_ []byte, _ []byte) {
+}
+
+// SetIsCreatedInTransactionFlag mocked method
+func (o *OutputContextMock) SetIsCreatedInTransactionFlag(_ []byte) {
 }
 
 // CreateVMOutputInCaseOfError mocked method

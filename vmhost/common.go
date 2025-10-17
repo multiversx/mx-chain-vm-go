@@ -193,6 +193,8 @@ type CodeDeployInput struct {
 	ContractCodeMetadata []byte
 	ContractAddress      []byte
 	CodeDeployerAddress  []byte
+
+	OmitDefaultCodeChanges bool
 }
 
 // VMHostParameters represents the parameters to be passed to VMHost
@@ -210,6 +212,9 @@ type VMHostParameters struct {
 	Hasher                              HashComputer
 	TimeOutForSCExecutionInMilliseconds uint32
 	MapOpcodeAddressIsAllowed           map[string]map[string]struct{}
+	UsePseudoAddresses                  bool
+	OmitFunctionNameChecks              bool
+	OmitDefaultCodeChanges              bool
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

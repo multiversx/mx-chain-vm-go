@@ -3085,11 +3085,13 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
 	childAddress := []byte("newAddress")
 	l := len(childCode)
+	parentCodeCost := uint64(0)
+	parentCode := test.GetTestSCCode("deployer", "../../")
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCode("deployer", "../../")).
+				WithCode(parentCode).
 				WithBalance(1000),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
@@ -3100,6 +3102,8 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			gasSchedule := host.Metering().GasSchedule()
+			parentCodeCost = uint64(len(parentCode))*gasSchedule.BaseOperationCost.AoTPreparePerByte + gasSchedule.BaseOperationCost.GetCode
 			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, uint32, error) {
 				if bytes.Equal(address, test.ParentAddress) {
 					if bytes.Equal(key, []byte{'A'}) {
@@ -3113,8 +3117,8 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 16395).
-				GasRemaining(983015).
+				GasUsed(test.ParentAddress, 16395+parentCodeCost).
+				GasRemaining(983015-parentCodeCost).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).

@@ -1,6 +1,8 @@
 package contexts
 
 import (
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-crypto-go/address"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
@@ -18,12 +20,15 @@ type blockchainContext struct {
 	host           vmhost.VMHost
 	blockChainHook vmcommon.BlockchainHook
 	stateStack     []int
+
+	usePseudoAddresses bool
 }
 
 // NewBlockchainContext creates a new blockchainContext
 func NewBlockchainContext(
 	host vmhost.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
+	usePseudoAddresses bool,
 ) (*blockchainContext, error) {
 	if check.IfNil(host) {
 		return nil, vmhost.ErrNilVMHost
@@ -32,16 +37,18 @@ func NewBlockchainContext(
 	context := &blockchainContext{
 		blockChainHook: blockChainHook,
 		host:           host,
+
+		usePseudoAddresses: usePseudoAddresses,
 	}
 
 	return context, nil
 }
 
-// NewAddress returns a new address created using the provided creator address and its nonce.
-func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, error) {
+// GetNonceForNewAddress returns the nonce for the provided creator address.
+func (context *blockchainContext) GetNonceForNewAddress(creatorAddress []byte) (uint64, error) {
 	nonce, err := context.GetNonce(creatorAddress)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	isIndirectDeployment := context.IsSmartContract(creatorAddress)
@@ -49,8 +56,26 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 		nonce--
 	}
 
+	return nonce, nil
+}
+
+// NewAddress returns a new address created using the provided creator address and its nonce.
+func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, error) {
+	nonce, err := context.GetNonceForNewAddress(creatorAddress)
+	if err != nil {
+		return nil, err
+	}
+
 	vmType := context.host.Runtime().GetVMType()
-	return context.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
+	newAddress, err := context.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
+	if err != nil {
+		return nil, err
+	}
+
+	if !context.usePseudoAddresses {
+		return newAddress, nil
+	}
+	return address.ConvertAddressToPseudoAddress(newAddress, core.MVXAddressIdentifier)
 }
 
 // AccountExists verifies if the provided address exists.
@@ -79,7 +104,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 		if outputAccount.Balance == nil || isBarnardActive {
 			account, err := context.blockChainHook.GetUserAccount(address)
 			if err != nil || vmhost.IfNil(account) {
-				return big.NewInt(0)
+				return outputAccount.BalanceDelta
 			}
 
 			outputAccount.Balance = account.GetBalance()
@@ -104,7 +129,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 
-	readNonceFromBlockChain := isNew || outputAccount.Nonce == 0
+	readNonceFromBlockChain := isNew || (outputAccount.Nonce == 0 && !outputAccount.IsContractCreatedInTransaction)
 	if !readNonceFromBlockChain {
 		return outputAccount.Nonce, nil
 	}
@@ -134,6 +159,12 @@ func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, n
 
 // GetCodeHash retrieves the hash of the code stored under the given address.
 func (context *blockchainContext) GetCodeHash(address []byte) []byte {
+	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+	hasCodeHash := !isNew && len(outputAccount.CodeHash) > 0
+	if hasCodeHash {
+		return outputAccount.CodeHash
+	}
+
 	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil {
 		return nil
@@ -143,6 +174,7 @@ func (context *blockchainContext) GetCodeHash(address []byte) []byte {
 	}
 
 	codeHash := account.GetCodeHash()
+	outputAccount.CodeHash = codeHash
 	return codeHash
 }
 
@@ -192,6 +224,11 @@ func (context *blockchainContext) BlockHash(number uint64) []byte {
 	}
 
 	return block
+}
+
+// ChainID returns the chain ID.
+func (context *blockchainContext) ChainID() []byte {
+	return context.blockChainHook.ChainID()
 }
 
 // CurrentEpoch returns the number of the current epoch.
@@ -397,4 +434,14 @@ func (context *blockchainContext) ClearCompiledCodes() {
 // ExecuteSmartContractCallOnOtherVM runs contract on another VM
 func (context *blockchainContext) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return context.blockChainHook.ExecuteSmartContractCallOnOtherVM(input)
+}
+
+// SaveAliasAddress saves the given alias address
+func (context *blockchainContext) SaveAliasAddress(request *vmcommon.AliasSaveRequest) error {
+	return context.blockChainHook.SaveAliasAddress(request)
+}
+
+// RequestAddress returns the requested address
+func (context *blockchainContext) RequestAddress(request *vmcommon.AddressRequest) (*vmcommon.AddressResponse, error) {
+	return context.blockChainHook.RequestAddress(request)
 }

@@ -75,6 +75,7 @@ func NewRuntimeContext(
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	vmExecutor executor.Executor,
 	hasher vmhost.HashComputer,
+	omitFunctionNameChecks bool,
 ) (*runtimeContext, error) {
 
 	if check.IfNil(host) {
@@ -100,7 +101,7 @@ func NewRuntimeContext(
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer, enableEpochsHandler),
+		validator:  newWASMValidator(!omitFunctionNameChecks, scAPINames, builtInFuncContainer, enableEpochsHandler),
 		hasher:     hasher,
 		errors:     nil,
 	}
@@ -161,16 +162,12 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return vmhost.ErrMaxInstancesReached
 	}
 
-	var codeHash []byte
 	if newCode {
-		codeHash = context.hasher.Compute(string(contract))
+		context.SetTrackerCode(contract)
 	} else {
-		blockchain := context.host.Blockchain()
-		codeHash = blockchain.GetCodeHash(context.codeAddress)
+		codeHash := context.host.Blockchain().GetCodeHash(context.codeAddress)
+		context.setTrackerState(contract, codeHash)
 	}
-
-	context.iTracker.SetCodeSize(uint64(len(contract)))
-	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
 		context.iTracker.LogCounts()
@@ -263,8 +260,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	}
 
 	if newCode || len(context.iTracker.CodeHash()) == 0 {
-		codeHash := context.hasher.Compute(string(contract))
-		context.iTracker.SetCodeHash(codeHash)
+		context.SetTrackerCode(contract)
 	}
 
 	if newCode {
@@ -281,7 +277,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		"id", context.iTracker.Instance().ID(),
 		"codeHash", context.iTracker.CodeHash(),
 	)
-	context.saveCompiledCode()
+	context.SaveCompiledCode()
 
 	return nil
 }
@@ -312,6 +308,22 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	return true, nil
 }
 
+// ComputeCodeHash computes the hash for the given code.
+func (context *runtimeContext) ComputeCodeHash(code []byte) []byte {
+	return context.hasher.Compute(string(code))
+}
+
+// setTrackerState sets code related details on iTracker.
+func (context *runtimeContext) setTrackerState(code []byte, codeHash []byte) {
+	context.iTracker.SetCodeHash(codeHash)
+	context.iTracker.SetCodeSize(uint64(len(code)))
+}
+
+// SetTrackerCode sets code related details on iTracker.
+func (context *runtimeContext) SetTrackerCode(code []byte) {
+	context.setTrackerState(code, context.ComputeCodeHash(code))
+}
+
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
@@ -329,7 +341,15 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 	return context.iTracker.GetCodeSize()
 }
 
-func (context *runtimeContext) saveCompiledCode() {
+// GetSCCodeHash returns the cached hash of the current SC code.
+func (context *runtimeContext) GetSCCodeHash() []byte {
+	return context.iTracker.CodeHash()
+}
+
+func (context *runtimeContext) SaveCompiledCode() {
+	if !context.iTracker.Instance().HasCompiledCode() {
+		return
+	}
 	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
@@ -499,9 +519,10 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		ReturnCallAfterError: vmInput.ReturnCallAfterError,
 	}
 	context.vmInput = &vmcommon.ContractCallInput{
-		VMInput:       internalVMInput,
-		RecipientAddr: vmInput.RecipientAddr,
-		Function:      vmInput.Function,
+		VMInput:            internalVMInput,
+		RecipientAddr:      vmInput.RecipientAddr,
+		RecipientAliasAddr: vmInput.RecipientAliasAddr,
+		Function:           vmInput.Function,
 	}
 
 	if vmInput.CallValue != nil {
@@ -803,7 +824,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	functionName := context.FunctionName()
-	err := verifyCallFunction(functionName)
+	err := context.validator.verifyCallFunction(functionName)
 	if err != nil {
 		return "", executor.ErrFuncNotFound
 	}

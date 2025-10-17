@@ -49,9 +49,9 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *executor.WASMOpcodeCost) {
+func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps executor.VMOpcodeCost) {
 	// extract only wasmer2 opcodes
-	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
+	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps.WASMOpcodeCost)
 	cWasmerExecutorSetOpcodeCost(
 		wasmerExecutor.cgoExecutor,
 		(*cWasmerOpcodeCostT)(unsafe.Pointer(wasmerExecutor.opcodeCost)),

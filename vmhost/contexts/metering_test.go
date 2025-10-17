@@ -201,9 +201,10 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 	}
 
 	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringCtx.gasForExecution = contractCallInput.GasProvided
 
 	mockRuntime.SetPointsUsed(0)
-	err := meteringCtx.DeductInitialGasForIndirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
+	_, err := meteringCtx.DeductInitialGasForIndirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
 	require.Nil(t, err)
 	remainingGas := meteringCtx.GasLeft()
 	require.Equal(t, gasProvided-uint64(len(contractCode)), remainingGas)

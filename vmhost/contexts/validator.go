@@ -30,17 +30,20 @@ var reservedFunctionsActivationFlag = map[string]core.EnableEpochFlag{
 
 // wasmValidator is a validator for WASM SmartContracts
 type wasmValidator struct {
-	reserved *reservedFunctions
+	hasFunctionNameChecks bool
+	reserved              *reservedFunctions
 }
 
 // newWASMValidator creates a new WASMValidator
 func newWASMValidator(
+	hasFunctionNameChecks bool,
 	scAPINames vmcommon.FunctionNames,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
 ) *wasmValidator {
 	return &wasmValidator{
-		reserved: NewReservedFunctions(scAPINames, builtInFuncContainer, reservedFunctionsActivationFlag, enableEpochsHandler),
+		hasFunctionNameChecks: hasFunctionNameChecks,
+		reserved:              NewReservedFunctions(scAPINames, builtInFuncContainer, reservedFunctionsActivationFlag, enableEpochsHandler),
 	}
 }
 
@@ -83,7 +86,7 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Insta
 }
 
 func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {
-	err := verifyCallFunction(functionName)
+	err := validator.verifyCallFunction(functionName)
 	if err != nil {
 		return err
 	}
@@ -96,7 +99,11 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 	return nil
 }
 
-func verifyCallFunction(functionName string) error {
+func (validator *wasmValidator) verifyCallFunction(functionName string) error {
+	if !validator.hasFunctionNameChecks {
+		return nil
+	}
+
 	const maxLengthOfFunctionName = 256
 
 	errInvalidName := fmt.Errorf("%w: %s", vmhost.ErrInvalidFunctionName, functionName)

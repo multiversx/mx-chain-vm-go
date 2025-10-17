@@ -48,6 +48,11 @@ func (inst *WrapperInstance) GetBreakpointValue() uint64 {
 	return result
 }
 
+// HasCompiledCode wraps the call to the underlying instance.
+func (inst *WrapperInstance) HasCompiledCode() bool {
+	return inst.wrappedInstance.HasCompiledCode()
+}
+
 // Cache wraps the call to the underlying instance.
 func (inst *WrapperInstance) Cache() ([]byte, error) {
 	return inst.wrappedInstance.Cache()
