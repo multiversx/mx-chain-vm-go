@@ -16,13 +16,13 @@ jobs:
     name: Build
     steps:
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.20.7
+          go-version: 1.23.6
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get dependencies
         run: |
@@ -33,9 +33,12 @@ jobs:
           fi
       - name: Run unit tests
         run: |
-          TESTS_TO_RUN=$(go list ./... | grep -v /integrationTests/ | grep -v /fuzz/ | grep -v /mandos-go/json/integrationTests | grep -v /mandos-go/expression/integrationTests)
+          TESTS_TO_RUN=$(go list ./... | grep -v /integrationTests/ | grep -v /fuzz/)
           go test -short -cover -coverprofile=coverage.txt -covermode=atomic -v ${TESTS_TO_RUN}
 
       - name: Upload coverage
-        run: bash <(curl -s https://codecov.io/bash) -f coverage.txt -y codecov.yml
-
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          files: coverage.txt
+          token: ${{ secrets.CODECOV_TOKEN }}

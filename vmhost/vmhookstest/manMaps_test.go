@@ -28,7 +28,7 @@ func TestManagedMap(t *testing.T) {
 						valueBuff := managedType.NewManagedBufferFromBytes(value)
 						err := managedType.ManagedMapPut(mMap, keyBuff, valueBuff)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 
@@ -36,19 +36,19 @@ func TestManagedMap(t *testing.T) {
 							make([]byte, len(value)))
 						err = managedType.ManagedMapGet(mMap, keyBuff, outValueBuf)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						outValueBytes, err := managedType.GetBytes(outValueBuf)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						host.Output().Finish(outValueBytes)
 
 						contains, err := managedType.ManagedMapContains(mMap, keyBuff)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						if contains {
@@ -61,14 +61,14 @@ func TestManagedMap(t *testing.T) {
 							make([]byte, len(value)))
 						err = managedType.ManagedMapRemove(mMap, keyBuff, outValueBuf)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						host.Output().Finish(outValueBytes)
 
 						containsAfterRemove, err := managedType.ManagedMapContains(mMap, keyBuff)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						if containsAfterRemove {
@@ -81,12 +81,12 @@ func TestManagedMap(t *testing.T) {
 							make([]byte, len(value)))
 						err = managedType.ManagedMapGet(mMap, keyBuff, outValueBuf)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						outValueBytes, err = managedType.GetBytes(outValueBuf)
 						if err != nil {
-							vmhooks.WithFaultAndHost(host, err, true)
+							vmhooks.FailExecution(host, err)
 							return instance
 						}
 						host.Output().Finish(outValueBytes)

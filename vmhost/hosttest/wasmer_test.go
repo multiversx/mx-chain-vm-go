@@ -9,7 +9,6 @@ import (
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -241,10 +240,6 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 }
 
 func TestWASMMemories_ResetContent(t *testing.T) {
-	if !contexts.WarmInstancesEnabled {
-		t.Skip("test only relevant with warm instances")
-	}
-
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -271,10 +266,6 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 }
 
 func TestWASMMemories_ResetDataInitializers(t *testing.T) {
-	if !contexts.WarmInstancesEnabled {
-		t.Skip("test only relevant with warm instances")
-	}
-
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).

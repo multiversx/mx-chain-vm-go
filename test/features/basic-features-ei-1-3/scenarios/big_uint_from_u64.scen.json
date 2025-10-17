@@ -1,0 +1,83 @@
+{
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../output/basic-features.mxsc.json"
+                },
+                "address:an_account": {
+                    "nonce": "0",
+                    "balance": "0"
+                }
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "1",
+            "tx": {
+                "to": "sc:basic-features",
+                "function": "big_uint_from_u64_1",
+                "arguments": [
+                    "42"
+                ]
+            },
+            "expect": {
+                "out": [
+                    "42"
+                ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "2",
+            "tx": {
+                "to": "sc:basic-features",
+                "function": "big_uint_from_u64_1",
+                "arguments": [
+                    "0x7FFFFFFFFFFFFFFF"
+                ]
+            },
+            "expect": {
+                "out": [
+                    "0x7FFFFFFFFFFFFFFF"
+                ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "3",
+            "tx": {
+                "to": "sc:basic-features",
+                "function": "big_uint_from_u64_1",
+                "arguments": [
+                    "0xFFFFFFFFFFFFFFFF"
+                ]
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:cast to i64 error"
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "4",
+            "tx": {
+                "to": "sc:basic-features",
+                "function": "biguint_from_u128",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                    "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                ],
+                "status": "0",
+                "message": ""
+            }
+        }
+    ]
+}

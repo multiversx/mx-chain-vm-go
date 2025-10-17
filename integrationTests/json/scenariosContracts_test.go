@@ -126,3 +126,11 @@ func TestRustPaymaster(t *testing.T) {
 		Run().
 		CheckNoError()
 }
+
+func TestMultiESDTTransferWithReturnError(t *testing.T) {
+	ScenariosTest(t).
+		Folder("contracts/transfer-with-return-error/scenarios").
+		File("transfer_esdt_return_error.scen.json").
+		Run().
+		CheckNoError()
+}
