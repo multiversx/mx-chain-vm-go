@@ -50,6 +50,16 @@ var mapFailConditionalOpcodes = map[string]struct{}{
 	"DeactivateUnsafeMode": {},
 }
 
+var mapZKCryptoOpCodes = map[string]struct{}{
+	"ManagedVerifyGroth16":   {},
+	"ManagedVerifyPlonk":     {},
+	"ManagedAddEC":           {},
+	"ManagedMulEC":           {},
+	"ManagedMultiExpEC":      {},
+	"ManagedMapToCurveEC":    {},
+	"ManagedPairingChecksEC": {},
+}
+
 const warmCacheSize = 100
 
 type runtimeContext struct {
@@ -731,6 +741,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !enableEpochsHandler.IsFlagEnabled(vmhost.ZKCryptoFlag) {
+		err = context.checkIfContainsZKCryptoOpcodes()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -756,6 +774,15 @@ func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
 
 func (context *runtimeContext) checkIfContainsFailConditionalOpcodes() error {
 	for funcName := range mapFailConditionalOpcodes {
+		if context.iTracker.Instance().IsFunctionImported(funcName) {
+			return vmhost.ErrContractInvalid
+		}
+	}
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsZKCryptoOpcodes() error {
+	for funcName := range mapZKCryptoOpCodes {
 		if context.iTracker.Instance().IsFunctionImported(funcName) {
 			return vmhost.ErrContractInvalid
 		}

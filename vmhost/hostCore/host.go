@@ -49,6 +49,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.AsyncV3FixesFlag,
 	vmhost.AsyncV3Flag,
 	vmhost.FailConditionallyFlag,
+	vmhost.ZKCryptoFlag,
 }
 
 // vmHost implements HostContext interface.

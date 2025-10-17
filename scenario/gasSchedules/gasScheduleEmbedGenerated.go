@@ -123,10 +123,10 @@ const (
     GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
-    GetRoundTime = 100
-    EpochStartBlockTimeStamp = 100
-    EpochStartBlockNonce = 100
-    EpochStartBlockRound = 100
+    GetRoundTime = 10000
+    EpochStartBlockTimeStamp = 10000
+    EpochStartBlockNonce = 10000
+    EpochStartBlockRound = 10000
 
 [EthAPICost]
     UseGas = 100
@@ -250,6 +250,11 @@ const (
     VerifySecp256r1 = 2000000
     VerifyBLSSignatureShare = 2000000
     VerifyBLSMultiSig = 2000000
+    VerifyPlonkSig = 2000000
+    VerifyGroth16Sig = 2000000
+    MapToCurveECC = 2000000
+    PairingCheckECC = 2000000
+    MultiExpECC     = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000
@@ -971,10 +976,10 @@ const (
     GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
-    GetRoundTime = 100
-    EpochStartBlockTimeStamp = 100
-    EpochStartBlockNonce = 100
-    EpochStartBlockRound = 100
+    GetRoundTime = 10000
+    EpochStartBlockTimeStamp = 10000
+    EpochStartBlockNonce = 10000
+    EpochStartBlockRound = 10000
 
 [EthAPICost]
     UseGas = 100
@@ -1098,6 +1103,11 @@ const (
     VerifySecp256r1 = 2000000
     VerifyBLSSignatureShare = 2000000
     VerifyBLSMultiSig = 2000000
+    VerifyPlonkSig = 2000000
+    VerifyGroth16Sig = 2000000
+    MapToCurveECC = 2000000
+    PairingCheckECC = 2000000
+    MultiExpECC = 2000000
 
 [ManagedBufferAPICost]
     MBufferNew = 2000
