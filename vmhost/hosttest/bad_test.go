@@ -9,9 +9,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
-	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
@@ -261,14 +259,6 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 				FunctionNotFound().
 				HasRuntimeErrorAndInfo(executor.ErrInvalidFunction.Error(), "thisDoesNotExist")
 		})
-}
-
-func TestBadContractExtra_LongIntLoop_Wasmer1(t *testing.T) {
-	if !testexecutor.IsWasmer1Allowed() {
-		t.Skip("run exclusively with wasmer1")
-	}
-
-	testBadContractExtraLongIntLoop(t, wasmer.ExecutorFactory())
 }
 
 func TestBadContractExtra_LongIntLoop_Wasmer2(t *testing.T) {

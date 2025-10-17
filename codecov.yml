@@ -1,3 +1,10 @@
 ignore:
-  - "**/*.pb.go"       # wildcards accepted
-
+    - "**/*.pb.go"
+    - "**testInitializerInputs.go"
+    - "**testInitializerVMOutput.go"
+    - "**hosttest/**"
+    - "**mock/**"
+    - "**scenario/**"
+    - "**test/**"
+    - "**testcommon/**"
+    - "**testgen/**"

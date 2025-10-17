@@ -56,8 +56,13 @@
     CleanReturnData = 10
     DeleteFromReturnData = 10
     GetCodeMetadata = 10
+    GetCodeHash = 10
     IsBuiltinFunction = 10
     IsReservedFunctionName = 10
+    GetRoundTime = 10
+    EpochStartBlockTimeStamp = 10
+    EpochStartBlockNonce = 10
+    EpochStartBlockRound = 10
 
 [EthAPICost]
     UseGas = 10
@@ -148,6 +153,7 @@
     BigFloatAbs = 10
     BigFloatSqrt = 10
     BigFloatPow = 10
+    BigFloatPowPerIteration = 10
     BigFloatFloor = 10
     BigFloatCeil = 10
     BigFloatIsInt = 10
@@ -184,6 +190,10 @@
     MBufferToBigIntSigned = 10
     MBufferFromBigIntUnsigned = 10
     MBufferFromBigIntSigned = 10
+    MBufferToSmallIntUnsigned = 10
+    MBufferToSmallIntSigned = 10
+    MBufferFromSmallIntUnsigned = 10
+    MBufferFromSmallIntSigned = 10
     MBufferToBigFloat = 10
     MBufferFromBigFloat = 10
     MBufferStorageStore = 10
@@ -191,6 +201,13 @@
     MBufferGetArgument = 10
     MBufferFinish = 10
     MBufferSetRandom = 10
+
+[ManagedMapAPICost]
+    ManagedMapNew      = 10
+    ManagedMapPut      = 10
+    ManagedMapGet      = 10
+    ManagedMapRemove   = 10
+    ManagedMapContains = 10
 
 [WASMOpcodeCost]
     AtomicFence = 1

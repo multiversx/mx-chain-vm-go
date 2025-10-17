@@ -77,13 +77,19 @@ type BlockchainContext interface {
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
 	LastTimeStamp() uint64
+	LastTimeStampMs() uint64
 	LastNonce() uint64
 	LastRound() uint64
 	LastEpoch() uint32
 	CurrentRound() uint64
 	CurrentNonce() uint64
 	CurrentTimeStamp() uint64
+	CurrentTimeStampMs() uint64
 	CurrentRandomSeed() []byte
+	RoundTime() uint64
+	EpochStartBlockTimeStampMs() uint64
+	EpochStartBlockNonce() uint64
+	EpochStartBlockRound() uint64
 	LastRandomSeed() []byte
 	IncreaseNonce(addr []byte)
 	GetCodeHash(addr []byte) []byte
@@ -148,13 +154,6 @@ type RuntimeContext interface {
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
-	BaseOpsErrorShouldFailExecution() bool
-	SyncExecAPIErrorShouldFailExecution() bool
-	CryptoAPIErrorShouldFailExecution() bool
-	BigIntAPIErrorShouldFailExecution() bool
-	BigFloatAPIErrorShouldFailExecution() bool
-	ManagedBufferAPIErrorShouldFailExecution() bool
-	ManagedMapAPIErrorShouldFailExecution() bool
 	UseGasBoundedShouldFailExecution() bool
 	CleanInstance()
 
@@ -162,7 +161,7 @@ type RuntimeContext interface {
 	GetAllErrors() error
 
 	ValidateCallbackName(callbackName string) error
-	
+
 	IsReservedFunctionName(functionName string) bool
 
 	HasFunction(functionName string) bool
@@ -224,8 +223,7 @@ type ManagedTypesContext interface {
 	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) error
 	ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error)
 	GetBackTransfers() ([]*vmcommon.ESDTTransfer, *big.Int)
-	AddValueOnlyBackTransfer(value *big.Int)
-	AddBackTransfers(transfers []*vmcommon.ESDTTransfer)
+	AddBackTransfers(value *big.Int, transfers []*vmcommon.ESDTTransfer, index uint32)
 	PopBackTransferIfAsyncCallBack(vmInput *vmcommon.ContractCallInput)
 }
 

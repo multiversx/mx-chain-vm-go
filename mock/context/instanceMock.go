@@ -7,7 +7,6 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
 var _ executor.Instance = (*InstanceMock)(nil)
@@ -18,7 +17,7 @@ type mockMethod func() *InstanceMock
 // contracts within tests, without needing actual WASM smart contracts.
 type InstanceMock struct {
 	Code            []byte
-	Exports         wasmer.ExportsMap
+	Exports         map[string]string
 	DefaultErrors   map[string]error
 	Methods         map[string]mockMethod
 	Points          uint64
@@ -36,7 +35,7 @@ type InstanceMock struct {
 func NewInstanceMock(code []byte) *InstanceMock {
 	return &InstanceMock{
 		Code:            code,
-		Exports:         make(wasmer.ExportsMap),
+		Exports:         make(map[string]string),
 		DefaultErrors:   make(map[string]error),
 		Methods:         make(map[string]mockMethod),
 		Points:          0,
@@ -57,7 +56,7 @@ func (instance *InstanceMock) AddMockMethod(name string, method mockMethod) {
 func (instance *InstanceMock) AddMockMethodWithError(name string, method mockMethod, err error) {
 	instance.Methods[name] = method
 	instance.DefaultErrors[name] = err
-	instance.Exports[name] = &wasmer.ExportedFunctionCallInfo{}
+	instance.Exports[name] = name
 }
 
 // CallFunction mocked method

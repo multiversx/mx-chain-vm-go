@@ -20,6 +20,20 @@ func rustVMHooksType(eiType EIType) string {
 	}
 }
 
+func rustVMHooksLegacyReturnType(result *EIFunctionResult) string {
+	if result == nil {
+		return ""
+	}
+	return " -> " + rustVMHooksType(result.Type)
+}
+
+func rustVMHooksReturnType(result *EIFunctionResult) string {
+	if result == nil {
+		return " -> Result<(), VMHooksEarlyExit>"
+	}
+	return " -> Result<" + rustVMHooksType(result.Type) + ", VMHooksEarlyExit>"
+}
+
 func rustCapiType(eiType EIType) string {
 	switch eiType {
 	case EITypeMemPtr:
@@ -39,13 +53,25 @@ func rustWasmerType(eiType EIType) string {
 	return rustCapiType(eiType)
 }
 
-func rustWasmerConvertArg(arg *EIFunctionArg) string {
+func rustWasmerProdConvertArg(arg *EIFunctionArg) string {
 	argRustName := snakeCase(arg.Name)
 	switch arg.Type {
 	case EITypeMemPtr:
 		return fmt.Sprintf("env.convert_mem_ptr(%s)", argRustName)
 	case EITypeMemLength:
 		return fmt.Sprintf("env.convert_mem_length(%s)", argRustName)
+	default:
+		return argRustName
+	}
+}
+
+func rustWasmerExperimentalConvertArg(arg *EIFunctionArg) string {
+	argRustName := snakeCase(arg.Name)
+	switch arg.Type {
+	case EITypeMemPtr:
+		return fmt.Sprintf("convert_mem_ptr(%s)", argRustName)
+	case EITypeMemLength:
+		return fmt.Sprintf("convert_mem_length(%s)", argRustName)
 	default:
 		return argRustName
 	}
@@ -71,15 +97,13 @@ func cgoFuncPointerFieldName(funcMetadata *EIFunction) string {
 	return snakeCase(funcMetadata.Name) + "_func_ptr"
 }
 
-func writeRustFnDeclarationArguments(firstArgs string, funcMetadata *EIFunction, rustType func(EIType) string) string {
+func writeRustFnDeclarationArguments(firstArgs string, funcMetadata *EIFunction, argType func(EIType) string, resultType func(*EIFunctionResult) string) string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("(%s", firstArgs))
 	for _, arg := range funcMetadata.Arguments {
-		sb.WriteString(fmt.Sprintf(", %s: %s", snakeCase(arg.Name), rustType(arg.Type)))
+		sb.WriteString(fmt.Sprintf(", %s: %s", snakeCase(arg.Name), argType(arg.Type)))
 	}
 	sb.WriteString(")")
-	if funcMetadata.Result != nil {
-		sb.WriteString(fmt.Sprintf(" -> %s", rustType(funcMetadata.Result.Type)))
-	}
+	sb.WriteString(resultType(funcMetadata.Result))
 	return sb.String()
 }

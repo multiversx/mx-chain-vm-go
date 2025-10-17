@@ -3,12 +3,13 @@ package contexts
 import (
 	"math/big"
 
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
+
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 var logBlockchain = logger.GetOrCreate("vm/blockchainContext")
@@ -74,7 +75,8 @@ func (context *blockchainContext) GetBalance(address []byte) []byte {
 func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
-		if outputAccount.Balance == nil {
+		isBarnardActive := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixGetBalanceFlag)
+		if outputAccount.Balance == nil || isBarnardActive {
 			account, err := context.blockChainHook.GetUserAccount(address)
 			if err != nil || vmhost.IfNil(account) {
 				return big.NewInt(0)
@@ -212,6 +214,11 @@ func (context *blockchainContext) LastTimeStamp() uint64 {
 	return context.blockChainHook.LastTimeStamp()
 }
 
+// LastTimeStampMs returns the timestamp of the last commited block in milliseconds
+func (context *blockchainContext) LastTimeStampMs() uint64 {
+	return context.blockChainHook.LastTimeStampMs()
+}
+
 // LastNonce returns the nonce of the last commited block.
 func (context *blockchainContext) LastNonce() uint64 {
 	return context.blockChainHook.LastNonce()
@@ -237,6 +244,11 @@ func (context *blockchainContext) CurrentTimeStamp() uint64 {
 	return context.blockChainHook.CurrentTimeStamp()
 }
 
+// CurrentTimeStampMs returns the timestamp of the block currently being built in milliseconds
+func (context *blockchainContext) CurrentTimeStampMs() uint64 {
+	return context.blockChainHook.CurrentTimeStampMs()
+}
+
 // LastRandomSeed returns the randomness seed of the last commited block.
 func (context *blockchainContext) LastRandomSeed() []byte {
 	return context.blockChainHook.LastRandomSeed()
@@ -245,6 +257,26 @@ func (context *blockchainContext) LastRandomSeed() []byte {
 // CurrentRandomSeed returns the random seed from header of the block being built.
 func (context *blockchainContext) CurrentRandomSeed() []byte {
 	return context.blockChainHook.CurrentRandomSeed()
+}
+
+// RoundTime returns the duruation of a round
+func (context *blockchainContext) RoundTime() uint64 {
+	return context.blockChainHook.RoundTime()
+}
+
+// EpochStartBlockTimeStampMs returns the timestamp of the first block of the current epoch in milliseconds
+func (context *blockchainContext) EpochStartBlockTimeStampMs() uint64 {
+	return context.blockChainHook.EpochStartBlockTimeStampMs()
+}
+
+// EpochStartBlockNonce returns the nonce of the first block of the current epoch.
+func (context *blockchainContext) EpochStartBlockNonce() uint64 {
+	return context.blockChainHook.EpochStartBlockNonce()
+}
+
+// EpochStartBlockRound returns the round of the first block of the current epoch.
+func (context *blockchainContext) EpochStartBlockRound() uint64 {
+	return context.blockChainHook.EpochStartBlockRound()
 }
 
 // GetOwnerAddress returns the owner address of the contract being executed.
@@ -317,7 +349,8 @@ func (context *blockchainContext) PopSetActiveState() {
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
-	if vmhooks.WithFaultAndHost(context.host, err, true) {
+	if err != nil {
+		vmhooks.FailExecution(context.host, err)
 		context.host.Runtime().AddError(err, "RevertToSnapshot")
 		logBlockchain.Error("PopSetActiveState RevertToSnapshot", "error", err)
 		return

@@ -255,7 +255,9 @@ func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *Te
 		value,
 		[]byte(destFunctionName),
 		destAddress,
-		arguments)
+		arguments,
+		true,
+	)
 
 	return host.Runtime().GetRuntimeBreakpointValue()
 }

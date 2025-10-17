@@ -44,7 +44,6 @@ func main() {
 
 	writeVMHooks(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
-	writeWasmer1ImportsCgo(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
 	writeWasmer2Names(eiMetadata)
 
@@ -54,9 +53,13 @@ func main() {
 
 	writeRustVMHooksNames(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
+	writeRustVMHooksLegacyTrait(eiMetadata)
+	writeRustVMHooksLegacyAdapter(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
-	writeRustWasmerImports(eiMetadata)
+	writeRustWasmerProdImports(eiMetadata)
+	writeRustWasmerExperimentalImports(eiMetadata)
+	writeRustVHDispatcherLegacy(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
@@ -83,12 +86,6 @@ func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/wrapper/wrapperVMHooks.go")
 	defer out.Close()
 	eapigen.WriteVMHooksWrapper(out, eiMetadata)
-}
-
-func writeWasmer1ImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer/wasmerImportsCgo.go")
-	defer out.Close()
-	eapigen.WriteWasmer1Cgo(out, eiMetadata)
 }
 
 func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
@@ -128,8 +125,20 @@ func writeRustVMHooksNames(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustHookNames(out, eiMetadata)
 }
 
-func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
+func writeRustVMHooksLegacyTrait(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks.rs")
+	defer out.Close()
+	eapigen.WriteRustVMHooksLegacyTrait(out, eiMetadata)
+}
+
+func writeRustVMHooksLegacyAdapter(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks_legacy_adapter.rs")
+	defer out.Close()
+	eapigen.WriteRustVMHooksLegacyAdapter(out, eiMetadata)
+}
+
+func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vm_hooks_new.rs")
 	defer out.Close()
 	eapigen.WriteRustVMHooksTrait(out, eiMetadata)
 }
@@ -146,10 +155,22 @@ func writeRustCapiVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustCapiVMHooksPointers(out, eiMetadata)
 }
 
-func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
+func writeRustWasmerProdImports(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/wasmer_imports.rs")
 	defer out.Close()
 	eapigen.WriteRustWasmerImports(out, eiMetadata)
+}
+
+func writeRustWasmerExperimentalImports(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/we_imports.rs")
+	defer out.Close()
+	eapigen.WriteRustWasmer5Imports(out, eiMetadata)
+}
+
+func writeRustVHDispatcherLegacy(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/vh_dispatcher_legacy.rs")
+	defer out.Close()
+	eapigen.WriteRustVHDispatcherLegacy(out, eiMetadata)
 }
 
 func writeExecutorOpcodeCosts() {
@@ -210,6 +231,14 @@ func tryCopyFilesToRustExecutorRepo() {
 		filepath.Join(rustExecutorPath, "vm-executor/src/vm_hooks.rs"),
 	)
 	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_new.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/new_traits/vm_hooks_new.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/vm_hooks_legacy_adapter.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor/src/new_traits/vm_hooks_legacy_adapter.rs"),
+	)
+	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),
 		filepath.Join(rustExecutorPath, "vm-executor/src/opcode_cost.rs"),
 	)
@@ -224,6 +253,10 @@ func tryCopyFilesToRustExecutorRepo() {
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_imports.rs"),
 		filepath.Join(rustExecutorPath, "vm-executor-wasmer/src/wasmer_imports.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/we_imports.rs"),
+		filepath.Join(rustExecutorPath, "vm-executor-experimental/src/we_imports.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_metering_helpers.rs"),

@@ -359,7 +359,7 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 
 		if transfer.Value.Cmp(vmhost.Zero) > 0 {
 			if len(transfer.Data) == 0 {
-				host.managedTypesContext.AddValueOnlyBackTransfer(transfer.Value)
+				host.managedTypesContext.AddBackTransfers(transfer.Value, nil, transfer.Index)
 			}
 			continue
 		}
@@ -369,7 +369,7 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 			continue
 		}
 
-		host.managedTypesContext.AddBackTransfers(esdtTransfers.ESDTTransfers)
+		host.managedTypesContext.AddBackTransfers(vmhost.Zero, esdtTransfers.ESDTTransfers, transfer.Index)
 	}
 }
 
@@ -428,6 +428,8 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
+	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
+
 	if host.IsOutOfVMFunctionExecution(input) {
 		vmOutput, err = host.handleFunctionCallOnOtherVM(input)
 		if err != nil {
@@ -435,10 +437,14 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 		}
 
+		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
+			err = vmhost.ErrExecutionFailed
+		}
+		runtime.AddError(err, input.Function)
+
 		return vmOutput, true, err
 	}
 
-	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
 	managedTypes.PopBackTransferIfAsyncCallBack(input)
@@ -930,6 +936,7 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	_, _, metering, _, runtime, _, _ := host.GetContexts()
+	enableEpochsHandler := host.EnableEpochsHandler()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -949,7 +956,8 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 	}
 
 	transfers := transfersArgs.Transfers
-	if len(transfers) == 1 {
+	isSingleEgldAsEsdtTransfer := enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) && len(transfers) == 1 && string(transfers[0].ESDTTokenName) == vmhooks.EGLDTokenName
+	if len(transfers) == 1 && !isSingleEgldAsEsdtTransfer {
 		if transfers[0].ESDTTokenNonce > 0 {
 			esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
