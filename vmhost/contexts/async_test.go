@@ -2,9 +2,10 @@ package contexts
 
 import (
 	"errors"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"math/big"
 	"testing"
+
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/marshal"
@@ -12,6 +13,8 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -19,7 +22,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/stretchr/testify/require"
 )
 
 var mockWasmerInstance *contextmock.InstanceMock
@@ -59,7 +61,8 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	wasmerExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
+	wasmerExecutor.SetOpcodeCosts(opcodeCosts)
 
 	host := &contextmock.VMHostMock{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},

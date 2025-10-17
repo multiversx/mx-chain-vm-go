@@ -25,7 +25,8 @@ func (context *EVMHooksImpl) TransferBalance(destination common.Address, value *
 
 func (context *EVMHooksImpl) SelfDestruct(destination common.Address) {
 	err := context.TransferBalance(destination, context.GetSelfBalance())
-	if !context.WithFault(err) {
+	if err != nil {
+		context.FailExecution(err)
 		contract := context.ContractMvxAddress()
 		context.GetOutputContext().DeleteAccount(contract)
 	}

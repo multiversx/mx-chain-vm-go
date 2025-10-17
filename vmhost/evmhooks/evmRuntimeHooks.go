@@ -1,14 +1,15 @@
 package evmhooks
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
-	"math/big"
 )
 
-func (context *EVMHooksImpl) FailExecution(err error) {
-	context.GetRuntimeContext().FailExecution(err)
-}
+//func (context *EVMHooksImpl) FailExecution(err error) {
+//	context.GetRuntimeContext().FailExecution(err)
+//}
 
 func (context *EVMHooksImpl) ReadOnly() bool {
 	return context.GetRuntimeContext().ReadOnly()

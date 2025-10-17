@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
@@ -53,8 +54,9 @@ func (context *EVMHooksImpl) GetStorageContext() vmhost.StorageContext {
 	return context.host.Storage()
 }
 
-func (context *EVMHooksImpl) WithFault(err error) bool {
-	return vmhooks.WithFaultAndHost(context.host, err, true)
+// FailExecution fails the execution with the provided error
+func (context *EVMHooksImpl) FailExecution(err error) {
+	vmhooks.FailExecution(context.host, err)
 }
 
 func (context *EVMHooksImpl) toEVMAddress(address []byte) common.Address {

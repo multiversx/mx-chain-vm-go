@@ -8,13 +8,15 @@ const getState = "getState"
 
 func (context *EVMHooksImpl) GetState(key common.Hash) common.Hash {
 	value, trieDepth, usedCache, err := context.GetStorageContext().GetStorage(key.Bytes())
-	if context.WithFault(err) {
+	if err != nil {
+		context.FailExecution(err)
 		return common.Hash{}
 	}
 
 	loadCost := context.GetMeteringContext().GasSchedule().EVMOpcodeCost.Sload
 	err = context.GetStorageContext().UseGasForStorageLoad(getState, int64(trieDepth), loadCost, usedCache)
-	if context.WithFault(err) {
+	if err != nil {
+		context.FailExecution(err)
 		return common.Hash{}
 	}
 
@@ -23,7 +25,9 @@ func (context *EVMHooksImpl) GetState(key common.Hash) common.Hash {
 
 func (context *EVMHooksImpl) SetState(key common.Hash, value common.Hash) {
 	_, err := context.GetStorageContext().SetStorage(key.Bytes(), trimValue(value))
-	context.WithFault(err)
+	if err != nil {
+		context.FailExecution(err)
+	}
 }
 
 func trimValue(hash common.Hash) []byte {

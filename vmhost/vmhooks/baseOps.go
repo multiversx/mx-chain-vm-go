@@ -13,6 +13,7 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -3142,7 +3143,7 @@ func ExecuteOnSameContextWithTypedArgs(
 
 	sender := runtime.GetContextAddress()
 	result, err := ExecuteOnSameContextUnmetered(host, gasLimit, value, function, sender, args, sender, gasToUse, dest, true)
-	if err != nil && runtime.BaseOpsErrorShouldFailExecution() {
+	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}
@@ -3275,10 +3276,10 @@ func ExecuteOnDestContextWithTypedArgs(
 		return -1
 	}
 
-	result, err := ExecuteOnDestContextUnmetered(host, gasLimit, value, function, dest, args, gasToUse. failExecution)
-	if err != nil && runtime.BaseOpsErrorShouldFailExecution() {
+	result, err := ExecuteOnDestContextUnmetered(host, gasLimit, value, function, dest, args, gasToUse, failExecution)
+	if err != nil {
 		FailExecution(host, err)
-		return -1
+		return 1
 	}
 
 	return result
@@ -3391,7 +3392,6 @@ func ExecuteReadOnlyWithTypedArguments(
 	dest []byte,
 	args [][]byte,
 ) int32 {
-	runtime := host.Runtime()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.ExecuteReadOnly
@@ -3402,7 +3402,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	result, err := ExecuteReadOnlyUnmetered(host, gasLimit, function, dest, args, gasToUse)
-	if err != nil && runtime.BaseOpsErrorShouldFailExecution() {
+	if err != nil {
 		FailExecution(host, err)
 		return -1
 	}

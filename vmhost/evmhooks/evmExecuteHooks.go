@@ -2,12 +2,14 @@ package evmhooks
 
 import (
 	"encoding/hex"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
@@ -54,6 +56,7 @@ func (context *EVMHooksImpl) Call(address common.Address, value *uint256.Int, in
 		destination,
 		arguments,
 		0,
+		false,
 	)
 	if err != nil {
 		return nil, err

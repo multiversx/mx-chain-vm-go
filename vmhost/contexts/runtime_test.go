@@ -14,6 +14,8 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -21,7 +23,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/stretchr/testify/require"
 )
 
 var defaultHasher = blake2b.NewBlake2b()
@@ -34,7 +35,8 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	wasmerExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	opcodeCosts := executor.VMOpcodeCost{EVMOpcodeCost: gasCostConfig.EVMOpcodeCost, WASMOpcodeCost: gasCostConfig.WASMOpcodeCost}
+	wasmerExecutor.SetOpcodeCosts(opcodeCosts)
 
 	host := &contextmock.VMHostMock{}
 
