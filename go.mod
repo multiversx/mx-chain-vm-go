@@ -1,11 +1,13 @@
 module github.com/multiversx/mx-chain-vm-go
 
-go 1.23
+go 1.23.0
+
+toolchain go1.24.9
 
 replace (
-	github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20250410112225-9b4402144b11
-	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.5.1-0.20250410144327-084c6591117a
-	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20250410143856-c8c2b5eeaa7c
+	github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20251016085427-f3e9cd4fff15
+	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251016125103-7f445f048cdb
+	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251016124943-32d6d364bf74
 )
 
 require (
@@ -17,7 +19,7 @@ require (
 	github.com/holiman/uint256 v1.2.4
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiversx/mx-chain-core-go v1.4.0
-	github.com/multiversx/mx-chain-crypto-go v1.3.0
+	github.com/multiversx/mx-chain-crypto-go v1.3.1-0.20251016113715-522462f8de2c
 	github.com/multiversx/mx-chain-logger-go v1.1.0
 	github.com/multiversx/mx-chain-scenario-go v1.6.0
 	github.com/multiversx/mx-chain-storage-go v1.1.0
@@ -26,7 +28,7 @@ require (
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.27.1
-	golang.org/x/crypto v0.17.0
+	golang.org/x/crypto v0.33.0
 )
 
 require (
@@ -57,7 +59,7 @@ require (
 	github.com/gballet/go-verkle v0.1.1-0.20231031103413-a67434b50f46 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/hashicorp/golang-lru v0.6.0 // indirect
 	github.com/herumi/bls-go-binary v1.28.2 // indirect
@@ -69,7 +71,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
-	github.com/multiversx/mx-sdk-abi-go v0.3.1-0.20240912062928-8502f4c3b37c // indirect
+	github.com/multiversx/mx-sdk-abi-go v0.3.1-0.20250423092559-f01fdd10b35d // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -87,9 +89,9 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
-	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
