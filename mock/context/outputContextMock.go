@@ -6,6 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -19,11 +20,11 @@ type OutputContextMock struct {
 	ReturnMessageMock  string
 	GasRemaining       uint64
 	GasRefund          *big.Int
-	OutputAccounts     map[string]*vmcommon.OutputAccount
+	OutputAccounts     map[string]vmcommon.OutputAccountHandler
 	DeletedAccounts    [][]byte
 	TouchedAccounts    [][]byte
 	Logs               []*vmcommon.LogEntry
-	OutputAccountMock  *vmcommon.OutputAccount
+	OutputAccountMock  vmcommon.OutputAccountHandler
 	OutputAccountIsNew bool
 	Err                error
 	TransferResult     error
@@ -39,7 +40,7 @@ func (o *OutputContextMock) InitState() {
 }
 
 // NewVMOutputAccount mocked method
-func (o *OutputContextMock) NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
+func (o *OutputContextMock) NewVMOutputAccount(address []byte) vmcommon.OutputAccountHandler {
 	return &vmcommon.OutputAccount{
 		Address:        address,
 		Nonce:          0,
@@ -89,13 +90,18 @@ func (o *OutputContextMock) CensorVMOutput() {
 }
 
 // GetOutputAccounts mocked method
-func (o *OutputContextMock) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
+func (o *OutputContextMock) GetOutputAccounts() map[string]vmcommon.OutputAccountHandler {
 	return o.OutputAccounts
 }
 
 // GetOutputAccount mocked method
-func (o *OutputContextMock) GetOutputAccount(_ []byte) (*vmcommon.OutputAccount, bool) {
+func (o *OutputContextMock) GetOutputAccount(_ []byte) (vmcommon.OutputAccountHandler, bool) {
 	return o.OutputAccountMock, o.OutputAccountIsNew
+}
+
+// SetOutputAccount mocked method
+func (o *OutputContextMock) SetOutputAccount(address []byte, account vmcommon.OutputAccountHandler) {
+	o.OutputAccounts[string(address)] = account
 }
 
 // DeleteOutputAccount mocked method
@@ -201,6 +207,9 @@ func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 // DeployCode mocked method
 func (o *OutputContextMock) DeployCode(_ vmhost.CodeDeployInput) {
 }
+
+// SetEmptyCodeUpdates mocked method
+func (o *OutputContextMock) SetEmptyCodeUpdates(_ []byte) {}
 
 // CreateVMOutputInCaseOfError mocked method
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOutput {

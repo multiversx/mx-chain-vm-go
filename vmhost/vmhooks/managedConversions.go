@@ -7,6 +7,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -227,7 +228,7 @@ func readDestinationArguments(
 	}
 	vmInput.arguments = data
 
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
+	gasToUse := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte, actualLen)
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
 		return nil, err

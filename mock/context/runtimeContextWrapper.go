@@ -2,6 +2,7 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -14,13 +15,13 @@ type RuntimeContextWrapper struct {
 	runtimeContext vmhost.RuntimeContext
 
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	InitStateFromContractCallInputFunc func(input *vmcommon.ContractCallInput)
+	InitStateFromContractCallInputFunc func(input vmcommon.ContractCallInputHandler)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetCustomCallFunctionFunc func(callFunction string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetVMInputFunc func() *vmcommon.ContractCallInput
+	GetVMInputFunc func() vmcommon.ContractCallInputHandler
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetVMInputFunc func(vmInput *vmcommon.ContractCallInput)
+	SetVMInputFunc func(vmInput vmcommon.ContractCallInputHandler)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCAddressFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -30,7 +31,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCCodeFunc func() ([]byte, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetSCCodeSizeFunc func() uint64
+	GetSCCodeSizeFunc    func() uint64
+	SaveCompiledCodeFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetVMTypeFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -132,7 +134,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		default implementations delegate to wrapped context
 	*/
 
-	runtimeWrapper.InitStateFromContractCallInputFunc = func(input *vmcommon.ContractCallInput) {
+	runtimeWrapper.InitStateFromContractCallInputFunc = func(input vmcommon.ContractCallInputHandler) {
 		runtimeWrapper.runtimeContext.InitStateFromContractCallInput(input)
 	}
 
@@ -140,11 +142,11 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		runtimeWrapper.runtimeContext.SetCustomCallFunction(callFunction)
 	}
 
-	runtimeWrapper.GetVMInputFunc = func() *vmcommon.ContractCallInput {
+	runtimeWrapper.GetVMInputFunc = func() vmcommon.ContractCallInputHandler {
 		return runtimeWrapper.runtimeContext.GetVMInput()
 	}
 
-	runtimeWrapper.SetVMInputFunc = func(vmInput *vmcommon.ContractCallInput) {
+	runtimeWrapper.SetVMInputFunc = func(vmInput vmcommon.ContractCallInputHandler) {
 		runtimeWrapper.runtimeContext.SetVMInput(vmInput)
 	}
 
@@ -163,6 +165,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 	runtimeWrapper.GetSCCodeSizeFunc = func() uint64 {
 		return runtimeWrapper.runtimeContext.GetSCCodeSize()
 	}
+
+	runtimeWrapper.SaveCompiledCodeFunc = func() { return }
 
 	runtimeWrapper.GetVMTypeFunc = func() []byte {
 		return runtimeWrapper.runtimeContext.GetVMType()
@@ -305,7 +309,7 @@ func (contextWrapper *RuntimeContextWrapper) GetWrappedRuntimeContext() vmhost.R
 }
 
 // InitStateFromContractCallInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (contextWrapper *RuntimeContextWrapper) InitStateFromContractCallInput(input vmcommon.ContractCallInputHandler) {
 	contextWrapper.InitStateFromContractCallInputFunc(input)
 }
 
@@ -315,12 +319,12 @@ func (contextWrapper *RuntimeContextWrapper) SetCustomCallFunction(callFunction 
 }
 
 // GetVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetVMInput() *vmcommon.ContractCallInput {
+func (contextWrapper *RuntimeContextWrapper) GetVMInput() vmcommon.ContractCallInputHandler {
 	return contextWrapper.GetVMInputFunc()
 }
 
 // SetVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetVMInput(vmInput *vmcommon.ContractCallInput) {
+func (contextWrapper *RuntimeContextWrapper) SetVMInput(vmInput vmcommon.ContractCallInputHandler) {
 	contextWrapper.SetVMInputFunc(vmInput)
 }
 
@@ -347,6 +351,11 @@ func (contextWrapper *RuntimeContextWrapper) GetSCCode() ([]byte, error) {
 // GetSCCodeSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetSCCodeSize() uint64 {
 	return contextWrapper.GetSCCodeSizeFunc()
+}
+
+// SaveCompiledCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SaveCompiledCode() {
+	contextWrapper.SaveCompiledCodeFunc()
 }
 
 // GetVMType calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

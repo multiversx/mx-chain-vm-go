@@ -13,6 +13,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -265,7 +266,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	gasToUse := uint64(0)
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
-		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)
+		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().GetBigIntAPICost().CopyPerByteForTooBig)
 		err := context.useGasBoundedWithBackwardCompatibility(gasToUse)
 		if err != nil {
 			return err
@@ -278,7 +279,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 // ConsumeGasForBytes uses gas for the given bytes
 func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) error {
 	metering := context.host.Metering()
-	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte)
 	return context.useGasBoundedWithBackwardCompatibility(gasToUse)
 }
 
@@ -286,7 +287,7 @@ func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) error {
 func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) error {
 	metering := context.host.Metering()
 
-	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)))
+	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(metering.GasSchedule().GetBigIntAPICost().CopyPerByteForTooBig)))
 	maxGasBigInt := big.NewInt(0).SetUint64(basicMath.MaxUint64)
 	gasToUse := uint64(basicMath.MaxUint64)
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
@@ -733,7 +734,7 @@ func (context *managedTypesContext) WriteManagedVecOfManagedBuffers(
 
 	context.SetBytes(destinationHandle, destinationBytes)
 	metering := context.host.Metering()
-	return metering.UseGasBounded(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	return metering.UseGasBounded(sumOfItemByteLengths * metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte)
 }
 
 // NewManagedMap creates a new empty managed map in the managed buffers map and returns the handle

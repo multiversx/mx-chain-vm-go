@@ -3,6 +3,7 @@ package mock
 import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -29,14 +30,15 @@ type VMHostStub struct {
 	GetContextsCalled         func() (vmhost.ManagedTypesContext, vmhost.BlockchainContext, vmhost.MeteringContext, vmhost.OutputContext, vmhost.RuntimeContext, vmhost.AsyncContext, vmhost.StorageContext)
 	ManagedTypesCalled        func() vmhost.ManagedTypesContext
 
-	ExecuteESDTTransferCalled   func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
-	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
-	IsBuiltinFunctionNameCalled func(functionName string) bool
-	IsBuiltinFunctionCallCalled func(data []byte) bool
-	AreInSameShardCalled        func(left []byte, right []byte) bool
-	IsAllowedToExecuteCalled    func(opcode string) bool
+	ExecuteESDTTransferCalled        func(transfersArgs *vmhost.ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
+	CreateNewContractCalled          func(input vmcommon.ContractCreateInputHandler, createContractCallType int) ([]byte, error)
+	ExecuteOnSameContextCalled       func(input vmcommon.ContractCallInputHandler) error
+	ExecuteOnDestContextCalled       func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+	IsOutOfVMFunctionExecutionCalled func(input *vmcommon.ContractCallInput) bool
+	IsBuiltinFunctionNameCalled      func(functionName string) bool
+	IsBuiltinFunctionCallCalled      func(data []byte) bool
+	AreInSameShardCalled             func(left []byte, right []byte) bool
+	IsAllowedToExecuteCalled         func(opcode string) bool
 
 	RunSmartContractCallCalled           func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
 	RunSmartContractCreateCalled         func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -185,7 +187,7 @@ func (vhs *VMHostStub) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersAr
 }
 
 // CreateNewContract mocked method
-func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error) {
+func (vhs *VMHostStub) CreateNewContract(input vmcommon.ContractCreateInputHandler, createContractCallType int) ([]byte, error) {
 	if vhs.CreateNewContractCalled != nil {
 		return vhs.CreateNewContractCalled(input, createContractCallType)
 	}
@@ -193,7 +195,7 @@ func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput, cr
 }
 
 // ExecuteOnSameContext mocked method
-func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+func (vhs *VMHostStub) ExecuteOnSameContext(input vmcommon.ContractCallInputHandler) error {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
@@ -206,6 +208,14 @@ func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
 	return nil, true, nil
+}
+
+// IsOutOfVMFunctionExecution mocked method
+func (vhs *VMHostStub) IsOutOfVMFunctionExecution(input *vmcommon.ContractCallInput) bool {
+	if vhs.IsOutOfVMFunctionExecutionCalled != nil {
+		return vhs.IsOutOfVMFunctionExecutionCalled(input)
+	}
+	return false
 }
 
 // AreInSameShard mocked method

@@ -1,6 +1,12 @@
 module github.com/multiversx/mx-chain-vm-go
 
-go 1.23
+go 1.23.0
+
+replace (
+	github.com/multiversx/mx-chain-core-go => github.com/multiversx/mx-chain-core-sovereign-go v1.2.25-0.20251223075042-2f2f8092dc66
+	github.com/multiversx/mx-chain-scenario-go => github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20251223080807-d2ad64a6fecf
+	github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-sovereign-go v1.5.17-0.20251223080659-b248455c9554
+)
 
 require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
@@ -18,7 +24,7 @@ require (
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.27.1
-	golang.org/x/crypto v0.3.0
+	golang.org/x/crypto v0.33.0
 )
 
 require (
@@ -28,7 +34,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/denisbrodbeck/machineid v1.0.1 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/hashicorp/golang-lru v0.6.0 // indirect
 	github.com/herumi/bls-go-binary v1.28.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
@@ -37,8 +43,8 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

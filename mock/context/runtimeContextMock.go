@@ -2,6 +2,7 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -11,7 +12,7 @@ var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
 	Err                      error
-	VMInput                  *vmcommon.ContractCallInput
+	VMInput                  vmcommon.ContractCallInputHandler
 	OriginalCallerAddr       []byte
 	SCAddress                []byte
 	SCCode                   []byte
@@ -73,7 +74,7 @@ func (r *RuntimeContextMock) SetCaching(_ bool) {
 }
 
 // InitStateFromContractCallInput mocked method
-func (r *RuntimeContextMock) InitStateFromContractCallInput(_ *vmcommon.ContractCallInput) {
+func (r *RuntimeContextMock) InitStateFromContractCallInput(_ vmcommon.ContractCallInputHandler) {
 }
 
 // PushState mocked method
@@ -132,12 +133,12 @@ func (r *RuntimeContextMock) GetVMType() []byte {
 }
 
 // GetVMInput mocked method
-func (r *RuntimeContextMock) GetVMInput() *vmcommon.ContractCallInput {
+func (r *RuntimeContextMock) GetVMInput() vmcommon.ContractCallInputHandler {
 	return r.VMInput
 }
 
 // SetVMInput mocked method
-func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.ContractCallInput) {
+func (r *RuntimeContextMock) SetVMInput(vmInput vmcommon.ContractCallInputHandler) {
 	r.VMInput = vmInput
 }
 
@@ -176,6 +177,9 @@ func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
 	return r.SCCodeSize
 }
 
+// SaveCompiledCode mocked method
+func (r *RuntimeContextMock) SaveCompiledCode() {}
+
 // FunctionName mocked method
 func (r *RuntimeContextMock) FunctionName() string {
 	return r.CallFunction
@@ -183,7 +187,7 @@ func (r *RuntimeContextMock) FunctionName() string {
 
 // Arguments mocked method
 func (r *RuntimeContextMock) Arguments() [][]byte {
-	return r.VMInput.Arguments
+	return r.VMInput.GetVMInput().Arguments
 }
 
 // GetCurrentTxHash mocked method
@@ -198,12 +202,12 @@ func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
 
 // ExtractCodeUpgradeFromArgs mocked method
 func (r *RuntimeContextMock) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
-	arguments := r.VMInput.Arguments
+	arguments := r.VMInput.GetVMInput().Arguments
 	if len(arguments) < 2 {
 		panic("ExtractCodeUpgradeFromArgs: bad test setup")
 	}
 
-	return r.VMInput.Arguments[0], r.VMInput.Arguments[1], nil
+	return r.VMInput.GetVMInput().Arguments[0], r.VMInput.GetVMInput().Arguments[1], nil
 }
 
 // SignalExit mocked method

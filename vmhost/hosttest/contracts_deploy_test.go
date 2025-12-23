@@ -6,13 +6,14 @@ import (
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var sc1Address = testcommon.MakeTestSCAddress("sc1")
@@ -115,8 +116,8 @@ func runDeployFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = testConfig.AoTPreparePerByteCost
-			host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = testConfig.CompilePerByteCost
+			host.Metering().GasSchedule().GetBaseOperationCost().AoTPreparePerByte = testConfig.AoTPreparePerByteCost
+			host.Metering().GasSchedule().GetBaseOperationCost().CompilePerByte = testConfig.CompilePerByteCost
 		}).
 		AndAssertResults(asserts)
 	assert.Nil(t, err)
@@ -426,10 +427,10 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			gasSchedule := host.Metering().GasSchedule()
-			gasSchedule.BaseOpsAPICost.AsyncCallStep = testConfig.AsyncCallStepCost
-			gasSchedule.BaseOperationCost.AoTPreparePerByte = testConfig.AoTPreparePerByteCost
-			gasSchedule.BaseOperationCost.CompilePerByte = testConfig.CompilePerByteCost
-			gasSchedule.BaseOpsAPICost.AsyncCallbackGasLock = 0
+			gasSchedule.GetBaseOpsAPICost().AsyncCallStep = testConfig.AsyncCallStepCost
+			gasSchedule.GetBaseOperationCost().AoTPreparePerByte = testConfig.AoTPreparePerByteCost
+			gasSchedule.GetBaseOperationCost().CompilePerByte = testConfig.CompilePerByteCost
+			gasSchedule.GetBaseOpsAPICost().AsyncCallbackGasLock = 0
 		}).
 		AndAssertResults(asserts)
 	assert.Nil(t, err)

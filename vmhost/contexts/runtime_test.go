@@ -14,6 +14,8 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -21,7 +23,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/stretchr/testify/require"
 )
 
 var defaultHasher = blake2b.NewBlake2b()
@@ -53,12 +54,15 @@ func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
+	scAPINames := exec.FunctionNames()
+	validator := NewWASMValidator(scAPINames, builtInFunctions.NewBuiltInFunctionContainer(), host.EnableEpochsHandler())
 	runtimeCtx, err := NewRuntimeContext(
 		host,
 		vmType,
-		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
+		validator,
+		NewVMInputFactory(),
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeCtx)
@@ -75,31 +79,39 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
+	scAPINames := exec.FunctionNames()
+	validator := NewWASMValidator(scAPINames, bfc, host.EnableEpochsHandler())
+	inputFactory := NewVMInputFactory()
 
 	t.Run("NilHost", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(nil, vmType, bfc, exec, hasher)
+		runtimeCtx, err := NewRuntimeContext(nil, vmType, exec, hasher, validator, inputFactory)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilVMHost)
 	})
 	t.Run("NilVMType", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, nil, bfc, exec, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, nil, exec, hasher, validator, inputFactory)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilVMType)
 	})
-	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, exec, hasher)
-		require.Nil(t, runtimeCtx)
-		require.ErrorIs(t, err, vmhost.ErrNilBuiltInFunctionsContainer)
-	})
 	t.Run("NilExecutor", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, nil, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, hasher, validator, inputFactory)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilExecutor)
 	})
 	t.Run("NilHasher", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, exec, nil)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, exec, nil, validator, inputFactory)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilHasher)
+	})
+	t.Run("NilValidator", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, vmType, exec, hasher, nil, inputFactory)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilValidator)
+	})
+	t.Run("NilInputFactory", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, vmType, exec, hasher, validator, nil)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilInputFactory)
 	})
 }
 
@@ -231,17 +243,17 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	}
 
 	runtimeCtx.InitStateFromContractCallInput(callInput)
-	require.Equal(t, []byte("caller"), runtimeCtx.GetVMInput().CallerAddr)
+	require.Equal(t, []byte("caller"), runtimeCtx.GetVMInput().GetVMInput().CallerAddr)
 	require.Equal(t, []byte("recipient"), runtimeCtx.GetContextAddress())
 	require.Equal(t, "test function", runtimeCtx.FunctionName())
 	require.Equal(t, vmType, runtimeCtx.GetVMType())
 	require.Equal(t, arguments, runtimeCtx.Arguments())
 
 	runtimeInput := runtimeCtx.GetVMInput()
-	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTTransfers[0].ESDTValue))
-	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTransfers[0].ESDTTokenName))
-	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
-	require.Equal(t, uint64(94), runtimeInput.ESDTTransfers[0].ESDTTokenNonce)
+	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.GetVMInput().ESDTTransfers[0].ESDTValue))
+	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.GetVMInput().ESDTTransfers[0].ESDTTokenName))
+	require.Equal(t, uint32(core.NonFungible), runtimeInput.GetVMInput().ESDTTransfers[0].ESDTTokenType)
+	require.Equal(t, uint64(94), runtimeInput.GetVMInput().ESDTTransfers[0].ESDTTokenNonce)
 
 	vmInput2 := vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -251,7 +263,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 		},
 	}
 	runtimeCtx.SetVMInput(&vmInput2)
-	require.Equal(t, []byte("caller2"), runtimeCtx.GetVMInput().CallerAddr)
+	require.Equal(t, []byte("caller2"), runtimeCtx.GetVMInput().GetVMInput().CallerAddr)
 
 	runtimeCtx.SetCodeAddress([]byte("smartcontract"))
 	require.Equal(t, []byte("smartcontract"), runtimeCtx.codeAddress)
@@ -366,12 +378,15 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
+	scAPINames := exec.FunctionNames()
+	validator := NewWASMValidator(scAPINames, builtInFunctions.NewBuiltInFunctionContainer(), host.EnableEpochsHandler())
 	runtime, _ := NewRuntimeContext(
 		host,
 		testVMType,
-		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
+		validator,
+		NewVMInputFactory(),
 	)
 
 	vmInput := vmcommon.VMInput{
@@ -485,7 +500,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	mockOutput := &contextmock.OutputContextMock{
 		OutputAccountMock: NewVMOutputAccount([]byte("address")),
 	}
-	mockOutput.OutputAccountMock.Code = []byte("code")
+	mockOutput.OutputAccountMock.SetCode([]byte("code"))
 	mockOutput.SetReturnMessage("")
 
 	host.OutputContext = mockOutput

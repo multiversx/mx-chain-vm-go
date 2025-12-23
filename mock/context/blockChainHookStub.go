@@ -46,6 +46,7 @@ type BlockchainHookStub struct {
 	GetSnapshotCalled                       func() int
 	RevertToSnapshotCalled                  func(snapshot int) error
 	ExecuteSmartContractCallOnOtherVMCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	ChainIDCalled                           func() []byte
 }
 
 // NewAddress mocked method
@@ -331,6 +332,11 @@ func (b *BlockchainHookStub) ExecuteSmartContractCallOnOtherVM(input *vmcommon.C
 		return b.ExecuteSmartContractCallOnOtherVMCalled(input)
 	}
 	return nil, nil
+}
+
+// ChainID -
+func (b *BlockchainHookStub) ChainID() []byte {
+	return make([]byte, 0)
 }
 
 // IsInterfaceNil mocked method

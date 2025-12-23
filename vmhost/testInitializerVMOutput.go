@@ -17,7 +17,7 @@ func MakeEmptyVMOutput() *vmcommon.VMOutput {
 		DeletedAccounts: make([][]byte, 0),
 		TouchedAccounts: make([][]byte, 0),
 		Logs:            make([]*vmcommon.LogEntry, 0),
-		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
+		OutputAccounts:  make(map[string]vmcommon.OutputAccountHandler),
 	}
 }
 

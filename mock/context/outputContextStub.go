@@ -5,6 +5,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -20,8 +21,9 @@ type OutputContextStub struct {
 	ClearStateStackCalled             func()
 	CopyTopOfStackToActiveStateCalled func()
 	CensorVMOutputCalled              func()
-	GetOutputAccountsCalled           func() map[string]*vmcommon.OutputAccount
-	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
+	GetOutputAccountsCalled           func() map[string]vmcommon.OutputAccountHandler
+	GetOutputAccountCalled            func(address []byte) (vmcommon.OutputAccountHandler, bool)
+	SetOutputAccountCalled            func(address []byte, account vmcommon.OutputAccountHandler)
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data [][]byte)
 	WriteLogWithIdentifierCalled      func(address []byte, topics [][]byte, data [][]byte, identifier []byte)
@@ -42,6 +44,7 @@ type OutputContextStub struct {
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input vmhost.CodeDeployInput)
+	SetEmptyCodeUpdatesCalled         func(address []byte)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
@@ -50,6 +53,17 @@ type OutputContextStub struct {
 	GetCrtTransferIndexCalled         func() uint32
 	SetCrtTransferIndexCalled         func(index uint32)
 	IsInterfaceNilCalled              func() bool
+}
+
+// NewVMOutputAccount -
+func (o *OutputContextStub) NewVMOutputAccount(address []byte) vmcommon.OutputAccountHandler {
+	return &vmcommon.OutputAccount{
+		Address:        address,
+		Nonce:          0,
+		BalanceDelta:   big.NewInt(0),
+		Balance:        big.NewInt(0),
+		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
+	}
 }
 
 // AddToActiveState mocked method
@@ -116,7 +130,7 @@ func (o *OutputContextStub) CensorVMOutput() {
 }
 
 // GetOutputAccounts mocked method
-func (o *OutputContextStub) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
+func (o *OutputContextStub) GetOutputAccounts() map[string]vmcommon.OutputAccountHandler {
 	if o.GetOutputAccountsCalled != nil {
 		return o.GetOutputAccountsCalled()
 	}
@@ -124,11 +138,18 @@ func (o *OutputContextStub) GetOutputAccounts() map[string]*vmcommon.OutputAccou
 }
 
 // GetOutputAccount mocked method
-func (o *OutputContextStub) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
+func (o *OutputContextStub) GetOutputAccount(address []byte) (vmcommon.OutputAccountHandler, bool) {
 	if o.GetOutputAccountCalled != nil {
 		return o.GetOutputAccountCalled(address)
 	}
 	return nil, false
+}
+
+// SetOutputAccount  mocked method
+func (o *OutputContextStub) SetOutputAccount(address []byte, account vmcommon.OutputAccountHandler) {
+	if o.SetOutputAccountCalled != nil {
+		o.SetOutputAccountCalled(address, account)
+	}
 }
 
 // DeleteOutputAccount mocked method
@@ -292,6 +313,13 @@ func (o *OutputContextStub) AddTxValueToAccount(address []byte, value *big.Int) 
 func (o *OutputContextStub) DeployCode(input vmhost.CodeDeployInput) {
 	if o.DeployCodeCalled != nil {
 		o.DeployCodeCalled(input)
+	}
+}
+
+// SetEmptyCodeUpdates mocked method
+func (o *OutputContextStub) SetEmptyCodeUpdates(address []byte) {
+	if o.SetEmptyCodeUpdatesCalled != nil {
+		o.SetEmptyCodeUpdatesCalled(address)
 	}
 }
 

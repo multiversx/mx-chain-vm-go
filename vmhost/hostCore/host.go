@@ -14,12 +14,15 @@ import (
 	scenexec "github.com/multiversx/mx-chain-scenario-go/scenario/executor"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	runTypeFactory "github.com/multiversx/mx-chain-vm-go/vmhost/factory"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore/execution"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
@@ -74,6 +77,9 @@ type vmHost struct {
 
 	transferLogIdentifiers    map[string]bool
 	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
+
+	executeOnSameContextHandler execution.ExecuteOnSameContextHandler
+	createNewContractHandler    execution.CreateNewContractHandler
 }
 
 // NewVMHost creates a new VM vmHost
@@ -81,6 +87,20 @@ func NewVMHost(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *vmhost.VMHostParameters,
 ) (vmhost.VMHost, error) {
+	runTypeComponents, err := createRunTypeComponents()
+	if err != nil {
+		return nil, err
+	}
+
+	return CreateVMHost(blockChainHook, hostParameters, runTypeComponents)
+}
+
+// CreateVMHost creates a new vm host
+func CreateVMHost(
+	blockChainHook vmcommon.BlockchainHook,
+	hostParameters *vmhost.VMHostParameters,
+	runTypeComponents runTypeFactory.RunTypeComponentsHolder,
+) (*vmHost, error) {
 	if check.IfNil(blockChainHook) {
 		return nil, vmhost.ErrNilBlockChainHook
 	}
@@ -112,6 +132,9 @@ func NewVMHost(
 	if hostParameters.MapOpcodeAddressIsAllowed == nil {
 		return nil, vmhost.ErrNilMapOpcodeAddress
 	}
+	if check.IfNil(runTypeComponents) {
+		return nil, runTypeFactory.ErrNilRunTypeComponents
+	}
 
 	cryptoHook, err := factory.NewVMCrypto()
 	if err != nil {
@@ -139,17 +162,20 @@ func NewVMHost(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
+	//host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
+	host.blockchainContext, err = runTypeComponents.BlockchainContextCreator().CreateBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
 	}
 
-	vmExecutor, err := host.createExecutor(hostParameters)
+	//vmExecutor, err := host.createExecutor(hostParameters)
+	vmExecutor, err := runTypeComponents.ExecutorCreator().CreateExecutor(host, hostParameters)
 	if err != nil {
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(
+	//host.runtimeContext, err = contexts.NewRuntimeContext(
+	host.runtimeContext, err = runTypeComponents.RuntimeContextCreator().CreateRuntimeContext(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
@@ -160,12 +186,14 @@ func NewVMHost(
 		return nil, err
 	}
 
-	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
+	//host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
+	host.meteringContext, err = runTypeComponents.MeteringContextCreator().CreateMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit, runTypeComponents.GasScheduleFactory())
 	if err != nil {
 		return nil, err
 	}
 
-	host.outputContext, err = contexts.NewOutputContext(host)
+	//host.outputContext, err = contexts.NewOutputContext(host)
+	host.outputContext, err = runTypeComponents.OutputContextCreator().CreateOutputContext(host)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +228,26 @@ func NewVMHost(
 	host.transferLogIdentifiers["ESDTNFTTransfer"] = true
 	host.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 
+	host.executeOnSameContextHandler = runTypeComponents.ExecuteOnSameContextHandler()
+	host.createNewContractHandler = runTypeComponents.CreateNewContractHandler()
+
 	return host, nil
+}
+
+func createRunTypeComponents() (runTypeFactory.RunTypeComponentsHandler, error) {
+	runTypeComponentsFactory := runTypeFactory.NewRunTypeComponentsFactory()
+
+	managedRunTypeComponents, err := runTypeFactory.NewManagedRunTypeComponents(runTypeComponentsFactory)
+	if err != nil {
+		return nil, err
+	}
+
+	err = managedRunTypeComponents.Create()
+	if err != nil {
+		return nil, err
+	}
+
+	return managedRunTypeComponents, nil
 }
 
 // Creates a new executor instance. Should only be called once per VM host instantiation.

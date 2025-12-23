@@ -10,6 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -456,7 +457,7 @@ func (context *asyncContext) decrementCallsCounter() {
 
 // SetResults fills the child result of the async context
 func (context *asyncContext) SetResults(vmOutput *vmcommon.VMOutput) {
-	if context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall {
+	if context.host.Runtime().GetVMInput().GetVMInput().CallType == vm.AsynchronousCall {
 		context.childResults = vmOutput
 	}
 }
@@ -588,7 +589,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 	vmInput := context.host.Runtime().GetVMInput()
 	noGroups := len(context.asyncCallGroups) == 0
-	notInCallback := vmInput.CallType != vm.AsynchronousCallBack
+	notInCallback := vmInput.GetVMInput().CallType != vm.AsynchronousCallBack
 
 	return noGroups && notInCallback
 }
@@ -597,7 +598,7 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall) error {
 
 	runtime := context.host.Runtime()
-	functionName := runtime.GetVMInput().Function
+	functionName := runtime.GetVMInput().GetFunction()
 	if functionName == vmhost.InitFunctionName || functionName == vmhost.UpgradeFunctionName {
 		return vmhost.ErrAsyncNotAllowed
 	}

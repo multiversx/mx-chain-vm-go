@@ -10,6 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -49,7 +50,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host                 vmhost.VMHost
-	vmInput              *vmcommon.ContractCallInput
+	vmInput              vmcommon.ContractCallInputHandler
 	codeAddress          []byte
 	callFunction         string
 	vmType               []byte
@@ -63,18 +64,20 @@ type runtimeContext struct {
 
 	stateStack []*runtimeContext
 
-	validator *wasmValidator
-	errors    vmhost.WrappableError
-	hasher    vmhost.HashComputer
+	validator    Validator
+	errors       vmhost.WrappableError
+	hasher       vmhost.HashComputer
+	inputFactory VMInputFactory
 }
 
 // NewRuntimeContext creates a new runtimeContext
 func NewRuntimeContext(
 	host vmhost.VMHost,
 	vmType []byte,
-	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	vmExecutor executor.Executor,
 	hasher vmhost.HashComputer,
+	validator Validator,
+	inputFactory VMInputFactory,
 ) (*runtimeContext, error) {
 
 	if check.IfNil(host) {
@@ -86,23 +89,24 @@ func NewRuntimeContext(
 	if len(vmType) == 0 {
 		return nil, vmhost.ErrNilVMType
 	}
-	if check.IfNil(builtInFuncContainer) {
-		return nil, vmhost.ErrNilBuiltInFunctionsContainer
-	}
 	if check.IfNil(hasher) {
 		return nil, vmhost.ErrNilHasher
 	}
-
-	scAPINames := vmExecutor.FunctionNames()
-	enableEpochsHandler := host.EnableEpochsHandler()
+	if check.IfNil(validator) {
+		return nil, vmhost.ErrNilValidator
+	}
+	if check.IfNil(inputFactory) {
+		return nil, vmhost.ErrNilInputFactory
+	}
 
 	context := &runtimeContext{
-		host:       host,
-		vmType:     vmType,
-		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer, enableEpochsHandler),
-		hasher:     hasher,
-		errors:     nil,
+		host:         host,
+		vmType:       vmType,
+		stateStack:   make([]*runtimeContext, 0),
+		validator:    validator,
+		hasher:       hasher,
+		errors:       nil,
+		inputFactory: inputFactory,
 	}
 
 	iTracker, err := NewInstanceTracker()
@@ -212,9 +216,9 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	gasSchedule := context.host.Metering().GasSchedule()
 	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
-		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
-		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
+		UnmeteredLocals:    uint64(gasSchedule.GetWASMOpcodeCost().LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.GetWASMOpcodeCost().MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.GetWASMOpcodeCost().MaxMemoryGrowDelta),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -243,9 +247,9 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	gasSchedule := context.host.Metering().GasSchedule()
 	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
-		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
-		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
+		UnmeteredLocals:    uint64(gasSchedule.GetWASMOpcodeCost().LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.GetWASMOpcodeCost().MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.GetWASMOpcodeCost().MaxMemoryGrowDelta),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -281,7 +285,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		"id", context.iTracker.Instance().ID(),
 		"codeHash", context.iTracker.CodeHash(),
 	)
-	context.saveCompiledCode()
+	context.SaveCompiledCode()
 
 	return nil
 }
@@ -329,7 +333,8 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 	return context.iTracker.GetCodeSize()
 }
 
-func (context *runtimeContext) saveCompiledCode() {
+// SaveCompiledCode will save the compiled code
+func (context *runtimeContext) SaveCompiledCode() {
 	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
@@ -371,17 +376,17 @@ func (context *runtimeContext) SetMaxInstanceStackSize(maxInstances uint64) {
 
 // InitStateFromContractCallInput initializes the state of the runtime context
 // (and the async context) from the provided ContractCallInput.
-func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (context *runtimeContext) InitStateFromContractCallInput(input vmcommon.ContractCallInputHandler) {
 	context.SetVMInput(input)
-	context.codeAddress = input.RecipientAddr
-	context.callFunction = input.Function
+	context.codeAddress = input.GetRecipientAddr()
+	context.callFunction = input.GetFunction()
 
 	logRuntime.Trace("init state from call input",
-		"caller", input.CallerAddr,
-		"contract", input.RecipientAddr,
-		"func", input.Function,
-		"args", input.Arguments,
-		"gas provided", input.GasProvided)
+		"caller", input.GetVMInput().CallerAddr,
+		"contract", input.GetRecipientAddr(),
+		"func", input.GetFunction(),
+		"args", input.GetVMInput().Arguments,
+		"gas provided", input.GetVMInput().GasProvided)
 }
 
 // SetCustomCallFunction sets a custom function to be called next, instead of
@@ -398,6 +403,7 @@ func (context *runtimeContext) PushState() {
 		codeAddress:  context.codeAddress,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
+		inputFactory: context.inputFactory,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -468,7 +474,7 @@ func (context *runtimeContext) GetVMType() []byte {
 }
 
 // GetVMInput returns the vm input for the current context.
-func (context *runtimeContext) GetVMInput() *vmcommon.ContractCallInput {
+func (context *runtimeContext) GetVMInput() vmcommon.ContractCallInputHandler {
 	return context.vmInput
 }
 
@@ -484,81 +490,77 @@ func copyESDTTransfer(esdtTransfer *vmcommon.ESDTTransfer) *vmcommon.ESDTTransfe
 }
 
 // SetVMInput sets the given vm input as the current context vm input.
-func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
+func (context *runtimeContext) SetVMInput(vmInput vmcommon.ContractCallInputHandler) {
 	if vmInput == nil {
-		context.vmInput = vmInput
+		context.vmInput = nil
 		return
 	}
 
 	internalVMInput := vmcommon.VMInput{
-		CallType:             vmInput.CallType,
-		GasPrice:             vmInput.GasPrice,
-		GasProvided:          vmInput.GasProvided,
-		GasLocked:            vmInput.GasLocked,
+		CallType:             vmInput.GetVMInput().CallType,
+		GasPrice:             vmInput.GetVMInput().GasPrice,
+		GasProvided:          vmInput.GetVMInput().GasProvided,
+		GasLocked:            vmInput.GetVMInput().GasLocked,
 		CallValue:            big.NewInt(0),
-		ReturnCallAfterError: vmInput.ReturnCallAfterError,
+		ReturnCallAfterError: vmInput.GetVMInput().ReturnCallAfterError,
 	}
-	context.vmInput = &vmcommon.ContractCallInput{
-		VMInput:       internalVMInput,
-		RecipientAddr: vmInput.RecipientAddr,
-		Function:      vmInput.Function,
+	context.vmInput = context.inputFactory.CreateContractCallInput(internalVMInput, vmInput)
+
+	if vmInput.GetVMInput().CallValue != nil {
+		context.vmInput.GetVMInput().CallValue.Set(vmInput.GetVMInput().CallValue)
 	}
 
-	if vmInput.CallValue != nil {
-		context.vmInput.CallValue.Set(vmInput.CallValue)
+	if len(vmInput.GetVMInput().CallerAddr) > 0 {
+		context.vmInput.GetVMInput().CallerAddr = make([]byte, len(vmInput.GetVMInput().CallerAddr))
+		copy(context.vmInput.GetVMInput().CallerAddr, vmInput.GetVMInput().CallerAddr)
+		context.vmInput.GetVMInput().OriginalCallerAddr = make([]byte, len(vmInput.GetVMInput().OriginalCallerAddr))
+		copy(context.vmInput.GetVMInput().OriginalCallerAddr, vmInput.GetVMInput().OriginalCallerAddr)
+	}
+	if len(vmInput.GetVMInput().RelayerAddr) > 0 {
+		context.vmInput.GetVMInput().RelayerAddr = make([]byte, len(vmInput.GetVMInput().RelayerAddr))
+		copy(context.vmInput.GetVMInput().RelayerAddr, vmInput.GetVMInput().RelayerAddr)
 	}
 
-	if len(vmInput.CallerAddr) > 0 {
-		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
-		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
-		context.vmInput.OriginalCallerAddr = make([]byte, len(vmInput.OriginalCallerAddr))
-		copy(context.vmInput.OriginalCallerAddr, vmInput.OriginalCallerAddr)
-	}
-	if len(vmInput.RelayerAddr) > 0 {
-		context.vmInput.RelayerAddr = make([]byte, len(vmInput.RelayerAddr))
-		copy(context.vmInput.RelayerAddr, vmInput.RelayerAddr)
-	}
+	context.vmInput.GetVMInput().ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.GetVMInput().ESDTTransfers))
 
-	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
-
-	if len(vmInput.ESDTTransfers) > 0 {
-		for i, esdtTransfer := range vmInput.ESDTTransfers {
-			context.vmInput.ESDTTransfers[i] = copyESDTTransfer(esdtTransfer)
+	if len(vmInput.GetVMInput().ESDTTransfers) > 0 {
+		for i, esdtTransfer := range vmInput.GetVMInput().ESDTTransfers {
+			context.vmInput.GetVMInput().ESDTTransfers[i] = copyESDTTransfer(esdtTransfer)
 		}
 	}
 
-	if len(vmInput.OriginalTxHash) > 0 {
-		context.vmInput.OriginalTxHash = make([]byte, len(vmInput.OriginalTxHash))
-		copy(context.vmInput.OriginalTxHash, vmInput.OriginalTxHash)
+	if len(vmInput.GetVMInput().OriginalTxHash) > 0 {
+		context.vmInput.GetVMInput().OriginalTxHash = make([]byte, len(vmInput.GetVMInput().OriginalTxHash))
+		copy(context.vmInput.GetVMInput().OriginalTxHash, vmInput.GetVMInput().OriginalTxHash)
 	}
 
-	if len(vmInput.CurrentTxHash) > 0 {
-		context.vmInput.CurrentTxHash = make([]byte, len(vmInput.CurrentTxHash))
-		copy(context.vmInput.CurrentTxHash, vmInput.CurrentTxHash)
+	if len(vmInput.GetVMInput().CurrentTxHash) > 0 {
+		context.vmInput.GetVMInput().CurrentTxHash = make([]byte, len(vmInput.GetVMInput().CurrentTxHash))
+		copy(context.vmInput.GetVMInput().CurrentTxHash, vmInput.GetVMInput().CurrentTxHash)
 	}
 
-	if len(vmInput.PrevTxHash) > 0 {
-		context.vmInput.PrevTxHash = make([]byte, len(vmInput.PrevTxHash))
-		copy(context.vmInput.PrevTxHash, vmInput.PrevTxHash)
+	if len(vmInput.GetVMInput().PrevTxHash) > 0 {
+		context.vmInput.GetVMInput().PrevTxHash = make([]byte, len(vmInput.GetVMInput().PrevTxHash))
+		copy(context.vmInput.GetVMInput().PrevTxHash, vmInput.GetVMInput().PrevTxHash)
 	}
 
-	if len(vmInput.Arguments) > 0 {
-		context.vmInput.Arguments = make([][]byte, len(vmInput.Arguments))
-		for i, arg := range vmInput.Arguments {
-			context.vmInput.Arguments[i] = make([]byte, len(arg))
-			copy(context.vmInput.Arguments[i], arg)
+	if len(vmInput.GetVMInput().Arguments) > 0 {
+		context.vmInput.GetVMInput().Arguments = make([][]byte, len(vmInput.GetVMInput().Arguments))
+		for i, arg := range vmInput.GetVMInput().Arguments {
+			context.vmInput.GetVMInput().Arguments[i] = make([]byte, len(arg))
+			copy(context.vmInput.GetVMInput().Arguments[i], arg)
 		}
 	}
 }
 
 // GetOriginalCallerAddress returns the original caller's address
 func (context *runtimeContext) GetOriginalCallerAddress() []byte {
-	return context.vmInput.OriginalCallerAddr
+	return context.vmInput.GetVMInput().OriginalCallerAddr
 }
 
 // GetContextAddress returns the SC address from the current context.
 func (context *runtimeContext) GetContextAddress() []byte {
-	return context.vmInput.RecipientAddr
+	return context.vmInput.GetRecipientAddr()
 }
 
 // SetCodeAddress sets the given address as the scAddress for the current context.
@@ -568,17 +570,17 @@ func (context *runtimeContext) SetCodeAddress(scAddress []byte) {
 
 // GetCurrentTxHash returns the hash of the current transaction, as specified by the current VMInput.
 func (context *runtimeContext) GetCurrentTxHash() []byte {
-	return context.vmInput.CurrentTxHash
+	return context.vmInput.GetVMInput().CurrentTxHash
 }
 
 // GetOriginalTxHash returns the hash of the original transaction, in the case of async calls, as specified by the current VMInput.
 func (context *runtimeContext) GetOriginalTxHash() []byte {
-	return context.vmInput.OriginalTxHash
+	return context.vmInput.GetVMInput().OriginalTxHash
 }
 
 // GetPrevTxHash returns the hash of the previous transaction, in the case of async calls, as specified by the current VMInput.
 func (context *runtimeContext) GetPrevTxHash() []byte {
-	return context.vmInput.PrevTxHash
+	return context.vmInput.GetVMInput().PrevTxHash
 }
 
 // FunctionName returns the name of the contract function to be called next
@@ -588,7 +590,7 @@ func (context *runtimeContext) FunctionName() string {
 
 // Arguments returns the binary arguments that will be passed to the contract to be executed, as specified by the current VMInput.
 func (context *runtimeContext) Arguments() [][]byte {
-	return context.vmInput.Arguments
+	return context.vmInput.GetVMInput().Arguments
 }
 
 // ExtractCodeUpgradeFromArgs extracts the code and code metadata from the
@@ -596,14 +598,14 @@ func (context *runtimeContext) Arguments() [][]byte {
 func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	const numMinUpgradeArguments = 2
 
-	arguments := context.vmInput.Arguments
+	arguments := context.vmInput.GetVMInput().Arguments
 	if len(arguments) < numMinUpgradeArguments {
 		return nil, nil, vmhost.ErrInvalidUpgradeArguments
 	}
 
 	code := arguments[0]
 	codeMetadata := arguments[1]
-	context.vmInput.Arguments = context.vmInput.Arguments[numMinUpgradeArguments:]
+	context.vmInput.GetVMInput().Arguments = context.vmInput.GetVMInput().Arguments[numMinUpgradeArguments:]
 	return code, codeMetadata, nil
 }
 
@@ -670,19 +672,19 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	context.verifyCode = false
 
-	err := context.validator.verifyMemoryDeclaration(context.iTracker.Instance())
+	err := context.validator.VerifyMemoryDeclaration(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
-	err = context.validator.verifyFunctions(context.iTracker.Instance())
+	err = context.validator.VerifyFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
-	err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
+	err = context.validator.VerifyProtectedFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
@@ -792,7 +794,7 @@ func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
 func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte) uint64 {
 	count := uint64(0)
 	for _, state := range context.stateStack {
-		if bytes.Equal(address, state.vmInput.RecipientAddr) {
+		if bytes.Equal(address, state.vmInput.GetRecipientAddr()) {
 			count++
 		}
 	}
@@ -803,7 +805,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	functionName := context.FunctionName()
-	err := verifyCallFunction(functionName)
+	err := context.validator.VerifyCallFunction(functionName)
 	if err != nil {
 		return "", executor.ErrFuncNotFound
 	}
@@ -880,7 +882,7 @@ func (context *runtimeContext) checkNumRunningInstances() error {
 
 // ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
 func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
-	err := context.validator.verifyValidFunctionName(callbackName)
+	err := context.validator.VerifyValidFunctionName(callbackName)
 	if err != nil {
 		return vmhost.ErrInvalidFunctionName
 	}
@@ -899,7 +901,7 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 
 // IsReservedFunctionName checks if the function name is reserved
 func (context *runtimeContext) IsReservedFunctionName(functionName string) bool {
-	return context.validator.reserved.IsReserved(functionName)
+	return context.validator.IsReservedFunctionName(functionName)
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.

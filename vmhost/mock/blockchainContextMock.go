@@ -6,6 +6,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -239,4 +240,9 @@ func (b *BlockchainContextMock) ClearCompiledCodes() {
 // ExecuteSmartContractCallOnOtherVM -
 func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return nil, nil
+}
+
+// ChainID -
+func (b *BlockchainContextMock) ChainID() []byte {
+	return make([]byte, 0)
 }

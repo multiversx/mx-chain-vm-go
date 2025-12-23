@@ -13,12 +13,13 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 /*
@@ -1109,11 +1110,11 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 			return
 		}
 		for _, outputAccount := range vmOutput.OutputAccounts {
-			transferDestinationAddress := string(outputAccount.Address)
+			transferDestinationAddress := string(outputAccount.GetAddress())
 			if edgeToAddress != transferDestinationAddress {
 				continue
 			}
-			for _, outputTransfer := range outputAccount.OutputTransfers {
+			for _, outputTransfer := range outputAccount.GetOutputTransfers() {
 				callType := outputTransfer.CallType
 
 				argParser := parsers.NewCallArgsParser()
@@ -1126,7 +1127,7 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 				if bytes.Equal(callID, crossShardEdge.To.Call.CallID) {
 					logAsync.Trace("Found transfer",
 						"sender", string(outputTransfer.SenderAddress),
-						"to", string(outputAccount.Address),
+						"to", string(outputAccount.GetAddress()),
 						"gas limit", outputTransfer.GasLimit,
 						"callType", callType,
 						"data", contexts.DebugCallIDAsString(outputTransfer.Data))
@@ -1151,8 +1152,8 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 func extractAndPersistStores(tb testing.TB, world *worldmock.MockWorld, vmOutput *vmcommon.VMOutput) {
 	// check if accounts with storage from OutputAccounts have the same shardID as world mock
 	for _, outputAccount := range vmOutput.OutputAccounts {
-		if len(outputAccount.StorageUpdates) != 0 {
-			require.Equal(tb, world.SelfShardID, world.GetShardOfAddress(outputAccount.Address), fmt.Sprintf("Incorrect shard for account with address '%s'", string(outputAccount.Address)))
+		if len(outputAccount.GetStorageUpdates()) != 0 {
+			require.Equal(tb, world.SelfShardID, world.GetShardOfAddress(outputAccount.GetAddress()), fmt.Sprintf("Incorrect shard for account with address '%s'", string(outputAccount.GetAddress())))
 		}
 	}
 

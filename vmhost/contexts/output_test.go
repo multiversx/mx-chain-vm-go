@@ -6,9 +6,10 @@ import (
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/require"
+
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewOutputContext(t *testing.T) {
@@ -54,7 +55,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 
 	// Create an account with nonce 99 on the active state.
 	account, isNew := outputContext.GetOutputAccount(address1)
-	account.Nonce = 99
+	account.SetNonce(99)
 	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 
@@ -68,16 +69,16 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	account, isNew = outputContext.GetOutputAccount(address1)
 	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
-	require.Equal(t, uint64(0), account.Nonce)
+	require.Equal(t, uint64(0), account.GetNonce())
 
-	account.Nonce = 84
+	account.SetNonce(84)
 
 	// Copy active state onto the stack, then create a new account with nonce 42.
 	outputContext.PushState()
 	require.Equal(t, 2, len(outputContext.stateStack))
 
 	account, isNew = outputContext.GetOutputAccount(address2)
-	account.Nonce = 42
+	account.SetNonce(42)
 	require.True(t, isNew)
 	require.Equal(t, 2, len(outputContext.outputState.OutputAccounts))
 
@@ -86,7 +87,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	outputContext.PopSetActiveState()
 	account, isNew = outputContext.GetOutputAccount(address1)
 	require.False(t, isNew)
-	require.Equal(t, uint64(84), account.Nonce)
+	require.Equal(t, uint64(84), account.GetNonce())
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 	require.Equal(t, 1, len(outputContext.stateStack))
 
@@ -98,7 +99,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 
 	account, isNew = outputContext.GetOutputAccount(address1)
 	require.False(t, isNew)
-	require.Equal(t, uint64(84), account.Nonce)
+	require.Equal(t, uint64(84), account.GetNonce())
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 	require.Equal(t, 1, len(outputContext.stateStack))
 
@@ -117,23 +118,39 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	account, isNew := outputContext.GetOutputAccount([]byte("account"))
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 	require.True(t, isNew)
-	require.Equal(t, []byte("account"), account.Address)
-	require.Zero(t, account.Nonce)
-	require.Equal(t, vmhost.Zero, account.BalanceDelta)
-	require.Nil(t, account.Balance)
-	require.Zero(t, len(account.StorageUpdates))
+	require.Equal(t, []byte("account"), account.GetAddress())
+	require.Zero(t, account.GetNonce())
+	require.Equal(t, vmhost.Zero, account.GetBalanceDelta())
+	require.Nil(t, account.GetBalance())
+	require.Zero(t, len(account.GetStorageUpdates()))
 
 	// Change fields of the OutputAccount to ensure it will be returned on the
 	// next call to GetOutputAccount(), from the OutputAccounts cache
-	account.Address = []byte("changed address")
-	account.Nonce = 88
-	account.Balance = big.NewInt(94)
+	account.SetAddress([]byte("changed address"))
+	account.SetNonce(88)
+	account.SetBalance(big.NewInt(94))
 	cachedAccount, isNew := outputContext.GetOutputAccount([]byte("account"))
 	require.False(t, isNew)
-	require.Equal(t, []byte("changed address"), cachedAccount.Address)
-	require.Equal(t, uint64(88), cachedAccount.Nonce)
-	require.Equal(t, big.NewInt(94), cachedAccount.Balance)
-	require.Zero(t, len(cachedAccount.StorageUpdates))
+	require.Equal(t, []byte("changed address"), cachedAccount.GetAddress())
+	require.Equal(t, uint64(88), cachedAccount.GetNonce())
+	require.Equal(t, big.NewInt(94), cachedAccount.GetBalance())
+	require.Zero(t, len(cachedAccount.GetStorageUpdates()))
+}
+
+func TestOutputContext_SetOutputAccount(t *testing.T) {
+	t.Parallel()
+
+	host := &contextmock.VMHostStub{}
+	outputContext, _ := NewOutputContext(host)
+	require.Zero(t, len(outputContext.outputState.OutputAccounts))
+
+	address := []byte("address")
+	outputAccount := NewVMOutputAccount(address)
+	outputContext.SetOutputAccount(address, outputAccount)
+
+	cachedAccount, isNew := outputContext.GetOutputAccount(address)
+	require.False(t, isNew)
+	require.Equal(t, address, cachedAccount.GetAddress())
 }
 
 func TestOutputContext_GettersAndSetters(t *testing.T) {
@@ -321,22 +338,22 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 	left = newVMOutput()
 	right = newVMOutput()
 	right.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
-	right.OutputAccounts["address"].Nonce = 84
+	right.OutputAccounts["address"].SetNonce(84)
 	expected = newVMOutput()
 	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
-	expected.OutputAccounts["address"].Nonce = 84
+	expected.OutputAccounts["address"].SetNonce(84)
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
 	left.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
-	left.OutputAccounts["address"].Nonce = 84
+	left.OutputAccounts["address"].SetNonce(84)
 	right = newVMOutput()
 	right.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
-	right.OutputAccounts["address"].Nonce = 92
+	right.OutputAccounts["address"].SetNonce(92)
 	expected = newVMOutput()
 	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
-	expected.OutputAccounts["address"].Nonce = 92
+	expected.OutputAccounts["address"].SetNonce(92)
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
@@ -424,13 +441,13 @@ func TestOutputContext_Transfer(t *testing.T) {
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
 	require.False(t, isNew)
-	require.Equal(t, big.NewInt(-1000), senderAccount.BalanceDelta)
+	require.Equal(t, big.NewInt(-1000), senderAccount.GetBalanceDelta())
 
 	destAccount, isNew := outputContext.GetOutputAccount(receiver)
 	require.False(t, isNew)
-	require.Equal(t, valueToTransfer, destAccount.BalanceDelta)
-	require.Equal(t, uint64(54), destAccount.OutputTransfers[0].GasLimit)
-	require.Equal(t, []byte("txdata"), destAccount.OutputTransfers[0].Data)
+	require.Equal(t, valueToTransfer, destAccount.GetBalanceDelta())
+	require.Equal(t, uint64(54), destAccount.GetOutputTransfers()[0].GasLimit)
+	require.Equal(t, []byte("txdata"), destAccount.GetOutputTransfers()[0].Data)
 }
 
 func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
@@ -457,28 +474,28 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	host.BlockchainContext = blockchainContext
 
 	senderOutputAccount, _ := outputContext.GetOutputAccount(sender)
-	require.Nil(t, senderOutputAccount.Balance)
-	require.Equal(t, vmhost.Zero, senderOutputAccount.BalanceDelta)
+	require.Nil(t, senderOutputAccount.GetBalance())
+	require.Equal(t, vmhost.Zero, senderOutputAccount.GetBalanceDelta())
 
 	// negative transfers are disallowed
 	valueToTransfer := big.NewInt(-1000)
 	err := outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, nil, []byte("txdata"), 0)
 	require.Equal(t, vmhost.ErrTransferNegativeValue, err)
-	require.Nil(t, senderOutputAccount.Balance)
-	require.Equal(t, vmhost.Zero, senderOutputAccount.BalanceDelta)
+	require.Nil(t, senderOutputAccount.GetBalance())
+	require.Equal(t, vmhost.Zero, senderOutputAccount.GetBalanceDelta())
 
 	// account must have enough money to transfer
 	valueToTransfer = big.NewInt(5000)
 	err = outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, nil, []byte("txdata"), 0)
 	require.Equal(t, vmhost.ErrTransferInsufficientFunds, err)
-	require.Equal(t, big.NewInt(2000), senderOutputAccount.Balance)
-	require.Equal(t, vmhost.Zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, big.NewInt(2000), senderOutputAccount.GetBalance())
+	require.Equal(t, vmhost.Zero, senderOutputAccount.GetBalanceDelta())
 
-	senderOutputAccount.BalanceDelta = big.NewInt(4000)
+	senderOutputAccount.SetBalanceDelta(big.NewInt(4000))
 	valueToTransfer = big.NewInt(5000)
 	err = outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, nil, []byte("txdata"), 0)
 	require.Nil(t, err)
-	require.Equal(t, big.NewInt(-1000), senderOutputAccount.BalanceDelta)
+	require.Equal(t, big.NewInt(-1000), senderOutputAccount.GetBalanceDelta())
 
 	require.Equal(t, big.NewInt(1000), blockchainContext.GetBalanceBigInt(sender))
 }

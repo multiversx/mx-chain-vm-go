@@ -9,6 +9,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -111,7 +112,7 @@ func (context *storageContext) SetAddress(address []byte) {
 // GetStorageUpdates returns the storage updates for the account mapped to the given address.
 func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
 	account, _ := context.host.Output().GetOutputAccount(address)
-	return account.StorageUpdates
+	return account.GetStorageUpdates()
 }
 
 // GetStorage returns the storage data mapped to the given key.
@@ -139,7 +140,7 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, uint32, bool, err
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) error {
 	metering := context.host.Metering()
 	if !usedCache {
-		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+		costPerByte := metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
 		return metering.UseGasBounded(gasToUse)
 	}
@@ -155,7 +156,7 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 	}
 
 	if !usedCache {
-		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		gasToUse := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte, uint64(extraBytes))
 		return metering.UseGasBounded(gasToUse)
 	}
 
@@ -389,9 +390,9 @@ func (context *storageContext) checkReservedAndProtection(key []byte) error {
 func (context *storageContext) addDeltaBytes(deltaBytes int) {
 	account, _ := context.host.Output().GetOutputAccount(context.address)
 	if deltaBytes > 0 {
-		account.BytesAddedToStorage += uint64(deltaBytes)
+		account.SetBytesAddedToStorage(account.GetBytesAddedToStorage() + uint64(deltaBytes))
 	} else {
-		account.BytesDeletedFromStorage += uint64(-deltaBytes)
+		account.SetBytesDeletedFromStorage(account.GetBytesDeletedFromStorage() + uint64(-deltaBytes))
 	}
 }
 
@@ -409,22 +410,22 @@ func (context *storageContext) changeStorageUpdate(key []byte, value []byte, sto
 func (context *storageContext) computeGasForSmallerValues(newValueExtraLength int, length int) (uint64, uint64) {
 	metering := context.host.Metering()
 	newValueExtraLength = -newValueExtraLength
-	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
-	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
+	useGas := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().PersistPerByte, uint64(length))
+	freeGas := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().ReleasePerByte, uint64(newValueExtraLength))
 	return useGas, freeGas
 }
 
 func (context *storageContext) computeGasForBiggerValues(lengthOldValue int, newValueExtraLength int) (uint64, uint64) {
 	metering := context.host.Metering()
-	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(lengthOldValue))
-	newValStoreUseGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(newValueExtraLength))
+	useGas := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().PersistPerByte, uint64(lengthOldValue))
+	newValStoreUseGas := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().StorePerByte, uint64(newValueExtraLength))
 	useGas = math.AddUint64(useGas, newValStoreUseGas)
 	return useGas, 0
 }
 
 func (context *storageContext) storageAdded(length int, key []byte, value []byte) (vmhost.StorageStatus, error) {
 	metering := context.host.Metering()
-	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
+	useGas := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().StorePerByte, uint64(length))
 	err := metering.UseGasBounded(useGas)
 	if err != nil {
 		return vmhost.StorageUnchanged, err
@@ -436,7 +437,7 @@ func (context *storageContext) storageAdded(length int, key []byte, value []byte
 
 func (context *storageContext) storageDeleted(lengthOldValue int, key []byte) (vmhost.StorageStatus, error) {
 	metering := context.host.Metering()
-	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(lengthOldValue))
+	freeGas := math.MulUint64(metering.GasSchedule().GetBaseOperationCost().ReleasePerByte, uint64(lengthOldValue))
 	metering.FreeGas(freeGas)
 
 	logStorage.Trace("storage deleted", "key", key)
@@ -458,7 +459,7 @@ func (context *storageContext) computeGasForUnchangedValue(length int, usedCache
 	metering := context.host.Metering()
 	useGas := uint64(0)
 	if !usedCache {
-		useGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+		useGas = math.MulUint64(metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte, uint64(length))
 	}
 	return useGas
 }
@@ -491,7 +492,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 	extraBytes := len(key) - vmhost.AddressLen
 	extraKeyLenGas := uint64(0)
 	if extraBytes > 0 && !usedCache {
-		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		extraKeyLenGas = math.MulUint64(metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte, uint64(extraBytes))
 	}
 	return extraKeyLenGas
 }
@@ -508,7 +509,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, t
 
 func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
 	if usedCache {
-		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
+		return context.host.Metering().GasSchedule().GetBaseOpsAPICost().CachedStorageLoad, nil
 	}
 
 	return context.GetStorageLoadCost(trieDepth, staticGasCost)
@@ -528,7 +529,7 @@ func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
 	return computeGasForStorageLoadBasedOnTrieDepth(
 		trieDepth,
-		context.host.Metering().GasSchedule().DynamicStorageLoad,
+		*context.host.Metering().GasSchedule().GetDynamicStorageLoad(),
 		staticGasCost,
 	)
 }

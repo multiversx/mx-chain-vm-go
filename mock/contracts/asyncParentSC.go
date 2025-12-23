@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -103,7 +104,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
 
-		for _, esdtTransfer := range host.Runtime().GetVMInput().ESDTTransfers {
+		for _, esdtTransfer := range host.Runtime().GetVMInput().GetVMInput().ESDTTransfers {
 			host.Output().Finish(esdtTransfer.ESDTTokenName)
 			host.Output().Finish(esdtTransfer.ESDTValue.Bytes())
 		}

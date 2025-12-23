@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -57,7 +58,7 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, _ interface{}) {
 
 		input := test.DefaultTestContractCallInput()
 		input.CallerAddr = runtime.GetContextAddress()
-		input.GasProvided = runtime.GetVMInput().GasProvided / 2
+		input.GasProvided = runtime.GetVMInput().GetVMInput().GasProvided / 2
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
 			runtime.Arguments()[0],

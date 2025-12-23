@@ -9,6 +9,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
@@ -76,16 +77,16 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
 		isBarnardActive := context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixGetBalanceFlag)
-		if outputAccount.Balance == nil || isBarnardActive {
+		if outputAccount.GetBalance() == nil || isBarnardActive {
 			account, err := context.blockChainHook.GetUserAccount(address)
 			if err != nil || vmhost.IfNil(account) {
 				return big.NewInt(0)
 			}
 
-			outputAccount.Balance = account.GetBalance()
+			outputAccount.SetBalance(account.GetBalance())
 		}
 
-		balance := big.NewInt(0).Add(outputAccount.Balance, outputAccount.BalanceDelta)
+		balance := big.NewInt(0).Add(outputAccount.GetBalance(), outputAccount.GetBalanceDelta())
 		return balance
 	}
 
@@ -95,7 +96,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	}
 
 	balance := account.GetBalance()
-	outputAccount.Balance = balance
+	outputAccount.SetBalance(balance)
 
 	return balance
 }
@@ -104,9 +105,9 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 
-	readNonceFromBlockChain := isNew || outputAccount.Nonce == 0
+	readNonceFromBlockChain := isNew || outputAccount.GetNonce() == 0
 	if !readNonceFromBlockChain {
-		return outputAccount.Nonce, nil
+		return outputAccount.GetNonce(), nil
 	}
 
 	account, err := context.blockChainHook.GetUserAccount(address)
@@ -115,7 +116,7 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	}
 
 	nonce := account.GetNonce()
-	outputAccount.Nonce = nonce
+	outputAccount.SetNonce(nonce)
 
 	return nonce, nil
 }
@@ -124,7 +125,7 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 func (context *blockchainContext) IncreaseNonce(address []byte) {
 	nonce, _ := context.GetNonce(address)
 	outputAccount, _ := context.host.Output().GetOutputAccount(address)
-	outputAccount.Nonce = nonce + 1
+	outputAccount.SetNonce(nonce + 1)
 }
 
 // GetESDTToken returns the unmarshalled esdt token for the given address and nonce for NFTs
@@ -149,9 +150,9 @@ func (context *blockchainContext) GetCodeHash(address []byte) []byte {
 // GetCode retrieves the code stored under the given address.
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
-	hasCode := !isNew && len(outputAccount.Code) > 0
+	hasCode := !isNew && len(outputAccount.GetCode()) > 0
 	if hasCode {
-		return outputAccount.Code, nil
+		return outputAccount.GetCode(), nil
 	}
 
 	account, err := context.blockChainHook.GetUserAccount(address)
@@ -167,7 +168,7 @@ func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 		return nil, vmhost.ErrContractNotFound
 	}
 
-	outputAccount.Code = code
+	outputAccount.SetCode(code)
 
 	return code, nil
 }
@@ -397,4 +398,9 @@ func (context *blockchainContext) ClearCompiledCodes() {
 // ExecuteSmartContractCallOnOtherVM runs contract on another VM
 func (context *blockchainContext) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return context.blockChainHook.ExecuteSmartContractCallOnOtherVM(input)
+}
+
+// ChainID return the chain id
+func (context *blockchainContext) ChainID() []byte {
+	return context.blockChainHook.ChainID()
 }

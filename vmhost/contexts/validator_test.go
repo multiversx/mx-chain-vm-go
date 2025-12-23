@@ -25,37 +25,37 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	_ = builtInFuncContainer.Add("protocolFunctionFoo", &mock.BuiltInFunctionStub{})
 	_ = builtInFuncContainer.Add("protocolFunctionBar", &mock.BuiltInFunctionStub{})
 
-	validator := newWASMValidator(testImportNames(), builtInFuncContainer, worldmock.EnableEpochsHandlerStubAllFlags())
+	validator := NewWASMValidator(testImportNames(), builtInFuncContainer, worldmock.EnableEpochsHandlerStubAllFlags())
 
-	require.Nil(t, validator.verifyValidFunctionName("foo"))
-	require.Nil(t, validator.verifyValidFunctionName("_"))
-	require.Nil(t, validator.verifyValidFunctionName("a"))
-	require.Nil(t, validator.verifyValidFunctionName("i"))
+	require.Nil(t, validator.VerifyValidFunctionName("foo"))
+	require.Nil(t, validator.VerifyValidFunctionName("_"))
+	require.Nil(t, validator.VerifyValidFunctionName("a"))
+	require.Nil(t, validator.VerifyValidFunctionName("i"))
 
-	require.NotNil(t, validator.verifyValidFunctionName(""))
-	require.NotNil(t, validator.verifyValidFunctionName("3"))
-	require.NotNil(t, validator.verifyValidFunctionName("π"))
-	require.NotNil(t, validator.verifyValidFunctionName("2foo"))
-	require.NotNil(t, validator.verifyValidFunctionName("-"))
-	require.NotNil(t, validator.verifyValidFunctionName("â"))
-	require.NotNil(t, validator.verifyValidFunctionName("ș"))
-	require.NotNil(t, validator.verifyValidFunctionName("Ä"))
+	require.NotNil(t, validator.VerifyValidFunctionName(""))
+	require.NotNil(t, validator.VerifyValidFunctionName("3"))
+	require.NotNil(t, validator.VerifyValidFunctionName("π"))
+	require.NotNil(t, validator.VerifyValidFunctionName("2foo"))
+	require.NotNil(t, validator.VerifyValidFunctionName("-"))
+	require.NotNil(t, validator.VerifyValidFunctionName("â"))
+	require.NotNil(t, validator.VerifyValidFunctionName("ș"))
+	require.NotNil(t, validator.VerifyValidFunctionName("Ä"))
 
-	require.NotNil(t, validator.verifyValidFunctionName("protocolFunctionFoo"))
-	require.NotNil(t, validator.verifyValidFunctionName("protocolFunctionBar"))
+	require.NotNil(t, validator.VerifyValidFunctionName("protocolFunctionFoo"))
+	require.NotNil(t, validator.VerifyValidFunctionName("protocolFunctionBar"))
 
-	require.Nil(t, validator.verifyValidFunctionName(strings.Repeat("_", 255)))
-	require.NotNil(t, validator.verifyValidFunctionName(strings.Repeat("_", 256)))
+	require.Nil(t, validator.VerifyValidFunctionName(strings.Repeat("_", 255)))
+	require.NotNil(t, validator.VerifyValidFunctionName(strings.Repeat("_", 256)))
 
-	require.NotNil(t, validator.verifyValidFunctionName("getArgument"))
-	require.NotNil(t, validator.verifyValidFunctionName("asyncCall"))
-	require.Nil(t, validator.verifyValidFunctionName("getArgument55"))
+	require.NotNil(t, validator.VerifyValidFunctionName("getArgument"))
+	require.NotNil(t, validator.VerifyValidFunctionName("asyncCall"))
+	require.Nil(t, validator.VerifyValidFunctionName("getArgument55"))
 }
 
 func TestFunctionsProtected(t *testing.T) {
 	host := InitializeVMAndWasmer()
 
-	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer(), worldmock.EnableEpochsHandlerStubAllFlags())
+	validator := NewWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer(), worldmock.EnableEpochsHandlerStubAllFlags())
 
 	world := worldmock.NewMockWorld()
 	imb := contextmock.NewExecutorMock(world)
@@ -67,6 +67,6 @@ func TestFunctionsProtected(t *testing.T) {
 		return testInstance
 	})
 
-	err := validator.verifyProtectedFunctions(instance)
+	err := validator.VerifyProtectedFunctions(instance)
 	require.NotNil(t, err)
 }

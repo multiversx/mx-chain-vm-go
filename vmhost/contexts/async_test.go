@@ -2,9 +2,10 @@ package contexts
 
 import (
 	"errors"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"math/big"
 	"testing"
+
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/marshal"
@@ -12,6 +13,8 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -19,7 +22,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/stretchr/testify/require"
 )
 
 var mockWasmerInstance *contextmock.InstanceMock
@@ -79,13 +81,16 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
 	})
+	scAPINames := exec.FunctionNames()
+	validator := NewWASMValidator(scAPINames, builtInFunctions.NewBuiltInFunctionContainer(), host.EnableEpochsHandler())
 	require.Nil(tb, err)
 	runtimeCtx, err := NewRuntimeContext(
 		host,
 		testVMType,
-		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
+		validator,
+		NewVMInputFactory(),
 	)
 	require.Nil(tb, err)
 
@@ -322,7 +327,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 
 	// Erase the code of the rightAccount from the Output context cache
 	outputAccount, _ := host.Output().GetOutputAccount(rightAddress)
-	outputAccount.Code = []byte{}
+	outputAccount.SetCode([]byte{})
 
 	initRuntime(runtime, leftAddress)
 	execMode, err = async.determineExecutionMode(asyncCall)
@@ -336,7 +341,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 
 	// Erase the code of the rightAccount from the Output context cache
 	outputAccount, _ = host.Output().GetOutputAccount(rightAddress)
-	outputAccount.Code = []byte{}
+	outputAccount.SetCode([]byte{})
 
 	initRuntime(runtime, leftAddress)
 	execMode, err = async.determineExecutionMode(asyncCall)
@@ -517,7 +522,7 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 		Data:        []byte("some_data"),
 	}
 
-	host.Runtime().GetVMInput().GasProvided = 200
+	host.Runtime().GetVMInput().GetVMInput().GasProvided = 200
 
 	err := async.sendAsyncCallCrossShard(asyncCall)
 	require.Nil(t, err)
@@ -532,15 +537,15 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 
 	smartcontract, ok := vmOutput.OutputAccounts["smartcontract"]
 	require.True(t, ok)
-	require.Equal(t, big.NewInt(-88), smartcontract.BalanceDelta)
-	require.Empty(t, smartcontract.OutputTransfers)
+	require.Equal(t, big.NewInt(-88), smartcontract.GetBalanceDelta())
+	require.Empty(t, smartcontract.GetOutputTransfers())
 
 	destination, ok := vmOutput.OutputAccounts["destination"]
 	require.True(t, ok)
-	require.Equal(t, big.NewInt(88), destination.BalanceDelta)
-	require.Len(t, destination.OutputTransfers, 1)
+	require.Equal(t, big.NewInt(88), destination.GetBalanceDelta())
+	require.Len(t, destination.GetOutputTransfers(), 1)
 
-	asyncTransfer := destination.OutputTransfers[0]
+	asyncTransfer := destination.GetOutputTransfers()[0]
 	require.Equal(t, big.NewInt(88), asyncTransfer.Value)
 	require.Equal(t, uint64(42), asyncTransfer.GasLimit)
 	require.Equal(t, uint64(98), asyncTransfer.GasLocked)
@@ -695,7 +700,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
 	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
-	expectedGasProvided -= host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep
+	expectedGasProvided -= host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallStep
 
 	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
@@ -802,7 +807,7 @@ func TestAsyncContext_CreateCallbackInput_LastTransferValueAndESDTTransferWithCa
 
 func createDefaultVMOutput(lastTransfer *vmcommon.OutputTransfer) *vmcommon.VMOutput {
 	vmOutput := defaultDestOutputOk()
-	vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	vmOutput.OutputAccounts = make(map[string]vmcommon.OutputAccountHandler)
 	vmOutput.OutputAccounts[string(Alice)] = &vmcommon.OutputAccount{
 		OutputTransfers: []vmcommon.OutputTransfer{
 			{
@@ -835,7 +840,7 @@ func createCallbackInputWithVMOutput(t *testing.T, vmOutput *vmcommon.VMOutput, 
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
 	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
-	expectedGasProvided -= host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep
+	expectedGasProvided -= host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallStep
 	return originalVMInput, callbackInput, expectedGasProvided
 }
 
@@ -855,7 +860,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
 	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
-	expectedGasProvided -= host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep
+	expectedGasProvided -= host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallStep
 
 	expectedInput := vmhost.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
 	vmhost.AddArgument(expectedInput, []byte{byte(vmcommon.UserError)})
