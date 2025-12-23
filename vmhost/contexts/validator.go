@@ -6,9 +6,12 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
+
+var _ Validator = (*wasmValidator)(nil)
 
 const allowedCharsInFunctionName = "abcdefghijklmnopqrstuvwxyz0123456789_"
 
@@ -33,8 +36,8 @@ type wasmValidator struct {
 	reserved *reservedFunctions
 }
 
-// newWASMValidator creates a new WASMValidator
-func newWASMValidator(
+// NewWASMValidator creates a new WASMValidator
+func NewWASMValidator(
 	scAPINames vmcommon.FunctionNames,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	enableEpochsHandler vmcommon.EnableEpochsHandler,
@@ -44,7 +47,8 @@ func newWASMValidator(
 	}
 }
 
-func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instance) error {
+// VerifyMemoryDeclaration verifies if instance has memory
+func (validator *wasmValidator) VerifyMemoryDeclaration(instance executor.Instance) error {
 	if !instance.HasMemory() {
 		return vmhost.ErrMemoryDeclarationMissing
 	}
@@ -52,9 +56,10 @@ func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instan
 	return nil
 }
 
-func (validator *wasmValidator) verifyFunctions(instance executor.Instance) error {
+// VerifyFunctions verifies function names in instance
+func (validator *wasmValidator) VerifyFunctions(instance executor.Instance) error {
 	for _, functionName := range instance.GetFunctionNames() {
-		err := validator.verifyValidFunctionName(functionName)
+		err := validator.VerifyValidFunctionName(functionName)
 		if err != nil {
 			return err
 		}
@@ -70,7 +75,8 @@ var protectedFunctions = map[string]bool{
 	"signalError":       true,
 	"completedTxEvent":  true}
 
-func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Instance) error {
+// VerifyProtectedFunctions verifies protected functions in instance
+func (validator *wasmValidator) VerifyProtectedFunctions(instance executor.Instance) error {
 	for _, functionName := range instance.GetFunctionNames() {
 		_, found := protectedFunctions[functionName]
 		if found {
@@ -82,8 +88,9 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Insta
 	return nil
 }
 
-func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {
-	err := verifyCallFunction(functionName)
+// VerifyValidFunctionName verifies if function name is valid and reserved
+func (validator *wasmValidator) VerifyValidFunctionName(functionName string) error {
+	err := validator.VerifyCallFunction(functionName)
 	if err != nil {
 		return err
 	}
@@ -96,7 +103,8 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 	return nil
 }
 
-func verifyCallFunction(functionName string) error {
+// VerifyCallFunction verifies if function name is valid
+func (validator *wasmValidator) VerifyCallFunction(functionName string) error {
 	const maxLengthOfFunctionName = 256
 
 	errInvalidName := fmt.Errorf("%w: %s", vmhost.ErrInvalidFunctionName, functionName)
@@ -131,4 +139,14 @@ func validCharactersOnly(input string) bool {
 
 func isFirstCharacterNumeric(name string) bool {
 	return name[0] >= '0' && name[0] <= '9'
+}
+
+// IsReservedFunctionName returns true if function name is reserved
+func (validator *wasmValidator) IsReservedFunctionName(functionName string) bool {
+	return validator.reserved.IsReserved(functionName)
+}
+
+// IsInterfaceNil returns true if underlying object is nil
+func (validator *wasmValidator) IsInterfaceNil() bool {
+	return validator == nil
 }

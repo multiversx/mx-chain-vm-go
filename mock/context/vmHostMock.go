@@ -3,6 +3,7 @@ package mock
 import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -113,12 +114,12 @@ func (host *VMHostMock) ExecuteESDTTransfer(_ *vmhost.ESDTTransfersArgs, _ vm.Ca
 }
 
 // CreateNewContract mocked method
-func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput, _ int) ([]byte, error) {
+func (host *VMHostMock) CreateNewContract(_ vmcommon.ContractCreateInputHandler, _ int) ([]byte, error) {
 	return nil, nil
 }
 
 // ExecuteOnSameContext mocked method
-func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) error {
+func (host *VMHostMock) ExecuteOnSameContext(_ vmcommon.ContractCallInputHandler) error {
 	return nil
 }
 
@@ -129,6 +130,11 @@ func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) 
 	}
 	host.StoreInput(input)
 	return host.GetNextVMOutput(), true, nil
+}
+
+// IsOutOfVMFunctionExecution mocked method
+func (host *VMHostMock) IsOutOfVMFunctionExecution(_ *vmcommon.ContractCallInput) bool {
+	return false
 }
 
 // InitState mocked method

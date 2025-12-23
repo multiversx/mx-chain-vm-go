@@ -3,9 +3,10 @@ package vmhooks
 import (
 	"math/big"
 
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 const (
@@ -29,7 +30,7 @@ func (context *VMHooksImpl) SmallIntGetUnsignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().Int64GetArgument
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -57,7 +58,7 @@ func (context *VMHooksImpl) SmallIntGetSignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().Int64GetArgument
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -85,7 +86,7 @@ func (context *VMHooksImpl) SmallIntFinishUnsigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().Int64Finish
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -102,7 +103,7 @@ func (context *VMHooksImpl) SmallIntFinishSigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().Int64Finish
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntFinishSignedName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -119,7 +120,7 @@ func (context *VMHooksImpl) SmallIntStorageStoreUnsigned(keyOffset executor.MemP
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().Int64StorageStore
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -148,7 +149,7 @@ func (context *VMHooksImpl) SmallIntStorageStoreSigned(keyOffset executor.MemPtr
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().Int64StorageStore
 	err := metering.UseGasBoundedAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -192,7 +193,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadUnsigned(keyOffset executor.MemPt
 	err = storage.UseGasForStorageLoad(
 		smallIntStorageLoadUnsignedName,
 		int64(trieDepth),
-		metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad,
+		metering.GasSchedule().GetBaseOpsAPICost().Int64StorageLoad,
 		usedCache)
 	if err != nil {
 		context.FailExecution(err)
@@ -229,7 +230,7 @@ func (context *VMHooksImpl) SmallIntStorageLoadSigned(keyOffset executor.MemPtr,
 	err = storage.UseGasForStorageLoad(
 		smallIntStorageLoadSignedName,
 		int64(trieDepth),
-		metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad,
+		metering.GasSchedule().GetBaseOpsAPICost().Int64StorageLoad,
 		usedCache)
 	if err != nil {
 		context.FailExecution(err)

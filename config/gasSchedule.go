@@ -6,6 +6,7 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	logger "github.com/multiversx/mx-chain-logger-go"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
@@ -30,7 +31,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*baseOps)
+	err = CheckForZeroUint64Fields(*baseOps)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*baseOpsAPI)
+	err = CheckForZeroUint64Fields(*baseOpsAPI)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*bigFloatOps)
+	err = CheckForZeroUint64Fields(*bigFloatOps)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*bigIntOps)
+	err = CheckForZeroUint64Fields(*bigIntOps)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +75,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*cryptOps)
+	err = CheckForZeroUint64Fields(*cryptOps)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*MBufferOps)
+	err = CheckForZeroUint64Fields(*MBufferOps)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +97,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*wasmOps)
+	err = CheckForZeroUint64Fields(*wasmOps)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +178,8 @@ func getSignedCoefficient(coefficient uint64, sign uint64) int64 {
 	return int64(coefficient)
 }
 
-func checkForZeroUint64Fields(arg interface{}) error {
+// CheckForZeroUint64Fields return error if operation gas cost has been set to zero
+func CheckForZeroUint64Fields(arg interface{}) error {
 	v := reflect.ValueOf(arg)
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)

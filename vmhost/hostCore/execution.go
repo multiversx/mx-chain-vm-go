@@ -11,6 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -170,7 +171,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, metering vmhost.MeteringContext) error {
-	getCodeBaseCost := metering.GasSchedule().BaseOperationCost.GetCode
+	getCodeBaseCost := metering.GasSchedule().GetBaseOperationCost().GetCode
 	if input.GasProvided < getCodeBaseCost {
 		return vmhost.ErrNotEnoughGas
 	}
@@ -179,7 +180,7 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 }
 
 // doRunSmartContractDelete deletes a contract directly
-func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
+func (host *vmHost) doRunSmartContractDelete(input vmcommon.ContractCallInputHandler) *vmcommon.VMOutput {
 	output := host.Output()
 	err := host.checkUpgradePermission(input)
 	if err != nil {
@@ -188,7 +189,7 @@ func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) 
 	}
 
 	vmOutput := output.GetVMOutput()
-	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, input.RecipientAddr)
+	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, input.GetRecipientAddr())
 	return vmOutput
 }
 
@@ -268,21 +269,20 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 	return vmOutput
 }
 
-func copyTxHashesFromContext(runtime vmhost.RuntimeContext, input *vmcommon.ContractCallInput) {
-	if input.CallType != vm.DirectCall {
+func copyTxHashesFromContext(runtime vmhost.RuntimeContext, input vmcommon.ContractCallInputHandler) {
+	if input.GetVMInput().CallType != vm.DirectCall {
 		return
 	}
 	currentVMInput := runtime.GetVMInput()
-	if len(currentVMInput.OriginalTxHash) > 0 {
-		input.OriginalTxHash = currentVMInput.OriginalTxHash
+	if len(currentVMInput.GetVMInput().OriginalTxHash) > 0 {
+		input.GetVMInput().OriginalTxHash = currentVMInput.GetVMInput().OriginalTxHash
 	}
-	if len(currentVMInput.CurrentTxHash) > 0 {
-		input.CurrentTxHash = currentVMInput.CurrentTxHash
+	if len(currentVMInput.GetVMInput().CurrentTxHash) > 0 {
+		input.GetVMInput().CurrentTxHash = currentVMInput.GetVMInput().CurrentTxHash
 	}
-	if len(currentVMInput.PrevTxHash) > 0 {
-		input.PrevTxHash = currentVMInput.PrevTxHash
+	if len(currentVMInput.GetVMInput().PrevTxHash) > 0 {
+		input.GetVMInput().PrevTxHash = currentVMInput.GetVMInput().PrevTxHash
 	}
-
 }
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
@@ -349,7 +349,7 @@ func (host *vmHost) addNewBackTransfersFromVMOutput(vmOutput *vmcommon.VMOutput,
 		return
 	}
 
-	for _, transfer := range callerOutAcc.OutputTransfers {
+	for _, transfer := range callerOutAcc.GetOutputTransfers() {
 		if !bytes.Equal(transfer.SenderAddress, child) {
 			continue
 		}
@@ -552,7 +552,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetContextAddress()), "function", runtime.FunctionName())
 	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract, "gas remaining", vmOutput.GasRemaining)
 
-	isAsyncCall := runtime.GetVMInput().CallType == vm.AsynchronousCall
+	isAsyncCall := runtime.GetVMInput().GetVMInput().CallType == vm.AsynchronousCall
 	isAsyncComplete := async.IsComplete()
 
 	// Return to the caller context completely
@@ -570,10 +570,10 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 // ExecuteOnSameContext executes the contract call with the given input
 // on the same runtime context. Some other contexts are backed up.
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
-	log.Trace("ExecuteOnSameContext", "function", input.Function)
+func (host *vmHost) ExecuteOnSameContext(input vmcommon.ContractCallInputHandler) error {
+	log.Trace("ExecuteOnSameContext", "function", input.GetFunction())
 
-	if host.IsBuiltinFunctionName(input.Function) {
+	if host.IsBuiltinFunctionName(input.GetFunction()) {
 		return vmhost.ErrBuiltinCallOnSameContextDisallowed
 	}
 
@@ -585,40 +585,40 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	managedTypes.InitState()
 	output.PushState()
 
-	librarySCAddress := make([]byte, len(input.RecipientAddr))
-	copy(librarySCAddress, input.RecipientAddr)
+	codeAddress, err := host.executeOnSameContextHandler.PrepareSameContext(input)
+	if err != nil {
+		runtime.AddError(err, "PrepareSameContext")
+		return err
+	}
 
-	input.RecipientAddr = input.CallerAddr
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
-	runtime.SetCodeAddress(librarySCAddress)
+	runtime.SetCodeAddress(codeAddress)
 
 	metering.PushState()
-	metering.InitStateFromContractCallInput(&input.VMInput)
+	metering.InitStateFromContractCallInput(input.GetVMInput())
 
 	blockchain.PushState()
-
-	var err error
 
 	defer host.finishExecuteOnSameContext(err)
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
+	err = host.executeOnSameContextHandler.ExecuteOnSameContextTransferValue(input, output, runtime)
 	if err != nil {
-		runtime.AddError(err, input.Function)
 		return err
 	}
+
 	output.WriteLogWithIdentifier(
-		input.CallerAddr,
-		[][]byte{input.CallValue.Bytes(), input.RecipientAddr},
-		vmcommon.FormatLogDataForCall(vmhost.ExecuteOnSameContextString, input.Function, input.Arguments),
+		input.GetVMInput().CallerAddr,
+		[][]byte{input.GetVMInput().CallValue.Bytes(), input.GetRecipientAddr()},
+		vmcommon.FormatLogDataForCall(vmhost.ExecuteOnSameContextString, input.GetFunction(), input.GetVMInput().Arguments),
 		[]byte(vmhost.TransferValueOnlyString),
 	)
 
 	err = host.execute(input)
-	runtime.AddError(err, input.Function)
+	runtime.AddError(err, input.GetFunction())
 	return err
 }
 
@@ -686,7 +686,7 @@ func (host *vmHost) IsBuiltinFunctionCall(data []byte) bool {
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
-func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) (newContractAddress []byte, err error) {
+func (host *vmHost) CreateNewContract(input vmcommon.ContractCreateInputHandler, createContractCallType int) (newContractAddress []byte, err error) {
 	newContractAddress = nil
 	err = nil
 
@@ -699,12 +699,12 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
-		ContractCodeMetadata: input.ContractCodeMetadata,
+		ContractCode:         input.GetContractCode(),
+		ContractCodeMetadata: input.GetContractCodeMetadata(),
 		ContractAddress:      nil,
-		CodeDeployerAddress:  input.CallerAddr,
+		CodeDeployerAddress:  input.GetVMInput().CallerAddr,
 	}
-	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
+	err = host.createNewContractHandler.DeductGasForContractDeployment(input, metering, codeDeployInput)
 	if err != nil {
 		return
 	}
@@ -714,7 +714,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 		return
 	}
 
-	newContractAddress, err = blockchain.NewAddress(input.CallerAddr)
+	newContractAddress, err = blockchain.NewAddress(input.GetVMInput().CallerAddr)
 	if err != nil {
 		return
 	}
@@ -739,7 +739,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 		RecipientAddr:     newContractAddress,
 		Function:          vmhost.InitFunctionName,
 		AllowInitFunction: true,
-		VMInput:           input.VMInput,
+		VMInput:           *input.GetVMInput(),
 	}
 
 	var isChildComplete bool
@@ -760,13 +760,13 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 		return
 	}
 
-	blockchain.IncreaseNonce(input.CallerAddr)
+	blockchain.IncreaseNonce(input.GetVMInput().CallerAddr)
 
 	return
 }
 
-func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) error {
-	contract, err := host.Blockchain().GetUserAccount(vmInput.RecipientAddr)
+func (host *vmHost) checkUpgradePermission(vmInput vmcommon.ContractCallInputHandler) error {
+	contract, err := host.Blockchain().GetUserAccount(vmInput.GetRecipientAddr())
 	if err != nil {
 		return err
 	}
@@ -776,7 +776,7 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 
 	codeMetadata := vmcommon.CodeMetadataFromBytes(contract.GetCodeMetadata())
 	isUpgradeable := codeMetadata.Upgradeable
-	callerAddress := vmInput.CallerAddr
+	callerAddress := vmInput.GetVMInput().CallerAddr
 	ownerAddress := contract.GetOwnerAddress()
 	isCallerOwner := bytes.Equal(callerAddress, ownerAddress)
 
@@ -789,7 +789,7 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 
 // executeUpgrade upgrades a contract indirectly (from another contract). This
 // function follows the convention of executeSmartContractCall().
-func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) executeUpgrade(input vmcommon.ContractCallInputHandler) error {
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
 	err := host.checkUpgradePermission(input)
@@ -805,8 +805,8 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	codeDeployInput := vmhost.CodeDeployInput{
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
-		ContractAddress:      input.RecipientAddr,
-		CodeDeployerAddress:  input.CallerAddr,
+		ContractAddress:      input.GetRecipientAddr(),
+		CodeDeployerAddress:  input.GetVMInput().CallerAddr,
 	}
 
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
@@ -836,7 +836,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
-func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) executeDelete(input vmcommon.ContractCallInputHandler) error {
 	host.doRunSmartContractDelete(input)
 	return nil
 }
@@ -855,23 +855,23 @@ func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
 // upgrading (via host.executeUpgrade(), which also does not pop the previous
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) execute(input vmcommon.ContractCallInputHandler) error {
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
-	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
+	if host.isInitFunctionBeingCalled() && !input.GetAllowInitFunction() {
 		return vmhost.ErrInitFuncCalledInRun
 	}
 
 	// Use all gas initially, on the Wasmer instance of the caller. In case of
 	// successful execution, the unused gas will be restored.
-	metering.UseGasForContractInit(input.GasProvided)
+	metering.UseGasForContractInit(input.GetVMInput().GasProvided)
 
-	isUpgrade := input.Function == vmhost.UpgradeFunctionName
+	isUpgrade := input.GetFunction() == vmhost.UpgradeFunctionName
 	if isUpgrade {
 		return host.executeUpgrade(input)
 	}
 
-	isDelete := input.Function == vmhost.DeleteFunctionName
+	isDelete := input.GetFunction() == vmhost.DeleteFunctionName
 	if isDelete {
 		return host.executeDelete(input)
 	}
@@ -945,7 +945,7 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 			Arguments:            make([][]byte, 0),
 			CallValue:            big.NewInt(0),
 			CallType:             callType,
-			GasPrice:             runtime.GetVMInput().GasPrice,
+			GasPrice:             runtime.GetVMInput().GetVMInput().GasPrice,
 			GasProvided:          metering.GasLeft(),
 			GasLocked:            0,
 			ReturnCallAfterError: transfersArgs.ReturnAfterError,
@@ -1006,7 +1006,7 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 
 	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
-		for _, transfer := range outAcc.OutputTransfers {
+		for _, transfer := range outAcc.GetOutputTransfers() {
 			gasConsumed = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
@@ -1067,7 +1067,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	if newVMInput != nil {
 		for _, outAcc := range vmOutput.OutputAccounts {
-			outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+			outAcc.SetOutputTransfers(make([]vmcommon.OutputTransfer, 0))
 		}
 	}
 
@@ -1126,7 +1126,7 @@ func (host *vmHost) addOutputTransferToVMOutput(
 	}
 
 	if len(vmOutput.OutputAccounts) == 0 {
-		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+		vmOutput.OutputAccounts = make(map[string]vmcommon.OutputAccountHandler)
 	}
 	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
 	if !ok {
@@ -1135,7 +1135,7 @@ func (host *vmHost) addOutputTransferToVMOutput(
 			OutputTransfers: make([]vmcommon.OutputTransfer, 0),
 		}
 	}
-	contexts.AppendOutputTransfers(outAcc, outAcc.OutputTransfers, outTransfer)
+	contexts.AppendOutputTransfers(outAcc, outAcc.GetOutputTransfers(), outTransfer)
 	vmOutput.OutputAccounts[string(recipient)] = outAcc
 }
 
@@ -1180,7 +1180,7 @@ func (host *vmHost) callSCMethod() error {
 	log.Trace("callSCMethod")
 
 	runtime := host.Runtime()
-	callType := runtime.GetVMInput().CallType
+	callType := runtime.GetVMInput().GetVMInput().CallType
 
 	var err error
 	switch callType {
@@ -1220,7 +1220,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	asyncCall, isLegacy, err := async.UpdateCurrentAsyncCallStatus(
 		runtime.GetContextAddress(),
 		callerCallID,
-		&runtime.GetVMInput().VMInput)
+		runtime.GetVMInput().GetVMInput())
 	if err != nil {
 		return err
 	}
@@ -1328,7 +1328,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	}
 
 	isCallBack := functionName == vmhost.CallbackFunctionName
-	isInAsyncCallBack := runtime.GetVMInput().CallType == vm.AsynchronousCallBack
+	isInAsyncCallBack := runtime.GetVMInput().GetVMInput().CallType == vm.AsynchronousCallBack
 	if isCallBack && !isInAsyncCallBack {
 		return vmhost.ErrCallBackFuncCalledInRun
 	}
@@ -1363,12 +1363,12 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	if !ok {
 		return nil, nil
 	}
-	if len(outAcc.OutputTransfers) != 1 {
+	if len(outAcc.GetOutputTransfers()) != 1 {
 		return nil, nil
 	}
 
 	callType := vmInput.CallType
-	scCallOutTransfer := outAcc.OutputTransfers[0]
+	scCallOutTransfer := outAcc.GetOutputTransfers()[0]
 
 	function, arguments, err := host.callArgsParser.ParseData(string(scCallOutTransfer.Data))
 	if err != nil {

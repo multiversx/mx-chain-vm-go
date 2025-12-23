@@ -12,14 +12,15 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenario/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var gasUsedByBuiltinClaim = uint64(120)
@@ -929,7 +930,7 @@ func testGasUsedAsyncCallCrossShardCallBack(t *testing.T, isLegacy bool) {
 			err := host.Runtime().StartWasmerInstance(test.ParentAddress, testConfig.GasUsedByParent, false)
 			assert.Nil(t, err)
 
-			fakeInput := &host.Runtime().GetVMInput().VMInput
+			fakeInput := host.Runtime().GetVMInput().GetVMInput()
 			fakeInput.GasProvided = 1000
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 
@@ -942,7 +943,7 @@ func testGasUsedAsyncCallCrossShardCallBack(t *testing.T, isLegacy bool) {
 			assert.Nil(t, err)
 
 			for _, account := range host.Output().GetVMOutput().OutputAccounts {
-				for _, storageUpdate := range account.StorageUpdates {
+				for _, storageUpdate := range account.GetStorageUpdates() {
 					(accountHandler.(*worldmock.Account)).Storage[string(storageUpdate.Offset)] = storageUpdate.Data
 				}
 			}
@@ -2444,7 +2445,7 @@ func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldm
 					0,
 					[]byte("message"),
 				)
-				account.OutputTransfers[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
+				account.GetOutputTransfers()[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
 			}
 			vmOutput.GasRemaining = 0
 			return vmOutput, nil
@@ -2456,32 +2457,32 @@ func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldm
 }
 
 func setZeroCodeCosts(host vmhost.VMHost) {
-	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 0
-	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
-	host.Metering().GasSchedule().BaseOperationCost.GetCode = 0
-	host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
-	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
-	host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
-	host.Metering().GasSchedule().BaseOperationCost.ReleasePerByte = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.SignalError = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnSameContext = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnDestContext = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.StorageStore = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.TransferValue = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.CreateContract = 0
-	host.Metering().GasSchedule().DynamicStorageLoad.MinGasCost = 0
-	host.Metering().GasSchedule().DynamicStorageLoad.Linear = 0
-	host.Metering().GasSchedule().DynamicStorageLoad.Constant = 0
-	host.Metering().GasSchedule().DynamicStorageLoad.Quadratic = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().CompilePerByte = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().AoTPreparePerByte = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().GetCode = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().StorePerByte = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().DataCopyPerByte = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().PersistPerByte = 0
+	host.Metering().GasSchedule().GetBaseOperationCost().ReleasePerByte = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().SignalError = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().ExecuteOnSameContext = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().ExecuteOnDestContext = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().StorageLoad = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().StorageStore = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().TransferValue = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().CreateContract = 0
+	host.Metering().GasSchedule().GetDynamicStorageLoad().MinGasCost = 0
+	host.Metering().GasSchedule().GetDynamicStorageLoad().Linear = 0
+	host.Metering().GasSchedule().GetDynamicStorageLoad().Constant = 0
+	host.Metering().GasSchedule().GetDynamicStorageLoad().Quadratic = 0
 }
 
 func setAsyncCosts(host vmhost.VMHost, gasLockCost uint64) {
-	host.Metering().GasSchedule().BaseOpsAPICost.CreateAsyncCall = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.SetAsyncCallback = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.GetCallbackClosure = 0
-	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = gasLockCost
+	host.Metering().GasSchedule().GetBaseOpsAPICost().CreateAsyncCall = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().SetAsyncCallback = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallStep = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().GetCallbackClosure = 0
+	host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallbackGasLock = gasLockCost
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {

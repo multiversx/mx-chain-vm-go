@@ -10,6 +10,7 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
@@ -365,7 +366,7 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host vmhost.VMH
 	return &CallFinishDataItem{
 		OriginalCallerAddr:           testRuntime.GetOriginalCallerAddress(),
 		ContractAndFunction:          string(testRuntime.GetContextAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
-		GasProvided:                  testRuntime.GetVMInput().GasProvided,
+		GasProvided:                  testRuntime.GetVMInput().GetVMInput().GasProvided,
 		GasRemaining:                 gasLeft,
 		CallID:                       async.GetCallID(),
 		CallbackAsyncInitiatorCallID: async.GetCallbackAsyncInitiatorCallID(),
@@ -379,7 +380,7 @@ func readRuntimeConfigFromArguments(host vmhost.VMHost, runtimeConfigsForCalls m
 	var argIndexes argIndexesForGraphCall
 
 	arguments := host.Runtime().Arguments()
-	callType := host.Runtime().GetVMInput().CallType
+	callType := host.Runtime().GetVMInput().GetVMInput().CallType
 
 	if callType == vm.DirectCall {
 		argIndexes = syncCallArgIndexes

@@ -1,5 +1,13 @@
 package contexts
 
+import (
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+)
+
 // Cacher provides caching services
 type Cacher interface {
 	// Clear is used to completely clear the cache.
@@ -35,5 +43,60 @@ type Cacher interface {
 	// otherwise it does nothing
 	Close() error
 	// IsInterfaceNil returns true if there is no value under the interface
+	IsInterfaceNil() bool
+}
+
+// Validator defines the validation functions
+type Validator interface {
+	VerifyMemoryDeclaration(instance executor.Instance) error
+	VerifyFunctions(instance executor.Instance) error
+	VerifyProtectedFunctions(instance executor.Instance) error
+	VerifyValidFunctionName(functionName string) error
+	VerifyCallFunction(functionName string) error
+	IsReservedFunctionName(functionName string) bool
+	IsInterfaceNil() bool
+}
+
+// BlockchainContextCreator defines the blockchain context factory creator
+type BlockchainContextCreator interface {
+	CreateBlockchainContext(host vmhost.VMHost, blockChainHook vmcommon.BlockchainHook) (vmhost.BlockchainContext, error)
+	IsInterfaceNil() bool
+}
+
+// RuntimeContextCreator defines the runtime context factory creator
+type RuntimeContextCreator interface {
+	CreateRuntimeContext(
+		host vmhost.VMHost,
+		vmType []byte,
+		builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+		vmExecutor executor.Executor,
+		hasher vmhost.HashComputer,
+	) (vmhost.RuntimeContext, error)
+	IsInterfaceNil() bool
+}
+
+// MeteringContextCreator defines the metering context factory creator
+type MeteringContextCreator interface {
+	CreateMeteringContext(
+		host vmhost.VMHost,
+		gasMap config.GasScheduleMap,
+		blockGasLimit uint64,
+		gasScheduleCreator config.GasScheduleFactory,
+	) (vmhost.MeteringContext, error)
+	IsInterfaceNil() bool
+}
+
+// OutputContextCreator defines the output context factory creator
+type OutputContextCreator interface {
+	CreateOutputContext(host vmhost.VMHost) (vmhost.OutputContext, error)
+	IsInterfaceNil() bool
+}
+
+// VMInputFactory is responsible for creating the correct vmInput struct
+type VMInputFactory interface {
+	CreateContractCallInput(
+		internalVMInput vmcommon.VMInput,
+		originalInput vmcommon.ContractCallInputHandler,
+	) vmcommon.ContractCallInputHandler
 	IsInterfaceNil() bool
 }

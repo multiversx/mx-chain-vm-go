@@ -7,9 +7,10 @@ import (
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/require"
+
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/require"
 )
 
 var errTestError = errors.New("some test error")
@@ -413,18 +414,18 @@ func TestBlockchainContext_Getters(t *testing.T) {
 
 	mockWorld := &worldmock.MockWorld{
 		PreviousBlockInfo: &worldmock.BlockInfo{
-			BlockTimestamp: 6749,
-			BlockNonce:     90,
-			BlockRound:     96,
-			BlockEpoch:     3,
-			RandomSeed:     &randomSeed1,
+			BlockTimestampMs: 6749,
+			BlockNonce:       90,
+			BlockRound:       96,
+			BlockEpoch:       3,
+			RandomSeed:       &randomSeed1,
 		},
 		CurrentBlockInfo: &worldmock.BlockInfo{
-			BlockTimestamp: 6800,
-			BlockNonce:     98,
-			BlockRound:     99,
-			BlockEpoch:     4,
-			RandomSeed:     &randomSeed2,
+			BlockTimestampMs: 6800,
+			BlockNonce:       98,
+			BlockRound:       99,
+			BlockEpoch:       4,
+			RandomSeed:       &randomSeed2,
 		},
 		StateRootHash: []byte("root hash"),
 	}
@@ -440,8 +441,8 @@ func TestBlockchainContext_Getters(t *testing.T) {
 	require.Equal(t, uint64(96), blockchainContext.LastRound())
 	require.Equal(t, uint64(99), blockchainContext.CurrentRound())
 
-	require.Equal(t, uint64(6749), blockchainContext.LastTimeStamp())
-	require.Equal(t, uint64(6800), blockchainContext.CurrentTimeStamp())
+	require.Equal(t, uint64(6749), blockchainContext.LastTimeStampMs())
+	require.Equal(t, uint64(6800), blockchainContext.CurrentTimeStampMs())
 
 	require.Equal(t, []byte("root hash"), blockchainContext.GetStateRootHash())
 	require.Equal(t, randomSeed1[:], blockchainContext.LastRandomSeed())

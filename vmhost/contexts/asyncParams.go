@@ -7,13 +7,14 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 /*
-	Called to process OutputTransfers created by a
-	direct call (on dest) builtin function call by the VM
+Called to process OutputTransfers created by a
+direct call (on dest) builtin function call by the VM
 */
 func AddAsyncArgumentsToOutputTransfers(
 	output vmhost.OutputContext,
@@ -25,11 +26,12 @@ func AddAsyncArgumentsToOutputTransfers(
 		return nil
 	}
 	for _, outAcc := range vmOutput.OutputAccounts {
+		transfers := outAcc.GetOutputTransfers()
 		// if !bytes.Equal(address, outAcc.Address) {
 		// 	continue
 		// }
 
-		for t, outTransfer := range outAcc.OutputTransfers {
+		for t, outTransfer := range transfers {
 			// if !bytes.Equal(address, outTransfer.SenderAddress) {
 			// 	continue
 			// }
@@ -45,7 +47,7 @@ func AddAsyncArgumentsToOutputTransfers(
 				return err
 			}
 
-			outAcc.OutputTransfers[t] = vmcommon.OutputTransfer{
+			transfers[t] = vmcommon.OutputTransfer{
 				Index:         outTransfer.Index,
 				Value:         outTransfer.Value,
 				GasLimit:      outTransfer.GasLimit,
@@ -56,6 +58,8 @@ func AddAsyncArgumentsToOutputTransfers(
 				SenderAddress: outTransfer.SenderAddress,
 			}
 		}
+
+		outAcc.SetOutputTransfers(transfers)
 	}
 
 	return nil
@@ -85,13 +89,13 @@ func createDataFromAsyncParams(
 }
 
 /*
-	Called when a SCR for a callback is created outside the VM
-	(by createAsyncCallBackSCRFromVMOutput())
-	This is the case
-	A)	after an async call executed following a builtin function call,
-	B)	other cases where processing the output trasnfers of a VMOutput did
-		not produce a SCR of type AsynchronousCallBack
-    TODO(check): function not used?
+		Called when a SCR for a callback is created outside the VM
+		(by createAsyncCallBackSCRFromVMOutput())
+		This is the case
+		A)	after an async call executed following a builtin function call,
+		B)	other cases where processing the output trasnfers of a VMOutput did
+			not produce a SCR of type AsynchronousCallBack
+	    TODO(check): function not used?
 */
 func AppendAsyncArgumentsToCallbackCallData(
 	hasher crypto.Hasher,
@@ -107,10 +111,10 @@ func AppendAsyncArgumentsToCallbackCallData(
 }
 
 /*
-	Called when a SCR is created from VMOutput in order to recompose
-	async data and call data into a transfer data ready for the SCR
-	(by preprocessOutTransferToSCR())
-    TODO(check): function not used?
+		Called when a SCR is created from VMOutput in order to recompose
+		async data and call data into a transfer data ready for the SCR
+		(by preprocessOutTransferToSCR())
+	    TODO(check): function not used?
 */
 func AppendTransferAsyncDataToCallData(
 	callData []byte,
@@ -182,11 +186,11 @@ func appendAsyncParamsToCallData(
 }
 
 /*
-	Used by when a callback SCR is created
-	1)	after a failure of an async call
-		Async data is extracted (by extractAsyncCallParamsFromTxData()) and then
-		reappended to the new SCR's callback data (by reapendAsyncParamsToTxData())
-	2)	from the last transfer (see useLastTransferAsAsyncCallBackWhenNeeded())
+Used by when a callback SCR is created
+ 1. after a failure of an async call
+    Async data is extracted (by extractAsyncCallParamsFromTxData()) and then
+    reappended to the new SCR's callback data (by reapendAsyncParamsToTxData())
+ 2. from the last transfer (see useLastTransferAsAsyncCallBackWhenNeeded())
 */
 func CreateCallbackAsyncParams(hasher crypto.Hasher, asyncParams *vmcommon.AsyncArguments) [][]byte {
 	if asyncParams == nil {

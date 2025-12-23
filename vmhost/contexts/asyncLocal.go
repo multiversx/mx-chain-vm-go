@@ -5,6 +5,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -197,7 +198,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *vmhost.
 
 func (context *asyncContext) finishAsyncLocalCallbackExecution() {
 	runtime := context.host.Runtime()
-	runtime.GetVMInput().GasProvided = 0
+	runtime.GetVMInput().GetVMInput().GasProvided = 0
 }
 
 func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall) (*vmcommon.ContractCallInput, error) {
@@ -212,7 +213,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall
 	}
 
 	gasLimit := asyncCall.GetGasLimit()
-	gasToUse := host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep
+	gasToUse := host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallStep
 	if gasLimit <= gasToUse {
 		return nil, vmhost.ErrNotEnoughGas
 	}
@@ -224,7 +225,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall
 			Arguments:          arguments,
 			CallValue:          big.NewInt(0).SetBytes(asyncCall.GetValue()),
 			CallType:           vm.AsynchronousCall,
-			GasPrice:           runtime.GetVMInput().GasPrice,
+			GasPrice:           runtime.GetVMInput().GetVMInput().GasPrice,
 			GasProvided:        gasLimit,
 			GasLocked:          asyncCall.GetGasLocked(),
 			CurrentTxHash:      runtime.GetCurrentTxHash(),
@@ -282,7 +283,7 @@ func (context *asyncContext) createCallbackInput(
 			Arguments:            arguments,
 			CallValue:            lastTransferInfo.callValue,
 			CallType:             vm.AsynchronousCallBack,
-			GasPrice:             runtime.GetVMInput().GasPrice,
+			GasPrice:             runtime.GetVMInput().GetVMInput().GasPrice,
 			GasProvided:          gasLimit,
 			GasLocked:            0,
 			CurrentTxHash:        runtime.GetCurrentTxHash(),
@@ -308,11 +309,11 @@ func (context *asyncContext) extractLastTransferWithoutData(caller []byte, vmOut
 
 	callBackReceiver := context.host.Runtime().GetContextAddress()
 	outAcc, ok := vmOutput.OutputAccounts[string(callBackReceiver)]
-	if !ok || len(outAcc.OutputTransfers) == 0 || len(vmOutput.ReturnData) > 0 {
+	if !ok || len(outAcc.GetOutputTransfers()) == 0 || len(vmOutput.ReturnData) > 0 {
 		return emptyLastTransferInfo
 	}
 
-	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
+	lastOutTransfer := outAcc.GetOutputTransfers()[len(outAcc.GetOutputTransfers())-1]
 	if len(lastOutTransfer.Data) == 0 || len(vmOutput.ReturnData) == 0 {
 		callValue.Set(lastOutTransfer.Value)
 	}
@@ -357,8 +358,8 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *vmhost.AsyncC
 	metering := context.host.Metering()
 	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.AsyncCallStep
-	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+	gasToUse := metering.GasSchedule().GetBaseOpsAPICost().AsyncCallStep
+	copyPerByte := metering.GasSchedule().GetBaseOperationCost().DataCopyPerByte
 	gas := math.MulUint64(copyPerByte, uint64(dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
 	if gasLimit <= gasToUse {

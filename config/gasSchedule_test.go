@@ -64,7 +64,7 @@ func TestDecode_ZeroGasCostError(t *testing.T) {
 	err := mapstructure.Decode(gasMap, wasmCosts)
 	assert.Nil(t, err)
 
-	err = checkForZeroUint64Fields(*wasmCosts)
+	err = CheckForZeroUint64Fields(*wasmCosts)
 	assert.Nil(t, err)
 
 	gasMap["BrIf"] = 0
@@ -72,7 +72,7 @@ func TestDecode_ZeroGasCostError(t *testing.T) {
 	err = mapstructure.Decode(gasMap, wasmCosts)
 	assert.Nil(t, err)
 
-	err = checkForZeroUint64Fields(*wasmCosts)
+	err = CheckForZeroUint64Fields(*wasmCosts)
 	assert.Error(t, err)
 }
 

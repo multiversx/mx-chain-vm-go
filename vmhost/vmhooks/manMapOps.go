@@ -14,7 +14,7 @@ func (context *VMHooksImpl) ManagedMapNew() int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedMapAPICost.ManagedMapNew
+	gasToUse := metering.GasSchedule().GetManagedMapAPICost().ManagedMapNew
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapNewName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -30,7 +30,7 @@ func (context *VMHooksImpl) ManagedMapPut(mMapHandle int32, keyHandle int32, val
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedMapAPICost.ManagedMapPut
+	gasToUse := metering.GasSchedule().GetManagedMapAPICost().ManagedMapPut
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapPutName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -52,7 +52,7 @@ func (context *VMHooksImpl) ManagedMapGet(mMapHandle int32, keyHandle int32, out
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedMapAPICost.ManagedMapGet
+	gasToUse := metering.GasSchedule().GetManagedMapAPICost().ManagedMapGet
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapGetName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -74,7 +74,7 @@ func (context *VMHooksImpl) ManagedMapRemove(mMapHandle int32, keyHandle int32, 
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedMapAPICost.ManagedMapRemove
+	gasToUse := metering.GasSchedule().GetManagedMapAPICost().ManagedMapRemove
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapRemoveName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)
@@ -96,7 +96,7 @@ func (context *VMHooksImpl) ManagedMapContains(mMapHandle int32, keyHandle int32
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ManagedMapAPICost.ManagedMapContains
+	gasToUse := metering.GasSchedule().GetManagedMapAPICost().ManagedMapContains
 	err := metering.UseGasBoundedAndAddTracedGas(managedMapContainsName, gasToUse)
 	if err != nil {
 		context.FailExecution(err)

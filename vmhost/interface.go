@@ -9,6 +9,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -43,9 +44,10 @@ type VMHost interface {
 	EnableEpochsHandler() EnableEpochsHandler
 
 	ExecuteESDTTransfer(transfersArgs *ESDTTransfersArgs, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContract(input *vmcommon.ContractCreateInput, createContractCallType int) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	CreateNewContract(input vmcommon.ContractCreateInputHandler, createContractCallType int) ([]byte, error)
+	ExecuteOnSameContext(input vmcommon.ContractCallInputHandler) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+	IsOutOfVMFunctionExecution(input *vmcommon.ContractCallInput) bool
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
@@ -111,6 +113,7 @@ type BlockchainContext interface {
 	RevertToSnapshot(snapshot int)
 	ClearCompiledCodes()
 	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	ChainID() []byte
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
@@ -119,15 +122,16 @@ type RuntimeContext interface {
 
 	GetVMExecutor() executor.Executor
 	ReplaceVMExecutor(vmExecutor executor.Executor)
-	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
+	InitStateFromContractCallInput(input vmcommon.ContractCallInputHandler)
 	SetCustomCallFunction(callFunction string)
-	GetVMInput() *vmcommon.ContractCallInput
-	SetVMInput(vmInput *vmcommon.ContractCallInput)
+	GetVMInput() vmcommon.ContractCallInputHandler
+	SetVMInput(vmInput vmcommon.ContractCallInputHandler)
 	GetContextAddress() []byte
 	GetOriginalCallerAddress() []byte
 	SetCodeAddress(scAddress []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
+	SaveCompiledCode()
 	GetVMType() []byte
 	FunctionName() string
 	Arguments() [][]byte
@@ -175,6 +179,9 @@ type InstanceTracker interface {
 	StateStack
 
 	TrackedInstances() map[string]executor.Instance
+	CodeHash() []byte
+	SetCodeHash(codeHash []byte)
+	SetCodeSize(codeSize uint64)
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
@@ -234,8 +241,9 @@ type OutputContext interface {
 	CensorVMOutput()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
-	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
-	GetOutputAccounts() map[string]*vmcommon.OutputAccount
+	GetOutputAccount(address []byte) (vmcommon.OutputAccountHandler, bool)
+	SetOutputAccount(address []byte, account vmcommon.OutputAccountHandler)
+	GetOutputAccounts() map[string]vmcommon.OutputAccountHandler
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data [][]byte)
 	WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte)
@@ -258,6 +266,7 @@ type OutputContext interface {
 	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
+	SetEmptyCodeUpdates(address []byte)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 	NextOutputTransferIndex() uint32
 	GetCrtTransferIndex() uint32
@@ -272,7 +281,7 @@ type MeteringContext interface {
 
 	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
-	GasSchedule() *config.GasCost
+	GasSchedule() config.GasSchedule
 	UseGasBoundedAndAddTracedGas(functionName string, gas uint64) error
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
@@ -300,6 +309,7 @@ type MeteringContext interface {
 	StartGasTracing(functionName string)
 	SetGasTracing(enableGasTracing bool)
 	GetGasTrace() map[string]map[string][]uint64
+	IsInterfaceNil() bool
 }
 
 // StorageStatus defines the states the storage can be in
@@ -446,3 +456,43 @@ type EnableEpochsHandler interface {
 	GetActivationEpoch(flag core.EnableEpochFlag) uint32
 	IsInterfaceNil() bool
 }
+
+//// ComponentHandler defines the actions common to all component handlers
+//type ComponentHandler interface {
+//	Create() error
+//	Close() error
+//	CheckSubcomponents() error
+//	String() string
+//}
+//
+//// RunTypeComponentsHandler defines the run type components handler actions
+//type RunTypeComponentsHandler interface {
+//	ComponentHandler
+//	RunTypeComponentsHolder
+//}
+//
+//// RunTypeComponentsHolder holds the run type components
+//type RunTypeComponentsHolder interface {
+//	BlockchainContextCreator() contexts.BlockchainContextCreator
+//	ExecutorCreator() executorFactory.ExecutorCreator
+//	RuntimeContextCreator() contexts.RuntimeContextCreator
+//	MeteringContextCreator() contexts.MeteringContextCreator
+//	OutputContextCreator() contexts.OutputContextCreator
+//	ExecuteOnSameContextHandler() VMExecutionSameContextHander
+//	Create() error
+//	Close() error
+//	CheckSubcomponents() error
+//	String() string
+//	IsInterfaceNil() bool
+//}
+//
+//type VMExecutionSameContextHander interface {
+//	PrepareSameContext(
+//		input vmcommon.ContractCallInputHandler,
+//	) ([]byte, error)
+//	ExecuteOnSameContextTransferValue(
+//		input vmcommon.ContractCallInputHandler,
+//		output OutputContext,
+//		runtime RuntimeContext,
+//	) error
+//}

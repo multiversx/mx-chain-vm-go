@@ -1970,7 +1970,7 @@ func Test_Async_ManagedGetBackTransfers(t *testing.T) {
 			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = 0
+			host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallbackGasLock = 0
 		}).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
@@ -2032,7 +2032,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
 						}
 
 						output := host.Output().GetVMOutput()
-						outTransfer := output.OutputAccounts[string(test.ChildAddress)].OutputTransfers[0]
+						outTransfer := output.OutputAccounts[string(test.ChildAddress)].GetOutputTransfers()[0]
 						assert.NotNil(t, outTransfer)
 						assert.Equal(t, outTransfer.SenderAddress, test.UserAddress)
 

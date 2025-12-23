@@ -6,11 +6,12 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewMeteringContext(t *testing.T) {
@@ -18,7 +19,7 @@ func TestNewMeteringContext(t *testing.T) {
 	const BlockGasLimit = uint64(15000)
 	host := &contextmock.VMHostMock{}
 
-	meteringCtx, err := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, err := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 	require.Nil(t, err)
 	require.NotNil(t, meteringCtx)
 	require.NotNil(t, meteringCtx.gasTracer)
@@ -29,8 +30,18 @@ func TestNewMeteringContext_NilGasSchedule(t *testing.T) {
 	const BlockGasLimit = uint64(15000)
 	host := &contextmock.VMHostMock{}
 
-	meteringCtx, err := NewMeteringContext(host, nil, BlockGasLimit)
+	meteringCtx, err := NewMeteringContext(host, nil, BlockGasLimit, config.NewGasScheduleFactory())
 	require.NotNil(t, err)
+	require.Nil(t, meteringCtx)
+}
+
+func TestNewMeteringContext_NilGasScheduleFactory(t *testing.T) {
+	t.Parallel()
+	const BlockGasLimit = uint64(15000)
+	host := &contextmock.VMHostMock{}
+
+	meteringCtx, err := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, nil)
+	require.Error(t, err, config.ErrNilGasScheduleFactory)
 	require.Nil(t, meteringCtx)
 }
 
@@ -39,7 +50,7 @@ func TestMeteringContext_GasSchedule(t *testing.T) {
 	const BlockGasLimit = uint64(15000)
 
 	host := &contextmock.VMHostStub{}
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 
 	schedule := meteringCtx.GasSchedule()
 	require.NotNil(t, schedule)
@@ -53,7 +64,7 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
 	}
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 
 	gasProvided := uint64(1001)
 	meteringCtx.gasForExecution = gasProvided
@@ -64,7 +75,7 @@ func TestMeteringContext_UseGas(t *testing.T) {
 
 	gasProvided = uint64(10000)
 	mockRuntime.SetPointsUsed(0)
-	meteringCtx, _ = NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, _ = NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 	meteringCtx.gasForExecution = gasProvided
 
 	require.Equal(t, gasProvided, meteringCtx.GasLeft())
@@ -81,7 +92,7 @@ func TestMeteringContext_FreeGas(t *testing.T) {
 		OutputContext: mockOutput,
 	}
 
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 
 	gasToFree := uint64(1000)
 	mockOutput.GasRefund = big.NewInt(0)
@@ -103,7 +114,7 @@ func TestMeteringContext_BoundGasLimit(t *testing.T) {
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
 	}
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 
 	gasProvided := uint64(10000)
 	meteringCtx.gasForExecution = gasProvided
@@ -136,7 +147,7 @@ func TestMeteringContext_DeductInitialGasForExecution(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000), config.NewGasScheduleFactory())
 
 	contract := []byte("contract")
 	err := meteringCtx.DeductInitialGasForExecution(contract)
@@ -166,7 +177,7 @@ func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000), config.NewGasScheduleFactory())
 
 	mockRuntime.SetPointsUsed(0)
 	err := meteringCtx.DeductInitialGasForDirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
@@ -200,7 +211,7 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000), config.NewGasScheduleFactory())
 
 	mockRuntime.SetPointsUsed(0)
 	err := meteringCtx.DeductInitialGasForIndirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
@@ -233,7 +244,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000), config.NewGasScheduleFactory())
 
 	input.GasProvided = 0
 	err := meteringCtx.UseGasForAsyncStep()
@@ -249,8 +260,8 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	expectedGasLeft := gasProvided - gasToLock
 	require.Equal(t, expectedGasLeft, meteringCtx.GasLeft())
 
-	mockRuntime.VMInput.CallType = vm.AsynchronousCallBack
-	mockRuntime.VMInput.GasLocked = gasToLock
+	mockRuntime.VMInput.GetVMInput().CallType = vm.AsynchronousCallBack
+	mockRuntime.VMInput.GetVMInput().GasLocked = gasToLock
 	require.Equal(t, gasToLock, meteringCtx.GetGasLocked())
 
 	meteringCtx.unlockGasIfAsyncCallback(&input.VMInput)
@@ -276,7 +287,7 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 	mockRuntime.SetVMInput(input)
 	mockRuntime.SetPointsUsed(0)
 
-	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 
 	input.GasProvided = 2000
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -313,7 +324,7 @@ func setUpStackOneLevel(t *testing.T, parentInput *vmcommon.ContractCallInput, c
 	mockRuntime.SetPointsUsed(0)
 	mockRuntime.SetVMInput(parentInput)
 
-	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000), config.NewGasScheduleFactory())
 	host.MeteringContext = metering
 	zeroCodeCosts(metering)
 
@@ -408,10 +419,10 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 
 	vmOutput := output.GetVMOutput()
 
-	gasUsed := vmOutput.OutputAccounts["parent"].GasUsed
+	gasUsed := vmOutput.OutputAccounts["parent"].GetGasUsed()
 	require.Equal(t, parentExecutionGas+parentUsedGas, gasUsed)
 
-	gasUsed = vmOutput.OutputAccounts["child"].GasUsed
+	gasUsed = vmOutput.OutputAccounts["child"].GetGasUsed()
 	require.Equal(t, childExecutionGas+childUsedGas, gasUsed)
 
 	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
@@ -464,10 +475,10 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 
 	// after update all gas will be used
 
-	gasUsed := output.outputState.OutputAccounts["parent"].GasUsed
+	gasUsed := output.outputState.OutputAccounts["parent"].GetGasUsed()
 	require.Equal(t, parentInput.GasProvided, gasUsed)
 
-	gasUsed = output.outputState.OutputAccounts["child"].GasUsed
+	gasUsed = output.outputState.OutputAccounts["child"].GetGasUsed()
 	require.Equal(t, childInput.GasProvided, gasUsed)
 
 	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
@@ -477,7 +488,7 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 }
 
 func zeroCodeCosts(context *meteringContext) {
-	context.GasSchedule().BaseOperationCost.GetCode = 0
+	context.GasSchedule().GetBaseOperationCost().GetCode = 0
 }
 
 func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T) {
@@ -501,7 +512,7 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 	}
 	mockRuntime.SetVMInput(input)
 
-	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000), config.NewGasScheduleFactory())
 	host.MeteringContext = metering
 	zeroCodeCosts(metering)
 
@@ -534,7 +545,7 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit, config.NewGasScheduleFactory())
 	meteringCtx.InitState()
 
 	gasProvided := uint64(10000)

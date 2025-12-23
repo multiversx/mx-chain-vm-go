@@ -17,7 +17,7 @@ func MakeEmptyVMOutput() *vmcommon.VMOutput {
 		DeletedAccounts: make([][]byte, 0),
 		TouchedAccounts: make([][]byte, 0),
 		Logs:            make([]*vmcommon.LogEntry, 0),
-		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
+		OutputAccounts:  make(map[string]vmcommon.OutputAccountHandler),
 	}
 }
 
@@ -27,7 +27,7 @@ func AddFinishData(vmOutput *vmcommon.VMOutput, data []byte) {
 }
 
 // AddNewOutputTransfer creates a new vmcommon.OutputAccount from the provided arguments and adds it to OutputAccounts of the provided vmOutput
-func AddNewOutputTransfer(vmOutput *vmcommon.VMOutput, index uint32, sender []byte, address []byte, balanceDelta int64, data []byte) *vmcommon.OutputAccount {
+func AddNewOutputTransfer(vmOutput *vmcommon.VMOutput, index uint32, sender []byte, address []byte, balanceDelta int64, data []byte) vmcommon.OutputAccountHandler {
 	account := vmOutput.OutputAccounts[string(address)]
 	if account == nil {
 		account = &vmcommon.OutputAccount{
@@ -40,16 +40,16 @@ func AddNewOutputTransfer(vmOutput *vmcommon.VMOutput, index uint32, sender []by
 		}
 	}
 	if data != nil {
-		if account.OutputTransfers == nil {
-			account.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+		if account.GetOutputTransfers() == nil {
+			account.SetOutputTransfers(make([]vmcommon.OutputTransfer, 0))
 		}
-		account.OutputTransfers = append(account.OutputTransfers, vmcommon.OutputTransfer{
+		account.SetOutputTransfers(append(account.GetOutputTransfers(), vmcommon.OutputTransfer{
 			Index:         index,
 			Data:          data,
 			Value:         big.NewInt(balanceDelta),
 			SenderAddress: sender,
 		},
-		)
+		))
 	}
 	vmOutput.OutputAccounts[string(address)] = account
 	return account

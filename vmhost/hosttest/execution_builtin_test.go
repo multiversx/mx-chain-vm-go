@@ -13,13 +13,14 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/require"
 )
 
 //TODO package contains snake case named files, rename those.
@@ -292,13 +293,13 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 }
 
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	outputAccounts := make(map[string]*vmcommon.OutputAccount)
+	outputAccounts := make(map[string]vmcommon.OutputAccountHandler)
 	outputAccounts[string(test.ParentAddress)] = &vmcommon.OutputAccount{
 		BalanceDelta: big.NewInt(0),
 		Address:      test.ParentAddress}
 
 	if input.Function == "builtinClaim" {
-		outputAccounts[string(test.ParentAddress)].BalanceDelta = big.NewInt(42)
+		outputAccounts[string(test.ParentAddress)].SetBalanceDelta(big.NewInt(42))
 		return &vmcommon.VMOutput{
 			GasRemaining:   400 + input.GasLocked,
 			OutputAccounts: outputAccounts,
@@ -329,7 +330,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 			CallType:      vm.AsynchronousCall,
 			SenderAddress: input.CallerAddr,
 		}
-		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+		vmOutput.OutputAccounts = make(map[string]vmcommon.OutputAccountHandler)
 		vmOutput.OutputAccounts[string(input.RecipientAddr)] = &vmcommon.OutputAccount{
 			Address:         input.RecipientAddr,
 			OutputTransfers: []vmcommon.OutputTransfer{outTransfer},

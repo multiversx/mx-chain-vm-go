@@ -2,6 +2,7 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -45,7 +46,7 @@ func (m *MeteringContextMock) SetGasSchedule(gasSchedule config.GasScheduleMap) 
 }
 
 // GasSchedule mocked method
-func (m *MeteringContextMock) GasSchedule() *config.GasCost {
+func (m *MeteringContextMock) GasSchedule() config.GasSchedule {
 	return m.GasCost
 }
 
@@ -213,4 +214,8 @@ func (m *MeteringContextMock) SetGasTracing(_ bool) {}
 // GetGasTrace returns nil
 func (m *MeteringContextMock) GetGasTrace() map[string]map[string][]uint64 {
 	return nil
+}
+
+func (m *MeteringContextMock) IsInterfaceNil() bool {
+	return false
 }

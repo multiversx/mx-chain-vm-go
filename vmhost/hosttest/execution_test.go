@@ -13,6 +13,10 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
@@ -25,9 +29,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
-	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var counterKey = []byte("COUNTER")
@@ -1145,9 +1146,9 @@ func runTestMBufferSetByteSlice(
 
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 	gasWithZeroLocals, gasSchedule := callCustomSCAndGetGasUsed(t, 0)
-	costPerLocal := uint64(gasSchedule.WASMOpcodeCost.LocalAllocate)
+	costPerLocal := uint64(gasSchedule.GetWASMOpcodeCost().LocalAllocate)
 
-	UnmeteredLocals := uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered)
+	UnmeteredLocals := uint64(gasSchedule.GetWASMOpcodeCost().LocalsUnmetered)
 
 	// Any number of local variables below `UnmeteredLocals` must be instantiated
 	// without metering, i.e. gas-free.
@@ -1167,8 +1168,8 @@ func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 	}
 }
 
-func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.GasCost) {
-	var gasSchedule *config.GasCost
+func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, config.GasSchedule) {
+	var gasSchedule config.GasSchedule
 	var gasUsed uint64
 
 	gasLimit := uint64(100000)
@@ -1186,7 +1187,7 @@ func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.Gas
 			gasSchedule = host.Metering().GasSchedule()
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			compilationCost := uint64(len(code)) * gasSchedule.BaseOperationCost.CompilePerByte
+			compilationCost := uint64(len(code)) * gasSchedule.GetBaseOperationCost().CompilePerByte
 			gasUsed = gasLimit - verify.VmOutput.GasRemaining - compilationCost
 			verify.Ok()
 		})
@@ -2239,7 +2240,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	require.Nil(t, err)
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided, false)
+	err = runtime.StartWasmerInstance(contract, vmInput.GetVMInput().GasProvided, false)
 	require.Nil(t, err)
 
 	// Use a lot of gas on the parent contract
@@ -2869,7 +2870,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 			WithCurrentTxHash(txHash).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = 3000
+			host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallbackGasLock = 3000
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
@@ -2949,7 +2950,7 @@ func TestExecution_AsyncCall_Promises_ChildFails(t *testing.T) {
 			WithCurrentTxHash(txHash).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = 3000
+			host.Metering().GasSchedule().GetBaseOpsAPICost().AsyncCallbackGasLock = 3000
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
@@ -3592,8 +3593,8 @@ func runMemGrowTest(
 			Build()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			gasSchedule := host.Metering().GasSchedule()
-			gasSchedule.WASMOpcodeCost.MaxMemoryGrow = maxMemGrow
-			gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta = maxMemGrowDelta
+			gasSchedule.GetWASMOpcodeCost().MaxMemoryGrow = maxMemGrow
+			gasSchedule.GetWASMOpcodeCost().MaxMemoryGrowDelta = maxMemGrowDelta
 		}).
 		AndAssertResults(func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(expectedRetCode)
@@ -3776,7 +3777,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 					nephewInstance.AddMockMethod("doSomethingNephew", func() *contextmock.InstanceMock {
 						host := nephewInstance.Host
 						host.Output().Finish([]byte("newphew returns this"))
-						caller := host.Runtime().GetVMInput().CallerAddr
+						caller := host.Runtime().GetVMInput().GetVMInput().CallerAddr
 						if bytes.Equal(caller, test.ParentAddress) {
 							host.Output().Finish([]byte("OK"))
 						}

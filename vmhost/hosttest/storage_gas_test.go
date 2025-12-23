@@ -5,10 +5,11 @@ import (
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/assert"
 )
 
 var smallKey = []byte("testKey")
@@ -46,10 +47,10 @@ func loadStorage(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGasForOneLeaf
-			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
-			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
-			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
+			host.Metering().GasSchedule().GetBaseOpsAPICost().StorageLoad = storageLoadGasForOneLeaf
+			host.Metering().GasSchedule().GetBaseOpsAPICost().CachedStorageLoad = cachedStorageLoadGas
+			host.Metering().GasSchedule().GetBaseOperationCost().DataCopyPerByte = dataCopyGas
+			host.Metering().GasSchedule().GetBaseOperationCost().PersistPerByte = 0
 
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
 			(accountHandler.(*worldmock.Account)).Storage[string(key)] = value
@@ -96,10 +97,10 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGasForOneLeaf
-			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
-			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
-			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
+			host.Metering().GasSchedule().GetBaseOpsAPICost().StorageLoad = storageLoadGasForOneLeaf
+			host.Metering().GasSchedule().GetBaseOpsAPICost().CachedStorageLoad = cachedStorageLoadGas
+			host.Metering().GasSchedule().GetBaseOperationCost().DataCopyPerByte = dataCopyGas
+			host.Metering().GasSchedule().GetBaseOperationCost().PersistPerByte = 0
 
 			account := world.AcctMap[string(test.UserAddress)]
 			account.Storage[string(key)] = value
@@ -163,9 +164,9 @@ func setStorage(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().BaseOpsAPICost.StorageStore = storageStoreGas
-			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
-			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
+			host.Metering().GasSchedule().GetBaseOpsAPICost().StorageStore = storageStoreGas
+			host.Metering().GasSchedule().GetBaseOperationCost().DataCopyPerByte = dataCopyGas
+			host.Metering().GasSchedule().GetBaseOperationCost().PersistPerByte = 0
 
 			account := world.AcctMap[string(test.UserAddress)]
 			account.Storage[string(key)] = value

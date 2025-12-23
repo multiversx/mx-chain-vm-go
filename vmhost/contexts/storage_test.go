@@ -3,17 +3,19 @@ package contexts
 import (
 	"bytes"
 	"errors"
-	"github.com/multiversx/mx-chain-core-go/core"
 	"math/big"
 	"testing"
+
+	"github.com/multiversx/mx-chain-core-go/core"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/stretchr/testify/require"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/stretchr/testify/require"
 )
 
 var reservedTestPrefix = []byte("RESERVED")
@@ -84,7 +86,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 		Balance:        big.NewInt(0),
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
-	stubOutput.GetOutputAccountCalled = func(address []byte) (*vmcommon.OutputAccount, bool) {
+	stubOutput.GetOutputAccountCalled = func(address []byte) (vmcommon.OutputAccountHandler, bool) {
 		if bytes.Equal(address, addressA) {
 			return accountA, false
 		}
@@ -152,10 +154,13 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = false
 
-	account.StorageUpdates["update"] = &vmcommon.StorageUpdate{
+	storageUpdates := map[string]*vmcommon.StorageUpdate{}
+	storageUpd := &vmcommon.StorageUpdate{
 		Offset: []byte("update"),
 		Data:   []byte("some data"),
 	}
+	storageUpdates["update"] = storageUpd
+	account.SetStorageUpdates(storageUpdates)
 
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{}
 
@@ -167,10 +172,10 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	mockBlockchainHook := worldmock.NewMockWorld()
 	storageCtx, _ := NewStorageContext(host, mockBlockchainHook, reservedTestPrefix)
 
-	storageUpdates := storageCtx.GetStorageUpdates([]byte("account"))
-	require.Equal(t, 1, len(storageUpdates))
-	require.Equal(t, []byte("update"), storageUpdates["update"].Offset)
-	require.Equal(t, []byte("some data"), storageUpdates["update"].Data)
+	storageUpdate := storageCtx.GetStorageUpdates([]byte("account"))
+	require.Equal(t, 1, len(storageUpdate))
+	require.Equal(t, []byte("update"), storageUpdate["update"].Offset)
+	require.Equal(t, []byte("some data"), storageUpdate["update"].Data)
 }
 
 func TestStorageContext_SetStorage(t *testing.T) {
@@ -210,8 +215,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err := storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageAdded, storageStatus)
-	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
-	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
+	require.Equal(t, uint64(addedBytes), account.GetBytesAddedToStorage())
+	require.Equal(t, uint64(0), account.GetBytesDeletedFromStorage())
 	foundValue, _, _, err := storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
@@ -223,8 +228,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageModified, storageStatus)
-	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
-	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
+	require.Equal(t, uint64(addedBytes), account.GetBytesAddedToStorage())
+	require.Equal(t, uint64(0), account.GetBytesDeletedFromStorage())
 	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
@@ -235,8 +240,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
-	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
-	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
+	require.Equal(t, uint64(addedBytes), account.GetBytesAddedToStorage())
+	require.Equal(t, uint64(0), account.GetBytesDeletedFromStorage())
 	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
@@ -248,8 +253,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageModified, storageStatus)
-	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
-	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
+	require.Equal(t, uint64(addedBytes), account.GetBytesAddedToStorage())
+	require.Equal(t, uint64(deletedBytes), account.GetBytesDeletedFromStorage())
 	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
@@ -261,8 +266,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageModified, storageStatus)
-	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
-	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
+	require.Equal(t, uint64(addedBytes), account.GetBytesAddedToStorage())
+	require.Equal(t, uint64(deletedBytes), account.GetBytesDeletedFromStorage())
 	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, value, foundValue)
@@ -274,8 +279,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, vmhost.StorageDeleted, storageStatus)
-	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
-	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
+	require.Equal(t, uint64(addedBytes), account.GetBytesAddedToStorage())
+	require.Equal(t, uint64(deletedBytes), account.GetBytesDeletedFromStorage())
 	foundValue, _, _, err = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, foundValue)

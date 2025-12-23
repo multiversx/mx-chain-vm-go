@@ -334,3 +334,9 @@ var ErrOpcodeIsNotAllowed = errors.New("opcode is not allowed")
 
 // ErrInvalidSignature signals that a signature verification failed
 var ErrInvalidSignature = errors.New("signature is invalid")
+
+// ErrNilValidator signals that a nil validator has been provided
+var ErrNilValidator = errors.New("nil validator has been provided")
+
+// ErrNilInputFactory signals that a nil input factory has been provided
+var ErrNilInputFactory = errors.New("nil input factory has been provided")

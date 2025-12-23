@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
+
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -29,7 +30,7 @@ func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, c
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 
 		_ = output.Transfer(
-			vmInput.CallerAddr,
+			vmInput.GetVMInput().CallerAddr,
 			scAddress,
 			0,
 			0,

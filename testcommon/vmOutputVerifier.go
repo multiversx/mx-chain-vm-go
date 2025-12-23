@@ -12,8 +12,9 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
+
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // VMOutputVerifier holds the output to be verified
@@ -133,7 +134,7 @@ func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("GasUsed", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, int(gas), int(account.GasUsed), errMsg)
+	require.Equal(v.T, int(gas), int(account.GetGasUsed()), errMsg)
 	return v
 }
 
@@ -148,8 +149,8 @@ func (v *VMOutputVerifier) Balance(address []byte, balance int64) *VMOutputVerif
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("Balance", address)
 	require.NotNil(v.T, account, errMsg)
-	require.NotNil(v.T, account.Balance, errMsg)
-	require.Equal(v.T, balance, account.Balance.Int64(), errMsg)
+	require.NotNil(v.T, account.GetBalance(), errMsg)
+	require.Equal(v.T, balance, account.GetBalance().Int64(), errMsg)
 	return v
 }
 
@@ -158,8 +159,8 @@ func (v *VMOutputVerifier) BalanceDelta(address []byte, balanceDelta int64) *VMO
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("BalanceDelta", address)
 	require.NotNil(v.T, account, errMsg)
-	require.NotNil(v.T, account.BalanceDelta, errMsg)
-	require.Equal(v.T, balanceDelta, account.BalanceDelta.Int64(), errMsg)
+	require.NotNil(v.T, account.GetBalanceDelta(), errMsg)
+	require.Equal(v.T, balanceDelta, account.GetBalanceDelta().Int64(), errMsg)
 	return v
 }
 
@@ -168,7 +169,7 @@ func (v *VMOutputVerifier) Nonce(address []byte, nonce uint64) *VMOutputVerifier
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("Nonce", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, nonce, account.Nonce, errMsg)
+	require.Equal(v.T, nonce, account.GetNonce(), errMsg)
 	return v
 }
 
@@ -177,7 +178,7 @@ func (v *VMOutputVerifier) Code(address []byte, code []byte) *VMOutputVerifier {
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("Code", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, code, account.Code, errMsg)
+	require.Equal(v.T, code, account.GetCode(), errMsg)
 	return v
 }
 
@@ -186,7 +187,7 @@ func (v *VMOutputVerifier) CodeMetadata(address []byte, codeMetadata []byte) *VM
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("CodeMetadata", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, codeMetadata, account.CodeMetadata, errMsg)
+	require.Equal(v.T, codeMetadata, account.GetCodeMetadata(), errMsg)
 	return v
 }
 
@@ -195,7 +196,7 @@ func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddre
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("CodeDeployerAddress", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, codeDeployerAddress, account.CodeDeployerAddress, errMsg)
+	require.Equal(v.T, codeDeployerAddress, account.GetCodeDeployerAddress(), errMsg)
 	return v
 }
 
@@ -293,14 +294,14 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 	}
 
 	for _, outputAccount := range v.VmOutput.OutputAccounts {
-		accountStorageMap := storage[string(outputAccount.Address)]
-		require.Equal(v.T, len(accountStorageMap), len(outputAccount.StorageUpdates), "Storage")
+		accountStorageMap := storage[string(outputAccount.GetAddress())]
+		require.Equal(v.T, len(accountStorageMap), len(outputAccount.GetStorageUpdates()), "Storage")
 		for key, value := range accountStorageMap {
 			if ignore := ignoredKeys[key]; !ignore {
-				require.Equal(v.T, value, *outputAccount.StorageUpdates[key], "Storage")
+				require.Equal(v.T, value, *outputAccount.GetStorageUpdates()[key], "Storage")
 			}
 		}
-		delete(storage, string(outputAccount.Address))
+		delete(storage, string(outputAccount.GetAddress()))
 	}
 	require.Equal(v.T, 0, len(storage), "Storage")
 
@@ -362,19 +363,19 @@ func (transferEntry *TransferEntry) WithValue(value *big.Int) TransferEntry {
 func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifier {
 	transfersMap, ignoredDataFieldsForTransfersMap := createTransferMapsFromEntries(transfers)
 	for _, account := range v.VmOutput.OutputAccounts {
-		expectedTransfers := transfersMap[string(account.Address)]
-		actualTransfers := account.OutputTransfers
-		ignoredDataFields := ignoredDataFieldsForTransfersMap[string(account.Address)]
-		errMsg := formatErrorForAccount("Transfers to ", account.Address)
+		expectedTransfers := transfersMap[string(account.GetAddress())]
+		actualTransfers := account.GetOutputTransfers()
+		ignoredDataFields := ignoredDataFieldsForTransfersMap[string(account.GetAddress())]
+		errMsg := formatErrorForAccount("Transfers to ", account.GetAddress())
 		require.Equal(v.T, len(expectedTransfers), len(actualTransfers), errMsg)
 
 		for index := range expectedTransfers {
-			errMsg := formatErrorForAccount("Transfers from / to ", actualTransfers[index].SenderAddress, account.Address)
+			errMsg := formatErrorForAccount("Transfers from / to ", actualTransfers[index].SenderAddress, account.GetAddress())
 			requireEqualTransfersWithoutData(account, index, expectedTransfers, v, errMsg)
 			v.requireEqualFunctionAndArgs(ignoredDataFields, expectedTransfers, actualTransfers, index, errMsg)
 		}
 
-		delete(transfersMap, string(account.Address))
+		delete(transfersMap, string(account.GetAddress()))
 	}
 	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
 
@@ -411,12 +412,12 @@ func extractFunctionAndArgsFromTransfer(transfersForAccount []vmcommon.OutputTra
 	return expectedFunction, expectedArgs
 }
 
-func requireEqualTransfersWithoutData(outputAccount *vmcommon.OutputAccount, index int, transfersForAccount []vmcommon.OutputTransfer, v *VMOutputVerifier, errMsg string) {
+func requireEqualTransfersWithoutData(outputAccount vmcommon.OutputAccountHandler, index int, transfersForAccount []vmcommon.OutputTransfer, v *VMOutputVerifier, errMsg string) {
 	transfersForAccount[index].Data = nil
-	outputAccount.OutputTransfers[index].Data = nil
+	outputAccount.GetOutputTransfers()[index].Data = nil
 	transfersForAccount[index].AsyncData = nil
-	outputAccount.OutputTransfers[index].AsyncData = nil
-	require.Equal(v.T, transfersForAccount[index], outputAccount.OutputTransfers[index], errMsg)
+	outputAccount.GetOutputTransfers()[index].AsyncData = nil
+	require.Equal(v.T, transfersForAccount[index], outputAccount.GetOutputTransfers()[index], errMsg)
 }
 
 func createTransferMapsFromEntries(transfers []TransferEntry) (map[string][]vmcommon.OutputTransfer, map[string][][]int) {
@@ -456,15 +457,15 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 	}
 
 	for address, account := range vmOutput.OutputAccounts {
-		log.Trace("VMOutput", "OutputAccount["+address+"].Nonce", account.Nonce)
-		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.Balance.String())
-		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.BalanceDelta.String())
-		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GasUsed)
-		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.StorageUpdates))
-		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.Code))
-		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.CodeMetadata)
-		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
-		for i, transfer := range account.OutputTransfers {
+		log.Trace("VMOutput", "OutputAccount["+address+"].Nonce", account.GetNonce())
+		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.GetBalance().String())
+		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.GetBalanceDelta().String())
+		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GetGasUsed())
+		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.GetStorageUpdates()))
+		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.GetCode()))
+		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.GetCodeMetadata())
+		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.GetOutputTransfers()))
+		for i, transfer := range account.GetOutputTransfers() {
 			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Sender", string(transfer.SenderAddress))
 			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].CallType", transfer.CallType)
 			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].GasLimit", transfer.GasLimit)
@@ -472,7 +473,7 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Value", transfer.Value)
 			log.Trace("VMOutput", "└ OutputTransfers["+fmt.Sprint(i)+"].Data", transfer.Data)
 		}
-		for i, storage := range account.StorageUpdates {
+		for i, storage := range account.GetStorageUpdates() {
 			log.Trace("VMOutput", "| StorageUpdate["+i+"].Offset", string(storage.Offset), "len", len(storage.Offset))
 			log.Trace("VMOutput", "| StorageUpdate["+i+"].Data", storage.Data, "len", len(storage.Data))
 			log.Trace("VMOutput", "└ StorageUpdate["+i+"].Written", storage.Written)
@@ -498,7 +499,7 @@ func (v *VMOutputVerifier) BytesAddedToStorage(address []byte, bytesAdded int) *
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("BytesAddedToStorage", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, bytesAdded, int(account.BytesAddedToStorage), errMsg)
+	require.Equal(v.T, bytesAdded, int(account.GetBytesAddedToStorage()), errMsg)
 	return v
 }
 
@@ -507,7 +508,7 @@ func (v *VMOutputVerifier) BytesDeletedFromStorage(address []byte, bytesDelted i
 	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := formatErrorForAccount("BytesAddedToStorage", address)
 	require.NotNil(v.T, account, errMsg)
-	require.Equal(v.T, bytesDelted, int(account.BytesDeletedFromStorage), errMsg)
+	require.Equal(v.T, bytesDelted, int(account.GetBytesDeletedFromStorage()), errMsg)
 	return v
 }
 

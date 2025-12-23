@@ -2,10 +2,12 @@ package contexts
 
 import (
 	"fmt"
+
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/math"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -16,7 +18,7 @@ var logMetering = logger.GetOrCreate("vm/metering")
 type meteringContext struct {
 	host               vmhost.VMHost
 	stateStack         []*meteringContext
-	gasSchedule        *config.GasCost
+	gasSchedule        config.GasSchedule
 	blockGasLimit      uint64
 	initialGasProvided uint64
 	initialCost        uint64
@@ -26,6 +28,8 @@ type meteringContext struct {
 
 	gasTracer       vmhost.GasTracing
 	traceGasEnabled bool
+
+	gasScheduleFactory config.GasScheduleFactory
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -33,23 +37,28 @@ func NewMeteringContext(
 	host vmhost.VMHost,
 	gasMap config.GasScheduleMap,
 	blockGasLimit uint64,
+	gasScheduleCreator config.GasScheduleFactory,
 ) (*meteringContext, error) {
 	if check.IfNil(host) {
 		return nil, vmhost.ErrNilVMHost
 	}
+	if check.IfNil(gasScheduleCreator) {
+		return nil, config.ErrNilGasScheduleFactory
+	}
 
-	gasSchedule, err := config.CreateGasConfig(gasMap)
+	gasSchedule, err := gasScheduleCreator.CreateGasSchedule(gasMap)
 	if err != nil {
 		return nil, err
 	}
 
 	context := &meteringContext{
-		host:              host,
-		stateStack:        make([]*meteringContext, 0),
-		gasSchedule:       gasSchedule,
-		blockGasLimit:     blockGasLimit,
-		gasUsedByAccounts: make(map[string]uint64),
-		restoreGasEnabled: true,
+		host:               host,
+		stateStack:         make([]*meteringContext, 0),
+		gasSchedule:        gasSchedule,
+		blockGasLimit:      blockGasLimit,
+		gasUsedByAccounts:  make(map[string]uint64),
+		restoreGasEnabled:  true,
+		gasScheduleFactory: gasScheduleCreator,
 	}
 
 	context.InitState()
@@ -187,8 +196,8 @@ func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 	output := context.host.Output()
 
 	account, _ := output.GetOutputAccount(runtime.GetContextAddress())
-	account.GasUsed = math.AddUint64(account.GasUsed, context.GetGasProvided())
-	logMetering.Trace("UpdateGasStateOnFailure", "gas used", account.GasUsed)
+	account.SetGasUsed(math.AddUint64(account.GetGasUsed(), context.GetGasProvided()))
+	logMetering.Trace("UpdateGasStateOnFailure", "gas used", account.GetGasUsed())
 	logMetering.Trace("UpdateGasStateOnFailure", "instance gas left", context.GasLeft())
 }
 
@@ -254,14 +263,14 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 	gasUsed := uint64(0)
 	for _, outputAccount := range outputAccounts {
 		gasTransferred := context.getGasTransferredByAccount(outputAccount)
-		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
+		gasUsed = math.AddUint64(gasUsed, outputAccount.GetGasUsed())
 		gasUsed = math.AddUint64(gasUsed, gasTransferred)
 	}
 
 	return gasUsed
 }
 
-func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
+func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]vmcommon.OutputAccountHandler) uint64 {
 	gasUsedAndTransferred := uint64(0)
 	currentAccountAddress := string(context.host.Runtime().GetContextAddress())
 	for address, account := range outputAccounts {
@@ -279,9 +288,9 @@ func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[
 	return gasUsedAndTransferred
 }
 
-func (context *meteringContext) getGasTransferredByAccount(account *vmcommon.OutputAccount) uint64 {
+func (context *meteringContext) getGasTransferredByAccount(account vmcommon.OutputAccountHandler) uint64 {
 	gasUsed := uint64(0)
-	for _, outputTransfer := range account.OutputTransfers {
+	for _, outputTransfer := range account.GetOutputTransfers() {
 		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
 		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
 	}
@@ -291,7 +300,7 @@ func (context *meteringContext) getGasTransferredByAccount(account *vmcommon.Out
 
 func (context *meteringContext) setGasUsedToOutputAccounts(vmOutput *vmcommon.VMOutput) error {
 	for address, account := range vmOutput.OutputAccounts {
-		account.GasUsed = context.gasUsedByAccounts[address]
+		account.SetGasUsed(context.gasUsedByAccounts[address])
 	}
 
 	for address := range context.gasUsedByAccounts {
@@ -324,13 +333,13 @@ func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.VMInput
 }
 
 // GasSchedule returns the current gas schedule
-func (context *meteringContext) GasSchedule() *config.GasCost {
+func (context *meteringContext) GasSchedule() config.GasSchedule {
 	return context.gasSchedule
 }
 
 // SetGasSchedule sets the gas schedule to the given gas map
 func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
-	gasSchedule, err := config.CreateGasConfig(gasMap)
+	gasSchedule, err := context.gasScheduleFactory.CreateGasSchedule(gasMap)
 	if err != nil {
 		logMetering.Error("SetGasSchedule createGasConfig", "error", err)
 		return
@@ -438,7 +447,7 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 // UseGasForAsyncStep consumes the AsyncCallStep gas cost on the currently
 // running Wasmer instance
 func (context *meteringContext) UseGasForAsyncStep() error {
-	gasSchedule := context.GasSchedule().BaseOpsAPICost
+	gasSchedule := context.GasSchedule().GetBaseOpsAPICost()
 	gasToDeduct := gasSchedule.AsyncCallStep
 	return context.UseGasBounded(gasToDeduct)
 }
@@ -477,8 +486,8 @@ func (context *meteringContext) UseGasBoundedAndAddTracedGas(functionName string
 
 // ComputeExtraGasLockedForAsync calculates the minimum amount of gas to lock for async callbacks
 func (context *meteringContext) ComputeExtraGasLockedForAsync() uint64 {
-	baseGasSchedule := context.GasSchedule().BaseOperationCost
-	apiGasSchedule := context.GasSchedule().BaseOpsAPICost
+	baseGasSchedule := context.GasSchedule().GetBaseOperationCost()
+	apiGasSchedule := context.GasSchedule().GetBaseOpsAPICost()
 	codeSize := context.host.Runtime().GetSCCodeSize()
 	costPerByte := baseGasSchedule.AoTPreparePerByte
 
@@ -495,7 +504,7 @@ func (context *meteringContext) ComputeExtraGasLockedForAsync() uint64 {
 // GetGasLocked returns the locked gas
 func (context *meteringContext) GetGasLocked() uint64 {
 	input := context.host.Runtime().GetVMInput()
-	return input.GasLocked
+	return input.GetVMInput().GasLocked
 }
 
 // BlockGasLimit returns the maximum amount of gas allowed to be consumed in a block.
@@ -505,8 +514,8 @@ func (context *meteringContext) BlockGasLimit() uint64 {
 
 // DeductInitialGasForExecution deducts gas for compilation and locks gas if the execution is an asynchronous call
 func (context *meteringContext) DeductInitialGasForExecution(contract []byte) error {
-	costPerByte := context.gasSchedule.BaseOperationCost.AoTPreparePerByte
-	baseCost := context.gasSchedule.BaseOperationCost.GetCode
+	costPerByte := context.gasSchedule.GetBaseOperationCost().AoTPreparePerByte
+	baseCost := context.gasSchedule.GetBaseOperationCost().GetCode
 	err := context.deductInitialGas(contract, baseCost, costPerByte)
 	if err != nil {
 		return err
@@ -519,8 +528,8 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 func (context *meteringContext) DeductInitialGasForDirectDeployment(input vmhost.CodeDeployInput) error {
 	return context.deductInitialGas(
 		input.ContractCode,
-		context.gasSchedule.BaseOpsAPICost.CreateContract,
-		context.gasSchedule.BaseOperationCost.CompilePerByte,
+		context.gasSchedule.GetBaseOpsAPICost().CreateContract,
+		context.gasSchedule.GetBaseOperationCost().CompilePerByte,
 	)
 }
 
@@ -529,7 +538,7 @@ func (context *meteringContext) DeductInitialGasForIndirectDeployment(input vmho
 	return context.deductInitialGas(
 		input.ContractCode,
 		0,
-		context.gasSchedule.BaseOperationCost.CompilePerByte,
+		context.gasSchedule.GetBaseOperationCost().CompilePerByte,
 	)
 }
 
@@ -539,17 +548,25 @@ func (context *meteringContext) deductInitialGas(
 	costPerByte uint64,
 ) error {
 	input := context.host.Runtime().GetVMInput()
-	codeLength := uint64(len(code))
-	codeCost := math.MulUint64(codeLength, costPerByte)
-	initialCost := math.AddUint64(baseCost, codeCost)
+	initialCost := CalculateInitialCost(code, baseCost, costPerByte)
 
-	if initialCost > input.GasProvided {
+	if initialCost > input.GetVMInput().GasProvided {
 		return vmhost.ErrNotEnoughGas
 	}
 
 	context.initialCost = initialCost
-	context.gasForExecution = input.GasProvided - initialCost
+	context.gasForExecution = input.GetVMInput().GasProvided - initialCost
 	return nil
+}
+
+func CalculateInitialCost(
+	code []byte,
+	baseCost uint64,
+	costPerByte uint64,
+) uint64 {
+	codeLength := uint64(len(code))
+	codeCost := math.MulUint64(codeLength, costPerByte)
+	return math.AddUint64(baseCost, codeCost)
 }
 
 // SetGasTracing enables/disables gas tracing
@@ -612,4 +629,9 @@ func (context *meteringContext) PrintState() {
 		logMetering.Trace("              ", "| gas per acct", gas, "key", key)
 	}
 	logMetering.Trace("              ", "└ stack size", len(context.stateStack))
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (context *meteringContext) IsInterfaceNil() bool {
+	return context == nil
 }
