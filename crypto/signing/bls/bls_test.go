@@ -17,7 +17,8 @@ import (
 
 type multiSignerSetup struct {
 	privKeys          [][]byte
-	pubKeys           [][]byte
+	pubKeysBytes      [][]byte
+	pubKeys           []crypto.PublicKey
 	partialSignatures [][][]byte
 	messages          []string
 	aggSignatures     [][]byte
@@ -51,19 +52,19 @@ func TestBls_VerifyBLSMultiSig(t *testing.T) {
 	setupKOSK, multiSignerKOSK := createMultiSigSetupKOSK(uint16(numMessages), numMessages)
 	setupKOSK.aggSignatures = aggregateSignatures(setupKOSK, multiSignerKOSK)
 
-	for i := 0; i < len(setupKOSK.pubKeys); i++ {
-		fmt.Println(hex.EncodeToString(setupKOSK.pubKeys[i]))
+	for i := 0; i < len(setupKOSK.pubKeysBytes); i++ {
+		fmt.Println(hex.EncodeToString(setupKOSK.pubKeysBytes[i]))
 	}
 
 	for i := 0; i < numMessages; i++ {
 		fmt.Println(setupKOSK.messages[i])
 		fmt.Println(hex.EncodeToString(setupKOSK.aggSignatures[i]))
 
-		assert.Nil(t, b.VerifyAggregatedSig(setupKOSK.pubKeys, []byte(setupKOSK.messages[i]), setupKOSK.aggSignatures[i]))
+		assert.Nil(t, b.VerifyAggregatedSig(setupKOSK.pubKeysBytes, []byte(setupKOSK.messages[i]), setupKOSK.aggSignatures[i]))
 		changedSig := make([]byte, len(setupKOSK.aggSignatures[i]))
 		copy(changedSig, setupKOSK.aggSignatures[i])
 		changedSig[0] += 1
-		assert.NotNil(t, b.VerifyAggregatedSig(setupKOSK.pubKeys, []byte(setupKOSK.messages[i]), changedSig))
+		assert.NotNil(t, b.VerifyAggregatedSig(setupKOSK.pubKeysBytes, []byte(setupKOSK.messages[i]), changedSig))
 	}
 }
 
@@ -84,26 +85,28 @@ func splitString(t testing.TB, str string) ([]byte, []byte, []byte) {
 func createKeysAndMultiSignerBlsKOSK(
 	grSize uint16,
 	suite crypto.Suite,
-) ([][]byte, [][]byte, crypto.MultiSigner) {
+) ([][]byte, []crypto.PublicKey, [][]byte, crypto.MultiSigner) {
 
-	kg, privKeys, pubKeys := createMultiSignerSetup(grSize, suite)
+	kg, pubKeys, privKeys, pubKeysBytes := createMultiSignerSetup(grSize, suite)
 	llSigner := &llsig.BlsMultiSignerKOSK{}
 	multiSigner, _ := multisig.NewBLSMultisig(llSigner, kg)
 
-	return privKeys, pubKeys, multiSigner
+	return privKeys, pubKeys, pubKeysBytes, multiSigner
 }
 
-func createMultiSignerSetup(grSize uint16, suite crypto.Suite) (crypto.KeyGenerator, [][]byte, [][]byte) {
+func createMultiSignerSetup(grSize uint16, suite crypto.Suite) (crypto.KeyGenerator, []crypto.PublicKey, [][]byte, [][]byte) {
 	kg := signing.NewKeyGenerator(suite)
 	privKeys := make([][]byte, grSize)
-	pubKeys := make([][]byte, grSize)
+	pubKeysBytes := make([][]byte, grSize)
+	pubKeys := make([]crypto.PublicKey, grSize)
 
 	for i := uint16(0); i < grSize; i++ {
 		sk, pk := kg.GeneratePair()
 		privKeys[i], _ = sk.ToByteArray()
-		pubKeys[i], _ = pk.ToByteArray()
+		pubKeysBytes[i], _ = pk.ToByteArray()
+		pubKeys[i] = pk
 	}
-	return kg, privKeys, pubKeys
+	return kg, pubKeys, privKeys, pubKeysBytes
 }
 
 func createSignaturesShares(privKeys [][]byte, multiSigner crypto.MultiSigner, message []byte) [][]byte {
@@ -119,7 +122,7 @@ func createMultiSigSetupKOSK(numSigners uint16, numMessages int) (*multiSignerSe
 	var multiSigner crypto.MultiSigner
 	setup := &multiSignerSetup{}
 	suite := mcl.NewSuiteBLS12()
-	setup.privKeys, setup.pubKeys, multiSigner = createKeysAndMultiSignerBlsKOSK(numSigners, suite)
+	setup.privKeys, setup.pubKeys, setup.pubKeysBytes, multiSigner = createKeysAndMultiSignerBlsKOSK(numSigners, suite)
 	setup.messages, setup.partialSignatures = createMessagesAndPartialSignatures(numMessages, setup.privKeys, multiSigner)
 
 	return setup, multiSigner

@@ -1,7 +1,7 @@
 package bls
 
 import (
-	"github.com/multiversx/mx-chain-crypto-go"
+	crypto "github.com/multiversx/mx-chain-crypto-go"
 	"github.com/multiversx/mx-chain-crypto-go/signing"
 	"github.com/multiversx/mx-chain-crypto-go/signing/mcl"
 	mclMultiSig "github.com/multiversx/mx-chain-crypto-go/signing/mcl/multisig"
@@ -46,5 +46,25 @@ func (b *bls) VerifySignatureShare(publicKey []byte, message []byte, sig []byte)
 
 // VerifyAggregatedSig verifies aggregated signature of BLS MultiSig
 func (b *bls) VerifyAggregatedSig(pubKeysSigners [][]byte, message []byte, aggSig []byte) error {
-	return b.multiSigner.VerifyAggregatedSig(pubKeysSigners, message, aggSig)
+	pubKeys, err := b.convertBytesToPubKeys(pubKeysSigners)
+	if err != nil {
+		return err
+	}
+
+	return b.multiSigner.VerifyAggregatedSig(pubKeys, message, aggSig)
+}
+
+func (b *bls) convertBytesToPubKeys(pubKeysBytes [][]byte) ([]crypto.PublicKey, error) {
+	pubKeys := make([]crypto.PublicKey, 0, len(pubKeysBytes))
+
+	for _, pubKeyBytes := range pubKeysBytes {
+		pk, err := b.keyGenerator.PublicKeyFromByteArray(pubKeyBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		pubKeys = append(pubKeys, pk)
+	}
+
+	return pubKeys, nil
 }
