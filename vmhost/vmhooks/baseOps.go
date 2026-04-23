@@ -115,6 +115,9 @@ const (
 	DeployContract
 )
 
+// one memory page 64KB / 4 as min bytes per arguments
+const maxNumArgumentsFromMemory = 16000000
+
 var logEEI = logger.GetOrCreate("vm/eei")
 
 func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
@@ -3867,7 +3870,7 @@ func (context *VMHooksImpl) getArgumentsFromMemory(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) ([][]byte, int32, error) {
-	if numArguments < 0 {
+	if numArguments < 0 || numArguments > maxNumArgumentsFromMemory {
 		return nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
 	}
 
