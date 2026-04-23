@@ -1391,6 +1391,39 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func Test_ManagedCallCheck(t *testing.T) {
+	testConfig := baseTestConfig
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
+				WithOwnerAddress(test.ParentAddress).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						testHooks := vmhooks.NewVMHooksImpl(parentInstance.Host)
+						testHooks.DeleteContract(0, 0, 0x40000000, 0, 0)
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed()
+		})
+	assert.Nil(t, err)
+}
+
 func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 	testConfig := makeTestConfig()
 

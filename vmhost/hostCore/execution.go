@@ -19,7 +19,6 @@ import (
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
-	host.InitState()
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
@@ -117,7 +116,6 @@ func (host *vmHost) performCodeDeploymentAtContractUpgrade(input vmhost.CodeDepl
 
 // doRunSmartContractUpgrade upgrades a contract directly
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
-	host.InitState()
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
@@ -193,7 +191,6 @@ func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) 
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
-	host.InitState()
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
