@@ -1324,7 +1324,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	if isInit {
 		return vmhost.ErrInitFuncCalledInRun
 	}
-	isUpgrade := functionName == vmhost.ContractsUpgradeFunctionName
+	isUpgrade := functionName == vmhost.ContractsUpgradeFunctionName || functionName == vmhost.UpgradeFunctionName
 	if isUpgrade {
 		return vmhost.ErrInitFuncCalledInRun
 	}
