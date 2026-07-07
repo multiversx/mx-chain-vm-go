@@ -1,0 +1,46 @@
+{
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:a_user": {
+                    "nonce": "0",
+                    "balance": "0"
+                },
+                "sc:forwarder_caller": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../forwarder-blind/output/forwarder-blind.mxsc.json"
+                },
+                "sc:forwarder_callee": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../forwarder-blind/output/forwarder-blind.mxsc.json"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "blindAsyncV1 -> callee::callBack (reserved)",
+            "tx": {
+                "from": "address:a_user",
+                "to": "sc:forwarder_caller",
+                "egldValue": "0",
+                "function": "blindAsyncV1",
+                "arguments": [
+                    "sc:forwarder_callee",
+                    "str:callBack"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "10",
+                "message": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
