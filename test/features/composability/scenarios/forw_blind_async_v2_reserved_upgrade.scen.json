@@ -36,8 +36,45 @@
             },
             "expect": {
                 "out": [],
-                "status": "10",
-                "message": "*",
+                "status": "0",
+                "logs": [
+                    {
+                        "address": "sc:forwarder_callee",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "",
+                            "sc:forwarder_caller"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:blind_async_v2_callback",
+                            "10",
+                            "str:upgrade not allowed"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder_caller",
+                        "endpoint": "str:blind_async_v2_callback",
+                        "topics": [
+                            "str:blindAsyncV2CallbackError",
+                            "10"
+                        ],
+                        "data": [
+                            "str:upgrade not allowed"
+                        ]
+                    },
+                    {
+                        "address": "address:a_user",
+                        "endpoint": "str:internalVMErrors",
+                        "topics": [
+                            "sc:forwarder_caller",
+                            "str:blindAsyncV2"
+                        ],
+                        "data": [
+                            "*"
+                        ]
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }

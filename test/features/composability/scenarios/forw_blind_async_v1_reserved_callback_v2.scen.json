@@ -36,8 +36,45 @@
             },
             "expect": {
                 "out": [],
-                "status": "10",
-                "message": "*",
+                "status": "0",
+                "logs": [
+                    {
+                        "address": "sc:forwarder_callee",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "",
+                            "sc:forwarder_caller"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "10",
+                            "str:no callback for closure, cannot call callback directly"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder_caller",
+                        "endpoint": "str:callBack",
+                        "topics": [
+                            "str:blindAsyncV1CallbackError",
+                            "10"
+                        ],
+                        "data": [
+                            "str:no callback for closure, cannot call callback directly"
+                        ]
+                    },
+                    {
+                        "address": "address:a_user",
+                        "endpoint": "str:internalVMErrors",
+                        "topics": [
+                            "sc:forwarder_caller",
+                            "str:blindAsyncV1"
+                        ],
+                        "data": [
+                            "*"
+                        ]
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
