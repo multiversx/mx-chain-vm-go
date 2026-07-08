@@ -1,0 +1,83 @@
+{
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:a_user": {
+                    "nonce": "0",
+                    "balance": "0"
+                },
+                "sc:forwarder_caller": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../forwarder-blind/output/forwarder-blind.mxsc.json"
+                },
+                "sc:forwarder_callee": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../forwarder-blind/output/forwarder-blind.mxsc.json"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "blindAsyncV1 -> callee::init (reserved)",
+            "tx": {
+                "from": "address:a_user",
+                "to": "sc:forwarder_caller",
+                "egldValue": "0",
+                "function": "blindAsyncV1",
+                "arguments": [
+                    "sc:forwarder_callee",
+                    "str:init"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [
+                    {
+                        "address": "sc:forwarder_callee",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "",
+                            "sc:forwarder_caller"
+                        ],
+                        "data": [
+                            "str:AsyncCallback",
+                            "str:callBack",
+                            "4",
+                            "str:invalid function (calling init() directly is forbidden)"
+                        ]
+                    },
+                    {
+                        "address": "sc:forwarder_caller",
+                        "endpoint": "str:callBack",
+                        "topics": [
+                            "str:blindAsyncV1CallbackError",
+                            "4"
+                        ],
+                        "data": [
+                            "str:invalid function (calling init() directly is forbidden)"
+                        ]
+                    },
+                    {
+                        "address": "address:a_user",
+                        "endpoint": "str:internalVMErrors",
+                        "topics": [
+                            "sc:forwarder_caller",
+                            "str:blindAsyncV1"
+                        ],
+                        "data": [
+                            "*"
+                        ]
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

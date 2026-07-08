@@ -389,9 +389,9 @@ func (context *storageContext) checkReservedAndProtection(key []byte) error {
 func (context *storageContext) addDeltaBytes(deltaBytes int) {
 	account, _ := context.host.Output().GetOutputAccount(context.address)
 	if deltaBytes > 0 {
-		account.BytesAddedToStorage += uint64(deltaBytes)
+		account.BytesAddedToStorage = math.AddUint64(account.BytesAddedToStorage, uint64(deltaBytes))
 	} else {
-		account.BytesDeletedFromStorage += uint64(-deltaBytes)
+		account.BytesDeletedFromStorage = math.AddUint64(account.BytesDeletedFromStorage, uint64(-deltaBytes))
 	}
 }
 

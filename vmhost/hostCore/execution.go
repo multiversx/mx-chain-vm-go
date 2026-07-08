@@ -863,7 +863,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	// successful execution, the unused gas will be restored.
 	metering.UseGasForContractInit(input.GasProvided)
 
-	isUpgrade := input.Function == vmhost.UpgradeFunctionName
+	isUpgrade := input.Function == vmhost.UpgradeFunctionName || input.Function == vmhost.ContractsUpgradeFunctionName
 	if isUpgrade {
 		return host.executeUpgrade(input)
 	}
@@ -881,6 +881,11 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		return err
+	}
+
+	isCallBack := input.Function == vmhost.CallbackFunctionName
+	if isCallBack && runtime.GetVMInput().CallType != vm.AsynchronousCallBack {
+		return vmhost.ErrCallBackFuncCalledInRun
 	}
 
 	// Replace the current Wasmer instance of the Runtime with a new one; this
@@ -1319,7 +1324,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	if isInit {
 		return vmhost.ErrInitFuncCalledInRun
 	}
-	isUpgrade := functionName == vmhost.ContractsUpgradeFunctionName
+	isUpgrade := functionName == vmhost.ContractsUpgradeFunctionName || functionName == vmhost.UpgradeFunctionName
 	if isUpgrade {
 		return vmhost.ErrInitFuncCalledInRun
 	}
