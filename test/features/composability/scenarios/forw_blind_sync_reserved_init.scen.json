@@ -1,0 +1,46 @@
+{
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:a_user": {
+                    "nonce": "0",
+                    "balance": "0"
+                },
+                "sc:forwarder_caller": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../forwarder-blind/output/forwarder-blind.mxsc.json"
+                },
+                "sc:forwarder_callee": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "mxsc:../forwarder-blind/output/forwarder-blind.mxsc.json"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "blindSync -> callee::init (reserved)",
+            "tx": {
+                "from": "address:a_user",
+                "to": "sc:forwarder_caller",
+                "egldValue": "0",
+                "function": "blindSync",
+                "arguments": [
+                    "sc:forwarder_callee",
+                    "str:init"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "10",
+                "message": "str:invalid function (calling init() directly is forbidden)",
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

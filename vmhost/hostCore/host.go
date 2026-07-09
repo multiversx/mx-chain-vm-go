@@ -418,6 +418,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			close(done)
 		}()
 
+		host.InitState()
 		vmOutput = host.doRunSmartContractCreate(input)
 		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DeploySmartContractString)
 
@@ -483,6 +484,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			close(done)
 		}()
 
+		host.InitState()
 		switch input.Function {
 		case vmhost.UpgradeFunctionName:
 			vmOutput = host.doRunSmartContractUpgrade(input)

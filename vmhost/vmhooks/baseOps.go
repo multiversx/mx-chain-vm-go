@@ -115,6 +115,9 @@ const (
 	DeployContract
 )
 
+// one memory page 64KB / 4 as min bytes per arguments
+const maxNumArgumentsFromMemory = 16000000
+
 var logEEI = logger.GetOrCreate("vm/eei")
 
 func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
@@ -250,8 +253,8 @@ func (context *VMHooksImpl) SignalError(messageOffset executor.MemPtr, messageLe
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(signalErrorName)
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.SignalError
-	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(messageLength)
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(messageLength))
+	gasToUse = math.AddUint64(gasToUse, metering.GasSchedule().BaseOpsAPICost.SignalError)
 
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
@@ -720,8 +723,6 @@ func (context *VMHooksImpl) extractIndirectContractCallArguments(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) (*indirectContractCallArguments, error) {
-	metering := host.Metering()
-
 	dest, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if err != nil {
 		return nil, err
@@ -749,12 +750,6 @@ func (context *VMHooksImpl) extractIndirectContractCallArguments(
 		dataOffset,
 	)
 	if err != nil {
-		return nil, err
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
 		return nil, err
 	}
 
@@ -1021,21 +1016,13 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 		return 1
 	}
 
-	transferArgs, actualLen, err := context.getArgumentsFromMemory(
+	transferArgs, _, err := context.getArgumentsFromMemory(
 		host,
 		numTokenTransfers*parsers.ArgsPerTransfer,
 		tokenTransfersArgsLengthOffset,
 		tokenTransferDataOffset,
 	)
-
 	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
 		return 1
 	}
@@ -1151,7 +1138,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 
 	output := host.Output()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOpsAPICost.TransferValue, uint64(len(transfers)))
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
@@ -1237,7 +1224,7 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 
 	output := host.Output()
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.TransferValue * uint64(len(transfers))
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOpsAPICost.TransferValue, uint64(len(transfers)))
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		FailExecution(host, err)
@@ -1542,7 +1529,7 @@ func (context *VMHooksImpl) UpgradeContract(
 		return
 	}
 
-	data, actualLen, err := context.getArgumentsFromMemory(
+	data, _, err := context.getArgumentsFromMemory(
 		host,
 		numArguments,
 		argumentsLengthOffset,
@@ -1550,18 +1537,6 @@ func (context *VMHooksImpl) UpgradeContract(
 	)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
-		return
-	}
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return
-	}
-
-	if err != nil {
-		context.FailExecution(err)
 		return
 	}
 
@@ -1624,25 +1599,13 @@ func (context *VMHooksImpl) UpgradeFromSourceContract(
 		return
 	}
 
-	data, actualLen, err := context.getArgumentsFromMemory(
+	data, _, err := context.getArgumentsFromMemory(
 		host,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return
-	}
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return
-	}
-
-	if err != nil {
 		FailExecution(host, err)
 		return
 	}
@@ -1752,25 +1715,13 @@ func (context *VMHooksImpl) DeleteContract(
 		return
 	}
 
-	data, actualLen, err := context.getArgumentsFromMemory(
+	data, _, err := context.getArgumentsFromMemory(
 		host,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return
-	}
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
-		FailExecution(host, err)
-		return
-	}
-
-	if err != nil {
 		FailExecution(host, err)
 		return
 	}
@@ -2673,7 +2624,9 @@ func (context *VMHooksImpl) WriteLog(
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
-	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*vmhost.HashLen+dataLength))
+	fullDataForGas := math.MulUint64(uint64(numTopics), vmhost.HashLen)
+	fullDataForGas = math.AddUint64(fullDataForGas, uint64(dataLength))
+	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, fullDataForGas)
 	gasToUse = math.AddUint64(gasToUse, gas)
 
 	if numTopics < 0 || dataLength < 0 {
@@ -2720,8 +2673,9 @@ func (context *VMHooksImpl) WriteEventLog(
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
+	metering.StartGasTracing(writeEventLogName)
 
-	topics, topicDataTotalLen, err := context.getArgumentsFromMemory(
+	topics, _, err := context.getArgumentsFromMemory(
 		host,
 		numTopics,
 		topicLengthsOffset,
@@ -2732,18 +2686,18 @@ func (context *VMHooksImpl) WriteEventLog(
 		return
 	}
 
-	data, err := context.MemLoad(dataOffset, dataLength)
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
+	gasForData := math.MulUint64(
+		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+		uint64(dataLength))
+	gasToUse = math.AddUint64(gasToUse, gasForData)
+	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
 		context.FailExecution(err)
 		return
 	}
 
-	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
-	gasForData := math.MulUint64(
-		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
-		uint64(topicDataTotalLen+dataLength))
-	gasToUse = math.AddUint64(gasToUse, gasForData)
-	err = metering.UseGasBoundedAndAddTracedGas(writeEventLogName, gasToUse)
+	data, err := context.MemLoad(dataOffset, dataLength)
 	if err != nil {
 		context.FailExecution(err)
 		return
@@ -3464,20 +3418,13 @@ func (context *VMHooksImpl) createContractWithHost(
 		return 1
 	}
 
-	data, actualLen, err := context.getArgumentsFromMemory(
+	data, _, err := context.getArgumentsFromMemory(
 		host,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
 	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
 		return 1
 	}
@@ -3541,20 +3488,13 @@ func (context *VMHooksImpl) DeployFromSourceContract(
 		return 1
 	}
 
-	data, actualLen, err := context.getArgumentsFromMemory(
+	data, _, err := context.getArgumentsFromMemory(
 		host,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
 	if err != nil {
-		FailExecution(host, err)
-		return 1
-	}
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-	err = metering.UseGasBounded(gasToUse)
-	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		FailExecution(host, err)
 		return 1
 	}
@@ -3867,8 +3807,15 @@ func (context *VMHooksImpl) getArgumentsFromMemory(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) ([][]byte, int32, error) {
-	if numArguments < 0 {
+	if numArguments < 0 || numArguments > maxNumArgumentsFromMemory {
 		return nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
+	}
+
+	metering := context.GetMeteringContext()
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(numArguments))
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil && context.GetRuntimeContext().UseGasBoundedShouldFailExecution() {
+		return nil, 0, err
 	}
 
 	argumentsLengthData, err := context.MemLoad(argumentsLengthOffset, numArguments*4)
@@ -3885,6 +3832,13 @@ func (context *VMHooksImpl) getArgumentsFromMemory(
 	totalArgumentBytes := int32(0)
 	for _, length := range argumentLengths {
 		totalArgumentBytes += length
+	}
+
+	restOfLenForGasCopy := math.SubUint64(uint64(totalArgumentBytes), uint64(numArguments))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, restOfLenForGasCopy)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil && context.GetRuntimeContext().UseGasBoundedShouldFailExecution() {
+		return nil, 0, err
 	}
 
 	return data, totalArgumentBytes, nil
