@@ -413,18 +413,18 @@ func TestBlockchainContext_Getters(t *testing.T) {
 
 	mockWorld := &worldmock.MockWorld{
 		PreviousBlockInfo: &worldmock.BlockInfo{
-			BlockTimestamp: 6749,
-			BlockNonce:     90,
-			BlockRound:     96,
-			BlockEpoch:     3,
-			RandomSeed:     &randomSeed1,
+			BlockTimestampMs: 6749000,
+			BlockNonce:       90,
+			BlockRound:       96,
+			BlockEpoch:       3,
+			RandomSeed:       &randomSeed1,
 		},
 		CurrentBlockInfo: &worldmock.BlockInfo{
-			BlockTimestamp: 6800,
-			BlockNonce:     98,
-			BlockRound:     99,
-			BlockEpoch:     4,
-			RandomSeed:     &randomSeed2,
+			BlockTimestampMs: 6800000,
+			BlockNonce:       98,
+			BlockRound:       99,
+			BlockEpoch:       4,
+			RandomSeed:       &randomSeed2,
 		},
 		StateRootHash: []byte("root hash"),
 	}
