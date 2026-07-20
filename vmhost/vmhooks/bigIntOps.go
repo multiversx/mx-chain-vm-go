@@ -773,6 +773,8 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 }
 
+const maxSqrtLen = 1000000
+
 // BigIntSqrt VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
@@ -804,6 +806,12 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 		context.FailExecution(vmhost.ErrBadLowerBounds)
 		return
 	}
+
+	if context.GetRuntimeContext().AttributeExtraGasUsage() && dest.BitLen() > maxSqrtLen {
+		context.FailExecution(vmhost.ErrBadUpperBounds)
+		return
+	}
+
 	dest.Sqrt(a)
 }
 

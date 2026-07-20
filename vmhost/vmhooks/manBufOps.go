@@ -534,6 +534,12 @@ func (context *VMHooksImpl) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIn
 		return 1
 	}
 
+	err = chargeGasForExtraLength(value.BitLen(), context.GetVMHost())
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
 	managedType.SetBytes(mBufferHandle, value.Bytes())
 
 	return 0

@@ -57,6 +57,7 @@ const (
 )
 
 const EGLDTokenName = "EGLD-000000" // TODO: maybe move to core?
+const safeAttributeLength = 100
 
 // ManagedSCAddress VMHooks implementation.
 // @autogenerate(VMHooks)
@@ -1528,6 +1529,12 @@ func ManagedIsESDTPausedWithHost(host vmhost.VMHost, tokenIDHandle int32) int32 
 		return -1
 	}
 
+	err = chargeGasForExtraLength(len(tokenID), host)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
 	if blockchain.IsPaused(tokenID) {
 		return 1
 	}
@@ -1669,10 +1676,27 @@ func ManagedIsBuiltinFunctionWithHost(host vmhost.VMHost, functionNameHandle int
 		return -1
 	}
 
+	lenFuncName := len(mBuffFunctionName)
+	err = chargeGasForExtraLength(lenFuncName, host)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
 	isBuiltinFunction := host.IsBuiltinFunctionName(string(mBuffFunctionName))
 	if isBuiltinFunction {
 		return 1
 	}
 
 	return 0
+}
+
+func chargeGasForExtraLength(lenAttribute int, host vmhost.VMHost) error {
+	if !host.Runtime().AttributeExtraGasUsage() || lenAttribute < safeAttributeLength {
+		return nil
+	}
+
+	metering := host.Metering()
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(lenAttribute))
+	return metering.UseGasBounded(gasToUse)
 }

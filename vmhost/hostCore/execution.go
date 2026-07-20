@@ -891,7 +891,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	// Replace the current Wasmer instance of the Runtime with a new one; this
 	// assumes that the instance was preserved on the Runtime instance stack
 	// before calling executeSmartContractCall().
-	err = runtime.StartWasmerInstance(contract, metering.GetGasForExecution(), false)
+	err = runtime.StartWasmerInstance(contract, metering.GetGasForExecution(), input.AllowInitFunction)
 	if err != nil {
 		return err
 	}
