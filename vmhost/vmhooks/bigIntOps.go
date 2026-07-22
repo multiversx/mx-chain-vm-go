@@ -773,7 +773,7 @@ func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 }
 
-const maxSqrtLen = 1000000
+const maxSqrtLen = 8000
 
 // BigIntSqrt VMHooks implementation.
 // @autogenerate(VMHooks)
