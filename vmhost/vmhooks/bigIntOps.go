@@ -807,7 +807,7 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 		return
 	}
 
-	if context.GetRuntimeContext().AttributeExtraGasUsage() && dest.BitLen() > maxSqrtLen {
+	if context.GetRuntimeContext().AttributeExtraGasUsage() && a.BitLen() > maxSqrtLen {
 		context.FailExecution(vmhost.ErrBadUpperBounds)
 		return
 	}
