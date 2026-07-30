@@ -226,7 +226,7 @@ func TestManBuffers_mBufferFromBigIntUnsigned(t *testing.T) {
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(100000).
+			WithGasProvided(1000000).
 			WithFunction("mBufferFromBigIntUnsignedTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).

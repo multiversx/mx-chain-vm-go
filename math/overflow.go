@@ -90,3 +90,23 @@ func SubInt(a, b int) int {
 	log.Trace("SubInt underflow", "a", a, "b", b)
 	return builtinMath.MinInt64
 }
+
+// MulInt32 performs multiplication on int32 and logs an error if the multiplication overflows
+func MulInt32(a, b int32) int32 {
+	res, err := MulInt32WithErr(a, b)
+	if err != nil {
+		log.Trace("MulInt32 overflow", "a", a, "b", b)
+		return builtinMath.MaxInt32
+	}
+
+	return res
+}
+
+// MulInt32WithErr performs multiplication on int32 and returns an error if the multiplication overflows
+func MulInt32WithErr(a, b int32) (int32, error) {
+	wide := int64(a) * int64(b)
+	if wide > builtinMath.MaxInt32 || wide < builtinMath.MinInt32 {
+		return builtinMath.MaxInt32, ErrMultiplicationOverflow
+	}
+	return int32(wide), nil
+}

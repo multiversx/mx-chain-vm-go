@@ -155,6 +155,7 @@ type RuntimeContext interface {
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
 	UseGasBoundedShouldFailExecution() bool
+	AttributeExtraGasUsage() bool
 	CleanInstance()
 
 	AddError(err error, otherInfo ...string)

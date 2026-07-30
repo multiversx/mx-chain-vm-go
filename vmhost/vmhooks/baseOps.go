@@ -1016,9 +1016,10 @@ func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 		return 1
 	}
 
+	numArgsFromMemory := math.MulInt32(numTokenTransfers, parsers.ArgsPerTransfer)
 	transferArgs, _, err := context.getArgumentsFromMemory(
 		host,
-		numTokenTransfers*parsers.ArgsPerTransfer,
+		numArgsFromMemory,
 		tokenTransfersArgsLengthOffset,
 		tokenTransferDataOffset,
 	)

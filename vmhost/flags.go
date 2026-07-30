@@ -30,5 +30,8 @@ const (
 	// FixGetBalanceFlag defines the flag that activates the fix for get balance from the Barnard release
 	FixGetBalanceFlag core.EnableEpochFlag = "FixGetBalanceFlag"
 
+	// AttributeExtraGasUsageFlag defines the flag that activates the extra gas usage for extra attributes
+	AttributeExtraGasUsageFlag core.EnableEpochFlag = "AttributeExtraGasUsageFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )
