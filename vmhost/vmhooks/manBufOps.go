@@ -534,6 +534,13 @@ func (context *VMHooksImpl) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIn
 		return 1
 	}
 
+	byteLen := (value.BitLen() + 7) / 8
+	err = chargeGasForExtraLength(byteLen, context.GetVMHost())
+	if err != nil {
+		context.FailExecution(err)
+		return -1
+	}
+
 	managedType.SetBytes(mBufferHandle, value.Bytes())
 
 	return 0
@@ -556,6 +563,13 @@ func (context *VMHooksImpl) MBufferFromBigIntSigned(mBufferHandle int32, bigIntH
 	if err != nil {
 		context.FailExecution(err)
 		return 1
+	}
+
+	byteLen := (value.BitLen() + 7) / 8
+	err = chargeGasForExtraLength(byteLen, context.GetVMHost())
+	if err != nil {
+		context.FailExecution(err)
+		return -1
 	}
 
 	managedType.SetBytes(mBufferHandle, twos.ToBytes(value))

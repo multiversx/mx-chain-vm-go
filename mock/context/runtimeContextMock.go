@@ -320,6 +320,11 @@ func (r *RuntimeContextMock) UseGasBoundedShouldFailExecution() bool {
 	return true
 }
 
+// AttributeExtraGasUsage mocked method
+func (r *RuntimeContextMock) AttributeExtraGasUsage() bool {
+	return true
+}
+
 // FailExecution mocked method
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
