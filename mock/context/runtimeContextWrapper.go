@@ -479,6 +479,11 @@ func (contextWrapper *RuntimeContextWrapper) UseGasBoundedShouldFailExecution() 
 	return contextWrapper.runtimeContext.UseGasBoundedShouldFailExecution()
 }
 
+// AttributeExtraGasUsage calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) AttributeExtraGasUsage() bool {
+	return contextWrapper.runtimeContext.AttributeExtraGasUsage()
+}
+
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()

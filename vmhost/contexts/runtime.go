@@ -267,7 +267,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		context.iTracker.SetCodeHash(codeHash)
 	}
 
-	if newCode {
+	if newCode || context.verifyCode {
 		err = context.VerifyContractCode()
 		if err != nil {
 			context.iTracker.ForceCleanInstance(true)
@@ -731,6 +731,11 @@ func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
 // UseGasBoundedShouldFailExecution returns true when flag activated
 func (context *runtimeContext) UseGasBoundedShouldFailExecution() bool {
 	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.UseGasBoundedShouldFailExecutionFlag)
+}
+
+// AttributeExtraGasUsage returns true when flag is activated
+func (context *runtimeContext) AttributeExtraGasUsage() bool {
+	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.AttributeExtraGasUsageFlag)
 }
 
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
