@@ -8,13 +8,13 @@ require (
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.2.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/multiversx/mx-chain-core-go v1.5.1-0.20260713100334-14d633236974
-	github.com/multiversx/mx-chain-crypto-go v1.3.2-0.20260713100639-c3cf05776cb6
-	github.com/multiversx/mx-chain-logger-go v1.1.1-0.20260713100530-e85a16be3260
-	github.com/multiversx/mx-chain-scenario-go v1.7.1-0.20260713104347-ca02e230558e
-	github.com/multiversx/mx-chain-storage-go v1.1.2-0.20260619082052-f53b75220f3a
-	github.com/multiversx/mx-chain-vm-common-go v1.6.8-0.20260713100832-23aa4c20accd
-	github.com/multiversx/mx-components-big-int v1.1.1-0.20260507134206-ffc95520dc6d
+	github.com/multiversx/mx-chain-core-go v1.5.1
+	github.com/multiversx/mx-chain-crypto-go v1.3.2
+	github.com/multiversx/mx-chain-logger-go v1.2.0
+	github.com/multiversx/mx-chain-scenario-go v1.8.0
+	github.com/multiversx/mx-chain-storage-go v1.2.0
+	github.com/multiversx/mx-chain-vm-common-go v1.7.1
+	github.com/multiversx/mx-components-big-int v1.2.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v2 v2.27.7
