@@ -144,6 +144,8 @@ type RuntimeContext interface {
 	IsFunctionImported(name string) bool
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
+	IsUnsafeMode() bool
+	SetUnsafeMode(unsafeMode bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
 	ClearWarmInstanceCache()
 	SetMaxInstanceStackSize(uint64)

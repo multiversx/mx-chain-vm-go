@@ -337,3 +337,6 @@ var ErrTooManyTransfersFromBuiltInFunction = errors.New("too many transfers from
 
 // ErrTimeLockExpired signals that timelock has expired
 var ErrTimeLockExpired = errors.New("time lock expired")
+
+// ErrWrongType signals that wrong type is read from buffer
+var ErrWrongType = errors.New("incompatible type")
