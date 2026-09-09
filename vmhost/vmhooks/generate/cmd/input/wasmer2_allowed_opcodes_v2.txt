@@ -103,7 +103,6 @@ If
 LocalGet
 LocalSet
 LocalTee
-LocalAllocate
 Loop
 MemoryGrow
 MemorySize
@@ -125,4 +124,5 @@ Throw
 Try
 TypedSelect
 Unreachable
-Unwind
+MemoryCopy
+MemoryFill

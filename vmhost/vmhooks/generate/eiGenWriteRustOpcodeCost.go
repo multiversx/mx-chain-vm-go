@@ -1,9 +1,7 @@
 package vmhooksgenerate
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -25,19 +23,12 @@ func WriteRustOpcodeCost(out *eiGenWriter) {
 	out.WriteString("#[serde(default)]\n")
 	out.WriteString("pub struct OpcodeCost {\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes_short.txt")
-	if err != nil {
-		panic(err)
-	}
-	defer readFile.Close()
+	allowedOpcodes := LoadOpcodeNames()
 
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-
-	for fileScanner.Scan() {
-		line := fileScanner.Text()
-		out.WriteString(fmt.Sprintf("    #[serde(rename = \"%s\", default)]\n", line))
-		out.WriteString(fmt.Sprintf("    pub opcode_%s: u32,\n", strings.ToLower(line)))
+	for _, opcode := range allowedOpcodes.RelevantCodes {
+		out.WriteString(fmt.Sprintf("    #[serde(rename = \"%s\", default)]\n", opcode))
+		out.WriteString(fmt.Sprintf("    pub opcode_%s: u32,\n", strings.ToLower(opcode)))
 	}
+
 	out.WriteString("}\n")
 }

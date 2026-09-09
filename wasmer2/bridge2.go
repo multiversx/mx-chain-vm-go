@@ -41,12 +41,14 @@ func cWasmerForceInstallSighandlers() {
 	C.vm_force_sighandler_reinstall()
 }
 
-func cWasmerExecutorSetOpcodeCost(
+func cWasmerExecutorSetOpcodeConfig(
 	executor *cWasmerExecutorT,
+	opcodeVersion int32,
 	opcodeCost *cWasmerOpcodeCostT,
 ) cWasmerResultT {
-	return (cWasmerResultT)(C.vm_exec_set_opcode_costs(
+	return (cWasmerResultT)(C.vm_exec_set_opcode_config(
 		(*C.vm_exec_executor_t)(executor),
+		(C.int32_t)(opcodeVersion),
 		(*C.vm_exec_opcode_cost_t)(opcodeCost),
 	))
 }
