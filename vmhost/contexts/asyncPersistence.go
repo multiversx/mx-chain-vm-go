@@ -48,8 +48,17 @@ func (context *asyncContext) LoadParentContext() error {
 // DeleteFromCallID deletes the persisted state of the AsyncContext from the contract storage.
 func (context *asyncContext) DeleteFromCallID(callID []byte) error {
 	storage := context.host.Storage()
+
+	// Delete AsyncContext
 	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, callID)
 	_, err := storage.SetProtectedStorageToAddressUnmetered(context.address, storageKey, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete AsyncResults
+	resultsKey := getAsyncContextStorageKey(storage.GetVmProtectedPrefix(vmhost.AsyncResultsPrefix), callID)
+	_, err = storage.SetProtectedStorageToAddressUnmetered(context.address, resultsKey, nil)
 	return err
 }
 

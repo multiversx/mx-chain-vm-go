@@ -32,6 +32,7 @@ message SerializableAsyncCall {
     string SuccessCallback = 10;
     string ErrorCallback = 11;
     bytes CallbackClosure = 12;
+    repeated uint64 GasLimitsForCallback = 13;
 }
 
 message SerializableAsyncCallGroup {

@@ -122,13 +122,64 @@ func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) erro
 	return nil
 }
 
+	ExecuteOnDestContextCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+}
+
 // ExecuteOnDestContext mocked method
 func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error) {
+	if host.ExecuteOnDestContextCalled != nil {
+		return host.ExecuteOnDestContextCalled(input)
+	}
+
 	if host.Err != nil {
 		return nil, true, host.Err
 	}
 	host.StoreInput(input)
 	return host.GetNextVMOutput(), true, nil
+}
+
+// ExecuteOnDestContext -
+func (vmh *VMHostMock) ExecuteOnDestContext(gasLimit uint64, scAddress, callerAddress, calleeAddress []byte, value *big.Int, input []byte, readOnly bool) (vmOutput *vm.VMOutput, err error) {
+	if vmh.ExecuteOnDestContextCalled != nil {
+		return vmh.ExecuteOnDestContextCalled(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	if vmh.ExecuteOnDestContextCallBack != nil {
+		return vmh.ExecuteOnDestContextCallBack(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	return nil, nil
+}
+
+// ExecuteOnDestContext -
+func (vmh *VMHostMock) ExecuteOnDestContext(gasLimit uint64, scAddress, callerAddress, calleeAddress []byte, value *big.Int, input []byte, readOnly bool) (vmOutput *vm.VMOutput, err error) {
+	if vmh.ExecuteOnDestContextCalled != nil {
+		return vmh.ExecuteOnDestContextCalled(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	if vmh.ExecuteOnDestContextCallBack != nil {
+		return vmh.ExecuteOnDestContextCallBack(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	return nil, nil
+}
+
+// ExecuteOnDestContext -
+func (vmh *VMHostMock) ExecuteOnDestContext(gasLimit uint64, scAddress, callerAddress, calleeAddress []byte, value *big.Int, input []byte, readOnly bool) (vmOutput *vm.VMOutput, err error) {
+	if vmh.ExecuteOnDestContextCalled != nil {
+		return vmh.ExecuteOnDestContextCalled(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	if vmh.ExecuteOnDestContextCallBack != nil {
+		return vmh.ExecuteOnDestContextCallBack(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	return nil, nil
+}
+
+// ExecuteOnDestContext -
+func (vmh *VMHostMock) ExecuteOnDestContext(gasLimit uint64, scAddress, callerAddress, calleeAddress []byte, value *big.Int, input []byte, readOnly bool) (vmOutput *vm.VMOutput, err error) {
+	if vmh.ExecuteOnDestContextCalled != nil {
+		return vmh.ExecuteOnDestContextCalled(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	if vmh.ExecuteOnDestContextCallBack != nil {
+		return vmh.ExecuteOnDestContextCallBack(gasLimit, scAddress, callerAddress, calleeAddress, value, input, readOnly)
+	}
+	return nil, nil
 }
 
 // InitState mocked method

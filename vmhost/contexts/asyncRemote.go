@@ -23,7 +23,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *vmhost.AsyncCall
 	newCallID := context.generateNewCallID()
 	asyncCall.CallID = newCallID
 
-	asyncData := createAsyncDataForAsyncCall(newCallID, context.GetCallID())
+	asyncData := createAsyncDataForAsyncCall(newCallID, context.GetCallID(), asyncCall.GasLimitsForCallback)
 
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(function)
@@ -43,9 +43,13 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *vmhost.AsyncCall
 	)
 }
 
-func createAsyncDataForAsyncCall(newCallID []byte, currentCallID []byte) []byte {
+func createAsyncDataForAsyncCall(newCallID []byte, currentCallID []byte, gasLimits []uint64) []byte {
 	asyncData := txDataBuilder.NewBuilder()
 	asyncData.Bytes(newCallID)
 	asyncData.Bytes(currentCallID)
+	asyncData.BigInt(big.NewInt(int64(len(gasLimits))))
+	for _, gasLimit := range gasLimits {
+		asyncData.BigInt(big.NewInt(int64(gasLimit)))
+	}
 	return asyncData.ToBytes()
 }

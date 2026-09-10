@@ -79,17 +79,18 @@ func (SerializableAsyncCallExecutionMode) EnumDescriptor() ([]byte, []int) {
 }
 
 type SerializableAsyncCall struct {
-	CallID          []byte                             `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
-	Status          SerializableAsyncCallStatus        `protobuf:"varint,2,opt,name=Status,proto3,enum=vmhost.SerializableAsyncCallStatus" json:"Status,omitempty"`
-	ExecutionMode   SerializableAsyncCallExecutionMode `protobuf:"varint,3,opt,name=ExecutionMode,proto3,enum=vmhost.SerializableAsyncCallExecutionMode" json:"ExecutionMode,omitempty"`
-	Destination     []byte                             `protobuf:"bytes,5,opt,name=Destination,proto3" json:"Destination,omitempty"`
-	Data            []byte                             `protobuf:"bytes,6,opt,name=Data,proto3" json:"Data,omitempty"`
-	GasLimit        uint64                             `protobuf:"varint,7,opt,name=GasLimit,proto3" json:"GasLimit,omitempty"`
-	GasLocked       uint64                             `protobuf:"varint,8,opt,name=GasLocked,proto3" json:"GasLocked,omitempty"`
-	ValueBytes      []byte                             `protobuf:"bytes,9,opt,name=ValueBytes,proto3" json:"ValueBytes,omitempty"`
-	SuccessCallback string                             `protobuf:"bytes,10,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
-	ErrorCallback   string                             `protobuf:"bytes,11,opt,name=ErrorCallback,proto3" json:"ErrorCallback,omitempty"`
-	CallbackClosure []byte                             `protobuf:"bytes,12,opt,name=CallbackClosure,proto3" json:"CallbackClosure,omitempty"`
+	CallID               []byte                             `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
+	Status               SerializableAsyncCallStatus        `protobuf:"varint,2,opt,name=Status,proto3,enum=vmhost.SerializableAsyncCallStatus" json:"Status,omitempty"`
+	ExecutionMode        SerializableAsyncCallExecutionMode `protobuf:"varint,3,opt,name=ExecutionMode,proto3,enum=vmhost.SerializableAsyncCallExecutionMode" json:"ExecutionMode,omitempty"`
+	Destination          []byte                             `protobuf:"bytes,5,opt,name=Destination,proto3" json:"Destination,omitempty"`
+	Data                 []byte                             `protobuf:"bytes,6,opt,name=Data,proto3" json:"Data,omitempty"`
+	GasLimit             uint64                             `protobuf:"varint,7,opt,name=GasLimit,proto3" json:"GasLimit,omitempty"`
+	GasLocked            uint64                             `protobuf:"varint,8,opt,name=GasLocked,proto3" json:"GasLocked,omitempty"`
+	ValueBytes           []byte                             `protobuf:"bytes,9,opt,name=ValueBytes,proto3" json:"ValueBytes,omitempty"`
+	SuccessCallback      string                             `protobuf:"bytes,10,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
+	ErrorCallback        string                             `protobuf:"bytes,11,opt,name=ErrorCallback,proto3" json:"ErrorCallback,omitempty"`
+	CallbackClosure      []byte                             `protobuf:"bytes,12,opt,name=CallbackClosure,proto3" json:"CallbackClosure,omitempty"`
+	GasLimitsForCallback []uint64                           `protobuf:"varint,13,rep,packed,name=GasLimitsForCallback,proto3" json:"GasLimitsForCallback,omitempty"`
 }
 
 func (m *SerializableAsyncCall) Reset()      { *m = SerializableAsyncCall{} }
@@ -193,6 +194,13 @@ func (m *SerializableAsyncCall) GetErrorCallback() string {
 func (m *SerializableAsyncCall) GetCallbackClosure() []byte {
 	if m != nil {
 		return m.CallbackClosure
+	}
+	return nil
+}
+
+func (m *SerializableAsyncCall) GetGasLimitsForCallback() []uint64 {
+	if m != nil {
+		return m.GasLimitsForCallback
 	}
 	return nil
 }
@@ -383,6 +391,14 @@ func (this *SerializableAsyncCall) Equal(that interface{}) bool {
 	if !bytes.Equal(this.CallbackClosure, that1.CallbackClosure) {
 		return false
 	}
+	if len(this.GasLimitsForCallback) != len(that1.GasLimitsForCallback) {
+		return false
+	}
+	for i := range this.GasLimitsForCallback {
+		if this.GasLimitsForCallback[i] != that1.GasLimitsForCallback[i] {
+			return false
+		}
+	}
 	return true
 }
 func (this *SerializableAsyncCallGroup) Equal(that interface{}) bool {
@@ -443,6 +459,7 @@ func (this *SerializableAsyncCall) GoString() string {
 	s = append(s, "SuccessCallback: "+fmt.Sprintf("%#v", this.SuccessCallback)+",\n")
 	s = append(s, "ErrorCallback: "+fmt.Sprintf("%#v", this.ErrorCallback)+",\n")
 	s = append(s, "CallbackClosure: "+fmt.Sprintf("%#v", this.CallbackClosure)+",\n")
+	s = append(s, "GasLimitsForCallback: "+fmt.Sprintf("%#v", this.GasLimitsForCallback)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -490,6 +507,24 @@ func (m *SerializableAsyncCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.GasLimitsForCallback) > 0 {
+		dAtA2 := make([]byte, len(m.GasLimitsForCallback)*10)
+		var j1 int
+		for _, num := range m.GasLimitsForCallback {
+			for num >= 1<<7 {
+				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j1++
+			}
+			dAtA2[j1] = uint8(num)
+			j1++
+		}
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
+		i = encodeVarintAsyncCall(dAtA, i, uint64(j1))
+		i--
+		dAtA[i] = 0x6a
+	}
 	if len(m.CallbackClosure) > 0 {
 		i -= len(m.CallbackClosure)
 		copy(dAtA[i:], m.CallbackClosure)
@@ -682,6 +717,13 @@ func (m *SerializableAsyncCall) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovAsyncCall(uint64(l))
 	}
+	if len(m.GasLimitsForCallback) > 0 {
+		l = 0
+		for _, e := range m.GasLimitsForCallback {
+			l += sovAsyncCall(uint64(e))
+		}
+		n += 1 + l + sovAsyncCall(uint64(l))
+	}
 	return n
 }
 
@@ -737,6 +779,7 @@ func (this *SerializableAsyncCall) String() string {
 		`SuccessCallback:` + fmt.Sprintf("%v", this.SuccessCallback) + `,`,
 		`ErrorCallback:` + fmt.Sprintf("%v", this.ErrorCallback) + `,`,
 		`CallbackClosure:` + fmt.Sprintf("%v", this.CallbackClosure) + `,`,
+		`GasLimitsForCallback:` + fmt.Sprintf("%v", this.GasLimitsForCallback) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -1107,6 +1150,82 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 				m.CallbackClosure = []byte{}
 			}
 			iNdEx = postIndex
+		case 13:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowAsyncCall
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.GasLimitsForCallback = append(m.GasLimitsForCallback, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowAsyncCall
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthAsyncCall
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthAsyncCall
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.GasLimitsForCallback) == 0 {
+					m.GasLimitsForCallback = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowAsyncCall
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.GasLimitsForCallback = append(m.GasLimitsForCallback, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field GasLimitsForCallback", wireType)
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipAsyncCall(dAtA[iNdEx:])
