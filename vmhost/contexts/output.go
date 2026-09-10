@@ -565,9 +565,9 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
 func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
-	newSCAccount.Code = input.ContractCode
-	newSCAccount.CodeMetadata = input.ContractCodeMetadata
-	newSCAccount.CodeDeployerAddress = input.CodeDeployerAddress
+	newSCAccount.Code = bytes.Clone(input.ContractCode)
+	newSCAccount.CodeMetadata = bytes.Clone(input.ContractCodeMetadata)
+	newSCAccount.CodeDeployerAddress = bytes.Clone(input.CodeDeployerAddress)
 
 	var empty struct{}
 	context.codeUpdates[string(input.ContractAddress)] = empty
@@ -708,7 +708,11 @@ func mergeVMOutputsConditionally(leftOutput *vmcommon.VMOutput, rightOutput *vmc
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 	}
 
-	for _, rightAccount := range rightOutput.OutputAccounts {
+	for rightKey, rightAccount := range rightOutput.OutputAccounts {
+		if !bytes.Equal([]byte(rightKey), rightAccount.Address) {
+			continue
+		}
+
 		leftAccount, ok := leftOutput.OutputAccounts[string(rightAccount.Address)]
 		if !ok {
 			leftAccount = &vmcommon.OutputAccount{}
