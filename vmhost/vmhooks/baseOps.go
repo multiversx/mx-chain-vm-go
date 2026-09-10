@@ -1,6 +1,7 @@
 package vmhooks
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
@@ -3789,7 +3790,7 @@ func prepareIndirectContractCallInput(
 			GasProvided:        metering.BoundGasLimit(gasLimit),
 			CallType:           vm.DirectCall,
 		},
-		RecipientAddr: destination,
+		RecipientAddr: bytes.Clone(destination),
 		Function:      string(function),
 	}
 

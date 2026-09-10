@@ -1,6 +1,7 @@
 package vmhooks
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"math/big"
@@ -52,10 +53,10 @@ func readESDTTransfer(
 	}
 
 	return &vmcommon.ESDTTransfer{
-		ESDTTokenName:  tokenIdentifier,
+		ESDTTokenName:  bytes.Clone(tokenIdentifier),
 		ESDTTokenType:  uint32(tokenType),
 		ESDTTokenNonce: nonce,
-		ESDTValue:      value,
+		ESDTValue:      big.NewInt(0).Set(value),
 	}, nil
 }
 
@@ -212,14 +213,14 @@ func readDestinationArguments(
 	managedType := host.ManagedTypes()
 	metering := host.Metering()
 
-	var err error
 	vmInput := &vmInputData{}
 
-	vmInput.destination, err = managedType.GetBytes(destHandle)
+	destBytes, err := managedType.GetBytes(destHandle)
 	if err != nil {
 		return nil, err
 	}
 
+	vmInput.destination = bytes.Clone(destBytes)
 	vmInput.value = big.NewInt(0)
 	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
 	if err != nil {
