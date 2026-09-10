@@ -373,7 +373,13 @@ func (context *runtimeContext) SetMaxInstanceStackSize(maxInstances uint64) {
 // (and the async context) from the provided ContractCallInput.
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(input)
-	context.codeAddress = input.RecipientAddr
+	if len(input.RecipientAddr) > 0 {
+		context.codeAddress = make([]byte, len(input.RecipientAddr))
+		copy(context.codeAddress, input.RecipientAddr)
+	} else {
+		context.codeAddress = nil
+	}
+
 	context.callFunction = input.Function
 
 	logRuntime.Trace("init state from call input",
@@ -499,9 +505,13 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		ReturnCallAfterError: vmInput.ReturnCallAfterError,
 	}
 	context.vmInput = &vmcommon.ContractCallInput{
-		VMInput:       internalVMInput,
-		RecipientAddr: vmInput.RecipientAddr,
-		Function:      vmInput.Function,
+		VMInput:  internalVMInput,
+		Function: vmInput.Function,
+	}
+
+	if len(vmInput.RecipientAddr) > 0 {
+		context.vmInput.RecipientAddr = make([]byte, len(vmInput.RecipientAddr))
+		copy(context.vmInput.RecipientAddr, vmInput.RecipientAddr)
 	}
 
 	if vmInput.CallValue != nil {
@@ -563,7 +573,12 @@ func (context *runtimeContext) GetContextAddress() []byte {
 
 // SetCodeAddress sets the given address as the scAddress for the current context.
 func (context *runtimeContext) SetCodeAddress(scAddress []byte) {
-	context.codeAddress = scAddress
+	if len(scAddress) > 0 {
+		context.codeAddress = make([]byte, len(scAddress))
+		copy(context.codeAddress, scAddress)
+	} else {
+		context.codeAddress = nil
+	}
 }
 
 // GetCurrentTxHash returns the hash of the current transaction, as specified by the current VMInput.

@@ -70,8 +70,13 @@ func newVMOutput() *vmcommon.VMOutput {
 
 // NewVMOutputAccount creates a new output account and sets the given address
 func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
+	var addrCopy []byte
+	if len(address) > 0 {
+		addrCopy = make([]byte, len(address))
+		copy(addrCopy, address)
+	}
 	return &vmcommon.OutputAccount{
-		Address:                 address,
+		Address:                 addrCopy,
 		Nonce:                   0,
 		BalanceDelta:            big.NewInt(0),
 		Balance:                 nil,
@@ -731,7 +736,8 @@ func mergeOutputAccounts(
 	mergeAllTransfers bool,
 ) {
 	if len(rightAccount.Address) != 0 {
-		leftAccount.Address = rightAccount.Address
+		leftAccount.Address = make([]byte, len(rightAccount.Address))
+		copy(leftAccount.Address, rightAccount.Address)
 	}
 
 	mergeStorageUpdates(leftAccount, rightAccount)

@@ -212,12 +212,16 @@ func readDestinationArguments(
 	managedType := host.ManagedTypes()
 	metering := host.Metering()
 
-	var err error
 	vmInput := &vmInputData{}
 
-	vmInput.destination, err = managedType.GetBytes(destHandle)
+	destBytes, err := managedType.GetBytes(destHandle)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(destBytes) > 0 {
+		vmInput.destination = make([]byte, len(destBytes))
+		copy(vmInput.destination, destBytes)
 	}
 
 	vmInput.value = big.NewInt(0)

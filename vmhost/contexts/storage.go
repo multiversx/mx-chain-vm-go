@@ -104,7 +104,12 @@ func (context *storageContext) ClearStateStack() {
 
 // SetAddress sets the given address as the address for the current context.
 func (context *storageContext) SetAddress(address []byte) {
-	context.address = address
+	if len(address) > 0 {
+		context.address = make([]byte, len(address))
+		copy(context.address, address)
+	} else {
+		context.address = nil
+	}
 	logStorage.Trace("storage under address set", "address", address)
 }
 
