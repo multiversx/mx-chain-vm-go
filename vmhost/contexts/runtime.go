@@ -373,13 +373,7 @@ func (context *runtimeContext) SetMaxInstanceStackSize(maxInstances uint64) {
 // (and the async context) from the provided ContractCallInput.
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(input)
-	if len(input.RecipientAddr) > 0 {
-		context.codeAddress = make([]byte, len(input.RecipientAddr))
-		copy(context.codeAddress, input.RecipientAddr)
-	} else {
-		context.codeAddress = nil
-	}
-
+	context.codeAddress = bytes.Clone(input.RecipientAddr)
 	context.callFunction = input.Function
 
 	logRuntime.Trace("init state from call input",
@@ -483,9 +477,8 @@ func copyESDTTransfer(esdtTransfer *vmcommon.ESDTTransfer) *vmcommon.ESDTTransfe
 		ESDTValue:      big.NewInt(0).Set(esdtTransfer.ESDTValue),
 		ESDTTokenType:  esdtTransfer.ESDTTokenType,
 		ESDTTokenNonce: esdtTransfer.ESDTTokenNonce,
-		ESDTTokenName:  make([]byte, len(esdtTransfer.ESDTTokenName)),
+		ESDTTokenName:  bytes.Clone(esdtTransfer.ESDTTokenName),
 	}
-	copy(newESDTTransfer.ESDTTokenName, esdtTransfer.ESDTTokenName)
 	return newESDTTransfer
 }
 
@@ -497,6 +490,8 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	}
 
 	internalVMInput := vmcommon.VMInput{
+		CallerAddr:           vmInput.CallerAddr,
+		Arguments:            vmInput.Arguments,
 		CallType:             vmInput.CallType,
 		GasPrice:             vmInput.GasPrice,
 		GasProvided:          vmInput.GasProvided,
@@ -509,54 +504,29 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		Function: vmInput.Function,
 	}
 
-	if len(vmInput.RecipientAddr) > 0 {
-		context.vmInput.RecipientAddr = make([]byte, len(vmInput.RecipientAddr))
-		copy(context.vmInput.RecipientAddr, vmInput.RecipientAddr)
-	}
+	context.vmInput.RecipientAddr = bytes.Clone(vmInput.RecipientAddr)
 
 	if vmInput.CallValue != nil {
 		context.vmInput.CallValue.Set(vmInput.CallValue)
 	}
 
-	if len(vmInput.CallerAddr) > 0 {
-		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
-		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
-		context.vmInput.OriginalCallerAddr = make([]byte, len(vmInput.OriginalCallerAddr))
-		copy(context.vmInput.OriginalCallerAddr, vmInput.OriginalCallerAddr)
-	}
-	if len(vmInput.RelayerAddr) > 0 {
-		context.vmInput.RelayerAddr = make([]byte, len(vmInput.RelayerAddr))
-		copy(context.vmInput.RelayerAddr, vmInput.RelayerAddr)
-	}
+	context.vmInput.CallerAddr = bytes.Clone(vmInput.CallerAddr)
+	context.vmInput.OriginalCallerAddr = bytes.Clone(vmInput.OriginalCallerAddr)
+	context.vmInput.RelayerAddr = bytes.Clone(vmInput.RelayerAddr)
 
 	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
-
-	if len(vmInput.ESDTTransfers) > 0 {
-		for i, esdtTransfer := range vmInput.ESDTTransfers {
-			context.vmInput.ESDTTransfers[i] = copyESDTTransfer(esdtTransfer)
-		}
+	for i, esdtTransfer := range vmInput.ESDTTransfers {
+		context.vmInput.ESDTTransfers[i] = copyESDTTransfer(esdtTransfer)
 	}
 
-	if len(vmInput.OriginalTxHash) > 0 {
-		context.vmInput.OriginalTxHash = make([]byte, len(vmInput.OriginalTxHash))
-		copy(context.vmInput.OriginalTxHash, vmInput.OriginalTxHash)
-	}
-
-	if len(vmInput.CurrentTxHash) > 0 {
-		context.vmInput.CurrentTxHash = make([]byte, len(vmInput.CurrentTxHash))
-		copy(context.vmInput.CurrentTxHash, vmInput.CurrentTxHash)
-	}
-
-	if len(vmInput.PrevTxHash) > 0 {
-		context.vmInput.PrevTxHash = make([]byte, len(vmInput.PrevTxHash))
-		copy(context.vmInput.PrevTxHash, vmInput.PrevTxHash)
-	}
+	context.vmInput.OriginalTxHash = bytes.Clone(vmInput.OriginalTxHash)
+	context.vmInput.CurrentTxHash = bytes.Clone(vmInput.CurrentTxHash)
+	context.vmInput.PrevTxHash = bytes.Clone(vmInput.PrevTxHash)
 
 	if len(vmInput.Arguments) > 0 {
 		context.vmInput.Arguments = make([][]byte, len(vmInput.Arguments))
 		for i, arg := range vmInput.Arguments {
-			context.vmInput.Arguments[i] = make([]byte, len(arg))
-			copy(context.vmInput.Arguments[i], arg)
+			context.vmInput.Arguments[i] = bytes.Clone(arg)
 		}
 	}
 }
@@ -573,12 +543,7 @@ func (context *runtimeContext) GetContextAddress() []byte {
 
 // SetCodeAddress sets the given address as the scAddress for the current context.
 func (context *runtimeContext) SetCodeAddress(scAddress []byte) {
-	if len(scAddress) > 0 {
-		context.codeAddress = make([]byte, len(scAddress))
-		copy(context.codeAddress, scAddress)
-	} else {
-		context.codeAddress = nil
-	}
+	context.codeAddress = bytes.Clone(scAddress)
 }
 
 // GetCurrentTxHash returns the hash of the current transaction, as specified by the current VMInput.

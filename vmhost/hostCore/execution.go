@@ -1124,7 +1124,7 @@ func (host *vmHost) addOutputTransferToVMOutput(
 		Value:         big.NewInt(0),
 		Data:          []byte(esdtTransferTxData),
 		CallType:      callType,
-		SenderAddress: sender,
+		SenderAddress: bytes.Clone(sender),
 	}
 
 	if len(vmOutput.OutputAccounts) == 0 {
@@ -1132,10 +1132,7 @@ func (host *vmHost) addOutputTransferToVMOutput(
 	}
 	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
 	if !ok {
-		outAcc = &vmcommon.OutputAccount{
-			Address:         recipient,
-			OutputTransfers: make([]vmcommon.OutputTransfer, 0),
-		}
+		outAcc = contexts.NewVMOutputAccount(recipient)
 	}
 	contexts.AppendOutputTransfers(outAcc, outAcc.OutputTransfers, outTransfer)
 	vmOutput.OutputAccounts[string(recipient)] = outAcc

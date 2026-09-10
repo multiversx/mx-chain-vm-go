@@ -1,6 +1,7 @@
 package vmhooks
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
@@ -3779,9 +3780,6 @@ func prepareIndirectContractCallInput(
 		return nil, vmhost.ErrSyncExecutionNotInSameShard
 	}
 
-	destCopy := make([]byte, len(destination))
-	copy(destCopy, destination)
-
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			OriginalCallerAddr: host.Runtime().GetOriginalCallerAddress(),
@@ -3792,7 +3790,7 @@ func prepareIndirectContractCallInput(
 			GasProvided:        metering.BoundGasLimit(gasLimit),
 			CallType:           vm.DirectCall,
 		},
-		RecipientAddr: destCopy,
+		RecipientAddr: bytes.Clone(destination),
 		Function:      string(function),
 	}
 

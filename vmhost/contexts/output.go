@@ -70,13 +70,8 @@ func newVMOutput() *vmcommon.VMOutput {
 
 // NewVMOutputAccount creates a new output account and sets the given address
 func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
-	var addrCopy []byte
-	if len(address) > 0 {
-		addrCopy = make([]byte, len(address))
-		copy(addrCopy, address)
-	}
 	return &vmcommon.OutputAccount{
-		Address:                 addrCopy,
+		Address:                 bytes.Clone(address),
 		Nonce:                   0,
 		BalanceDelta:            big.NewInt(0),
 		Balance:                 nil,
@@ -242,13 +237,14 @@ func (context *outputContext) RemoveReturnData(index uint32) {
 
 // Finish appends the given data to the return data of the current output state.
 func (context *outputContext) Finish(data []byte) {
-	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
-	logOutput.Trace("finish", "data", data)
+	cloned := bytes.Clone(data)
+	context.outputState.ReturnData = append(context.outputState.ReturnData, cloned)
+	logOutput.Trace("finish", "data", cloned)
 }
 
 // PrependFinish appends the given data to the return data of the current output state.
 func (context *outputContext) PrependFinish(data []byte) {
-	context.outputState.ReturnData = append([][]byte{data}, context.outputState.ReturnData...)
+	context.outputState.ReturnData = append([][]byte{bytes.Clone(data)}, context.outputState.ReturnData...)
 }
 
 // DeleteFirstReturnData deletes the first return data, to be used after prepend
@@ -266,21 +262,26 @@ func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]
 	}
 
 	newLogEntry := &vmcommon.LogEntry{
-		Address:    address,
-		Data:       data,
-		Identifier: identifier,
+		Address:    bytes.Clone(address),
+		Data:       cloneByteSlices(data),
+		Identifier: bytes.Clone(identifier),
+		Topics:     cloneByteSlices(topics),
 	}
-	logOutput.Trace("log entry", "address", address, "data", data)
-
-	if len(topics) == 0 {
-		context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
-		return
-	}
-
-	newLogEntry.Topics = topics
+	logOutput.Trace("log entry", "address", newLogEntry.Address, "data", newLogEntry.Data)
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+}
+
+func cloneByteSlices(slices [][]byte) [][]byte {
+	if slices == nil {
+		return nil
+	}
+	cloned := make([][]byte, len(slices))
+	for i, s := range slices {
+		cloned[i] = bytes.Clone(s)
+	}
+	return cloned
 }
 
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
@@ -386,10 +387,10 @@ func (context *outputContext) Transfer(
 		Value:         big.NewInt(0).Set(value),
 		GasLimit:      gasLimit,
 		GasLocked:     gasLocked,
-		AsyncData:     asyncData,
-		Data:          input,
+		AsyncData:     bytes.Clone(asyncData),
+		Data:          bytes.Clone(input),
 		CallType:      callType,
-		SenderAddress: sender,
+		SenderAddress: bytes.Clone(sender),
 	}
 	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
@@ -502,7 +503,7 @@ func (context *outputContext) TransferESDT(
 		esdtOutTransfer := outputAcc.OutputTransfers[0]
 		esdtOutTransfer.GasLimit = gasRemaining
 		esdtOutTransfer.CallType = callType
-		esdtOutTransfer.SenderAddress = transfersArgs.SenderForExec
+		esdtOutTransfer.SenderAddress = bytes.Clone(transfersArgs.SenderForExec)
 		if sameShard {
 			esdtOutTransfer.GasLimit = 0
 		}
@@ -736,8 +737,7 @@ func mergeOutputAccounts(
 	mergeAllTransfers bool,
 ) {
 	if len(rightAccount.Address) != 0 {
-		leftAccount.Address = make([]byte, len(rightAccount.Address))
-		copy(leftAccount.Address, rightAccount.Address)
+		leftAccount.Address = bytes.Clone(rightAccount.Address)
 	}
 
 	mergeStorageUpdates(leftAccount, rightAccount)

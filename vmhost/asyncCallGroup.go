@@ -29,13 +29,12 @@ func NewAsyncCallGroup(identifier string) *AsyncCallGroup {
 func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 	callCount := len(acg.AsyncCalls)
 	clone := &AsyncCallGroup{
-		Callback:   acg.Callback,
-		GasLocked:  acg.GasLocked,
-		Identifier: acg.Identifier,
-		AsyncCalls: make([]*AsyncCall, callCount),
+		Callback:     acg.Callback,
+		GasLocked:    acg.GasLocked,
+		Identifier:   acg.Identifier,
+		CallbackData: bytes.Clone(acg.CallbackData),
+		AsyncCalls:   make([]*AsyncCall, callCount),
 	}
-
-	copy(clone.CallbackData, acg.CallbackData)
 
 	for i := 0; i < callCount; i++ {
 		clone.AsyncCalls[i] = acg.AsyncCalls[i].Clone()

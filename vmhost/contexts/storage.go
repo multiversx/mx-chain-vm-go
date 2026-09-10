@@ -104,12 +104,7 @@ func (context *storageContext) ClearStateStack() {
 
 // SetAddress sets the given address as the address for the current context.
 func (context *storageContext) SetAddress(address []byte) {
-	if len(address) > 0 {
-		context.address = make([]byte, len(address))
-		copy(context.address, address)
-	} else {
-		context.address = nil
-	}
+	context.address = bytes.Clone(address)
 	logStorage.Trace("storage under address set", "address", address)
 }
 
@@ -237,7 +232,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 			return nil, trieDepth, false, err
 		}
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
-			Offset: key,
+			Offset: bytes.Clone(key),
 			Data:   value,
 		}
 		usedCache = false
@@ -403,7 +398,7 @@ func (context *storageContext) addDeltaBytes(deltaBytes int) {
 func (context *storageContext) changeStorageUpdate(key []byte, value []byte, storageUpdates map[string]*vmcommon.StorageUpdate) {
 	length := len(value)
 	newUpdate := &vmcommon.StorageUpdate{
-		Offset:  key,
+		Offset:  bytes.Clone(key),
 		Data:    make([]byte, length),
 		Written: true,
 	}
@@ -481,7 +476,7 @@ func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.S
 			return nil, false, err
 		}
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
-			Offset: key,
+			Offset: bytes.Clone(key),
 			Data:   oldValue,
 		}
 		usedCache = false

@@ -710,7 +710,7 @@ func (context *managedTypesContext) ReadManagedVecOfManagedBuffers(
 		}
 
 		sumOfItemByteLengths += uint64(len(itemBytes))
-		result = append(result, itemBytes)
+		result = append(result, bytes.Clone(itemBytes))
 	}
 
 	return result, sumOfItemByteLengths, nil
@@ -872,7 +872,7 @@ func cloneBackTransfers(currentBackTransfers backTransfers) backTransfers {
 	for index, transfer := range currentBackTransfers.ESDTTransfers {
 		newBackTransfers.ESDTTransfers[index] = &vmcommon.ESDTTransfer{
 			ESDTValue:      big.NewInt(0).Set(transfer.ESDTValue),
-			ESDTTokenName:  transfer.ESDTTokenName,
+			ESDTTokenName:  bytes.Clone(transfer.ESDTTokenName),
 			ESDTTokenType:  transfer.ESDTTokenType,
 			ESDTTokenNonce: transfer.ESDTTokenNonce,
 		}
