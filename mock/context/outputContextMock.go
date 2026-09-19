@@ -181,12 +181,9 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(_ *vmhost.ESDTTransfersArgs, _ *vmcommon.ContractCallInput) (uint64, *vmhost.ESDTTransferRollback, error) {
-	return 0, nil, nil
+func (o *OutputContextMock) TransferESDT(_ *vmhost.ESDTTransfersArgs, _ *vmcommon.ContractCallInput) (uint64, error) {
+	return 0, nil
 }
-
-// RevertLastESDTTransfer mocked method
-func (o *OutputContextMock) RevertLastESDTTransfer(_ []byte, _ *vmhost.ESDTTransferRollback) {}
 
 // AddTxValueToAccount mocked method
 func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {

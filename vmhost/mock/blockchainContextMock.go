@@ -219,7 +219,8 @@ func (b *BlockchainContextMock) GetSnapshot() int {
 }
 
 // RevertToSnapshot -
-func (b *BlockchainContextMock) RevertToSnapshot(_ int) {
+func (b *BlockchainContextMock) RevertToSnapshot(_ int) error {
+	return nil
 }
 
 // IsLimitedTransfer -
@@ -237,6 +238,6 @@ func (b *BlockchainContextMock) ClearCompiledCodes() {
 }
 
 // ExecuteSmartContractCallOnOtherVM -
-func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return nil, nil
 }

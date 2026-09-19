@@ -445,9 +445,9 @@ func getExecutionTypeString(callType vm.CallType, isBackTransfer bool) string {
 func (context *outputContext) TransferESDT(
 	transfersArgs *vmhost.ESDTTransfersArgs,
 	callInput *vmcommon.ContractCallInput,
-) (uint64, *vmhost.ESDTTransferRollback, error) {
+) (uint64, error) {
 	if len(transfersArgs.Transfers) == 0 {
-		return 0, nil, vmhost.ErrTransferValueOnESDTCall
+		return 0, vmhost.ErrTransferValueOnESDTCall
 	}
 
 	isSmartContract := context.host.Blockchain().IsSmartContract(transfersArgs.Destination)
@@ -468,7 +468,7 @@ func (context *outputContext) TransferESDT(
 
 	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, executionType)
 	if err != nil {
-		return 0, nil, err
+		return 0, err
 	}
 
 	gasRemaining := uint64(0)
@@ -476,7 +476,7 @@ func (context *outputContext) TransferESDT(
 	if callInput != nil && isSmartContract {
 		if gasConsumedByTransfer > callInput.GasProvided {
 			logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
-			return 0, nil, vmhost.ErrNotEnoughGas
+			return 0, vmhost.ErrNotEnoughGas
 		}
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
@@ -484,21 +484,20 @@ func (context *outputContext) TransferESDT(
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
 			logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
-			return 0, nil, vmhost.ErrNotEnoughGas
+			return 0, vmhost.ErrNotEnoughGas
 		}
 
 		if !sameShard {
 			err = context.host.Metering().UseGasBounded(gasRemaining)
 			if err != nil {
 				logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
-				return 0, nil, vmhost.ErrNotEnoughGas
+				return 0, vmhost.ErrNotEnoughGas
 			}
 		}
 	}
 
-	destAcc, accountIsNew := context.GetOutputAccount(transfersArgs.Destination)
+	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputAcc, ok := vmOutput.OutputAccounts[string(transfersArgs.Destination)]
-	hasOutputTransfer := false
 	if ok && len(outputAcc.OutputTransfers) == 1 {
 		esdtOutTransfer := outputAcc.OutputTransfers[0]
 		esdtOutTransfer.GasLimit = gasRemaining
@@ -508,39 +507,12 @@ func (context *outputContext) TransferESDT(
 			esdtOutTransfer.GasLimit = 0
 		}
 		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, esdtOutTransfer)
-		hasOutputTransfer = true
 	}
 
 	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionTypeString(executionType, isBackTransfer))
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 
-	rollbackData := &vmhost.ESDTTransferRollback{
-		NumLogsAdded:      len(vmOutput.Logs),
-		HadOutputTransfer: hasOutputTransfer,
-		AccountWasNew:     accountIsNew,
-	}
-
-	return gasRemaining, rollbackData, nil
-}
-
-// RevertLastESDTTransfer rolls back the log entries and output transfer added by the last TransferESDT call
-func (context *outputContext) RevertLastESDTTransfer(destination []byte, rollback *vmhost.ESDTTransferRollback) {
-	if context == nil || context.outputState == nil || rollback == nil {
-		return
-	}
-	if rollback.NumLogsAdded > 0 && rollback.NumLogsAdded <= len(context.outputState.Logs) {
-		context.outputState.Logs = context.outputState.Logs[:len(context.outputState.Logs)-rollback.NumLogsAdded]
-	}
-	if rollback.HadOutputTransfer && len(destination) > 0 {
-		destKey := string(destination)
-		destAcc, ok := context.outputState.OutputAccounts[destKey]
-		if ok && len(destAcc.OutputTransfers) > 0 {
-			destAcc.OutputTransfers = destAcc.OutputTransfers[:len(destAcc.OutputTransfers)-1]
-			if rollback.AccountWasNew && len(destAcc.OutputTransfers) == 0 && len(destAcc.StorageUpdates) == 0 {
-				delete(context.outputState.OutputAccounts, destKey)
-			}
-		}
-	}
+	return gasRemaining, nil
 }
 
 func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []vmcommon.OutputTransfer, transfers ...vmcommon.OutputTransfer) {

@@ -26,7 +26,7 @@ type OutputContextStub struct {
 	WriteLogCalled                    func(address []byte, topics [][]byte, data [][]byte)
 	WriteLogWithIdentifierCalled      func(address []byte, topics [][]byte, data [][]byte, identifier []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
-	TransferESDTCalled                func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, *vmhost.ESDTTransferRollback, error)
+	TransferESDTCalled                func(transfersArgs *vmhost.ESDTTransfersArgs, input *vmcommon.ContractCallInput) (uint64, error)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
 	ReturnCodeCalled                  func() vmcommon.ReturnCode
@@ -171,15 +171,12 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 }
 
 // TransferESDT mocked method
-func (o *OutputContextStub) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, *vmhost.ESDTTransferRollback, error) {
+func (o *OutputContextStub) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error) {
 	if o.TransferESDTCalled != nil {
 		return o.TransferESDTCalled(transfersArgs, callInput)
 	}
-	return 0, nil, nil
+	return 0, nil
 }
-
-// RevertLastESDTTransfer mocked method
-func (o *OutputContextStub) RevertLastESDTTransfer(_ []byte, _ *vmhost.ESDTTransferRollback) {}
 
 // GetRefund mocked method
 func (o *OutputContextStub) GetRefund() uint64 {

@@ -108,7 +108,7 @@ type BlockchainContext interface {
 	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetSnapshot() int
-	RevertToSnapshot(snapshot int)
+	RevertToSnapshot(snapshot int) error
 	ClearCompiledCodes()
 	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }
@@ -242,8 +242,7 @@ type OutputContext interface {
 	WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
-	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, *ESDTTransferRollback, error)
-	RevertLastESDTTransfer(destination []byte, rollbackData *ESDTTransferRollback)
+	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
