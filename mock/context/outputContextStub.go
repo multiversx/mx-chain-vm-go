@@ -178,6 +178,9 @@ func (o *OutputContextStub) TransferESDT(transfersArgs *vmhost.ESDTTransfersArgs
 	return 0, nil
 }
 
+// RevertLastESDTTransfer mocked method
+func (o *OutputContextStub) RevertLastESDTTransfer(_ []byte) {}
+
 // GetRefund mocked method
 func (o *OutputContextStub) GetRefund() uint64 {
 	if o.GetRefundCalled != nil {

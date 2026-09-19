@@ -185,6 +185,9 @@ func (o *OutputContextMock) TransferESDT(_ *vmhost.ESDTTransfersArgs, _ *vmcommo
 	return 0, nil
 }
 
+// RevertLastESDTTransfer mocked method
+func (o *OutputContextMock) RevertLastESDTTransfer(_ []byte) {}
+
 // AddTxValueToAccount mocked method
 func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {
 }

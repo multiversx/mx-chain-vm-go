@@ -1182,6 +1182,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if executeErr != nil {
+		host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 		if withFailure {
 			FailExecution(host, executeErr)
 		}
@@ -1195,6 +1196,7 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 		vmOutput, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
+			output.RevertLastESDTTransfer(dest)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 			if vmOutput == nil || withFailure {
 				FailExecution(host, executeErr)
@@ -1255,7 +1257,7 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 
 		contractCallInput.ESDTTransfers = transfers
 	}
-
+	snapshotBeforeTransfer := host.Blockchain().GetSnapshot()
 	originalCaller := host.Runtime().GetOriginalCallerAddress()
 	transfersArgs := &vmhost.ESDTTransfersArgs{
 		Destination:    dest,
@@ -1266,6 +1268,7 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if executeErr != nil {
+		host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 		// no fail execution is needed here - transfer was not successful, returning error which can be treated at SC level
 		return 1
 	}
@@ -1277,7 +1280,6 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 		_, executeErr = executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed, started transfer to user", "error", executeErr)
-
 			// in case of failed execution, the funds have to be moved to the user
 			returnTransferArgs := &vmhost.ESDTTransfersArgs{
 				Destination:      callerForExecution,
@@ -1289,6 +1291,8 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 			}
 			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
 			if executeErr != nil {
+				output.RevertLastESDTTransfer(dest)
+				host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 				// fail execution is needed here - tokens are at destination contract, so fail is needed to revert everything
 				FailExecution(host, executeErr)
 				return 1
