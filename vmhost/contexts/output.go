@@ -27,10 +27,6 @@ type outputContext struct {
 	codeUpdates      map[string]struct{}
 	crtTransferIndex uint32
 	callArgsParser   vmcommon.CallArgsParser
-
-	lastNumLogsAdded      int
-	lastHadOutputTransfer bool
-	lastAccountWasNew     bool
 }
 
 // NewOutputContext creates a new outputContext
@@ -449,9 +445,9 @@ func getExecutionTypeString(callType vm.CallType, isBackTransfer bool) string {
 func (context *outputContext) TransferESDT(
 	transfersArgs *vmhost.ESDTTransfersArgs,
 	callInput *vmcommon.ContractCallInput,
-) (uint64, error) {
+) (uint64, *vmhost.ESDTTransferRollback, error) {
 	if len(transfersArgs.Transfers) == 0 {
-		return 0, vmhost.ErrTransferValueOnESDTCall
+		return 0, nil, vmhost.ErrTransferValueOnESDTCall
 	}
 
 	isSmartContract := context.host.Blockchain().IsSmartContract(transfersArgs.Destination)
@@ -472,7 +468,7 @@ func (context *outputContext) TransferESDT(
 
 	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(transfersArgs, executionType)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	gasRemaining := uint64(0)
@@ -480,7 +476,7 @@ func (context *outputContext) TransferESDT(
 	if callInput != nil && isSmartContract {
 		if gasConsumedByTransfer > callInput.GasProvided {
 			logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
-			return 0, vmhost.ErrNotEnoughGas
+			return 0, nil, vmhost.ErrNotEnoughGas
 		}
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
@@ -488,14 +484,14 @@ func (context *outputContext) TransferESDT(
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
 			logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
-			return 0, vmhost.ErrNotEnoughGas
+			return 0, nil, vmhost.ErrNotEnoughGas
 		}
 
 		if !sameShard {
 			err = context.host.Metering().UseGasBounded(gasRemaining)
 			if err != nil {
 				logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
-				return 0, vmhost.ErrNotEnoughGas
+				return 0, nil, vmhost.ErrNotEnoughGas
 			}
 		}
 	}
@@ -518,37 +514,33 @@ func (context *outputContext) TransferESDT(
 	context.host.CompleteLogEntriesWithCallType(vmOutput, getExecutionTypeString(executionType, isBackTransfer))
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 
-	context.lastNumLogsAdded = len(vmOutput.Logs)
-	context.lastHadOutputTransfer = hasOutputTransfer
-	context.lastAccountWasNew = accountIsNew
+	rollbackData := &vmhost.ESDTTransferRollback{
+		NumLogsAdded:      len(vmOutput.Logs),
+		HadOutputTransfer: hasOutputTransfer,
+		AccountWasNew:     accountIsNew,
+	}
 
-	return gasRemaining, nil
+	return gasRemaining, rollbackData, nil
 }
 
 // RevertLastESDTTransfer rolls back the log entries and output transfer added by the last TransferESDT call
-func (context *outputContext) RevertLastESDTTransfer(destination []byte) {
-	if context == nil || context.outputState == nil {
+func (context *outputContext) RevertLastESDTTransfer(destination []byte, rollback *vmhost.ESDTTransferRollback) {
+	if context == nil || context.outputState == nil || rollback == nil {
 		return
 	}
-
-	if context.lastNumLogsAdded > 0 && context.lastNumLogsAdded <= len(context.outputState.Logs) {
-		context.outputState.Logs = context.outputState.Logs[:len(context.outputState.Logs)-context.lastNumLogsAdded]
+	if rollback.NumLogsAdded > 0 && rollback.NumLogsAdded <= len(context.outputState.Logs) {
+		context.outputState.Logs = context.outputState.Logs[:len(context.outputState.Logs)-rollback.NumLogsAdded]
 	}
-	context.lastNumLogsAdded = 0
-
-	if context.lastHadOutputTransfer {
+	if rollback.HadOutputTransfer && len(destination) > 0 {
 		destKey := string(destination)
 		destAcc, ok := context.outputState.OutputAccounts[destKey]
 		if ok && len(destAcc.OutputTransfers) > 0 {
 			destAcc.OutputTransfers = destAcc.OutputTransfers[:len(destAcc.OutputTransfers)-1]
-
-			if context.lastAccountWasNew && len(destAcc.OutputTransfers) == 0 && len(destAcc.StorageUpdates) == 0 {
+			if rollback.AccountWasNew && len(destAcc.OutputTransfers) == 0 && len(destAcc.StorageUpdates) == 0 {
 				delete(context.outputState.OutputAccounts, destKey)
 			}
 		}
 	}
-	context.lastHadOutputTransfer = false
-	context.lastAccountWasNew = false
 }
 
 func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []vmcommon.OutputTransfer, transfers ...vmcommon.OutputTransfer) {

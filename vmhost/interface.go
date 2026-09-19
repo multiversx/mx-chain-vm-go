@@ -242,8 +242,8 @@ type OutputContext interface {
 	WriteLogWithIdentifier(address []byte, topics [][]byte, data [][]byte, identifier []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
-	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, error)
-	RevertLastESDTTransfer(destination []byte)
+	TransferESDT(transfersArgs *ESDTTransfersArgs, callInput *vmcommon.ContractCallInput) (uint64, *ESDTTransferRollback, error)
+	RevertLastESDTTransfer(destination []byte, rollbackData *ESDTTransferRollback)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode

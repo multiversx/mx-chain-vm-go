@@ -307,3 +307,10 @@ type ESDTTransfersArgs struct {
 	SenderForExec    []byte
 	ReturnAfterError bool
 }
+
+// ESDTTransferRollback save it for rollback
+type ESDTTransferRollback struct {
+	NumLogsAdded      int
+	HadOutputTransfer bool
+	AccountWasNew     bool
+}
