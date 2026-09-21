@@ -603,7 +603,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	var err error
 
-	defer host.finishExecuteOnSameContext(err)
+	defer func() { host.finishExecuteOnSameContext(err) }()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
@@ -1272,8 +1272,6 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 	runtime := host.Runtime()
 	async := host.Async()
 
-	// TODO refactor this, and apply this condition in other places where a
-	// function is called
 	if runtime.FunctionName() != "" {
 		err := host.verifyAllowedFunctionCall()
 		if err != nil {
@@ -1311,11 +1309,11 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			err = async.Save()
 			return false, err
 		}
-	} else {
-		return false, executor.ErrInvalidFunction
+
+		return true, nil
 	}
 
-	return true, nil
+	return false, executor.ErrInvalidFunction
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {
