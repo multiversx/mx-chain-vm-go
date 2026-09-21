@@ -290,13 +290,16 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	scExecutionInput := input
 
 	blockchain := host.Blockchain()
+	output := host.Output()
 
 	blockchain.PushState()
+	output.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
+			output.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			isChildComplete = true
@@ -313,8 +316,10 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	if err != nil {
 		blockchain.PopSetActiveState()
+		output.PopSetActiveState()
 	} else {
 		blockchain.PopDiscard()
+		output.PopDiscard()
 	}
 
 	return
