@@ -33,5 +33,8 @@ const (
 	// AttributeExtraGasUsageFlag defines the flag that activates the extra gas usage for extra attributes
 	AttributeExtraGasUsageFlag core.EnableEpochFlag = "AttributeExtraGasUsageFlag"
 
+	// ESDTTransferAndExecuteAtomicityFlag defines the flag that activates atomicity in ESDT transfer and execute
+	ESDTTransferAndExecuteAtomicityFlag core.EnableEpochFlag = "ESDTTransferAndExecuteAtomicityFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

@@ -292,14 +292,20 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain := host.Blockchain()
 	output := host.Output()
 
+	isAtomicityEnabled := host.EnableEpochsHandler().IsFlagEnabled(vmhost.ESDTTransferAndExecuteAtomicityFlag)
+
 	blockchain.PushState()
-	output.PushState()
+	if isAtomicityEnabled {
+		output.PushState()
+	}
 
 	if host.IsBuiltinFunctionName(input.Function) {
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
-			output.PopSetActiveState()
+			if isAtomicityEnabled {
+				output.PopSetActiveState()
+			}
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			isChildComplete = true
@@ -316,10 +322,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	if err != nil {
 		blockchain.PopSetActiveState()
-		output.PopSetActiveState()
+		if isAtomicityEnabled {
+			output.PopSetActiveState()
+		}
 	} else {
 		blockchain.PopDiscard()
-		output.PopDiscard()
+		if isAtomicityEnabled {
+			output.PopDiscard()
+		}
 	}
 
 	return
@@ -602,8 +612,12 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	blockchain.PushState()
 
 	var err error
-
-	defer func() { host.finishExecuteOnSameContext(err) }()
+ 
+	if host.EnableEpochsHandler().IsFlagEnabled(vmhost.ESDTTransferAndExecuteAtomicityFlag) {
+		defer func() { host.finishExecuteOnSameContext(err) }()
+	} else {
+		defer host.finishExecuteOnSameContext(err)
+	}
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.

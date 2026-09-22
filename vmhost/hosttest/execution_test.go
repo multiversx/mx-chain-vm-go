@@ -2086,6 +2086,78 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T
 	assert.Nil(t, err)
 }
 
+func TestExecution_TransferESDTNFTExecute_AtomicityFlag(t *testing.T) {
+	runTest := func(t *testing.T, isAtomicityEnabled bool) {
+		testConfig := makeTestConfig()
+
+		_, err := test.BuildMockInstanceCallTest(t).
+			WithContracts(
+				test.CreateMockContract(test.ParentAddress).
+					WithBalance(testConfig.ParentBalance).
+					WithConfig(testConfig).
+					WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+						parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+							host := parentInstance.Host
+
+							returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+								host,
+								[]byte(test.ChildAddress),
+								[]*vmcommon.ESDTTransfer{},
+								int64(testConfig.GasProvidedToChild),
+								[]byte("childFunction"),
+								[][]byte{},
+								false,
+							)
+
+							require.Equal(t, int32(1), returnVal)
+
+							return parentInstance
+						})
+					}),
+				test.CreateMockContract(test.ChildAddress).
+					WithBalance(testConfig.ChildBalance).
+					WithConfig(testConfig).
+					WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+						parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+							host := parentInstance.Host
+
+							host.Runtime().FailExecution(errors.New("child failed"))
+
+							return parentInstance
+						})
+					}),
+			).
+			WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+					if flag == vmhost.ESDTTransferAndExecuteAtomicityFlag {
+						return isAtomicityEnabled
+					}
+					return true
+				}
+				createMockBuiltinFunctions(t, host, world)
+				setZeroCodeCosts(host)
+			}).
+			WithInput(test.CreateTestContractCallInputBuilder().
+				WithRecipientAddr(test.ParentAddress).
+				WithGasProvided(testConfig.GasProvided).
+				WithFunction("callChild").
+				Build()).
+			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+				verify.
+					Ok()
+			})
+		assert.Nil(t, err)
+	}
+
+	t.Run("atomicity enabled", func(t *testing.T) {
+		runTest(t, true)
+	})
+	t.Run("atomicity disabled", func(t *testing.T) {
+		runTest(t, false)
+	})
+}
+
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().

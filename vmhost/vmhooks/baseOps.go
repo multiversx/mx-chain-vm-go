@@ -1170,8 +1170,11 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 		contractCallInput.ESDTTransfers = transfers
 	}
 
+	isAtomicityEnabled := host.EnableEpochsHandler().IsFlagEnabled(vmhost.ESDTTransferAndExecuteAtomicityFlag)
 	snapshotBeforeTransfer := host.Blockchain().GetSnapshot()
-	output.PushState()
+	if isAtomicityEnabled {
+		output.PushState()
+	}
 
 	originalCaller := host.Runtime().GetOriginalCallerAddress()
 	transfersArgs := &vmhost.ESDTTransfersArgs{
@@ -1183,9 +1186,11 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if executeErr != nil {
-		output.PopSetActiveState()
+		if isAtomicityEnabled {
+			output.PopSetActiveState()
+		}
 		errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
-		if errRevert != nil {
+		if isAtomicityEnabled && errRevert != nil {
 			FailExecution(host, errRevert)
 		}
 		if withFailure {
@@ -1201,9 +1206,11 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 		vmOutput, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
-			output.PopSetActiveState()
+			if isAtomicityEnabled {
+				output.PopSetActiveState()
+			}
 			errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
-			if errRevert != nil {
+			if isAtomicityEnabled && errRevert != nil {
 				FailExecution(host, errRevert)
 			}
 			if vmOutput == nil || withFailure {
@@ -1212,11 +1219,15 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 			return 1
 		}
 
-		output.PopDiscard()
+		if isAtomicityEnabled {
+			output.PopDiscard()
+		}
 		return 0
 	}
 
-	output.PopDiscard()
+	if isAtomicityEnabled {
+		output.PopDiscard()
+	}
 	return 0
 }
 
@@ -1266,8 +1277,11 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 
 		contractCallInput.ESDTTransfers = transfers
 	}
+	isAtomicityEnabled := host.EnableEpochsHandler().IsFlagEnabled(vmhost.ESDTTransferAndExecuteAtomicityFlag)
 	snapshotBeforeTransfer := host.Blockchain().GetSnapshot()
-	output.PushState()
+	if isAtomicityEnabled {
+		output.PushState()
+	}
 
 	originalCaller := host.Runtime().GetOriginalCallerAddress()
 	transfersArgs := &vmhost.ESDTTransfersArgs{
@@ -1279,9 +1293,11 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 	}
 	gasLimitForExec, executeErr := output.TransferESDT(transfersArgs, contractCallInput)
 	if executeErr != nil {
-		output.PopSetActiveState()
+		if isAtomicityEnabled {
+			output.PopSetActiveState()
+		}
 		errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
-		if errRevert != nil {
+		if isAtomicityEnabled && errRevert != nil {
 			FailExecution(host, errRevert)
 		}
 		// no fail execution is needed here - transfer was not successful, returning error which can be treated at SC level
@@ -1306,9 +1322,11 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 			}
 			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
 			if executeErr != nil {
-				output.PopSetActiveState()
+				if isAtomicityEnabled {
+					output.PopSetActiveState()
+				}
 				errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
-				if errRevert != nil {
+				if isAtomicityEnabled && errRevert != nil {
 					FailExecution(host, errRevert)
 				}
 				// fail execution is needed here - tokens are at destination contract, so fail is needed to revert everything
@@ -1316,15 +1334,21 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 				return 1
 			}
 
-			output.PopDiscard()
+			if isAtomicityEnabled {
+				output.PopDiscard()
+			}
 			return 1
 		}
 
-		output.PopDiscard()
+		if isAtomicityEnabled {
+			output.PopDiscard()
+		}
 		return 0
 	}
 
-	output.PopDiscard()
+	if isAtomicityEnabled {
+		output.PopDiscard()
+	}
 	return 0
 }
 

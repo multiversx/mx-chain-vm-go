@@ -47,6 +47,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.BarnardOpcodesFlag,
 	vmhost.FixGetBalanceFlag,
 	vmhost.AttributeExtraGasUsageFlag,
+	vmhost.ESDTTransferAndExecuteAtomicityFlag,
 }
 
 // vmHost implements HostContext interface.
