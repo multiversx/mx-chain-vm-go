@@ -11,9 +11,9 @@ func WriteRustWasmer5Imports(out *eiGenWriter, eiMetadata *EIMetadata) {
 #![allow(clippy::too_many_arguments)]
 
 use multiversx_chain_vm_executor::VMHooksEarlyExit;
-use wasmer::{imports, Function, FunctionEnv, FunctionEnvMut, Imports, Store};
+use wasmer::{Function, FunctionEnv, FunctionEnvMut, Imports, Store, imports};
 
-use crate::we_vm_hooks::{convert_mem_length, convert_mem_ptr, with_vm_hooks, VMHooksWrapper};
+use crate::we_vm_hooks::{VMHooksWrapper, convert_mem_length, convert_mem_ptr, with_vm_hooks};
 
 `)
 

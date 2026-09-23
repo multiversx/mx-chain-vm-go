@@ -62,7 +62,7 @@ fn get_opcode_cost_v2(op: &Operator, opcode_cost: &OpcodeCost) -> Option<u32> {
 
 func writeOperatorMatchArm(out *eiGenWriter, allowUnwind bool, opcodeName string) {
 	if !allowUnwind && opcodeName == "Unwind" {
-		out.WriteString("        // Operator::Unwind { .. } => Some(opcode_cost.opcode_unwind), // unwind no longer available in Wasmer 6 \n")
+		out.WriteString("        // Operator::Unwind { .. } => Some(opcode_cost.opcode_unwind), // unwind no longer available in Wasmer 6\n")
 		return
 	}
 
