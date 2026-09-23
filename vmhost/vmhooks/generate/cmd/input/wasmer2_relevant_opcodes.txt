@@ -108,7 +108,9 @@ Loop
 MemoryGrow
 MemorySize
 MemoryCopy
+MemoryCopyPerByte
 MemoryFill
+MemoryFillPerByte
 Nop
 RefFunc
 RefIsNull

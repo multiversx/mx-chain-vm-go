@@ -119,7 +119,9 @@ type OpcodeCost struct {
 	MemoryGrow         uint32
 	MemorySize         uint32
 	MemoryCopy         uint32
+	MemoryCopyPerByte  uint32
 	MemoryFill         uint32
+	MemoryFillPerByte  uint32
 	Nop                uint32
 	RefFunc            uint32
 	RefIsNull          uint32
@@ -253,7 +255,9 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		MemoryGrow:         wasmOps.MemoryGrow,
 		MemorySize:         wasmOps.MemorySize,
 		MemoryCopy:         wasmOps.MemoryCopy,
+		MemoryCopyPerByte:  wasmOps.MemoryCopyPerByte,
 		MemoryFill:         wasmOps.MemoryFill,
+		MemoryFillPerByte:  wasmOps.MemoryFillPerByte,
 		Nop:                wasmOps.Nop,
 		RefFunc:            wasmOps.RefFunc,
 		RefIsNull:          wasmOps.RefIsNull,
