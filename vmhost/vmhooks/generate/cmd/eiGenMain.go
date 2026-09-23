@@ -237,7 +237,7 @@ func tryCopyFilesToMxExecutorRsRepo() {
 	contentBytes, err := os.ReadFile(fullPathToConfigFile)
 	if err != nil {
 		// this feature is optional
-		fmt.Println("Rust files not copied to wasm-vm-executor-rs. Add a wasm-vm-executor-rs-path.txt with the path to enable feature.")
+		fmt.Printf("Rust files not copied to wasm-vm-executor-rs. Add a %s with the path to enable feature.\n", pathVmExecutorRsFile)
 		return
 	}
 	rustExecutorPath := strings.Trim(string(contentBytes), " \n\t")
@@ -290,7 +290,7 @@ func tryCopyFilesToMxSdkRsRepo() {
 	contentBytes, err := os.ReadFile(fullPathToConfigFile)
 	if err != nil {
 		// this feature is optional
-		fmt.Println("Rust files not copied to wasm-vm-executor-rs. Add a wasm-vm-executor-rs-path.txt with the path to enable feature.")
+		fmt.Printf("Rust files not copied to mx-sdk-rs. Add a %s with the path to enable feature.\n", pathToMxSdkRsFile)
 		return
 	}
 	rustExecutorPath := strings.Trim(string(contentBytes), " \n\t")
