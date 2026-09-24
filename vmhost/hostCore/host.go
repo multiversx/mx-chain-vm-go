@@ -49,6 +49,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.AsyncV3FixesFlag,
 	vmhost.AsyncV3Flag,
 	vmhost.FailConditionallyFlag,
+	vmhost.OpcodeV2Flag,
 }
 
 // vmHost implements HostContext interface.
@@ -351,7 +352,7 @@ func (host *vmHost) ClearContextStateStack() {
 }
 
 func (host *vmHost) getOpcodeVersionForCurrentEpoch() executor.OpcodeVersion {
-	if host.enableEpochsHandler.IsFlagEnabled(vmhost.AsyncV3Flag) {
+	if host.enableEpochsHandler.IsFlagEnabled(vmhost.OpcodeV2Flag) {
 		return executor.OpcodeVersionV2
 	}
 

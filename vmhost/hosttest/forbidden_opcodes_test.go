@@ -73,7 +73,7 @@ func TestBulkMemoryOpcodesActivation(t *testing.T) {
 				Build()).
 			WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
 				IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
-					return flag != vmhost.AsyncV3Flag
+					return flag != vmhost.OpcodeV2Flag
 				},
 			}).
 			AndAssertResults(func(stubBlockchainHook *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {

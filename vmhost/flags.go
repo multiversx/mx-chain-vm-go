@@ -39,5 +39,9 @@ const (
 	// FailConditionallyFlag defines the flag that activates the new opcodes and possibility for failing conditionally
 	FailConditionallyFlag core.EnableEpochFlag = "FailConditionallyFlag"
 
+	// OpcodeV2Flag defines the flag that switches the executor to the V2 opcode version,
+	// which whitelists and meters the bulk memory opcodes
+	OpcodeV2Flag core.EnableEpochFlag = "OpcodeV2Flag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )
