@@ -23,9 +23,9 @@ func WriteRustOpcodeCost(out *eiGenWriter) {
 	out.WriteString("#[serde(default)]\n")
 	out.WriteString("pub struct OpcodeCost {\n")
 
-	allowedOpcodes := LoadOpcodeNames()
+	costNames := LoadOpcodeNames().AllCostNames()
 
-	for _, opcode := range allowedOpcodes.RelevantCodes {
+	for _, opcode := range costNames {
 		out.WriteString(fmt.Sprintf("    #[serde(rename = \"%s\", default)]\n", opcode))
 		out.WriteString(fmt.Sprintf("    pub opcode_%s: u32,\n", strings.ToLower(opcode)))
 	}

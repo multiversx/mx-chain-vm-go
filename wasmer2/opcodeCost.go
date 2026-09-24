@@ -114,14 +114,9 @@ type OpcodeCost struct {
 	LocalGet           uint32
 	LocalSet           uint32
 	LocalTee           uint32
-	LocalAllocate      uint32
 	Loop               uint32
 	MemoryGrow         uint32
 	MemorySize         uint32
-	MemoryCopy         uint32
-	MemoryCopyPerByte  uint32
-	MemoryFill         uint32
-	MemoryFillPerByte  uint32
 	Nop                uint32
 	RefFunc            uint32
 	RefIsNull          uint32
@@ -141,6 +136,11 @@ type OpcodeCost struct {
 	TypedSelect        uint32
 	Unreachable        uint32
 	Unwind             uint32
+	MemoryCopy         uint32
+	MemoryFill         uint32
+	MemoryCopyPerByte  uint32
+	MemoryFillPerByte  uint32
+	LocalAllocate      uint32
 }
 
 func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {
@@ -250,14 +250,9 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		LocalGet:           wasmOps.LocalGet,
 		LocalSet:           wasmOps.LocalSet,
 		LocalTee:           wasmOps.LocalTee,
-		LocalAllocate:      wasmOps.LocalAllocate,
 		Loop:               wasmOps.Loop,
 		MemoryGrow:         wasmOps.MemoryGrow,
 		MemorySize:         wasmOps.MemorySize,
-		MemoryCopy:         wasmOps.MemoryCopy,
-		MemoryCopyPerByte:  wasmOps.MemoryCopyPerByte,
-		MemoryFill:         wasmOps.MemoryFill,
-		MemoryFillPerByte:  wasmOps.MemoryFillPerByte,
 		Nop:                wasmOps.Nop,
 		RefFunc:            wasmOps.RefFunc,
 		RefIsNull:          wasmOps.RefIsNull,
@@ -277,5 +272,10 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		TypedSelect:        wasmOps.TypedSelect,
 		Unreachable:        wasmOps.Unreachable,
 		Unwind:             wasmOps.Unwind,
+		MemoryCopy:         wasmOps.MemoryCopy,
+		MemoryFill:         wasmOps.MemoryFill,
+		MemoryCopyPerByte:  wasmOps.MemoryCopyPerByte,
+		MemoryFillPerByte:  wasmOps.MemoryFillPerByte,
+		LocalAllocate:      wasmOps.LocalAllocate,
 	}
 }
