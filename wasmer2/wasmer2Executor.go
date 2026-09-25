@@ -83,13 +83,13 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 		return nil, newWrappedError(ErrInvalidBytecode)
 	}
 
-	cOptions := unsafe.Pointer(&options)
+	cOptions := toCWasmerCompilationOptions(options)
 	var compileResult = cWasmerInstantiateWithOptions(
 		wasmerExecutor.cgoExecutor,
 		&cInstance,
 		(*cUchar)(unsafe.Pointer(&contractCode[0])),
 		cUint(len(contractCode)),
-		(*cWasmerCompilationOptions)(cOptions),
+		&cOptions,
 	)
 
 	if compileResult != cWasmerOk {
@@ -111,13 +111,13 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 		return nil, newWrappedError(ErrInvalidBytecode)
 	}
 
-	cOptions := unsafe.Pointer(&options)
+	cOptions := toCWasmerCompilationOptions(options)
 	var compileResult = cWasmerInstanceFromCache(
 		wasmerExecutor.cgoExecutor,
 		&cInstance,
 		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
 		cUint32T(len(compiledCode)),
-		(*cWasmerCompilationOptions)(cOptions),
+		&cOptions,
 	)
 
 	if compileResult != cWasmerOk {

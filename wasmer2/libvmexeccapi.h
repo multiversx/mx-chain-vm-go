@@ -318,8 +318,23 @@ typedef struct {
   void (*managed_get_last_error_func_ptr)(void *context, int32_t error_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
+/**
+ * FFI-safe mirror of `CompilationOptionsLegacy`.
+ *
+ * This is a distinct type rather than a cast of `CompilationOptionsLegacy`
+ * itself, so that the general-purpose struct is free to change shape
+ * without touching the C ABI, and vice versa. Fields that are `usize` on
+ * the Rust side are fixed to `u64` here, since `usize` has no guaranteed
+ * width across host platforms.
+ */
 typedef struct {
-
+  uint64_t gas_limit;
+  uint64_t unmetered_locals;
+  uint64_t max_memory_grow;
+  uint64_t max_memory_grow_delta;
+  bool opcode_trace;
+  bool metering;
+  bool runtime_breakpoints;
 } vm_exec_compilation_options_t;
 
 typedef struct {
