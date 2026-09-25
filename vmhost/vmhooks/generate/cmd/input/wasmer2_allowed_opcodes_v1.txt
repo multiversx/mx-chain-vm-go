@@ -103,7 +103,6 @@ If
 LocalGet
 LocalSet
 LocalTee
-LocalAllocate
 Loop
 MemoryGrow
 MemorySize

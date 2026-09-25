@@ -95,6 +95,17 @@ func TestRustPayableFeatures(t *testing.T) {
 		CheckNoError()
 }
 
+func TestRustPanicMessageFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	ScenariosTest(t).
+		Folder("features/panic-message-features/scenarios").
+		Run().
+		CheckNoError()
+}
+
 func TestRustComposability(t *testing.T) {
 	ScenariosTest(t).
 		Folder("features/composability/scenarios").

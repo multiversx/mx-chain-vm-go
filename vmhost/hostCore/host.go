@@ -49,6 +49,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.AsyncV3FixesFlag,
 	vmhost.AsyncV3Flag,
 	vmhost.FailConditionallyFlag,
+	vmhost.OpcodeV2Flag,
 }
 
 // vmHost implements HostContext interface.
@@ -220,8 +221,10 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	} else {
 		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
+
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
 		VMHooks:                  vmHooks,
+		OpcodeVersion:            host.getOpcodeVersionForCurrentEpoch(),
 		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
@@ -348,6 +351,14 @@ func (host *vmHost) ClearContextStateStack() {
 	host.blockchainContext.ClearStateStack()
 }
 
+func (host *vmHost) getOpcodeVersionForCurrentEpoch() executor.OpcodeVersion {
+	if host.enableEpochsHandler.IsFlagEnabled(vmhost.OpcodeV2Flag) {
+		return executor.OpcodeVersionV2
+	}
+
+	return executor.OpcodeVersionV1
+}
+
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
@@ -360,7 +371,9 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 		return
 	}
 
-	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	opcodeVersion := host.getOpcodeVersionForCurrentEpoch()
+
+	host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 	host.runtimeContext.ClearWarmInstanceCache()
