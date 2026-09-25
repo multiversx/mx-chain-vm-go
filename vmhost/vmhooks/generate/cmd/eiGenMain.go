@@ -71,6 +71,7 @@ func main() {
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeRustOpcodeCost()
+	writeRustCapiOpcodeCost()
 	writeRustWasmerOpcodeCost()
 	writeOpcodeWhitelisted()
 	writeRustWasmerExperimentalOpcodeCost()
@@ -214,6 +215,12 @@ func writeRustOpcodeCost() {
 	eapigen.WriteRustOpcodeCost(out)
 }
 
+func writeRustCapiOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs")
+	defer out.Close()
+	eapigen.WriteRustCapiOpcodeCost(out)
+}
+
 func writeRustWasmerOpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/wasmer_opcode_cost.rs")
 	defer out.Close()
@@ -258,6 +265,10 @@ func tryCopyFilesToMxExecutorRsRepo() {
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/opcode_cost.rs"),
 		filepath.Join(rustExecutorPath, "vm-executor/src/opcode_cost.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "c-api/src/capi_opcode_cost.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook.rs"),
