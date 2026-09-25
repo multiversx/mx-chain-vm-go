@@ -375,8 +375,8 @@ func (context *blockchainContext) GetSnapshot() int {
 }
 
 // RevertToSnapshot - reverts to the specified snapshot via blockchain hook
-func (context *blockchainContext) RevertToSnapshot(snapshot int) {
-	_ = context.blockChainHook.RevertToSnapshot(snapshot)
+func (context *blockchainContext) RevertToSnapshot(snapshot int) error {
+	return context.blockChainHook.RevertToSnapshot(snapshot)
 }
 
 // IsLimitedTransfer returns true if token transfers are limited

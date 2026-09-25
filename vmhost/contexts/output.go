@@ -498,7 +498,6 @@ func (context *outputContext) TransferESDT(
 
 	destAcc, _ := context.GetOutputAccount(transfersArgs.Destination)
 	outputAcc, ok := vmOutput.OutputAccounts[string(transfersArgs.Destination)]
-
 	if ok && len(outputAcc.OutputTransfers) == 1 {
 		esdtOutTransfer := outputAcc.OutputTransfers[0]
 		esdtOutTransfer.GasLimit = gasRemaining
@@ -507,7 +506,6 @@ func (context *outputContext) TransferESDT(
 		if sameShard {
 			esdtOutTransfer.GasLimit = 0
 		}
-
 		AppendOutputTransfers(destAcc, destAcc.OutputTransfers, esdtOutTransfer)
 	}
 

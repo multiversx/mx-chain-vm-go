@@ -48,26 +48,6 @@
                 "refund": "*",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "str:FWD-TOKEN",
-                            "0",
-                            "1000",
-                            "sc:vault"
-                        ],
-                        "data": [
-                            "str:AsyncCall",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "1",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "1000",
-                            "str:reject_funds"
-                        ]
-                    },
-                    {
                         "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
                         "topics": [

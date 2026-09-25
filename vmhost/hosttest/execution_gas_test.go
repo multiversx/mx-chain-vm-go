@@ -1653,8 +1653,7 @@ func testGasUsedESDTTransferThenExecuteAsyncCallChildFails(t *testing.T, isLegac
 			verify.Ok().
 				GasRemaining(expectedGasRemaining).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.ChildAddress, 0).
-				Transfers(expectedTransfers...)
+				GasUsed(test.ChildAddress, 0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)

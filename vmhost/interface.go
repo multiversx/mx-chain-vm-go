@@ -108,7 +108,7 @@ type BlockchainContext interface {
 	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetSnapshot() int
-	RevertToSnapshot(snapshot int)
+	RevertToSnapshot(snapshot int) error
 	ClearCompiledCodes()
 	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }

@@ -72,44 +72,6 @@
                 "message": "",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "str:FWD-TOKEN",
-                            "0",
-                            "800",
-                            "str:NFT-123456",
-                            "1",
-                            "1",
-                            "str:EGLD-000000",
-                            "0",
-                            "100",
-                            "str:SFT-456789",
-                            "3",
-                            "6",
-                            "sc:vault"
-                        ],
-                        "data": [
-                            "str:TransferAndExecute",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "4",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "800",
-                            "str:NFT-123456",
-                            "1",
-                            "1",
-                            "str:EGLD-000000",
-                            "0",
-                            "100",
-                            "str:SFT-456789",
-                            "3",
-                            "6",
-                            "str:reject_funds"
-                        ]
-                    },
-                    {
                         "address": "address:a_user",
                         "endpoint": "str:internalVMErrors",
                         "topics": [

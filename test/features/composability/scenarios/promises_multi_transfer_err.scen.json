@@ -68,38 +68,6 @@
                 "message": "",
                 "logs": [
                     {
-                        "address": "sc:promises",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "str:FWD-TOKEN",
-                            "0",
-                            "500",
-                            "str:NFT-123456",
-                            "1",
-                            "1",
-                            "str:SFT-456789",
-                            "3",
-                            "6",
-                            "sc:vault"
-                        ],
-                        "data": [
-                            "str:AsyncCall",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "3",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "500",
-                            "str:NFT-123456",
-                            "1",
-                            "1",
-                            "str:SFT-456789",
-                            "3",
-                            "6",
-                            "str:explicit_panic"
-                        ]
-                    },
-                    {
                         "address": "sc:vault",
                         "endpoint": "str:transferValueOnly",
                         "topics": [

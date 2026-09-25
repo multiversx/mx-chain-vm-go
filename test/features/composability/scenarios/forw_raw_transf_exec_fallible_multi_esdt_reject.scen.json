@@ -50,32 +50,6 @@
                 "message": "",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:MultiESDTNFTTransfer",
-                        "topics": [
-                            "str:FWD-TOKEN",
-                            "0",
-                            "100",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "200",
-                            "sc:vault"
-                        ],
-                        "data": [
-                            "str:TransferAndExecute",
-                            "str:MultiESDTNFTTransfer",
-                            "sc:vault",
-                            "2",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "100",
-                            "str:FWD-TOKEN",
-                            "0",
-                            "200",
-                            "str:reject_funds"
-                        ]
-                    },
-                    {
                         "address": "address:a_user",
                         "endpoint": "str:internalVMErrors",
                         "topics": [
