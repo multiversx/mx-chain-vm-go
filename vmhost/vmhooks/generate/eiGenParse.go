@@ -70,7 +70,7 @@ func extractEIFunctionResult(decl *ast.FuncDecl) (*EIFunctionResult, error) {
 	}
 }
 
-// isInterfaceMethod looks in the comments to determine if to take method into consideration or not
+// isEIInterfaceMethod looks in the comments to determine if to take method into consideration or not
 func isEIInterfaceMethod(decl *ast.FuncDecl) bool {
 	if decl.Doc == nil {
 		return false
