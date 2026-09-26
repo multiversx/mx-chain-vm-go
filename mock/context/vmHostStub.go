@@ -3,6 +3,7 @@ package mock
 import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-core-go/marshal"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -94,6 +95,11 @@ func (vhs *VMHostStub) Crypto() crypto.VMCrypto {
 	if vhs.CryptoCalled != nil {
 		return vhs.CryptoCalled()
 	}
+	return nil
+}
+
+// Marshalizer mocked method
+func (vhs *VMHostStub) Marshalizer() marshal.Marshalizer {
 	return nil
 }
 

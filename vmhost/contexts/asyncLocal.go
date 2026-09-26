@@ -136,15 +136,53 @@ func (context *asyncContext) executeSyncCallback(
 		"gasProvided", callbackInput.GasProvided,
 		"gasLocked", callbackInput.GasLocked)
 
-	context.host.Metering().RestoreGas(asyncCall.GasLocked)
+	var gasForCallback uint64
+	if len(asyncCall.GasLimitsForCallback) > 0 {
+		gasForCallback = asyncCall.GasLimitsForCallback[len(asyncCall.GasLimitsForCallback)-1]
+		asyncCall.GasLimitsForCallback = asyncCall.GasLimitsForCallback[:len(asyncCall.GasLimitsForCallback)-1]
+	} else {
+		gasForCallback = asyncCall.GasLocked
+	}
+	context.host.Metering().RestoreGas(gasForCallback)
 	callbackVMOutput, isComplete, callbackErr := context.host.ExecuteOnDestContext(callbackInput)
+
+	asyncCall.Results = vmhost.NewFinishedAsyncCallFromVMOutput(destinationVMOutput, context.esdtTransferParser)
 	if callbackVMOutput != nil {
+		callbackResults := vmhost.NewFinishedAsyncCallFromVMOutput(callbackVMOutput, context.esdtTransferParser)
+		asyncCall.Results.Merge(callbackResults)
+
+		remainingGas := callbackVMOutput.GasRemaining
+		if remainingGas > 0 {
+			gasPrice := context.host.Runtime().GetVMInput().GasPrice
+			amountToSend := new(big.Int).Mul(new(big.Int).SetUint64(remainingGas), new(big.Int).SetUint64(gasPrice))
+			amountToSend.Div(amountToSend, big.NewInt(100))
+
+			originalCaller := context.host.Runtime().GetOriginalCallerAddress()
+			err := context.host.Output().Transfer(originalCaller, context.host.Runtime().GetContextAddress(), 0, 0, amountToSend, nil, nil, vm.DirectCall)
+			if err != nil {
+				logAsync.Error("could not send gas to original caller", "error", err)
+			}
+		}
+
 		logAsync.Trace("async call: sync callback call",
 			"retCode", callbackVMOutput.ReturnCode,
 			"message", callbackVMOutput.ReturnMessage,
 			"data", callbackVMOutput.ReturnData,
 			"gasRemaining", callbackVMOutput.GasRemaining,
 			"error", callbackErr)
+	}
+
+	if isComplete {
+		key := getAsyncContextStorageKey(context.asyncStorageDataPrefix, asyncCall.CallID)
+		data, err := context.host.Marshalizer().Marshal(asyncCall.Results.ToSerializable())
+		if err == nil {
+			_, err = context.host.Storage().SetStorage(key, data)
+			if err != nil {
+				logAsync.Error("could not save async call results", "error", err)
+			}
+		} else {
+			logAsync.Error("could not marshal async call results", "error", err)
+		}
 	}
 
 	return callbackVMOutput, isComplete, callbackErr
@@ -254,7 +292,7 @@ func (context *asyncContext) createCallbackInput(
 		return nil, err
 	}
 
-	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
+	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, destinationErr)
 
 	returnWithError := false
 	if destinationErr != nil || vmOutput.ReturnCode != vmcommon.Ok {
@@ -369,7 +407,7 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *vmhost.AsyncC
 	return gasLimit, nil
 }
 
-func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput, err error) [][]byte {
+func (context *asyncContext) getArgumentsForCallback(asyncCall *vmhost.AsyncCall, vmOutput *vmcommon.VMOutput, err error) [][]byte {
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		ReturnCodeToBytes(vmOutput.ReturnCode),
@@ -377,7 +415,16 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		arguments = append(arguments, vmOutput.ReturnData...)
+		if asyncCall.Results != nil {
+			if asyncCall.Results.InitialCall != nil {
+				arguments = append(arguments, asyncCall.Results.InitialCall.ReturnData...)
+			}
+			if asyncCall.Results.Callback != nil {
+				arguments = append(arguments, asyncCall.Results.Callback.ReturnData...)
+			}
+		} else {
+			arguments = append(arguments, vmOutput.ReturnData...)
+		}
 	} else {
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
