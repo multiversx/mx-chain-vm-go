@@ -163,10 +163,9 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	var codeHash []byte
 	hasPendingCodeUpdate := false
-	if context.host != nil && context.host.Output() != nil {
-		outputAccount, isNew := context.host.Output().GetOutputAccount(context.codeAddress)
-		hasPendingCodeUpdate = !isNew && len(outputAccount.Code) > 0
-	}
+	outputAccount, isNew := context.host.Output().GetOutputAccount(context.codeAddress)
+	hasPendingCodeUpdate = !isNew && len(outputAccount.Code) > 0
+
 	if newCode || hasPendingCodeUpdate {
 		codeHash = context.hasher.Compute(string(contract))
 	} else {
