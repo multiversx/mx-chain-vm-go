@@ -706,7 +706,9 @@
     MemoryAtomicWait32 = 1
     MemoryAtomicWait64 = 1
     MemoryCopy = 1
+    MemoryCopyPerByte = 1
     MemoryFill = 1
+    MemoryFillPerByte = 1
     MemoryGrow = 1
     MemoryInit = 1
     MemorySize = 1

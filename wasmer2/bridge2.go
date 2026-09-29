@@ -10,6 +10,8 @@ package wasmer2
 import "C"
 import (
 	"unsafe"
+
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 type cBool C.bool
@@ -29,6 +31,26 @@ type cWasmerVmHookPointers = C.vm_exec_vm_hook_c_func_pointers
 
 const cWasmerOk = C.VM_EXEC_OK
 
+// toCWasmerCompilationOptions converts field-by-field instead of reinterpreting
+// executor.CompilationOptions as cWasmerCompilationOptions via unsafe.Pointer, so a field
+// renamed, retyped, or removed on either side is caught by the compiler.
+func toCWasmerCompilationOptions(options executor.CompilationOptions) cWasmerCompilationOptions {
+	return cWasmerCompilationOptions{
+		gas_limit:             C.uint64_t(options.GasLimit),
+		unmetered_locals:      C.uint64_t(options.UnmeteredLocals),
+		max_memory_grow:       C.uint64_t(options.MaxMemoryGrow),
+		max_memory_grow_delta: C.uint64_t(options.MaxMemoryGrowDelta),
+		opcode_trace:          C.bool(options.OpcodeTrace),
+		metering:              C.bool(options.Metering),
+		runtime_breakpoints:   C.bool(options.RuntimeBreakpoints),
+	}
+}
+
+// Tripwire for a field added to vm_exec_compilation_options_t without a matching
+// field (and conversion above) added to executor.CompilationOptions: the two
+// composite literal lengths differ, so this fails to compile.
+var _ [unsafe.Sizeof(executor.CompilationOptions{})]byte = [unsafe.Sizeof(cWasmerCompilationOptions{})]byte{}
+
 func cWasmerSetLogLevel(
 	value uint64,
 ) cWasmerResultT {
@@ -41,12 +63,14 @@ func cWasmerForceInstallSighandlers() {
 	C.vm_force_sighandler_reinstall()
 }
 
-func cWasmerExecutorSetOpcodeCost(
+func cWasmerExecutorSetOpcodeConfig(
 	executor *cWasmerExecutorT,
+	opcodeVersion int32,
 	opcodeCost *cWasmerOpcodeCostT,
 ) cWasmerResultT {
-	return (cWasmerResultT)(C.vm_exec_set_opcode_costs(
+	return (cWasmerResultT)(C.vm_exec_set_opcode_config(
 		(*C.vm_exec_executor_t)(executor),
+		(C.int32_t)(opcodeVersion),
 		(*C.vm_exec_opcode_cost_t)(opcodeCost),
 	))
 }
