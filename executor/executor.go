@@ -21,8 +21,8 @@ type CompilationOptions struct {
 type Executor interface {
 	check.NilInterfaceChecker
 
-	// SetOpcodeCosts sets gas costs globally inside an executor.
-	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
+	// SetOpcodeConfig sets gas costs globally inside an executor.
+	SetOpcodeConfig(opcodeVersion OpcodeVersion, wasmOps *WASMOpcodeCost)
 
 	// FunctionNames return the low-level function names provided to contracts.
 	FunctionNames() vmcommon.FunctionNames

@@ -10,7 +10,7 @@ func WriteRustWasmerImports(out *eiGenWriter, eiMetadata *EIMetadata) {
 	out.WriteString(`
 #![allow(clippy::too_many_arguments)]
 
-use wasmer::{imports, Function, ImportObject, Store};
+use wasmer::{Function, ImportObject, Store, imports};
 
 use crate::wasmer_vm_hooks::VMHooksWrapper;
 
