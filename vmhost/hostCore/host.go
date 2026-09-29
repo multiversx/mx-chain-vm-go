@@ -48,7 +48,6 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.FixGetBalanceFlag,
 	vmhost.AsyncV3FixesFlag,
 	vmhost.AsyncV3Flag,
-	vmhost.FailConditionallyFlag,
 }
 
 // vmHost implements HostContext interface.
@@ -57,7 +56,8 @@ type vmHost struct {
 	mutExecution     sync.RWMutex
 	closingInstance  bool
 	executionTimeout time.Duration
-	ethInput         []byte
+
+	ethInput []byte
 
 	blockchainContext   vmhost.BlockchainContext
 	runtimeContext      vmhost.RuntimeContext

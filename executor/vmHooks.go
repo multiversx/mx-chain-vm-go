@@ -16,7 +16,6 @@ type VMHooks interface {
 	ManagedMapVMHooks
 	SmallIntVMHooks
 	CryptoVMHooks
-	UnsafeVMHooks
 }
 
 type MainVMHooks interface {
@@ -318,12 +317,4 @@ type CryptoVMHooks interface {
 	ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32
 	ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32
 	ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32
-}
-
-type UnsafeVMHooks interface {
-	ActivateUnsafeMode()
-	DeactivateUnsafeMode()
-	ManagedGetNumErrors() int32
-	ManagedGetErrorWithIndex(index int32, errorHandle int32)
-	ManagedGetLastError(errorHandle int32)
 }

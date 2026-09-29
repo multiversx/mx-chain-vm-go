@@ -36,8 +36,5 @@ const (
 	// AsyncV3Flag defines the flag that activates the fix for get balance from the Barnard release
 	AsyncV3Flag core.EnableEpochFlag = "AsyncV3Flag"
 
-	// FailConditionallyFlag defines the flag that activates the new opcodes and possibility for failing conditionally
-	FailConditionallyFlag core.EnableEpochFlag = "FailConditionallyFlag"
-
 	// all new flags must be added to allFlags slice from hostCore/host
 )
