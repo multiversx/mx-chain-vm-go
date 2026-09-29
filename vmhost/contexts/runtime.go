@@ -162,7 +162,12 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	var codeHash []byte
-	if newCode {
+	hasPendingCodeUpdate := false
+	if context.host != nil && context.host.Output() != nil {
+		outputAccount, isNew := context.host.Output().GetOutputAccount(context.codeAddress)
+		hasPendingCodeUpdate = !isNew && len(outputAccount.Code) > 0
+	}
+	if newCode || hasPendingCodeUpdate {
 		codeHash = context.hasher.Compute(string(contract))
 	} else {
 		blockchain := context.host.Blockchain()
@@ -262,10 +267,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		return err
 	}
 
-	if newCode || len(context.iTracker.CodeHash()) == 0 {
-		codeHash := context.hasher.Compute(string(contract))
-		context.iTracker.SetCodeHash(codeHash)
-	}
+	codeHash := context.hasher.Compute(string(contract))
+	context.iTracker.SetCodeHash(codeHash)
 
 	if newCode || context.verifyCode {
 		err = context.VerifyContractCode()
