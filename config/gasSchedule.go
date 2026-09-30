@@ -1000,7 +1000,9 @@ func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["MemoryAtomicWait32"] = value
 	gasMap["MemoryAtomicWait64"] = value
 	gasMap["MemoryCopy"] = value
+	gasMap["MemoryCopyPerByte"] = value
 	gasMap["MemoryFill"] = value
+	gasMap["MemoryFillPerByte"] = value
 	gasMap["MemoryGrow"] = value
 	gasMap["MemoryInit"] = value
 	gasMap["MemorySize"] = value

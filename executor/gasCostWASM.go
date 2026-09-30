@@ -503,7 +503,9 @@ type WASMOpcodeCost struct {
 	MemoryAtomicWait32            uint32
 	MemoryAtomicWait64            uint32
 	MemoryCopy                    uint32
+	MemoryCopyPerByte             uint32
 	MemoryFill                    uint32
+	MemoryFillPerByte             uint32
 	MemoryGrow                    uint32
 	MemoryInit                    uint32
 	MemorySize                    uint32
