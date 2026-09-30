@@ -176,6 +176,10 @@ func (mtb *ScenariosTestBuilder) CheckNoError() *ScenariosTestBuilder {
 	return mtb
 }
 
+// Teardown is a placeholder for now
+func (mtb *ScenariosTestBuilder) Teardown() {
+}
+
 // RequireError does an assert for the containing error
 func (mtb *ScenariosTestBuilder) RequireError(expectedErrorMsg string) *ScenariosTestBuilder {
 	require.EqualError(mtb.t, mtb.currentError, expectedErrorMsg)

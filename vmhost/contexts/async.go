@@ -55,7 +55,7 @@ func NewAsyncContext(
 	host vmhost.VMHost,
 	callArgsParser vmhost.CallArgsParser,
 	esdtTransferParser vmcommon.ESDTTransferParser,
-	_ *marshal.GogoProtoMarshalizer,
+	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	if check.IfNil(host) {
 		return nil, vmhost.ErrNilVMHost
@@ -85,6 +85,7 @@ func NewAsyncContext(
 		contextCallbackEnabled: false,
 		asyncStorageDataPrefix: storage.GetVmProtectedPrefix(vmhost.AsyncDataPrefix),
 		callbackParentCall:     nil,
+		marshalizer:            marshalizer,
 	}
 
 	return context, nil
@@ -489,7 +490,17 @@ func (context *asyncContext) HasPendingCallGroups() bool {
 // IsComplete returns true if the calls counter is 0 and if there are no more
 // AsyncCallGroups contained in the AsyncContext.
 func (context *asyncContext) IsComplete() bool {
-	return context.callsCounter == 0 && len(context.asyncCallGroups) == 0
+	if context.callsCounter != 0 {
+		return false
+	}
+	for _, group := range context.asyncCallGroups {
+		for _, call := range group.AsyncCalls {
+			if call.IsRemote() {
+				return false
+			}
+		}
+	}
+	return len(context.asyncCallGroups) == 0
 }
 
 // RegisterAsyncCall validates the provided AsyncCall adds it to the specified
@@ -788,6 +799,21 @@ func (context *asyncContext) isCallAsync() bool {
 // IsCallAsync checks if the call is an async or callback async
 func IsCallAsync(callType vm.CallType) bool {
 	return callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack
+}
+
+// GetCallType returns the call type
+func (context *asyncContext) GetCallType() vm.CallType {
+	return context.callType
+}
+
+// GetCallbackParentCall returns the callback parent call
+func (context *asyncContext) GetCallbackParentCall() *vmhost.AsyncCall {
+	return context.callbackParentCall
+}
+
+// GetAsyncCallGroups returns the async call groups
+func (context *asyncContext) GetAsyncCallGroups() []*vmhost.AsyncCallGroup {
+	return context.asyncCallGroups
 }
 
 func (context *asyncContext) executeAsyncCall(asyncCall *vmhost.AsyncCall) error {

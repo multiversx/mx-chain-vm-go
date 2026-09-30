@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "vmhost";
+option (gogoproto.stable_marshaler_all) = true;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+package vmhost;
+
+message SerializableAsyncCallResults {
+    repeated bytes ReturnData = 1;
+    // TODO: add TokenTransfers
+    uint32 ReturnCode = 3;
+}
+
+message SerializableFinishedAsyncCall {
+    SerializableAsyncCallResults InitialCall = 1;
+    SerializableAsyncCallResults Callback = 2;
+}

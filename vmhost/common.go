@@ -145,6 +145,9 @@ const TimeLockKeyPrefix = "TIMELOCK"
 // AsyncDataPrefix is the storage key prefix used for AsyncContext-related storage.
 const AsyncDataPrefix = "ASYNC"
 
+// AsyncResultsPrefix is the storage key prefix used for async results stored in the contract's storage
+const AsyncResultsPrefix = "ASYNCRESULTS"
+
 // AsyncCallStatus represents the different status an async call can have
 type AsyncCallStatus uint8
 
