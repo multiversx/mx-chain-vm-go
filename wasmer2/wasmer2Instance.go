@@ -222,7 +222,7 @@ func (instance *Wasmer2Instance) MemDump() []byte {
 	return instance.memory.Data()
 }
 
-// Id returns an identifier for the instance, unique at runtime
+// ID returns an identifier for the instance, unique at runtime
 func (instance *Wasmer2Instance) ID() string {
 	return fmt.Sprintf("%p", instance.cgoInstance)
 }
