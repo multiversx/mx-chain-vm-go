@@ -324,14 +324,14 @@ func copyFile(from, to string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer original.Close()
+	defer func() { _ = original.Close() }()
 
 	// Create new file
 	new, err := os.Create(to)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer new.Close()
+	defer func() { _ = new.Close() }()
 
 	//This will copy
 	_, err = io.Copy(new, original)

@@ -25,7 +25,7 @@ func loadOpcodeNamesForVersion(filePath string) []string {
 	if err != nil {
 		panic(err)
 	}
-	defer readFile.Close()
+	defer func() { _ = readFile.Close() }()
 
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
