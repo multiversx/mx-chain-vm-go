@@ -2409,3 +2409,8 @@ func (w *WrapperVMHooks) ManagedVerifyBLSAggregatedSignature(keyHandle int32, me
 	w.logger.LogVMHookCallAfter(callInfo)
 	return result
 }
+
+// HandleHookError passthrough
+func (w *WrapperVMHooks) HandleHookError(err error) {
+	w.wrappedVMHooks.HandleHookError(err)
+}
