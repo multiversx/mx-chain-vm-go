@@ -128,6 +128,9 @@ func extractEIFunction(decl *ast.FuncDecl) (*EIFunction, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !returnsError {
+		return nil, fmt.Errorf("VM hook %s must return a trailing error", decl.Name.Name)
+	}
 	eiFunction := &EIFunction{
 		Name:         decl.Name.Name,
 		Arguments:    arguments,
