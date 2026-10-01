@@ -1104,247 +1104,385 @@ func w2_getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
 //export w2_managedSCAddress
 func w2_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedSCAddress(destinationHandle)
+	err := vmHooks.ManagedSCAddress(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedOwnerAddress
 func w2_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedOwnerAddress(destinationHandle)
+	err := vmHooks.ManagedOwnerAddress(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedCaller
 func w2_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedCaller(destinationHandle)
+	err := vmHooks.ManagedCaller(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetOriginalCallerAddr
 func w2_managedGetOriginalCallerAddr(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	err := vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetRelayerAddr
 func w2_managedGetRelayerAddr(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetRelayerAddr(destinationHandle)
+	err := vmHooks.ManagedGetRelayerAddr(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedSignalError
 func w2_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedSignalError(errHandle)
+	err := vmHooks.ManagedSignalError(errHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedWriteLog
 func w2_managedWriteLog(context unsafe.Pointer, topicsHandle int32, dataHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
+	err := vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetOriginalTxHash
 func w2_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetOriginalTxHash(resultHandle)
+	err := vmHooks.ManagedGetOriginalTxHash(resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetStateRootHash
 func w2_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetStateRootHash(resultHandle)
+	err := vmHooks.ManagedGetStateRootHash(resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetBlockRandomSeed
 func w2_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetBlockRandomSeed(resultHandle)
+	err := vmHooks.ManagedGetBlockRandomSeed(resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetPrevBlockRandomSeed
 func w2_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
+	err := vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetReturnData
 func w2_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetReturnData(resultID, resultHandle)
+	err := vmHooks.ManagedGetReturnData(resultID, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetMultiESDTCallValue
 func w2_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
+	err := vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetAllTransfersCallValue
 func w2_managedGetAllTransfersCallValue(context unsafe.Pointer, transferCallValuesListHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+	err := vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetBackTransfers
 func w2_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
+	err := vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetESDTBalance
 func w2_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
+	err := vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetESDTTokenData
 func w2_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+	err := vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetESDTTokenType
 func w2_managedGetESDTTokenType(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
+	err := vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedAsyncCall
 func w2_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
+	err := vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedCreateAsyncCall
 func w2_managedCreateAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback, callbackClosureHandle)
+	result, err := vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback, callbackClosureHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedGetCallbackClosure
 func w2_managedGetCallbackClosure(context unsafe.Pointer, callbackClosureHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
+	err := vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedUpgradeFromSourceContract
 func w2_managedUpgradeFromSourceContract(context unsafe.Pointer, destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	err := vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedUpgradeContract
 func w2_managedUpgradeContract(context unsafe.Pointer, destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	err := vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedDeleteContract
 func w2_managedDeleteContract(context unsafe.Pointer, destHandle int32, gasLimit int64, argumentsHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
+	err := vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedDeployFromSourceContract
 func w2_managedDeployFromSourceContract(context unsafe.Pointer, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	result, err := vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedCreateContract
 func w2_managedCreateContract(context unsafe.Pointer, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	result, err := vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedExecuteReadOnly
 func w2_managedExecuteReadOnly(context unsafe.Pointer, gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedExecuteOnSameContext
 func w2_managedExecuteOnSameContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedExecuteOnDestContext
 func w2_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedExecuteOnDestContextWithErrorReturn
 func w2_managedExecuteOnDestContextWithErrorReturn(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMultiTransferESDTNFTExecute
 func w2_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMultiTransferESDTNFTExecuteWithReturn
 func w2_managedMultiTransferESDTNFTExecuteWithReturn(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMultiTransferESDTNFTExecuteByUser
 func w2_managedMultiTransferESDTNFTExecuteByUser(context unsafe.Pointer, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedTransferValueExecute
 func w2_managedTransferValueExecute(context unsafe.Pointer, dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedIsESDTFrozen
 func w2_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
+	result, err := vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedIsESDTLimitedTransfer
 func w2_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
+	result, err := vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedIsESDTPaused
 func w2_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedIsESDTPaused(tokenIDHandle)
+	result, err := vmHooks.ManagedIsESDTPaused(tokenIDHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedBufferToHex
 func w2_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
+	err := vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetCodeMetadata
 func w2_managedGetCodeMetadata(context unsafe.Pointer, addressHandle int32, responseHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	err := vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedGetCodeHash
 func w2_managedGetCodeHash(context unsafe.Pointer, addressHandle int32, codeHashHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
+	err := vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_managedIsBuiltinFunction
 func w2_managedIsBuiltinFunction(context unsafe.Pointer, functionNameHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
+	result, err := vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatNewFromParts

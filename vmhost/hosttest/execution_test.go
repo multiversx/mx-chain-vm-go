@@ -1859,7 +1859,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testin
 
 						bufHandle := host.ManagedTypes().NewManagedBuffer()
 
-						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						returnVal, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							int64(testConfig.GasProvidedToChild),
 							big.NewInt(0),
@@ -1869,6 +1869,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testin
 							bufHandle,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(0), returnVal)
 
 						results, _, err := host.ManagedTypes().ReadManagedVecOfManagedBuffers(bufHandle)
@@ -1920,7 +1921,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						returnVal, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							int64(testConfig.GasProvidedToChild),
 							big.NewInt(0),
@@ -1930,6 +1931,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 							0,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(1), returnVal)
 
 						return parentInstance

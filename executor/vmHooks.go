@@ -110,47 +110,47 @@ type MainVMHooks interface {
 }
 
 type ManagedVMHooks interface {
-	ManagedSCAddress(destinationHandle int32)
-	ManagedOwnerAddress(destinationHandle int32)
-	ManagedCaller(destinationHandle int32)
-	ManagedGetOriginalCallerAddr(destinationHandle int32)
-	ManagedGetRelayerAddr(destinationHandle int32)
-	ManagedSignalError(errHandle int32)
-	ManagedWriteLog(topicsHandle int32, dataHandle int32)
-	ManagedGetOriginalTxHash(resultHandle int32)
-	ManagedGetStateRootHash(resultHandle int32)
-	ManagedGetBlockRandomSeed(resultHandle int32)
-	ManagedGetPrevBlockRandomSeed(resultHandle int32)
-	ManagedGetReturnData(resultID int32, resultHandle int32)
-	ManagedGetMultiESDTCallValue(multiCallValueHandle int32)
-	ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32)
-	ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32)
-	ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32)
-	ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32)
-	ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32)
-	ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32)
-	ManagedCreateAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32
-	ManagedGetCallbackClosure(callbackClosureHandle int32)
-	ManagedUpgradeFromSourceContract(destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32)
-	ManagedUpgradeContract(destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32)
-	ManagedDeleteContract(destHandle int32, gasLimit int64, argumentsHandle int32)
-	ManagedDeployFromSourceContract(gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32
-	ManagedCreateContract(gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32
-	ManagedExecuteReadOnly(gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32
-	ManagedExecuteOnSameContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32
-	ManagedExecuteOnDestContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32
-	ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32
-	ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
-	ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
-	ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
-	ManagedTransferValueExecute(dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32
-	ManagedIsESDTFrozen(addressHandle int32, tokenIDHandle int32, nonce int64) int32
-	ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32
-	ManagedIsESDTPaused(tokenIDHandle int32) int32
-	ManagedBufferToHex(sourceHandle int32, destHandle int32)
-	ManagedGetCodeMetadata(addressHandle int32, responseHandle int32)
-	ManagedGetCodeHash(addressHandle int32, codeHashHandle int32)
-	ManagedIsBuiltinFunction(functionNameHandle int32) int32
+	ManagedSCAddress(destinationHandle int32) error
+	ManagedOwnerAddress(destinationHandle int32) error
+	ManagedCaller(destinationHandle int32) error
+	ManagedGetOriginalCallerAddr(destinationHandle int32) error
+	ManagedGetRelayerAddr(destinationHandle int32) error
+	ManagedSignalError(errHandle int32) error
+	ManagedWriteLog(topicsHandle int32, dataHandle int32) error
+	ManagedGetOriginalTxHash(resultHandle int32) error
+	ManagedGetStateRootHash(resultHandle int32) error
+	ManagedGetBlockRandomSeed(resultHandle int32) error
+	ManagedGetPrevBlockRandomSeed(resultHandle int32) error
+	ManagedGetReturnData(resultID int32, resultHandle int32) error
+	ManagedGetMultiESDTCallValue(multiCallValueHandle int32) error
+	ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) error
+	ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) error
+	ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) error
+	ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) error
+	ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) error
+	ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) error
+	ManagedCreateAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64, callbackClosureHandle int32) (int32, error)
+	ManagedGetCallbackClosure(callbackClosureHandle int32) error
+	ManagedUpgradeFromSourceContract(destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) error
+	ManagedUpgradeContract(destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) error
+	ManagedDeleteContract(destHandle int32, gasLimit int64, argumentsHandle int32) error
+	ManagedDeployFromSourceContract(gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) (int32, error)
+	ManagedCreateContract(gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) (int32, error)
+	ManagedExecuteReadOnly(gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error)
+	ManagedExecuteOnSameContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error)
+	ManagedExecuteOnDestContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error)
+	ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error)
+	ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error)
+	ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error)
+	ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error)
+	ManagedTransferValueExecute(dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error)
+	ManagedIsESDTFrozen(addressHandle int32, tokenIDHandle int32, nonce int64) (int32, error)
+	ManagedIsESDTLimitedTransfer(tokenIDHandle int32) (int32, error)
+	ManagedIsESDTPaused(tokenIDHandle int32) (int32, error)
+	ManagedBufferToHex(sourceHandle int32, destHandle int32) error
+	ManagedGetCodeMetadata(addressHandle int32, responseHandle int32) error
+	ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) error
+	ManagedIsBuiltinFunction(functionNameHandle int32) (int32, error)
 }
 
 type BigFloatVMHooks interface {

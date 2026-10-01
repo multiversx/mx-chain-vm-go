@@ -781,346 +781,372 @@ func (w *WrapperVMHooks) GetPrevTxHash(dataOffset executor.MemPtr) {
 }
 
 // ManagedSCAddress VM hook wrapper
-func (w *WrapperVMHooks) ManagedSCAddress(destinationHandle int32) {
+func (w *WrapperVMHooks) ManagedSCAddress(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedSCAddress(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedSCAddress(destinationHandle)
+	err := w.wrappedVMHooks.ManagedSCAddress(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedOwnerAddress VM hook wrapper
-func (w *WrapperVMHooks) ManagedOwnerAddress(destinationHandle int32) {
+func (w *WrapperVMHooks) ManagedOwnerAddress(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedOwnerAddress(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedOwnerAddress(destinationHandle)
+	err := w.wrappedVMHooks.ManagedOwnerAddress(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedCaller VM hook wrapper
-func (w *WrapperVMHooks) ManagedCaller(destinationHandle int32) {
+func (w *WrapperVMHooks) ManagedCaller(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedCaller(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedCaller(destinationHandle)
+	err := w.wrappedVMHooks.ManagedCaller(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetOriginalCallerAddr VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetOriginalCallerAddr(destinationHandle int32) {
+func (w *WrapperVMHooks) ManagedGetOriginalCallerAddr(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetOriginalCallerAddr(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	err := w.wrappedVMHooks.ManagedGetOriginalCallerAddr(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetRelayerAddr VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetRelayerAddr(destinationHandle int32) {
+func (w *WrapperVMHooks) ManagedGetRelayerAddr(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetRelayerAddr(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetRelayerAddr(destinationHandle)
+	err := w.wrappedVMHooks.ManagedGetRelayerAddr(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedSignalError VM hook wrapper
-func (w *WrapperVMHooks) ManagedSignalError(errHandle int32) {
+func (w *WrapperVMHooks) ManagedSignalError(errHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedSignalError(%d)", errHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedSignalError(errHandle)
+	err := w.wrappedVMHooks.ManagedSignalError(errHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedWriteLog VM hook wrapper
-func (w *WrapperVMHooks) ManagedWriteLog(topicsHandle int32, dataHandle int32) {
+func (w *WrapperVMHooks) ManagedWriteLog(topicsHandle int32, dataHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedWriteLog(%d, %d)", topicsHandle, dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedWriteLog(topicsHandle, dataHandle)
+	err := w.wrappedVMHooks.ManagedWriteLog(topicsHandle, dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetOriginalTxHash VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetOriginalTxHash(resultHandle int32) {
+func (w *WrapperVMHooks) ManagedGetOriginalTxHash(resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetOriginalTxHash(%d)", resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetOriginalTxHash(resultHandle)
+	err := w.wrappedVMHooks.ManagedGetOriginalTxHash(resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetStateRootHash VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetStateRootHash(resultHandle int32) {
+func (w *WrapperVMHooks) ManagedGetStateRootHash(resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetStateRootHash(%d)", resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetStateRootHash(resultHandle)
+	err := w.wrappedVMHooks.ManagedGetStateRootHash(resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetBlockRandomSeed VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetBlockRandomSeed(resultHandle int32) {
+func (w *WrapperVMHooks) ManagedGetBlockRandomSeed(resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetBlockRandomSeed(%d)", resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetBlockRandomSeed(resultHandle)
+	err := w.wrappedVMHooks.ManagedGetBlockRandomSeed(resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetPrevBlockRandomSeed VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
+func (w *WrapperVMHooks) ManagedGetPrevBlockRandomSeed(resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetPrevBlockRandomSeed(%d)", resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
+	err := w.wrappedVMHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetReturnData VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetReturnData(resultID int32, resultHandle int32) {
+func (w *WrapperVMHooks) ManagedGetReturnData(resultID int32, resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetReturnData(%d, %d)", resultID, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetReturnData(resultID, resultHandle)
+	err := w.wrappedVMHooks.ManagedGetReturnData(resultID, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetMultiESDTCallValue VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) {
+func (w *WrapperVMHooks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetMultiESDTCallValue(%d)", multiCallValueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
+	err := w.wrappedVMHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetAllTransfersCallValue VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) {
+func (w *WrapperVMHooks) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetAllTransfersCallValue(%d)", transferCallValuesListHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+	err := w.wrappedVMHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetBackTransfers VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
+func (w *WrapperVMHooks) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetBackTransfers(%d, %d)", esdtTransfersValueHandle, egldValueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
+	err := w.wrappedVMHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetESDTBalance VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
+func (w *WrapperVMHooks) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetESDTBalance(%d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, valueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
+	err := w.wrappedVMHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetESDTTokenData VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
+func (w *WrapperVMHooks) ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetESDTTokenData(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+	err := w.wrappedVMHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetESDTTokenType VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
+func (w *WrapperVMHooks) ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetESDTTokenType(%d, %d, %d, %d)", addressHandle, tokenIDHandle, nonce, typeHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
+	err := w.wrappedVMHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedAsyncCall VM hook wrapper
-func (w *WrapperVMHooks) ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
+func (w *WrapperVMHooks) ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedAsyncCall(%d, %d, %d, %d)", destHandle, valueHandle, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
+	err := w.wrappedVMHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedCreateAsyncCall VM hook wrapper
-func (w *WrapperVMHooks) ManagedCreateAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset executor.MemPtr, successLength executor.MemLength, errorOffset executor.MemPtr, errorLength executor.MemLength, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedCreateAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset executor.MemPtr, successLength executor.MemLength, errorOffset executor.MemPtr, errorLength executor.MemLength, gas int64, extraGasForCallback int64, callbackClosureHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedCreateAsyncCall(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
+	result, err := w.wrappedVMHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedGetCallbackClosure VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetCallbackClosure(callbackClosureHandle int32) {
+func (w *WrapperVMHooks) ManagedGetCallbackClosure(callbackClosureHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetCallbackClosure(%d)", callbackClosureHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetCallbackClosure(callbackClosureHandle)
+	err := w.wrappedVMHooks.ManagedGetCallbackClosure(callbackClosureHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedUpgradeFromSourceContract VM hook wrapper
-func (w *WrapperVMHooks) ManagedUpgradeFromSourceContract(destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
+func (w *WrapperVMHooks) ManagedUpgradeFromSourceContract(destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedUpgradeFromSourceContract(%d, %d, %d, %d, %d, %d, %d)", destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	err := w.wrappedVMHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedUpgradeContract VM hook wrapper
-func (w *WrapperVMHooks) ManagedUpgradeContract(destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
+func (w *WrapperVMHooks) ManagedUpgradeContract(destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedUpgradeContract(%d, %d, %d, %d, %d, %d, %d)", destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	err := w.wrappedVMHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedDeleteContract VM hook wrapper
-func (w *WrapperVMHooks) ManagedDeleteContract(destHandle int32, gasLimit int64, argumentsHandle int32) {
+func (w *WrapperVMHooks) ManagedDeleteContract(destHandle int32, gasLimit int64, argumentsHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedDeleteContract(%d, %d, %d)", destHandle, gasLimit, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
+	err := w.wrappedVMHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedDeployFromSourceContract VM hook wrapper
-func (w *WrapperVMHooks) ManagedDeployFromSourceContract(gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedDeployFromSourceContract(gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedDeployFromSourceContract(%d, %d, %d, %d, %d, %d, %d)", gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedCreateContract VM hook wrapper
-func (w *WrapperVMHooks) ManagedCreateContract(gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedCreateContract(gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedCreateContract(%d, %d, %d, %d, %d, %d, %d)", gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedExecuteReadOnly VM hook wrapper
-func (w *WrapperVMHooks) ManagedExecuteReadOnly(gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedExecuteReadOnly(gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedExecuteReadOnly(%d, %d, %d, %d, %d)", gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedExecuteOnSameContext VM hook wrapper
-func (w *WrapperVMHooks) ManagedExecuteOnSameContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedExecuteOnSameContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedExecuteOnSameContext(%d, %d, %d, %d, %d, %d)", gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedExecuteOnDestContext VM hook wrapper
-func (w *WrapperVMHooks) ManagedExecuteOnDestContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedExecuteOnDestContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedExecuteOnDestContext(%d, %d, %d, %d, %d, %d)", gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedExecuteOnDestContextWithErrorReturn VM hook wrapper
-func (w *WrapperVMHooks) ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedExecuteOnDestContextWithErrorReturn(%d, %d, %d, %d, %d, %d)", gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMultiTransferESDTNFTExecute VM hook wrapper
-func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecute(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMultiTransferESDTNFTExecuteWithReturn VM hook wrapper
-func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteWithReturn(%d, %d, %d, %d, %d)", dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMultiTransferESDTNFTExecuteByUser VM hook wrapper
-func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMultiTransferESDTNFTExecuteByUser(%d, %d, %d, %d, %d, %d)", userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := w.wrappedVMHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedTransferValueExecute VM hook wrapper
-func (w *WrapperVMHooks) ManagedTransferValueExecute(dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedTransferValueExecute(dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedTransferValueExecute(%d, %d, %d, %d, %d)", dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
+	result, err := w.wrappedVMHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedIsESDTFrozen VM hook wrapper
-func (w *WrapperVMHooks) ManagedIsESDTFrozen(addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
+func (w *WrapperVMHooks) ManagedIsESDTFrozen(addressHandle int32, tokenIDHandle int32, nonce int64) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedIsESDTFrozen(%d, %d, %d)", addressHandle, tokenIDHandle, nonce)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
+	result, err := w.wrappedVMHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedIsESDTLimitedTransfer VM hook wrapper
-func (w *WrapperVMHooks) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedIsESDTLimitedTransfer(%d)", tokenIDHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
+	result, err := w.wrappedVMHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedIsESDTPaused VM hook wrapper
-func (w *WrapperVMHooks) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedIsESDTPaused(tokenIDHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedIsESDTPaused(%d)", tokenIDHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedIsESDTPaused(tokenIDHandle)
+	result, err := w.wrappedVMHooks.ManagedIsESDTPaused(tokenIDHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedBufferToHex VM hook wrapper
-func (w *WrapperVMHooks) ManagedBufferToHex(sourceHandle int32, destHandle int32) {
+func (w *WrapperVMHooks) ManagedBufferToHex(sourceHandle int32, destHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedBufferToHex(%d, %d)", sourceHandle, destHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedBufferToHex(sourceHandle, destHandle)
+	err := w.wrappedVMHooks.ManagedBufferToHex(sourceHandle, destHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetCodeMetadata VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetCodeMetadata(addressHandle int32, responseHandle int32) {
+func (w *WrapperVMHooks) ManagedGetCodeMetadata(addressHandle int32, responseHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetCodeMetadata(%d, %d)", addressHandle, responseHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	err := w.wrappedVMHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedGetCodeHash VM hook wrapper
-func (w *WrapperVMHooks) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
+func (w *WrapperVMHooks) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) error {
 	callInfo := fmt.Sprintf("ManagedGetCodeHash(%d, %d)", addressHandle, codeHashHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
+	err := w.wrappedVMHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedIsBuiltinFunction VM hook wrapper
-func (w *WrapperVMHooks) ManagedIsBuiltinFunction(functionNameHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedIsBuiltinFunction(functionNameHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedIsBuiltinFunction(%d)", functionNameHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedIsBuiltinFunction(functionNameHandle)
+	result, err := w.wrappedVMHooks.ManagedIsBuiltinFunction(functionNameHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatNewFromParts VM hook wrapper

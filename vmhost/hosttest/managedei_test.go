@@ -70,11 +70,14 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 						addressHandle = managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
-						retValue := vmhooks.ManagedIsESDTFrozenWithHost(
+						retValue, err := vmhooks.ManagedIsESDTFrozenWithHost(
 							host,
 							addressHandle,
 							tokenIDHandle,
 							nonce)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
 						return parentInstance
@@ -137,9 +140,12 @@ func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 						managedTypes := host.ManagedTypes()
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
-						retValue := vmhooks.ManagedIsESDTPausedWithHost(
+						retValue, err := vmhooks.ManagedIsESDTPausedWithHost(
 							host,
 							tokenIDHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
 						return parentInstance
@@ -192,9 +198,12 @@ func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bo
 						managedTypes := host.ManagedTypes()
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
-						retValue := vmhooks.ManagedIsESDTLimitedTransferWithHost(
+						retValue, err := vmhooks.ManagedIsESDTLimitedTransferWithHost(
 							host,
 							tokenIDHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
 						return parentInstance
@@ -236,10 +245,13 @@ func Test_ManagedBufferToHex(t *testing.T) {
 						sourceHandle := managedTypes.NewManagedBufferFromBytes(asBytes)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.ManagedBufferToHexWithHost(
+						err := vmhooks.ManagedBufferToHexWithHost(
 							host,
 							sourceHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if string(bytesResult) != asString {
@@ -1376,11 +1388,14 @@ func Test_ManagedDeleteContract(t *testing.T) {
 
 						destHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 
-						vmhooks.ManagedDeleteContractWithHost(
+						err := vmhooks.ManagedDeleteContractWithHost(
 							host,
 							destHandle,
 							100000,
 							argumentsHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						return parentInstance
 					})
@@ -1511,11 +1526,14 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 						royaltiesHandle := managed.NewManagedBuffer()
 						urisHandle := managed.NewManagedBuffer()
 
-						vmhooks.ManagedGetESDTTokenDataWithHost(host,
+						err := vmhooks.ManagedGetESDTTokenDataWithHost(host,
 							addressHandle,
 							tokenIDHandle,
 							nonce,
 							valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						value, err := managed.GetBigInt(valueHandle)
 						if err != nil {
@@ -1576,11 +1594,14 @@ func TestBaseOpsAPI_GetESDTTokenType(t *testing.T) {
 
 						typeHandle := managed.NewBigIntFromInt64(0)
 
-						vmhooks.ManagedGetESDTTokenTypeWithHost(host,
+						err := vmhooks.ManagedGetESDTTokenTypeWithHost(host,
 							addressHandle,
 							tokenIDHandle,
 							int64(nonce),
 							typeHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						typeValue, err := managed.GetBigInt(typeHandle)
 						if err != nil {
@@ -1639,10 +1660,13 @@ func Test_ManagedGetCodeMetadata(t *testing.T) {
 						addressHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.ManagedGetCodeMetadataWithHost(
+						err := vmhooks.ManagedGetCodeMetadataWithHost(
 							host,
 							addressHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if !bytes.Equal(metadata, bytesResult) {
@@ -1717,9 +1741,12 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 						managedTypes := host.ManagedTypes()
 						functionNameHandle := managedTypes.NewManagedBufferFromBytes([]byte("ESDTTransfer"))
 
-						returnValue := vmhooks.ManagedIsBuiltinFunctionWithHost(
+						returnValue, err := vmhooks.ManagedIsBuiltinFunctionWithHost(
 							host,
 							functionNameHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if returnValue != 1 {
 							host.Runtime().SignalUserError("assert failed")
 							return parentInstance
@@ -1727,9 +1754,12 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 
 						functionNameHandle = managedTypes.NewManagedBufferFromBytes([]byte("NotABuiltInFunction"))
 
-						returnValue = vmhooks.ManagedIsBuiltinFunctionWithHost(
+						returnValue, err = vmhooks.ManagedIsBuiltinFunctionWithHost(
 							host,
 							functionNameHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if returnValue != 0 {
 							host.Runtime().SignalUserError("assert failed")
 							return parentInstance

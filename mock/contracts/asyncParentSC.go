@@ -158,7 +158,10 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		if !testConfig.IsLegacyAsync {
 			managed := host.ManagedTypes()
 			closureHandle := managed.NewManagedBuffer()
-			vmhooks.GetCallbackClosureWithHost(host, closureHandle)
+			err := vmhooks.GetCallbackClosureWithHost(host, closureHandle)
+			if err != nil {
+				vmhooks.FailExecution(host, err)
+			}
 			closure, err := managed.GetBytes(closureHandle)
 			if err != nil {
 				host.Runtime().SignalUserError("can't get closure")
