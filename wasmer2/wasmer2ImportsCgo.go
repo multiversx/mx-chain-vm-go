@@ -1896,31 +1896,51 @@ func w2_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length
 //export w2_managedMapNew
 func w2_managedMapNew(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapNew()
+	result, err := vmHooks.ManagedMapNew()
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMapPut
 func w2_managedMapPut(context unsafe.Pointer, mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+	result, err := vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMapGet
 func w2_managedMapGet(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+	result, err := vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMapRemove
 func w2_managedMapRemove(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+	result, err := vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMapContains
 func w2_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedMapContains(mMapHandle, keyHandle)
+	result, err := vmHooks.ManagedMapContains(mMapHandle, keyHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_smallIntGetUnsignedArgument

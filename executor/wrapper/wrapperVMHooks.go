@@ -1894,48 +1894,48 @@ func (w *WrapperVMHooks) MBufferSetRandom(destinationHandle int32, length int32)
 }
 
 // ManagedMapNew VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapNew() int32 {
+func (w *WrapperVMHooks) ManagedMapNew() (int32, error) {
 	callInfo := "ManagedMapNew()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapNew()
+	result, err := w.wrappedVMHooks.ManagedMapNew()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMapPut VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMapPut(%d, %d, %d)", mMapHandle, keyHandle, valueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+	result, err := w.wrappedVMHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMapGet VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMapGet(%d, %d, %d)", mMapHandle, keyHandle, outValueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+	result, err := w.wrappedVMHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMapRemove VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMapRemove(%d, %d, %d)", mMapHandle, keyHandle, outValueHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+	result, err := w.wrappedVMHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMapContains VM hook wrapper
-func (w *WrapperVMHooks) ManagedMapContains(mMapHandle int32, keyHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMapContains(mMapHandle int32, keyHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMapContains(%d, %d)", mMapHandle, keyHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMapContains(mMapHandle, keyHandle)
+	result, err := w.wrappedVMHooks.ManagedMapContains(mMapHandle, keyHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SmallIntGetUnsignedArgument VM hook wrapper

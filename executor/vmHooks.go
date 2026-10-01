@@ -254,11 +254,11 @@ type ManagedBufferVMHooks interface {
 }
 
 type ManagedMapVMHooks interface {
-	ManagedMapNew() int32
-	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32
-	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) int32
-	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) int32
-	ManagedMapContains(mMapHandle int32, keyHandle int32) int32
+	ManagedMapNew() (int32, error)
+	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) (int32, error)
+	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) (int32, error)
+	ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) (int32, error)
+	ManagedMapContains(mMapHandle int32, keyHandle int32) (int32, error)
 }
 
 type SmallIntVMHooks interface {
