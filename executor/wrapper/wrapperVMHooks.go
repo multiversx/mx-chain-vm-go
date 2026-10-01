@@ -19,765 +19,786 @@ type WrapperVMHooks struct {
 }
 
 // GetGasLeft VM hook wrapper
-func (w *WrapperVMHooks) GetGasLeft() int64 {
+func (w *WrapperVMHooks) GetGasLeft() (int64, error) {
 	callInfo := "GetGasLeft()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetGasLeft()
+	result, err := w.wrappedVMHooks.GetGasLeft()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetSCAddress VM hook wrapper
-func (w *WrapperVMHooks) GetSCAddress(resultOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetSCAddress(resultOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetSCAddress(%d)", resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetSCAddress(resultOffset)
+	err := w.wrappedVMHooks.GetSCAddress(resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetOwnerAddress VM hook wrapper
-func (w *WrapperVMHooks) GetOwnerAddress(resultOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetOwnerAddress(resultOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetOwnerAddress(%d)", resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetOwnerAddress(resultOffset)
+	err := w.wrappedVMHooks.GetOwnerAddress(resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetShardOfAddress VM hook wrapper
-func (w *WrapperVMHooks) GetShardOfAddress(addressOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetShardOfAddress(addressOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetShardOfAddress(%d)", addressOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetShardOfAddress(addressOffset)
+	result, err := w.wrappedVMHooks.GetShardOfAddress(addressOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // IsSmartContract VM hook wrapper
-func (w *WrapperVMHooks) IsSmartContract(addressOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) IsSmartContract(addressOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("IsSmartContract(%d)", addressOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.IsSmartContract(addressOffset)
+	result, err := w.wrappedVMHooks.IsSmartContract(addressOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SignalError VM hook wrapper
-func (w *WrapperVMHooks) SignalError(messageOffset executor.MemPtr, messageLength executor.MemLength) {
+func (w *WrapperVMHooks) SignalError(messageOffset executor.MemPtr, messageLength executor.MemLength) error {
 	callInfo := fmt.Sprintf("SignalError(%d, %d)", messageOffset, messageLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.SignalError(messageOffset, messageLength)
+	err := w.wrappedVMHooks.SignalError(messageOffset, messageLength)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetExternalBalance VM hook wrapper
-func (w *WrapperVMHooks) GetExternalBalance(addressOffset executor.MemPtr, resultOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetExternalBalance(addressOffset executor.MemPtr, resultOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetExternalBalance(%d, %d)", addressOffset, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetExternalBalance(addressOffset, resultOffset)
+	err := w.wrappedVMHooks.GetExternalBalance(addressOffset, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetBlockHash VM hook wrapper
-func (w *WrapperVMHooks) GetBlockHash(nonce int64, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetBlockHash(nonce int64, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetBlockHash(%d, %d)", nonce, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockHash(nonce, resultOffset)
+	result, err := w.wrappedVMHooks.GetBlockHash(nonce, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTBalance VM hook wrapper
-func (w *WrapperVMHooks) GetESDTBalance(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetESDTBalance(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTBalance(%d, %d, %d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
+	result, err := w.wrappedVMHooks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTNFTNameLength VM hook wrapper
-func (w *WrapperVMHooks) GetESDTNFTNameLength(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64) int32 {
+func (w *WrapperVMHooks) GetESDTNFTNameLength(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTNFTNameLength(%d, %d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	result, err := w.wrappedVMHooks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTNFTAttributeLength VM hook wrapper
-func (w *WrapperVMHooks) GetESDTNFTAttributeLength(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64) int32 {
+func (w *WrapperVMHooks) GetESDTNFTAttributeLength(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTNFTAttributeLength(%d, %d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	result, err := w.wrappedVMHooks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTNFTURILength VM hook wrapper
-func (w *WrapperVMHooks) GetESDTNFTURILength(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64) int32 {
+func (w *WrapperVMHooks) GetESDTNFTURILength(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTNFTURILength(%d, %d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	result, err := w.wrappedVMHooks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenData VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenData(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64, valueHandle int32, propertiesOffset executor.MemPtr, hashOffset executor.MemPtr, nameOffset executor.MemPtr, attributesOffset executor.MemPtr, creatorOffset executor.MemPtr, royaltiesHandle int32, urisOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetESDTTokenData(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64, valueHandle int32, propertiesOffset executor.MemPtr, hashOffset executor.MemPtr, nameOffset executor.MemPtr, attributesOffset executor.MemPtr, creatorOffset executor.MemPtr, royaltiesHandle int32, urisOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTTokenData(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
+	result, err := w.wrappedVMHooks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTLocalRoles VM hook wrapper
-func (w *WrapperVMHooks) GetESDTLocalRoles(tokenIdHandle int32) int64 {
+func (w *WrapperVMHooks) GetESDTLocalRoles(tokenIdHandle int32) (int64, error) {
 	callInfo := fmt.Sprintf("GetESDTLocalRoles(%d)", tokenIdHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTLocalRoles(tokenIdHandle)
+	result, err := w.wrappedVMHooks.GetESDTLocalRoles(tokenIdHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ValidateTokenIdentifier VM hook wrapper
-func (w *WrapperVMHooks) ValidateTokenIdentifier(tokenIdHandle int32) int32 {
+func (w *WrapperVMHooks) ValidateTokenIdentifier(tokenIdHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ValidateTokenIdentifier(%d)", tokenIdHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ValidateTokenIdentifier(tokenIdHandle)
+	result, err := w.wrappedVMHooks.ValidateTokenIdentifier(tokenIdHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // TransferValue VM hook wrapper
-func (w *WrapperVMHooks) TransferValue(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, length executor.MemLength) int32 {
+func (w *WrapperVMHooks) TransferValue(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, length executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("TransferValue(%d, %d, %d, %d)", destOffset, valueOffset, dataOffset, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.TransferValue(destOffset, valueOffset, dataOffset, length)
+	result, err := w.wrappedVMHooks.TransferValue(destOffset, valueOffset, dataOffset, length)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // TransferValueExecute VM hook wrapper
-func (w *WrapperVMHooks) TransferValueExecute(destOffset executor.MemPtr, valueOffset executor.MemPtr, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) TransferValueExecute(destOffset executor.MemPtr, valueOffset executor.MemPtr, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("TransferValueExecute(%d, %d, %d, %d, %d, %d, %d, %d)", destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // TransferESDTExecute VM hook wrapper
-func (w *WrapperVMHooks) TransferESDTExecute(destOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, valueOffset executor.MemPtr, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) TransferESDTExecute(destOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, valueOffset executor.MemPtr, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("TransferESDTExecute(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // TransferESDTNFTExecute VM hook wrapper
-func (w *WrapperVMHooks) TransferESDTNFTExecute(destOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, valueOffset executor.MemPtr, nonce int64, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) TransferESDTNFTExecute(destOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, valueOffset executor.MemPtr, nonce int64, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("TransferESDTNFTExecute(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MultiTransferESDTNFTExecute VM hook wrapper
-func (w *WrapperVMHooks) MultiTransferESDTNFTExecute(destOffset executor.MemPtr, numTokenTransfers int32, tokenTransfersArgsLengthOffset executor.MemPtr, tokenTransferDataOffset executor.MemPtr, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) MultiTransferESDTNFTExecute(destOffset executor.MemPtr, numTokenTransfers int32, tokenTransfersArgsLengthOffset executor.MemPtr, tokenTransferDataOffset executor.MemPtr, gasLimit int64, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("MultiTransferESDTNFTExecute(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // CreateAsyncCall VM hook wrapper
-func (w *WrapperVMHooks) CreateAsyncCall(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, dataLength executor.MemLength, successOffset executor.MemPtr, successLength executor.MemLength, errorOffset executor.MemPtr, errorLength executor.MemLength, gas int64, extraGasForCallback int64) int32 {
+func (w *WrapperVMHooks) CreateAsyncCall(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, dataLength executor.MemLength, successOffset executor.MemPtr, successLength executor.MemLength, errorOffset executor.MemPtr, errorLength executor.MemLength, gas int64, extraGasForCallback int64) (int32, error) {
 	callInfo := fmt.Sprintf("CreateAsyncCall(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
+	result, err := w.wrappedVMHooks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SetAsyncContextCallback VM hook wrapper
-func (w *WrapperVMHooks) SetAsyncContextCallback(callback executor.MemPtr, callbackLength executor.MemLength, data executor.MemPtr, dataLength executor.MemLength, gas int64) int32 {
+func (w *WrapperVMHooks) SetAsyncContextCallback(callback executor.MemPtr, callbackLength executor.MemLength, data executor.MemPtr, dataLength executor.MemLength, gas int64) (int32, error) {
 	callInfo := fmt.Sprintf("SetAsyncContextCallback(%d, %d, %d, %d, %d)", callback, callbackLength, data, dataLength, gas)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
+	result, err := w.wrappedVMHooks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // UpgradeContract VM hook wrapper
-func (w *WrapperVMHooks) UpgradeContract(destOffset executor.MemPtr, gasLimit int64, valueOffset executor.MemPtr, codeOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, length executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) {
+func (w *WrapperVMHooks) UpgradeContract(destOffset executor.MemPtr, gasLimit int64, valueOffset executor.MemPtr, codeOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, length executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("UpgradeContract(%d, %d, %d, %d, %d, %d, %d, %d, %d)", destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
+	err := w.wrappedVMHooks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // UpgradeFromSourceContract VM hook wrapper
-func (w *WrapperVMHooks) UpgradeFromSourceContract(destOffset executor.MemPtr, gasLimit int64, valueOffset executor.MemPtr, sourceContractAddressOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) {
+func (w *WrapperVMHooks) UpgradeFromSourceContract(destOffset executor.MemPtr, gasLimit int64, valueOffset executor.MemPtr, sourceContractAddressOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("UpgradeFromSourceContract(%d, %d, %d, %d, %d, %d, %d, %d)", destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
+	err := w.wrappedVMHooks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // DeleteContract VM hook wrapper
-func (w *WrapperVMHooks) DeleteContract(destOffset executor.MemPtr, gasLimit int64, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) {
+func (w *WrapperVMHooks) DeleteContract(destOffset executor.MemPtr, gasLimit int64, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("DeleteContract(%d, %d, %d, %d, %d)", destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
+	err := w.wrappedVMHooks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // AsyncCall VM hook wrapper
-func (w *WrapperVMHooks) AsyncCall(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, length executor.MemLength) {
+func (w *WrapperVMHooks) AsyncCall(destOffset executor.MemPtr, valueOffset executor.MemPtr, dataOffset executor.MemPtr, length executor.MemLength) error {
 	callInfo := fmt.Sprintf("AsyncCall(%d, %d, %d, %d)", destOffset, valueOffset, dataOffset, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.AsyncCall(destOffset, valueOffset, dataOffset, length)
+	err := w.wrappedVMHooks.AsyncCall(destOffset, valueOffset, dataOffset, length)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetArgumentLength VM hook wrapper
-func (w *WrapperVMHooks) GetArgumentLength(id int32) int32 {
+func (w *WrapperVMHooks) GetArgumentLength(id int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetArgumentLength(%d)", id)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetArgumentLength(id)
+	result, err := w.wrappedVMHooks.GetArgumentLength(id)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetArgument VM hook wrapper
-func (w *WrapperVMHooks) GetArgument(id int32, argOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetArgument(id int32, argOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetArgument(%d, %d)", id, argOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetArgument(id, argOffset)
+	result, err := w.wrappedVMHooks.GetArgument(id, argOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetFunction VM hook wrapper
-func (w *WrapperVMHooks) GetFunction(functionOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetFunction(functionOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetFunction(%d)", functionOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetFunction(functionOffset)
+	result, err := w.wrappedVMHooks.GetFunction(functionOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetNumArguments VM hook wrapper
-func (w *WrapperVMHooks) GetNumArguments() int32 {
+func (w *WrapperVMHooks) GetNumArguments() (int32, error) {
 	callInfo := "GetNumArguments()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetNumArguments()
+	result, err := w.wrappedVMHooks.GetNumArguments()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // StorageStore VM hook wrapper
-func (w *WrapperVMHooks) StorageStore(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) StorageStore(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr, dataLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("StorageStore(%d, %d, %d, %d)", keyOffset, keyLength, dataOffset, dataLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
+	result, err := w.wrappedVMHooks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // StorageLoadLength VM hook wrapper
-func (w *WrapperVMHooks) StorageLoadLength(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) StorageLoadLength(keyOffset executor.MemPtr, keyLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("StorageLoadLength(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.StorageLoadLength(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.StorageLoadLength(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // StorageLoadFromAddress VM hook wrapper
-func (w *WrapperVMHooks) StorageLoadFromAddress(addressOffset executor.MemPtr, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) StorageLoadFromAddress(addressOffset executor.MemPtr, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("StorageLoadFromAddress(%d, %d, %d, %d)", addressOffset, keyOffset, keyLength, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
+	result, err := w.wrappedVMHooks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // StorageLoad VM hook wrapper
-func (w *WrapperVMHooks) StorageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) StorageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("StorageLoad(%d, %d, %d)", keyOffset, keyLength, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.StorageLoad(keyOffset, keyLength, dataOffset)
+	result, err := w.wrappedVMHooks.StorageLoad(keyOffset, keyLength, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SetStorageLock VM hook wrapper
-func (w *WrapperVMHooks) SetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
+func (w *WrapperVMHooks) SetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) (int32, error) {
 	callInfo := fmt.Sprintf("SetStorageLock(%d, %d, %d)", keyOffset, keyLength, lockTimestamp)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
+	result, err := w.wrappedVMHooks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetStorageLock VM hook wrapper
-func (w *WrapperVMHooks) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (w *WrapperVMHooks) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) (int64, error) {
 	callInfo := fmt.Sprintf("GetStorageLock(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetStorageLock(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.GetStorageLock(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // IsStorageLocked VM hook wrapper
-func (w *WrapperVMHooks) IsStorageLocked(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) IsStorageLocked(keyOffset executor.MemPtr, keyLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("IsStorageLocked(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.IsStorageLocked(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.IsStorageLocked(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ClearStorageLock VM hook wrapper
-func (w *WrapperVMHooks) ClearStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) ClearStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("ClearStorageLock(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ClearStorageLock(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.ClearStorageLock(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetCaller VM hook wrapper
-func (w *WrapperVMHooks) GetCaller(resultOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetCaller(resultOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetCaller(%d)", resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetCaller(resultOffset)
+	err := w.wrappedVMHooks.GetCaller(resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // CheckNoPayment VM hook wrapper
-func (w *WrapperVMHooks) CheckNoPayment() {
+func (w *WrapperVMHooks) CheckNoPayment() error {
 	callInfo := "CheckNoPayment()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.CheckNoPayment()
+	err := w.wrappedVMHooks.CheckNoPayment()
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetCallValue VM hook wrapper
-func (w *WrapperVMHooks) GetCallValue(resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetCallValue(resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetCallValue(%d)", resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetCallValue(resultOffset)
+	result, err := w.wrappedVMHooks.GetCallValue(resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTValue VM hook wrapper
-func (w *WrapperVMHooks) GetESDTValue(resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetESDTValue(resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTValue(%d)", resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTValue(resultOffset)
+	result, err := w.wrappedVMHooks.GetESDTValue(resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTValueByIndex VM hook wrapper
-func (w *WrapperVMHooks) GetESDTValueByIndex(resultOffset executor.MemPtr, index int32) int32 {
+func (w *WrapperVMHooks) GetESDTValueByIndex(resultOffset executor.MemPtr, index int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTValueByIndex(%d, %d)", resultOffset, index)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTValueByIndex(resultOffset, index)
+	result, err := w.wrappedVMHooks.GetESDTValueByIndex(resultOffset, index)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenName VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetESDTTokenName(resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTTokenName(%d)", resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenName(resultOffset)
+	result, err := w.wrappedVMHooks.GetESDTTokenName(resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenNameByIndex VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, index int32) int32 {
+func (w *WrapperVMHooks) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, index int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTTokenNameByIndex(%d, %d)", resultOffset, index)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenNameByIndex(resultOffset, index)
+	result, err := w.wrappedVMHooks.GetESDTTokenNameByIndex(resultOffset, index)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenNonce VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenNonce() int64 {
+func (w *WrapperVMHooks) GetESDTTokenNonce() (int64, error) {
 	callInfo := "GetESDTTokenNonce()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenNonce()
+	result, err := w.wrappedVMHooks.GetESDTTokenNonce()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenNonceByIndex VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenNonceByIndex(index int32) int64 {
+func (w *WrapperVMHooks) GetESDTTokenNonceByIndex(index int32) (int64, error) {
 	callInfo := fmt.Sprintf("GetESDTTokenNonceByIndex(%d)", index)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenNonceByIndex(index)
+	result, err := w.wrappedVMHooks.GetESDTTokenNonceByIndex(index)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetCurrentESDTNFTNonce VM hook wrapper
-func (w *WrapperVMHooks) GetCurrentESDTNFTNonce(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength) int64 {
+func (w *WrapperVMHooks) GetCurrentESDTNFTNonce(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength) (int64, error) {
 	callInfo := fmt.Sprintf("GetCurrentESDTNFTNonce(%d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
+	result, err := w.wrappedVMHooks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenType VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenType() int32 {
+func (w *WrapperVMHooks) GetESDTTokenType() (int32, error) {
 	callInfo := "GetESDTTokenType()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenType()
+	result, err := w.wrappedVMHooks.GetESDTTokenType()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetESDTTokenTypeByIndex VM hook wrapper
-func (w *WrapperVMHooks) GetESDTTokenTypeByIndex(index int32) int32 {
+func (w *WrapperVMHooks) GetESDTTokenTypeByIndex(index int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetESDTTokenTypeByIndex(%d)", index)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetESDTTokenTypeByIndex(index)
+	result, err := w.wrappedVMHooks.GetESDTTokenTypeByIndex(index)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetNumESDTTransfers VM hook wrapper
-func (w *WrapperVMHooks) GetNumESDTTransfers() int32 {
+func (w *WrapperVMHooks) GetNumESDTTransfers() (int32, error) {
 	callInfo := "GetNumESDTTransfers()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetNumESDTTransfers()
+	result, err := w.wrappedVMHooks.GetNumESDTTransfers()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetCallValueTokenName VM hook wrapper
-func (w *WrapperVMHooks) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetCallValueTokenName(%d, %d)", callValueOffset, tokenNameOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
+	result, err := w.wrappedVMHooks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetCallValueTokenNameByIndex VM hook wrapper
-func (w *WrapperVMHooks) GetCallValueTokenNameByIndex(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr, index int32) int32 {
+func (w *WrapperVMHooks) GetCallValueTokenNameByIndex(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr, index int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetCallValueTokenNameByIndex(%d, %d, %d)", callValueOffset, tokenNameOffset, index)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
+	result, err := w.wrappedVMHooks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // IsReservedFunctionName VM hook wrapper
-func (w *WrapperVMHooks) IsReservedFunctionName(nameHandle int32) int32 {
+func (w *WrapperVMHooks) IsReservedFunctionName(nameHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("IsReservedFunctionName(%d)", nameHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.IsReservedFunctionName(nameHandle)
+	result, err := w.wrappedVMHooks.IsReservedFunctionName(nameHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // WriteLog VM hook wrapper
-func (w *WrapperVMHooks) WriteLog(dataPointer executor.MemPtr, dataLength executor.MemLength, topicPtr executor.MemPtr, numTopics int32) {
+func (w *WrapperVMHooks) WriteLog(dataPointer executor.MemPtr, dataLength executor.MemLength, topicPtr executor.MemPtr, numTopics int32) error {
 	callInfo := fmt.Sprintf("WriteLog(%d, %d, %d, %d)", dataPointer, dataLength, topicPtr, numTopics)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
+	err := w.wrappedVMHooks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // WriteEventLog VM hook wrapper
-func (w *WrapperVMHooks) WriteEventLog(numTopics int32, topicLengthsOffset executor.MemPtr, topicOffset executor.MemPtr, dataOffset executor.MemPtr, dataLength executor.MemLength) {
+func (w *WrapperVMHooks) WriteEventLog(numTopics int32, topicLengthsOffset executor.MemPtr, topicOffset executor.MemPtr, dataOffset executor.MemPtr, dataLength executor.MemLength) error {
 	callInfo := fmt.Sprintf("WriteEventLog(%d, %d, %d, %d, %d)", numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
+	err := w.wrappedVMHooks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetBlockTimestamp VM hook wrapper
-func (w *WrapperVMHooks) GetBlockTimestamp() int64 {
+func (w *WrapperVMHooks) GetBlockTimestamp() (int64, error) {
 	callInfo := "GetBlockTimestamp()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockTimestamp()
+	result, err := w.wrappedVMHooks.GetBlockTimestamp()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetBlockTimestampMs VM hook wrapper
-func (w *WrapperVMHooks) GetBlockTimestampMs() int64 {
+func (w *WrapperVMHooks) GetBlockTimestampMs() (int64, error) {
 	callInfo := "GetBlockTimestampMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockTimestampMs()
+	result, err := w.wrappedVMHooks.GetBlockTimestampMs()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetBlockNonce VM hook wrapper
-func (w *WrapperVMHooks) GetBlockNonce() int64 {
+func (w *WrapperVMHooks) GetBlockNonce() (int64, error) {
 	callInfo := "GetBlockNonce()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockNonce()
+	result, err := w.wrappedVMHooks.GetBlockNonce()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetBlockRound VM hook wrapper
-func (w *WrapperVMHooks) GetBlockRound() int64 {
+func (w *WrapperVMHooks) GetBlockRound() (int64, error) {
 	callInfo := "GetBlockRound()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockRound()
+	result, err := w.wrappedVMHooks.GetBlockRound()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetBlockEpoch VM hook wrapper
-func (w *WrapperVMHooks) GetBlockEpoch() int64 {
+func (w *WrapperVMHooks) GetBlockEpoch() (int64, error) {
 	callInfo := "GetBlockEpoch()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockEpoch()
+	result, err := w.wrappedVMHooks.GetBlockEpoch()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetBlockRandomSeed VM hook wrapper
-func (w *WrapperVMHooks) GetBlockRandomSeed(pointer executor.MemPtr) {
+func (w *WrapperVMHooks) GetBlockRandomSeed(pointer executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetBlockRandomSeed(%d)", pointer)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetBlockRandomSeed(pointer)
+	err := w.wrappedVMHooks.GetBlockRandomSeed(pointer)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetStateRootHash VM hook wrapper
-func (w *WrapperVMHooks) GetStateRootHash(pointer executor.MemPtr) {
+func (w *WrapperVMHooks) GetStateRootHash(pointer executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetStateRootHash(%d)", pointer)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetStateRootHash(pointer)
+	err := w.wrappedVMHooks.GetStateRootHash(pointer)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetPrevBlockTimestamp VM hook wrapper
-func (w *WrapperVMHooks) GetPrevBlockTimestamp() int64 {
+func (w *WrapperVMHooks) GetPrevBlockTimestamp() (int64, error) {
 	callInfo := "GetPrevBlockTimestamp()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetPrevBlockTimestamp()
+	result, err := w.wrappedVMHooks.GetPrevBlockTimestamp()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetPrevBlockTimestampMs VM hook wrapper
-func (w *WrapperVMHooks) GetPrevBlockTimestampMs() int64 {
+func (w *WrapperVMHooks) GetPrevBlockTimestampMs() (int64, error) {
 	callInfo := "GetPrevBlockTimestampMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetPrevBlockTimestampMs()
+	result, err := w.wrappedVMHooks.GetPrevBlockTimestampMs()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetPrevBlockNonce VM hook wrapper
-func (w *WrapperVMHooks) GetPrevBlockNonce() int64 {
+func (w *WrapperVMHooks) GetPrevBlockNonce() (int64, error) {
 	callInfo := "GetPrevBlockNonce()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetPrevBlockNonce()
+	result, err := w.wrappedVMHooks.GetPrevBlockNonce()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetPrevBlockRound VM hook wrapper
-func (w *WrapperVMHooks) GetPrevBlockRound() int64 {
+func (w *WrapperVMHooks) GetPrevBlockRound() (int64, error) {
 	callInfo := "GetPrevBlockRound()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetPrevBlockRound()
+	result, err := w.wrappedVMHooks.GetPrevBlockRound()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetPrevBlockEpoch VM hook wrapper
-func (w *WrapperVMHooks) GetPrevBlockEpoch() int64 {
+func (w *WrapperVMHooks) GetPrevBlockEpoch() (int64, error) {
 	callInfo := "GetPrevBlockEpoch()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetPrevBlockEpoch()
+	result, err := w.wrappedVMHooks.GetPrevBlockEpoch()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetPrevBlockRandomSeed VM hook wrapper
-func (w *WrapperVMHooks) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
+func (w *WrapperVMHooks) GetPrevBlockRandomSeed(pointer executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetPrevBlockRandomSeed(%d)", pointer)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetPrevBlockRandomSeed(pointer)
+	err := w.wrappedVMHooks.GetPrevBlockRandomSeed(pointer)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetBlockRoundTimeMs VM hook wrapper
-func (w *WrapperVMHooks) GetBlockRoundTimeMs() int64 {
+func (w *WrapperVMHooks) GetBlockRoundTimeMs() (int64, error) {
 	callInfo := "GetBlockRoundTimeMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetBlockRoundTimeMs()
+	result, err := w.wrappedVMHooks.GetBlockRoundTimeMs()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // EpochStartBlockTimestampMs VM hook wrapper
-func (w *WrapperVMHooks) EpochStartBlockTimestampMs() int64 {
+func (w *WrapperVMHooks) EpochStartBlockTimestampMs() (int64, error) {
 	callInfo := "EpochStartBlockTimestampMs()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EpochStartBlockTimestampMs()
+	result, err := w.wrappedVMHooks.EpochStartBlockTimestampMs()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // EpochStartBlockNonce VM hook wrapper
-func (w *WrapperVMHooks) EpochStartBlockNonce() int64 {
+func (w *WrapperVMHooks) EpochStartBlockNonce() (int64, error) {
 	callInfo := "EpochStartBlockNonce()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EpochStartBlockNonce()
+	result, err := w.wrappedVMHooks.EpochStartBlockNonce()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // EpochStartBlockRound VM hook wrapper
-func (w *WrapperVMHooks) EpochStartBlockRound() int64 {
+func (w *WrapperVMHooks) EpochStartBlockRound() (int64, error) {
 	callInfo := "EpochStartBlockRound()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EpochStartBlockRound()
+	result, err := w.wrappedVMHooks.EpochStartBlockRound()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Finish VM hook wrapper
-func (w *WrapperVMHooks) Finish(pointer executor.MemPtr, length executor.MemLength) {
+func (w *WrapperVMHooks) Finish(pointer executor.MemPtr, length executor.MemLength) error {
 	callInfo := fmt.Sprintf("Finish(%d, %d)", pointer, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.Finish(pointer, length)
+	err := w.wrappedVMHooks.Finish(pointer, length)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ExecuteOnSameContext VM hook wrapper
-func (w *WrapperVMHooks) ExecuteOnSameContext(gasLimit int64, addressOffset executor.MemPtr, valueOffset executor.MemPtr, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) ExecuteOnSameContext(gasLimit int64, addressOffset executor.MemPtr, valueOffset executor.MemPtr, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("ExecuteOnSameContext(%d, %d, %d, %d, %d, %d, %d, %d)", gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ExecuteOnDestContext VM hook wrapper
-func (w *WrapperVMHooks) ExecuteOnDestContext(gasLimit int64, addressOffset executor.MemPtr, valueOffset executor.MemPtr, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) ExecuteOnDestContext(gasLimit int64, addressOffset executor.MemPtr, valueOffset executor.MemPtr, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("ExecuteOnDestContext(%d, %d, %d, %d, %d, %d, %d, %d)", gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ExecuteReadOnly VM hook wrapper
-func (w *WrapperVMHooks) ExecuteReadOnly(gasLimit int64, addressOffset executor.MemPtr, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) ExecuteReadOnly(gasLimit int64, addressOffset executor.MemPtr, functionOffset executor.MemPtr, functionLength executor.MemLength, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("ExecuteReadOnly(%d, %d, %d, %d, %d, %d, %d)", gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // CreateContract VM hook wrapper
-func (w *WrapperVMHooks) CreateContract(gasLimit int64, valueOffset executor.MemPtr, codeOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) CreateContract(gasLimit int64, valueOffset executor.MemPtr, codeOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("CreateContract(%d, %d, %d, %d, %d, %d, %d, %d, %d)", gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // DeployFromSourceContract VM hook wrapper
-func (w *WrapperVMHooks) DeployFromSourceContract(gasLimit int64, valueOffset executor.MemPtr, sourceContractAddressOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, resultAddressOffset executor.MemPtr, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) DeployFromSourceContract(gasLimit int64, valueOffset executor.MemPtr, sourceContractAddressOffset executor.MemPtr, codeMetadataOffset executor.MemPtr, resultAddressOffset executor.MemPtr, numArguments int32, argumentsLengthOffset executor.MemPtr, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("DeployFromSourceContract(%d, %d, %d, %d, %d, %d, %d, %d)", gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
+	result, err := w.wrappedVMHooks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetNumReturnData VM hook wrapper
-func (w *WrapperVMHooks) GetNumReturnData() int32 {
+func (w *WrapperVMHooks) GetNumReturnData() (int32, error) {
 	callInfo := "GetNumReturnData()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetNumReturnData()
+	result, err := w.wrappedVMHooks.GetNumReturnData()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetReturnDataSize VM hook wrapper
-func (w *WrapperVMHooks) GetReturnDataSize(resultID int32) int32 {
+func (w *WrapperVMHooks) GetReturnDataSize(resultID int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetReturnDataSize(%d)", resultID)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetReturnDataSize(resultID)
+	result, err := w.wrappedVMHooks.GetReturnDataSize(resultID)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetReturnData VM hook wrapper
-func (w *WrapperVMHooks) GetReturnData(resultID int32, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GetReturnData(resultID int32, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GetReturnData(%d, %d)", resultID, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetReturnData(resultID, dataOffset)
+	result, err := w.wrappedVMHooks.GetReturnData(resultID, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // CleanReturnData VM hook wrapper
-func (w *WrapperVMHooks) CleanReturnData() {
+func (w *WrapperVMHooks) CleanReturnData() error {
 	callInfo := "CleanReturnData()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.CleanReturnData()
+	err := w.wrappedVMHooks.CleanReturnData()
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // DeleteFromReturnData VM hook wrapper
-func (w *WrapperVMHooks) DeleteFromReturnData(resultID int32) {
+func (w *WrapperVMHooks) DeleteFromReturnData(resultID int32) error {
 	callInfo := fmt.Sprintf("DeleteFromReturnData(%d)", resultID)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.DeleteFromReturnData(resultID)
+	err := w.wrappedVMHooks.DeleteFromReturnData(resultID)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetOriginalTxHash VM hook wrapper
-func (w *WrapperVMHooks) GetOriginalTxHash(dataOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetOriginalTxHash(dataOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetOriginalTxHash(%d)", dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetOriginalTxHash(dataOffset)
+	err := w.wrappedVMHooks.GetOriginalTxHash(dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetCurrentTxHash VM hook wrapper
-func (w *WrapperVMHooks) GetCurrentTxHash(dataOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetCurrentTxHash(dataOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetCurrentTxHash(%d)", dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetCurrentTxHash(dataOffset)
+	err := w.wrappedVMHooks.GetCurrentTxHash(dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // GetPrevTxHash VM hook wrapper
-func (w *WrapperVMHooks) GetPrevTxHash(dataOffset executor.MemPtr) {
+func (w *WrapperVMHooks) GetPrevTxHash(dataOffset executor.MemPtr) error {
 	callInfo := fmt.Sprintf("GetPrevTxHash(%d)", dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.GetPrevTxHash(dataOffset)
+	err := w.wrappedVMHooks.GetPrevTxHash(dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // ManagedSCAddress VM hook wrapper

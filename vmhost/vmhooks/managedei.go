@@ -708,7 +708,7 @@ func (context *VMHooksImpl) ManagedCreateAsyncCall(
 		errorFunc,
 		gas,
 		extraGasForCallback,
-		callbackClosure), nil
+		callbackClosure)
 }
 
 // ManagedGetCallbackClosure VMHooks implementation.
@@ -785,7 +785,7 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 
 	lenReturnData := len(host.Output().ReturnData())
 
-	UpgradeFromSourceContractWithTypedArgs(
+	err = UpgradeFromSourceContractWithTypedArgs(
 		host,
 		sourceContractAddress,
 		vmInput.destination,
@@ -794,6 +794,9 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 		gas,
 		codeMetadata,
 	)
+	if err != nil {
+		return err
+	}
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		return err
@@ -845,7 +848,10 @@ func (context *VMHooksImpl) ManagedUpgradeContract(
 
 	lenReturnData := len(host.Output().ReturnData())
 
-	upgradeContract(host, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
+	err = upgradeContract(host, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
+	if err != nil {
+		return err
+	}
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && runtime.UseGasBoundedShouldFailExecution() {
 		return err
@@ -896,13 +902,12 @@ func ManagedDeleteContractWithHost(
 		return err
 	}
 
-	deleteContract(
+	return deleteContract(
 		host,
 		calledSCAddress,
 		data,
 		gasLimit,
 	)
-	return nil
 }
 
 // ManagedDeployFromSourceContract VMHooks implementation.
@@ -1059,13 +1064,16 @@ func (context *VMHooksImpl) ManagedExecuteReadOnly(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteReadOnlyWithTypedArguments(
+	returnVal, err := ExecuteReadOnlyWithTypedArguments(
 		host,
 		gas,
 		[]byte(vmInput.function),
 		vmInput.destination,
 		vmInput.arguments,
 	)
+	if err != nil {
+		return returnVal, err
+	}
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
 		return -1, err
@@ -1094,7 +1102,7 @@ func (context *VMHooksImpl) ManagedExecuteOnSameContext(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnSameContextWithTypedArgs(
+	returnVal, err := ExecuteOnSameContextWithTypedArgs(
 		host,
 		gas,
 		vmInput.value,
@@ -1102,6 +1110,9 @@ func (context *VMHooksImpl) ManagedExecuteOnSameContext(
 		vmInput.destination,
 		vmInput.arguments,
 	)
+	if err != nil {
+		return returnVal, err
+	}
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
 		return -1, err
@@ -1130,7 +1141,7 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextWithTypedArgs(
+	returnVal, err := ExecuteOnDestContextWithTypedArgs(
 		host,
 		gas,
 		vmInput.value,
@@ -1139,6 +1150,9 @@ func (context *VMHooksImpl) ManagedExecuteOnDestContext(
 		vmInput.arguments,
 		true,
 	)
+	if err != nil {
+		return returnVal, err
+	}
 	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil && host.Runtime().UseGasBoundedShouldFailExecution() {
 		return -1, err
@@ -1181,7 +1195,7 @@ func ManagedExecuteOnDestContextWithErrorReturnWithHost(
 	metering.StartGasTracing(managedExecuteOnDestContextWithReturnName)
 
 	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextWithTypedArgs(
+	returnVal, err := ExecuteOnDestContextWithTypedArgs(
 		host,
 		gas,
 		value,
@@ -1190,8 +1204,11 @@ func ManagedExecuteOnDestContextWithErrorReturnWithHost(
 		arguments,
 		false,
 	)
+	if err != nil {
+		return returnVal, err
+	}
 
-	err := setReturnDataIfExists(host, lenReturnData, resultHandle)
+	err = setReturnDataIfExists(host, lenReturnData, resultHandle)
 	if err != nil {
 		return -1, err
 	}
@@ -1231,7 +1248,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecute(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
-	), nil
+	)
 }
 
 // ManagedMultiTransferESDTNFTExecuteWithReturn VMHooks implementation.
@@ -1267,7 +1284,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteWithReturn(
 		[]byte(vmInput.function),
 		vmInput.arguments,
 		false,
-	), nil
+	)
 }
 
 // ManagedMultiTransferESDTNFTExecuteByUser VMHooks implementation.
@@ -1313,7 +1330,7 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
-	), nil
+	)
 }
 
 // ManagedTransferValueExecute VMHooks implementation.
@@ -1341,7 +1358,7 @@ func (context *VMHooksImpl) ManagedTransferValueExecute(
 		gasLimit,
 		[]byte(vmInput.function),
 		vmInput.arguments,
-	), nil
+	)
 }
 
 // ManagedIsESDTFrozen VMHooks implementation.

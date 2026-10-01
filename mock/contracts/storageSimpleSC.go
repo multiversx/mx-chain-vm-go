@@ -64,8 +64,14 @@ func SetStore(instanceMock *mock.InstanceMock, _ interface{}) {
 		key := arguments[0]
 		value := arguments[1]
 
-		vmhooks.StorageStoreWithTypedArgs(host, key, value)
-		vmhooks.StorageStoreWithTypedArgs(host, key, value)
+		_, err := vmhooks.StorageStoreWithTypedArgs(host, key, value)
+		if err != nil {
+			vmhooks.FailExecution(host, err)
+		}
+		_, err = vmhooks.StorageStoreWithTypedArgs(host, key, value)
+		if err != nil {
+			vmhooks.FailExecution(host, err)
+		}
 
 		return instance
 	})

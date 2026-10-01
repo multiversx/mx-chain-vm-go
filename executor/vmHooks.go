@@ -20,93 +20,93 @@ type VMHooks interface {
 }
 
 type MainVMHooks interface {
-	GetGasLeft() int64
-	GetSCAddress(resultOffset MemPtr)
-	GetOwnerAddress(resultOffset MemPtr)
-	GetShardOfAddress(addressOffset MemPtr) int32
-	IsSmartContract(addressOffset MemPtr) int32
-	SignalError(messageOffset MemPtr, messageLength MemLength)
-	GetExternalBalance(addressOffset MemPtr, resultOffset MemPtr)
-	GetBlockHash(nonce int64, resultOffset MemPtr) int32
-	GetESDTBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultOffset MemPtr) int32
-	GetESDTNFTNameLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32
-	GetESDTNFTAttributeLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32
-	GetESDTNFTURILength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32
-	GetESDTTokenData(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, valueHandle int32, propertiesOffset MemPtr, hashOffset MemPtr, nameOffset MemPtr, attributesOffset MemPtr, creatorOffset MemPtr, royaltiesHandle int32, urisOffset MemPtr) int32
-	GetESDTLocalRoles(tokenIdHandle int32) int64
-	ValidateTokenIdentifier(tokenIdHandle int32) int32
-	TransferValue(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength) int32
-	TransferValueExecute(destOffset MemPtr, valueOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	TransferESDTExecute(destOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, valueOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	TransferESDTNFTExecute(destOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, valueOffset MemPtr, nonce int64, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	MultiTransferESDTNFTExecute(destOffset MemPtr, numTokenTransfers int32, tokenTransfersArgsLengthOffset MemPtr, tokenTransferDataOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	CreateAsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, dataLength MemLength, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64) int32
-	SetAsyncContextCallback(callback MemPtr, callbackLength MemLength, data MemPtr, dataLength MemLength, gas int64) int32
-	UpgradeContract(destOffset MemPtr, gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr)
-	UpgradeFromSourceContract(destOffset MemPtr, gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr)
-	DeleteContract(destOffset MemPtr, gasLimit int64, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr)
-	AsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength)
-	GetArgumentLength(id int32) int32
-	GetArgument(id int32, argOffset MemPtr) int32
-	GetFunction(functionOffset MemPtr) int32
-	GetNumArguments() int32
-	StorageStore(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr, dataLength MemLength) int32
-	StorageLoadLength(keyOffset MemPtr, keyLength MemLength) int32
-	StorageLoadFromAddress(addressOffset MemPtr, keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) int32
-	StorageLoad(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) int32
-	SetStorageLock(keyOffset MemPtr, keyLength MemLength, lockTimestamp int64) int32
-	GetStorageLock(keyOffset MemPtr, keyLength MemLength) int64
-	IsStorageLocked(keyOffset MemPtr, keyLength MemLength) int32
-	ClearStorageLock(keyOffset MemPtr, keyLength MemLength) int32
-	GetCaller(resultOffset MemPtr)
-	CheckNoPayment()
-	GetCallValue(resultOffset MemPtr) int32
-	GetESDTValue(resultOffset MemPtr) int32
-	GetESDTValueByIndex(resultOffset MemPtr, index int32) int32
-	GetESDTTokenName(resultOffset MemPtr) int32
-	GetESDTTokenNameByIndex(resultOffset MemPtr, index int32) int32
-	GetESDTTokenNonce() int64
-	GetESDTTokenNonceByIndex(index int32) int64
-	GetCurrentESDTNFTNonce(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength) int64
-	GetESDTTokenType() int32
-	GetESDTTokenTypeByIndex(index int32) int32
-	GetNumESDTTransfers() int32
-	GetCallValueTokenName(callValueOffset MemPtr, tokenNameOffset MemPtr) int32
-	GetCallValueTokenNameByIndex(callValueOffset MemPtr, tokenNameOffset MemPtr, index int32) int32
-	IsReservedFunctionName(nameHandle int32) int32
-	WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32)
-	WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength)
-	GetBlockTimestamp() int64
-	GetBlockTimestampMs() int64
-	GetBlockNonce() int64
-	GetBlockRound() int64
-	GetBlockEpoch() int64
-	GetBlockRandomSeed(pointer MemPtr)
-	GetStateRootHash(pointer MemPtr)
-	GetPrevBlockTimestamp() int64
-	GetPrevBlockTimestampMs() int64
-	GetPrevBlockNonce() int64
-	GetPrevBlockRound() int64
-	GetPrevBlockEpoch() int64
-	GetPrevBlockRandomSeed(pointer MemPtr)
-	GetBlockRoundTimeMs() int64
-	EpochStartBlockTimestampMs() int64
-	EpochStartBlockNonce() int64
-	EpochStartBlockRound() int64
-	Finish(pointer MemPtr, length MemLength)
-	ExecuteOnSameContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	ExecuteOnDestContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	ExecuteReadOnly(gasLimit int64, addressOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	CreateContract(gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, resultOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	DeployFromSourceContract(gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, resultAddressOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	GetNumReturnData() int32
-	GetReturnDataSize(resultID int32) int32
-	GetReturnData(resultID int32, dataOffset MemPtr) int32
-	CleanReturnData()
-	DeleteFromReturnData(resultID int32)
-	GetOriginalTxHash(dataOffset MemPtr)
-	GetCurrentTxHash(dataOffset MemPtr)
-	GetPrevTxHash(dataOffset MemPtr)
+	GetGasLeft() (int64, error)
+	GetSCAddress(resultOffset MemPtr) error
+	GetOwnerAddress(resultOffset MemPtr) error
+	GetShardOfAddress(addressOffset MemPtr) (int32, error)
+	IsSmartContract(addressOffset MemPtr) (int32, error)
+	SignalError(messageOffset MemPtr, messageLength MemLength) error
+	GetExternalBalance(addressOffset MemPtr, resultOffset MemPtr) error
+	GetBlockHash(nonce int64, resultOffset MemPtr) (int32, error)
+	GetESDTBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultOffset MemPtr) (int32, error)
+	GetESDTNFTNameLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) (int32, error)
+	GetESDTNFTAttributeLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) (int32, error)
+	GetESDTNFTURILength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) (int32, error)
+	GetESDTTokenData(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, valueHandle int32, propertiesOffset MemPtr, hashOffset MemPtr, nameOffset MemPtr, attributesOffset MemPtr, creatorOffset MemPtr, royaltiesHandle int32, urisOffset MemPtr) (int32, error)
+	GetESDTLocalRoles(tokenIdHandle int32) (int64, error)
+	ValidateTokenIdentifier(tokenIdHandle int32) (int32, error)
+	TransferValue(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength) (int32, error)
+	TransferValueExecute(destOffset MemPtr, valueOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	TransferESDTExecute(destOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, valueOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	TransferESDTNFTExecute(destOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, valueOffset MemPtr, nonce int64, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	MultiTransferESDTNFTExecute(destOffset MemPtr, numTokenTransfers int32, tokenTransfersArgsLengthOffset MemPtr, tokenTransferDataOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	CreateAsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, dataLength MemLength, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64) (int32, error)
+	SetAsyncContextCallback(callback MemPtr, callbackLength MemLength, data MemPtr, dataLength MemLength, gas int64) (int32, error)
+	UpgradeContract(destOffset MemPtr, gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) error
+	UpgradeFromSourceContract(destOffset MemPtr, gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) error
+	DeleteContract(destOffset MemPtr, gasLimit int64, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) error
+	AsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength) error
+	GetArgumentLength(id int32) (int32, error)
+	GetArgument(id int32, argOffset MemPtr) (int32, error)
+	GetFunction(functionOffset MemPtr) (int32, error)
+	GetNumArguments() (int32, error)
+	StorageStore(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr, dataLength MemLength) (int32, error)
+	StorageLoadLength(keyOffset MemPtr, keyLength MemLength) (int32, error)
+	StorageLoadFromAddress(addressOffset MemPtr, keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) (int32, error)
+	StorageLoad(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) (int32, error)
+	SetStorageLock(keyOffset MemPtr, keyLength MemLength, lockTimestamp int64) (int32, error)
+	GetStorageLock(keyOffset MemPtr, keyLength MemLength) (int64, error)
+	IsStorageLocked(keyOffset MemPtr, keyLength MemLength) (int32, error)
+	ClearStorageLock(keyOffset MemPtr, keyLength MemLength) (int32, error)
+	GetCaller(resultOffset MemPtr) error
+	CheckNoPayment() error
+	GetCallValue(resultOffset MemPtr) (int32, error)
+	GetESDTValue(resultOffset MemPtr) (int32, error)
+	GetESDTValueByIndex(resultOffset MemPtr, index int32) (int32, error)
+	GetESDTTokenName(resultOffset MemPtr) (int32, error)
+	GetESDTTokenNameByIndex(resultOffset MemPtr, index int32) (int32, error)
+	GetESDTTokenNonce() (int64, error)
+	GetESDTTokenNonceByIndex(index int32) (int64, error)
+	GetCurrentESDTNFTNonce(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength) (int64, error)
+	GetESDTTokenType() (int32, error)
+	GetESDTTokenTypeByIndex(index int32) (int32, error)
+	GetNumESDTTransfers() (int32, error)
+	GetCallValueTokenName(callValueOffset MemPtr, tokenNameOffset MemPtr) (int32, error)
+	GetCallValueTokenNameByIndex(callValueOffset MemPtr, tokenNameOffset MemPtr, index int32) (int32, error)
+	IsReservedFunctionName(nameHandle int32) (int32, error)
+	WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32) error
+	WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength) error
+	GetBlockTimestamp() (int64, error)
+	GetBlockTimestampMs() (int64, error)
+	GetBlockNonce() (int64, error)
+	GetBlockRound() (int64, error)
+	GetBlockEpoch() (int64, error)
+	GetBlockRandomSeed(pointer MemPtr) error
+	GetStateRootHash(pointer MemPtr) error
+	GetPrevBlockTimestamp() (int64, error)
+	GetPrevBlockTimestampMs() (int64, error)
+	GetPrevBlockNonce() (int64, error)
+	GetPrevBlockRound() (int64, error)
+	GetPrevBlockEpoch() (int64, error)
+	GetPrevBlockRandomSeed(pointer MemPtr) error
+	GetBlockRoundTimeMs() (int64, error)
+	EpochStartBlockTimestampMs() (int64, error)
+	EpochStartBlockNonce() (int64, error)
+	EpochStartBlockRound() (int64, error)
+	Finish(pointer MemPtr, length MemLength) error
+	ExecuteOnSameContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	ExecuteOnDestContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	ExecuteReadOnly(gasLimit int64, addressOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	CreateContract(gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, resultOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	DeployFromSourceContract(gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, resultAddressOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) (int32, error)
+	GetNumReturnData() (int32, error)
+	GetReturnDataSize(resultID int32) (int32, error)
+	GetReturnData(resultID int32, dataOffset MemPtr) (int32, error)
+	CleanReturnData() error
+	DeleteFromReturnData(resultID int32) error
+	GetOriginalTxHash(dataOffset MemPtr) error
+	GetCurrentTxHash(dataOffset MemPtr) error
+	GetPrevTxHash(dataOffset MemPtr) error
 }
 
 type ManagedVMHooks interface {

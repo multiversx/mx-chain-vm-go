@@ -1482,7 +1482,10 @@ func Test_ManagedCallCheck(t *testing.T) {
 				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
 						testHooks := vmhooks.NewVMHooksImpl(parentInstance.Host)
-						testHooks.DeleteContract(0, 0, 0x40000000, 0, 0)
+						err := testHooks.DeleteContract(0, 0, 0x40000000, 0, 0)
+						if err != nil {
+							testHooks.HandleHookError(err)
+						}
 						return parentInstance
 					})
 				}),
@@ -1847,7 +1850,7 @@ func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
@@ -1938,13 +1941,14 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvidedToChild),
 							nil,
 							nil)
+						assert.Nil(t, err)
 						assert.Equal(t, ret, int32(0))
 
 						return parentInstance
@@ -2027,13 +2031,14 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvidedToChild),
 							nil,
 							nil)
+						assert.Nil(t, err)
 						assert.Equal(t, ret, int32(0))
 
 						return parentInstance
@@ -2145,7 +2150,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
@@ -2218,7 +2223,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
@@ -2289,7 +2294,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_ReturnOnFail(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
