@@ -277,45 +277,45 @@ type SmallIntVMHooks interface {
 }
 
 type CryptoVMHooks interface {
-	Sha256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
-	ManagedSha256(inputHandle int32, outputHandle int32) int32
-	Keccak256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
-	ManagedKeccak256(inputHandle int32, outputHandle int32) int32
-	Ripemd160(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
-	ManagedRipemd160(inputHandle int32, outputHandle int32) int32
-	VerifyBLS(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32
-	ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) int32
-	VerifyEd25519(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32
-	ManagedVerifyEd25519(keyHandle int32, messageHandle int32, sigHandle int32) int32
-	VerifyCustomSecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr, hashType int32) int32
-	ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32
-	VerifySecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32
-	ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) int32
-	EncodeSecp256k1DerSignature(rOffset MemPtr, rLength MemLength, sOffset MemPtr, sLength MemLength, sigOffset MemPtr) int32
-	ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) int32
-	AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32)
-	DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32)
-	IsOnCurveEC(ecHandle int32, pointXHandle int32, pointYHandle int32) int32
-	ScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32
-	ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
-	ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset MemPtr, length MemLength) int32
-	ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32
-	MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) int32
-	ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32
-	MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) int32
-	ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32
-	UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32
-	ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
-	UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32
-	ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
-	GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset MemPtr) int32
-	ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32
-	CreateEC(dataOffset MemPtr, dataLength MemLength) int32
-	ManagedCreateEC(dataHandle int32) int32
-	GetCurveLengthEC(ecHandle int32) int32
-	GetPrivKeyByteLengthEC(ecHandle int32) int32
-	EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32
-	ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32
-	ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32
-	ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32
+	Sha256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) (int32, error)
+	ManagedSha256(inputHandle int32, outputHandle int32) (int32, error)
+	Keccak256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) (int32, error)
+	ManagedKeccak256(inputHandle int32, outputHandle int32) (int32, error)
+	Ripemd160(dataOffset MemPtr, length MemLength, resultOffset MemPtr) (int32, error)
+	ManagedRipemd160(inputHandle int32, outputHandle int32) (int32, error)
+	VerifyBLS(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) (int32, error)
+	ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error)
+	VerifyEd25519(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) (int32, error)
+	ManagedVerifyEd25519(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error)
+	VerifyCustomSecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr, hashType int32) (int32, error)
+	ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) (int32, error)
+	VerifySecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) (int32, error)
+	ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error)
+	EncodeSecp256k1DerSignature(rOffset MemPtr, rLength MemLength, sOffset MemPtr, sLength MemLength, sigOffset MemPtr) (int32, error)
+	ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) (int32, error)
+	AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) error
+	DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) error
+	IsOnCurveEC(ecHandle int32, pointXHandle int32, pointYHandle int32) (int32, error)
+	ScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) (int32, error)
+	ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) (int32, error)
+	ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset MemPtr, length MemLength) (int32, error)
+	ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) (int32, error)
+	MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) (int32, error)
+	ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) (int32, error)
+	MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) (int32, error)
+	ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) (int32, error)
+	UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) (int32, error)
+	ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) (int32, error)
+	UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) (int32, error)
+	ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) (int32, error)
+	GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset MemPtr) (int32, error)
+	ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) (int32, error)
+	CreateEC(dataOffset MemPtr, dataLength MemLength) (int32, error)
+	ManagedCreateEC(dataHandle int32) (int32, error)
+	GetCurveLengthEC(ecHandle int32) (int32, error)
+	GetPrivKeyByteLengthEC(ecHandle int32) (int32, error)
+	EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) (int32, error)
+	ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error)
+	ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error)
+	ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error)
 }

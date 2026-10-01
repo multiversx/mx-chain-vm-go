@@ -2066,370 +2066,372 @@ func (w *WrapperVMHooks) Int64storageLoad(keyOffset executor.MemPtr, keyLength e
 }
 
 // Sha256 VM hook wrapper
-func (w *WrapperVMHooks) Sha256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) Sha256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("Sha256(%d, %d, %d)", dataOffset, length, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.Sha256(dataOffset, length, resultOffset)
+	result, err := w.wrappedVMHooks.Sha256(dataOffset, length, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedSha256 VM hook wrapper
-func (w *WrapperVMHooks) ManagedSha256(inputHandle int32, outputHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedSha256(inputHandle int32, outputHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedSha256(%d, %d)", inputHandle, outputHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedSha256(inputHandle, outputHandle)
+	result, err := w.wrappedVMHooks.ManagedSha256(inputHandle, outputHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Keccak256 VM hook wrapper
-func (w *WrapperVMHooks) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("Keccak256(%d, %d, %d)", dataOffset, length, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.Keccak256(dataOffset, length, resultOffset)
+	result, err := w.wrappedVMHooks.Keccak256(dataOffset, length, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedKeccak256 VM hook wrapper
-func (w *WrapperVMHooks) ManagedKeccak256(inputHandle int32, outputHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedKeccak256(inputHandle int32, outputHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedKeccak256(%d, %d)", inputHandle, outputHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedKeccak256(inputHandle, outputHandle)
+	result, err := w.wrappedVMHooks.ManagedKeccak256(inputHandle, outputHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Ripemd160 VM hook wrapper
-func (w *WrapperVMHooks) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("Ripemd160(%d, %d, %d)", dataOffset, length, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.Ripemd160(dataOffset, length, resultOffset)
+	result, err := w.wrappedVMHooks.Ripemd160(dataOffset, length, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedRipemd160 VM hook wrapper
-func (w *WrapperVMHooks) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedRipemd160(inputHandle int32, outputHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedRipemd160(%d, %d)", inputHandle, outputHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedRipemd160(inputHandle, outputHandle)
+	result, err := w.wrappedVMHooks.ManagedRipemd160(inputHandle, outputHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // VerifyBLS VM hook wrapper
-func (w *WrapperVMHooks) VerifyBLS(keyOffset executor.MemPtr, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) VerifyBLS(keyOffset executor.MemPtr, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("VerifyBLS(%d, %d, %d, %d)", keyOffset, messageOffset, messageLength, sigOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
+	result, err := w.wrappedVMHooks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifyBLS VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifyBLS(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // VerifyEd25519 VM hook wrapper
-func (w *WrapperVMHooks) VerifyEd25519(keyOffset executor.MemPtr, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) VerifyEd25519(keyOffset executor.MemPtr, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("VerifyEd25519(%d, %d, %d, %d)", keyOffset, messageOffset, messageLength, sigOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
+	result, err := w.wrappedVMHooks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifyEd25519 VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifyEd25519(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifyEd25519(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifyEd25519(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // VerifyCustomSecp256k1 VM hook wrapper
-func (w *WrapperVMHooks) VerifyCustomSecp256k1(keyOffset executor.MemPtr, keyLength executor.MemLength, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr, hashType int32) int32 {
+func (w *WrapperVMHooks) VerifyCustomSecp256k1(keyOffset executor.MemPtr, keyLength executor.MemLength, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr, hashType int32) (int32, error) {
 	callInfo := fmt.Sprintf("VerifyCustomSecp256k1(%d, %d, %d, %d, %d, %d)", keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
+	result, err := w.wrappedVMHooks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifyCustomSecp256k1 VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifyCustomSecp256k1(%d, %d, %d, %d)", keyHandle, messageHandle, sigHandle, hashType)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
+	result, err := w.wrappedVMHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // VerifySecp256k1 VM hook wrapper
-func (w *WrapperVMHooks) VerifySecp256k1(keyOffset executor.MemPtr, keyLength executor.MemLength, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) VerifySecp256k1(keyOffset executor.MemPtr, keyLength executor.MemLength, messageOffset executor.MemPtr, messageLength executor.MemLength, sigOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("VerifySecp256k1(%d, %d, %d, %d, %d)", keyOffset, keyLength, messageOffset, messageLength, sigOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
+	result, err := w.wrappedVMHooks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifySecp256k1 VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifySecp256k1(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // EncodeSecp256k1DerSignature VM hook wrapper
-func (w *WrapperVMHooks) EncodeSecp256k1DerSignature(rOffset executor.MemPtr, rLength executor.MemLength, sOffset executor.MemPtr, sLength executor.MemLength, sigOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) EncodeSecp256k1DerSignature(rOffset executor.MemPtr, rLength executor.MemLength, sOffset executor.MemPtr, sLength executor.MemLength, sigOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("EncodeSecp256k1DerSignature(%d, %d, %d, %d, %d)", rOffset, rLength, sOffset, sLength, sigOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
+	result, err := w.wrappedVMHooks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedEncodeSecp256k1DerSignature VM hook wrapper
-func (w *WrapperVMHooks) ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedEncodeSecp256k1DerSignature(%d, %d, %d)", rHandle, sHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // AddEC VM hook wrapper
-func (w *WrapperVMHooks) AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) {
+func (w *WrapperVMHooks) AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) error {
 	callInfo := fmt.Sprintf("AddEC(%d, %d, %d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
+	err := w.wrappedVMHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // DoubleEC VM hook wrapper
-func (w *WrapperVMHooks) DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) {
+func (w *WrapperVMHooks) DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) error {
 	callInfo := fmt.Sprintf("DoubleEC(%d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
+	err := w.wrappedVMHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // IsOnCurveEC VM hook wrapper
-func (w *WrapperVMHooks) IsOnCurveEC(ecHandle int32, pointXHandle int32, pointYHandle int32) int32 {
+func (w *WrapperVMHooks) IsOnCurveEC(ecHandle int32, pointXHandle int32, pointYHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("IsOnCurveEC(%d, %d, %d)", ecHandle, pointXHandle, pointYHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
+	result, err := w.wrappedVMHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ScalarBaseMultEC VM hook wrapper
-func (w *WrapperVMHooks) ScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset executor.MemPtr, length executor.MemLength) int32 {
+func (w *WrapperVMHooks) ScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset executor.MemPtr, length executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("ScalarBaseMultEC(%d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	result, err := w.wrappedVMHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedScalarBaseMultEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedScalarBaseMultEC(%d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	result, err := w.wrappedVMHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ScalarMultEC VM hook wrapper
-func (w *WrapperVMHooks) ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset executor.MemPtr, length executor.MemLength) int32 {
+func (w *WrapperVMHooks) ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset executor.MemPtr, length executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("ScalarMultEC(%d, %d, %d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
+	result, err := w.wrappedVMHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedScalarMultEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedScalarMultEC(%d, %d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
+	result, err := w.wrappedVMHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MarshalEC VM hook wrapper
-func (w *WrapperVMHooks) MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("MarshalEC(%d, %d, %d, %d)", xPairHandle, yPairHandle, ecHandle, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	result, err := w.wrappedVMHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMarshalEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMarshalEC(%d, %d, %d, %d)", xPairHandle, yPairHandle, ecHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MarshalCompressedEC VM hook wrapper
-func (w *WrapperVMHooks) MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("MarshalCompressedEC(%d, %d, %d, %d)", xPairHandle, yPairHandle, ecHandle, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	result, err := w.wrappedVMHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMarshalCompressedEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedMarshalCompressedEC(%d, %d, %d, %d)", xPairHandle, yPairHandle, ecHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // UnmarshalEC VM hook wrapper
-func (w *WrapperVMHooks) UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset executor.MemPtr, length executor.MemLength) int32 {
+func (w *WrapperVMHooks) UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset executor.MemPtr, length executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("UnmarshalEC(%d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	result, err := w.wrappedVMHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedUnmarshalEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedUnmarshalEC(%d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	result, err := w.wrappedVMHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // UnmarshalCompressedEC VM hook wrapper
-func (w *WrapperVMHooks) UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset executor.MemPtr, length executor.MemLength) int32 {
+func (w *WrapperVMHooks) UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset executor.MemPtr, length executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("UnmarshalCompressedEC(%d, %d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	result, err := w.wrappedVMHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedUnmarshalCompressedEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedUnmarshalCompressedEC(%d, %d, %d, %d)", xResultHandle, yResultHandle, ecHandle, dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	result, err := w.wrappedVMHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GenerateKeyEC VM hook wrapper
-func (w *WrapperVMHooks) GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("GenerateKeyEC(%d, %d, %d, %d)", xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
+	result, err := w.wrappedVMHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedGenerateKeyEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedGenerateKeyEC(%d, %d, %d, %d)", xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
+	result, err := w.wrappedVMHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // CreateEC VM hook wrapper
-func (w *WrapperVMHooks) CreateEC(dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) CreateEC(dataOffset executor.MemPtr, dataLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("CreateEC(%d, %d)", dataOffset, dataLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.CreateEC(dataOffset, dataLength)
+	result, err := w.wrappedVMHooks.CreateEC(dataOffset, dataLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedCreateEC VM hook wrapper
-func (w *WrapperVMHooks) ManagedCreateEC(dataHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedCreateEC(dataHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedCreateEC(%d)", dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedCreateEC(dataHandle)
+	result, err := w.wrappedVMHooks.ManagedCreateEC(dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetCurveLengthEC VM hook wrapper
-func (w *WrapperVMHooks) GetCurveLengthEC(ecHandle int32) int32 {
+func (w *WrapperVMHooks) GetCurveLengthEC(ecHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetCurveLengthEC(%d)", ecHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetCurveLengthEC(ecHandle)
+	result, err := w.wrappedVMHooks.GetCurveLengthEC(ecHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // GetPrivKeyByteLengthEC VM hook wrapper
-func (w *WrapperVMHooks) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
+func (w *WrapperVMHooks) GetPrivKeyByteLengthEC(ecHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("GetPrivKeyByteLengthEC(%d)", ecHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.GetPrivKeyByteLengthEC(ecHandle)
+	result, err := w.wrappedVMHooks.GetPrivKeyByteLengthEC(ecHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // EllipticCurveGetValues VM hook wrapper
-func (w *WrapperVMHooks) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
+func (w *WrapperVMHooks) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("EllipticCurveGetValues(%d, %d, %d, %d, %d, %d)", ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+	result, err := w.wrappedVMHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifySecp256r1 VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifySecp256r1(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifyBLSSignatureShare VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifyBLSSignatureShare(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedVerifyBLSAggregatedSignature VM hook wrapper
-func (w *WrapperVMHooks) ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
+func (w *WrapperVMHooks) ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("ManagedVerifyBLSAggregatedSignature(%d, %d, %d)", keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
+	result, err := w.wrappedVMHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // HandleHookError passthrough

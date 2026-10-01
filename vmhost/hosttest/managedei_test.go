@@ -400,10 +400,13 @@ func Test_ManagedRipemd160(t *testing.T) {
 						sourceHandle := managedTypes.NewManagedBufferFromBytes(asBytes)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.ManagedRipemd160WithHost(
+						_, err := vmhooks.ManagedRipemd160WithHost(
 							host,
 							sourceHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if !bytes.Equal(bytesResult, asRipemd160) {
@@ -478,12 +481,15 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyBLSWithHost(
+						result, err := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							"verifyBLS")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -529,11 +535,14 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyEd25519WithHost(
+						result, err := vmhooks.ManagedVerifyEd25519WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -581,11 +590,14 @@ func Test_VerifySecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifySecp256k1WithHost(
+						result, err := vmhooks.ManagedVerifySecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -633,13 +645,16 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
+						result, err := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							int32(secp256.ECDSADoubleSha256),
 							"verifyCustomSecp256k1")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -683,13 +698,16 @@ func Test_VerifySecp256r1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
+						result, err := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							0,
 							"verifySecp256R1Signature")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -735,11 +753,14 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 						sHandle := managedTypes.NewManagedBufferFromBytes(s)
 						sigHandle := managedTypes.NewManagedBuffer()
 
-						retResult := vmhooks.ManagedEncodeSecp256k1DerSignatureWithHost(
+						retResult, err := vmhooks.ManagedEncodeSecp256k1DerSignatureWithHost(
 							host,
 							rHandle,
 							sHandle,
 							sigHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						result, _ := managedTypes.GetBytes(sigHandle)
 						if retResult != 0 || !bytes.Equal(result, sig) {
@@ -781,12 +802,15 @@ func Test_ManagedVerifyBLSSignatureShare(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyBLSWithHost(
+						result, err := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							"verifyBLSSignatureShare")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -830,12 +854,15 @@ func Test_ManagedVerifyBLSMultiSig(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyBLSWithHost(
+						result, err := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keysHandle,
 							messageHandle,
 							sigHandle,
 							"verifyBLSAggregatedSignature")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -880,12 +907,15 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 						ecHandle := managedTypes.PutEllipticCurve(p521ec)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedScalarBaseMultECWithHost(
+						retResult, err := vmhooks.ManagedScalarBaseMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if retResult != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -934,7 +964,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 						pointYHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedScalarMultECWithHost(
+						retResult, err := vmhooks.ManagedScalarMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -942,6 +972,9 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 							pointXHandle,
 							pointYHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if retResult != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -988,12 +1021,15 @@ func Test_ManagedMarshalEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := vmhooks.ManagedMarshalECWithHost(
+						retResult, err := vmhooks.ManagedMarshalECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
 							ecHandle,
 							resultHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
 
@@ -1042,12 +1078,15 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedUnmarshalECWithHost(
+						retResult, err := vmhooks.ManagedUnmarshalECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						xResult, _ := managedTypes.GetBigInt(xResultHandle)
 						yResult, _ := managedTypes.GetBigInt(yResultHandle)
@@ -1099,12 +1138,15 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := vmhooks.ManagedMarshalCompressedECWithHost(
+						retResult, err := vmhooks.ManagedMarshalCompressedECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
 							ecHandle,
 							resultHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
 
@@ -1153,12 +1195,15 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedUnmarshalCompressedECWithHost(
+						retResult, err := vmhooks.ManagedUnmarshalCompressedECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						xResult, _ := managedTypes.GetBigInt(xResultHandle)
 						yResult, _ := managedTypes.GetBigInt(yResultHandle)
@@ -1210,12 +1255,15 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						resultHandle := managedTypes.NewManagedBuffer()
 
-						retResult := vmhooks.ManagedGenerateKeyECWithHost(
+						retResult, err := vmhooks.ManagedGenerateKeyECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							resultHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
 						if retResult != 0 ||
@@ -1292,9 +1340,12 @@ func checkCreateECSuccess(host vmhost.VMHost, name string, ecParams *elliptic.Cu
 	managedTypes := host.ManagedTypes()
 	dataHandle := managedTypes.NewManagedBufferFromBytes([]byte(name))
 
-	retResult := vmhooks.ManagedCreateECWithHost(
+	retResult, err := vmhooks.ManagedCreateECWithHost(
 		host,
 		dataHandle)
+	if err != nil {
+		vmhooks.FailExecution(host, err)
+	}
 
 	resultEC, _ := managedTypes.GetEllipticCurve(retResult)
 	if resultEC.Params().Name != ecParams.Name {
