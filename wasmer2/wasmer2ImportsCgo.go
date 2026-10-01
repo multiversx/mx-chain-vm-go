@@ -1806,163 +1806,268 @@ func w2_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHa
 //export w2_mBufferNew
 func w2_mBufferNew(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferNew()
+	result, err := vmHooks.MBufferNew()
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferNewFromBytes
 func w2_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferNewFromBytes(executor.MemPtr(dataOffset), dataLength)
+	result, err := vmHooks.MBufferNewFromBytes(executor.MemPtr(dataOffset), dataLength)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferGetLength
 func w2_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferGetLength(mBufferHandle)
+	result, err := vmHooks.MBufferGetLength(mBufferHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferGetBytes
 func w2_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferGetBytes(mBufferHandle, executor.MemPtr(resultOffset))
+	result, err := vmHooks.MBufferGetBytes(mBufferHandle, executor.MemPtr(resultOffset))
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferGetByteSlice
 func w2_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, executor.MemPtr(resultOffset))
+	result, err := vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, executor.MemPtr(resultOffset))
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferCopyByteSlice
 func w2_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
+	result, err := vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferEq
 func w2_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2 int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
+	result, err := vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferSetBytes
 func w2_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferSetBytes(mBufferHandle, executor.MemPtr(dataOffset), dataLength)
+	result, err := vmHooks.MBufferSetBytes(mBufferHandle, executor.MemPtr(dataOffset), dataLength)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferSetByteSlice
 func w2_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, executor.MemPtr(dataOffset))
+	result, err := vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, executor.MemPtr(dataOffset))
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferAppend
 func w2_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
+	result, err := vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferAppendBytes
 func w2_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferAppendBytes(accumulatorHandle, executor.MemPtr(dataOffset), dataLength)
+	result, err := vmHooks.MBufferAppendBytes(accumulatorHandle, executor.MemPtr(dataOffset), dataLength)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferToBigIntUnsigned
 func w2_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
+	result, err := vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferToBigIntSigned
 func w2_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
+	result, err := vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferFromBigIntUnsigned
 func w2_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
+	result, err := vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferFromBigIntSigned
 func w2_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+	result, err := vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferToSmallIntUnsigned
 func w2_mBufferToSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	result, err := vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferToSmallIntSigned
 func w2_mBufferToSmallIntSigned(context unsafe.Pointer, mBufferHandle int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+	result, err := vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferFromSmallIntUnsigned
 func w2_mBufferFromSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	err := vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_mBufferFromSmallIntSigned
 func w2_mBufferFromSmallIntSigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	err := vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_mBufferToBigFloat
 func w2_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle int32, bigFloatHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
+	result, err := vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferFromBigFloat
 func w2_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle int32, bigFloatHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
+	result, err := vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferStorageStore
 func w2_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
+	result, err := vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferStorageLoad
 func w2_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
+	result, err := vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferStorageLoadFromAddress
 func w2_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle int32, keyHandle int32, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
+	err := vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_mBufferGetArgument
 func w2_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferGetArgument(id, destinationHandle)
+	result, err := vmHooks.MBufferGetArgument(id, destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferFinish
 func w2_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferFinish(sourceHandle)
+	result, err := vmHooks.MBufferFinish(sourceHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_mBufferSetRandom
 func w2_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferSetRandom(destinationHandle, length)
+	result, err := vmHooks.MBufferSetRandom(destinationHandle, length)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_managedMapNew

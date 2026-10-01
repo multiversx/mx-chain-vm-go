@@ -1670,243 +1670,246 @@ func (w *WrapperVMHooks) BigIntToString(bigIntHandle int32, destinationHandle in
 }
 
 // MBufferNew VM hook wrapper
-func (w *WrapperVMHooks) MBufferNew() int32 {
+func (w *WrapperVMHooks) MBufferNew() (int32, error) {
 	callInfo := "MBufferNew()"
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferNew()
+	result, err := w.wrappedVMHooks.MBufferNew()
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferNewFromBytes VM hook wrapper
-func (w *WrapperVMHooks) MBufferNewFromBytes(dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) MBufferNewFromBytes(dataOffset executor.MemPtr, dataLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferNewFromBytes(%d, %d)", dataOffset, dataLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferNewFromBytes(dataOffset, dataLength)
+	result, err := w.wrappedVMHooks.MBufferNewFromBytes(dataOffset, dataLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferGetLength VM hook wrapper
-func (w *WrapperVMHooks) MBufferGetLength(mBufferHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferGetLength(mBufferHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferGetLength(%d)", mBufferHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferGetLength(mBufferHandle)
+	result, err := w.wrappedVMHooks.MBufferGetLength(mBufferHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferGetBytes VM hook wrapper
-func (w *WrapperVMHooks) MBufferGetBytes(mBufferHandle int32, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) MBufferGetBytes(mBufferHandle int32, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferGetBytes(%d, %d)", mBufferHandle, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferGetBytes(mBufferHandle, resultOffset)
+	result, err := w.wrappedVMHooks.MBufferGetBytes(mBufferHandle, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferGetByteSlice VM hook wrapper
-func (w *WrapperVMHooks) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferGetByteSlice(%d, %d, %d, %d)", sourceHandle, startingPosition, sliceLength, resultOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
+	result, err := w.wrappedVMHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferCopyByteSlice VM hook wrapper
-func (w *WrapperVMHooks) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferCopyByteSlice(%d, %d, %d, %d)", sourceHandle, startingPosition, sliceLength, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
+	result, err := w.wrappedVMHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferEq VM hook wrapper
-func (w *WrapperVMHooks) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32 {
+func (w *WrapperVMHooks) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferEq(%d, %d)", mBufferHandle1, mBufferHandle2)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
+	result, err := w.wrappedVMHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferSetBytes VM hook wrapper
-func (w *WrapperVMHooks) MBufferSetBytes(mBufferHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) MBufferSetBytes(mBufferHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferSetBytes(%d, %d, %d)", mBufferHandle, dataOffset, dataLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
+	result, err := w.wrappedVMHooks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferSetByteSlice VM hook wrapper
-func (w *WrapperVMHooks) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength executor.MemLength, dataOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferSetByteSlice(%d, %d, %d, %d)", mBufferHandle, startingPosition, dataLength, dataOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
+	result, err := w.wrappedVMHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferAppend VM hook wrapper
-func (w *WrapperVMHooks) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferAppend(accumulatorHandle int32, dataHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferAppend(%d, %d)", accumulatorHandle, dataHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferAppend(accumulatorHandle, dataHandle)
+	result, err := w.wrappedVMHooks.MBufferAppend(accumulatorHandle, dataHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferAppendBytes VM hook wrapper
-func (w *WrapperVMHooks) MBufferAppendBytes(accumulatorHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+func (w *WrapperVMHooks) MBufferAppendBytes(accumulatorHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferAppendBytes(%d, %d, %d)", accumulatorHandle, dataOffset, dataLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
+	result, err := w.wrappedVMHooks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferToBigIntUnsigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferToBigIntUnsigned(%d, %d)", mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
+	result, err := w.wrappedVMHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferToBigIntSigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferToBigIntSigned(%d, %d)", mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
+	result, err := w.wrappedVMHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferFromBigIntUnsigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferFromBigIntUnsigned(%d, %d)", mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
+	result, err := w.wrappedVMHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferFromBigIntSigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferFromBigIntSigned(%d, %d)", mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+	result, err := w.wrappedVMHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferToSmallIntUnsigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferToSmallIntUnsigned(mBufferHandle int32) int64 {
+func (w *WrapperVMHooks) MBufferToSmallIntUnsigned(mBufferHandle int32) (int64, error) {
 	callInfo := fmt.Sprintf("MBufferToSmallIntUnsigned(%d)", mBufferHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	result, err := w.wrappedVMHooks.MBufferToSmallIntUnsigned(mBufferHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferToSmallIntSigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
+func (w *WrapperVMHooks) MBufferToSmallIntSigned(mBufferHandle int32) (int64, error) {
 	callInfo := fmt.Sprintf("MBufferToSmallIntSigned(%d)", mBufferHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferToSmallIntSigned(mBufferHandle)
+	result, err := w.wrappedVMHooks.MBufferToSmallIntSigned(mBufferHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferFromSmallIntUnsigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) {
+func (w *WrapperVMHooks) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) error {
 	callInfo := fmt.Sprintf("MBufferFromSmallIntUnsigned(%d, %d)", mBufferHandle, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	err := w.wrappedVMHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // MBufferFromSmallIntSigned VM hook wrapper
-func (w *WrapperVMHooks) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) {
+func (w *WrapperVMHooks) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) error {
 	callInfo := fmt.Sprintf("MBufferFromSmallIntSigned(%d, %d)", mBufferHandle, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	err := w.wrappedVMHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // MBufferToBigFloat VM hook wrapper
-func (w *WrapperVMHooks) MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferToBigFloat(%d, %d)", mBufferHandle, bigFloatHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
+	result, err := w.wrappedVMHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferFromBigFloat VM hook wrapper
-func (w *WrapperVMHooks) MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferFromBigFloat(%d, %d)", mBufferHandle, bigFloatHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
+	result, err := w.wrappedVMHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferStorageStore VM hook wrapper
-func (w *WrapperVMHooks) MBufferStorageStore(keyHandle int32, sourceHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferStorageStore(keyHandle int32, sourceHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferStorageStore(%d, %d)", keyHandle, sourceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferStorageStore(keyHandle, sourceHandle)
+	result, err := w.wrappedVMHooks.MBufferStorageStore(keyHandle, sourceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferStorageLoad VM hook wrapper
-func (w *WrapperVMHooks) MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferStorageLoad(keyHandle int32, destinationHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferStorageLoad(%d, %d)", keyHandle, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferStorageLoad(keyHandle, destinationHandle)
+	result, err := w.wrappedVMHooks.MBufferStorageLoad(keyHandle, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferStorageLoadFromAddress VM hook wrapper
-func (w *WrapperVMHooks) MBufferStorageLoadFromAddress(addressHandle int32, keyHandle int32, destinationHandle int32) {
+func (w *WrapperVMHooks) MBufferStorageLoadFromAddress(addressHandle int32, keyHandle int32, destinationHandle int32) error {
 	callInfo := fmt.Sprintf("MBufferStorageLoadFromAddress(%d, %d, %d)", addressHandle, keyHandle, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
+	err := w.wrappedVMHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // MBufferGetArgument VM hook wrapper
-func (w *WrapperVMHooks) MBufferGetArgument(id int32, destinationHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferGetArgument(id int32, destinationHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferGetArgument(%d, %d)", id, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferGetArgument(id, destinationHandle)
+	result, err := w.wrappedVMHooks.MBufferGetArgument(id, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferFinish VM hook wrapper
-func (w *WrapperVMHooks) MBufferFinish(sourceHandle int32) int32 {
+func (w *WrapperVMHooks) MBufferFinish(sourceHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferFinish(%d)", sourceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferFinish(sourceHandle)
+	result, err := w.wrappedVMHooks.MBufferFinish(sourceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // MBufferSetRandom VM hook wrapper
-func (w *WrapperVMHooks) MBufferSetRandom(destinationHandle int32, length int32) int32 {
+func (w *WrapperVMHooks) MBufferSetRandom(destinationHandle int32, length int32) (int32, error) {
 	callInfo := fmt.Sprintf("MBufferSetRandom(%d, %d)", destinationHandle, length)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.MBufferSetRandom(destinationHandle, length)
+	result, err := w.wrappedVMHooks.MBufferSetRandom(destinationHandle, length)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // ManagedMapNew VM hook wrapper

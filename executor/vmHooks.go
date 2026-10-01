@@ -224,33 +224,33 @@ type BigIntVMHooks interface {
 }
 
 type ManagedBufferVMHooks interface {
-	MBufferNew() int32
-	MBufferNewFromBytes(dataOffset MemPtr, dataLength MemLength) int32
-	MBufferGetLength(mBufferHandle int32) int32
-	MBufferGetBytes(mBufferHandle int32, resultOffset MemPtr) int32
-	MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset MemPtr) int32
-	MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32
-	MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32
-	MBufferSetBytes(mBufferHandle int32, dataOffset MemPtr, dataLength MemLength) int32
-	MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength MemLength, dataOffset MemPtr) int32
-	MBufferAppend(accumulatorHandle int32, dataHandle int32) int32
-	MBufferAppendBytes(accumulatorHandle int32, dataOffset MemPtr, dataLength MemLength) int32
-	MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32
-	MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
-	MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32
-	MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32
-	MBufferToSmallIntUnsigned(mBufferHandle int32) int64
-	MBufferToSmallIntSigned(mBufferHandle int32) int64
-	MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64)
-	MBufferFromSmallIntSigned(mBufferHandle int32, value int64)
-	MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
-	MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) int32
-	MBufferStorageStore(keyHandle int32, sourceHandle int32) int32
-	MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32
-	MBufferStorageLoadFromAddress(addressHandle int32, keyHandle int32, destinationHandle int32)
-	MBufferGetArgument(id int32, destinationHandle int32) int32
-	MBufferFinish(sourceHandle int32) int32
-	MBufferSetRandom(destinationHandle int32, length int32) int32
+	MBufferNew() (int32, error)
+	MBufferNewFromBytes(dataOffset MemPtr, dataLength MemLength) (int32, error)
+	MBufferGetLength(mBufferHandle int32) (int32, error)
+	MBufferGetBytes(mBufferHandle int32, resultOffset MemPtr) (int32, error)
+	MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset MemPtr) (int32, error)
+	MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) (int32, error)
+	MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) (int32, error)
+	MBufferSetBytes(mBufferHandle int32, dataOffset MemPtr, dataLength MemLength) (int32, error)
+	MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength MemLength, dataOffset MemPtr) (int32, error)
+	MBufferAppend(accumulatorHandle int32, dataHandle int32) (int32, error)
+	MBufferAppendBytes(accumulatorHandle int32, dataOffset MemPtr, dataLength MemLength) (int32, error)
+	MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) (int32, error)
+	MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) (int32, error)
+	MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) (int32, error)
+	MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) (int32, error)
+	MBufferToSmallIntUnsigned(mBufferHandle int32) (int64, error)
+	MBufferToSmallIntSigned(mBufferHandle int32) (int64, error)
+	MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) error
+	MBufferFromSmallIntSigned(mBufferHandle int32, value int64) error
+	MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) (int32, error)
+	MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) (int32, error)
+	MBufferStorageStore(keyHandle int32, sourceHandle int32) (int32, error)
+	MBufferStorageLoad(keyHandle int32, destinationHandle int32) (int32, error)
+	MBufferStorageLoadFromAddress(addressHandle int32, keyHandle int32, destinationHandle int32) error
+	MBufferGetArgument(id int32, destinationHandle int32) (int32, error)
+	MBufferFinish(sourceHandle int32) (int32, error)
+	MBufferSetRandom(destinationHandle int32, length int32) (int32, error)
 }
 
 type ManagedMapVMHooks interface {
