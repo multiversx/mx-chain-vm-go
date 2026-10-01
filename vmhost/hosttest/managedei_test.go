@@ -322,7 +322,10 @@ func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{})
 			return parentInstance
 		}
 
-		vmHooksImpl.SmallIntFinishSigned(result)
+		err := vmHooksImpl.SmallIntFinishSigned(result)
+		if err != nil {
+			vmHooksImpl.HandleHookError(err)
+		}
 
 		return parentInstance
 	})

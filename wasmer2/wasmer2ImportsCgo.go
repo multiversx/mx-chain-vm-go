@@ -1946,73 +1946,118 @@ func w2_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle i
 //export w2_smallIntGetUnsignedArgument
 func w2_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntGetUnsignedArgument(id)
+	result, err := vmHooks.SmallIntGetUnsignedArgument(id)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_smallIntGetSignedArgument
 func w2_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntGetSignedArgument(id)
+	result, err := vmHooks.SmallIntGetSignedArgument(id)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_smallIntFinishUnsigned
 func w2_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.SmallIntFinishUnsigned(value)
+	err := vmHooks.SmallIntFinishUnsigned(value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_smallIntFinishSigned
 func w2_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.SmallIntFinishSigned(value)
+	err := vmHooks.SmallIntFinishSigned(value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_smallIntStorageStoreUnsigned
 func w2_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, value)
+	result, err := vmHooks.SmallIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_smallIntStorageStoreSigned
 func w2_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageStoreSigned(executor.MemPtr(keyOffset), keyLength, value)
+	result, err := vmHooks.SmallIntStorageStoreSigned(executor.MemPtr(keyOffset), keyLength, value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_smallIntStorageLoadUnsigned
 func w2_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength)
+	result, err := vmHooks.SmallIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_smallIntStorageLoadSigned
 func w2_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageLoadSigned(executor.MemPtr(keyOffset), keyLength)
+	result, err := vmHooks.SmallIntStorageLoadSigned(executor.MemPtr(keyOffset), keyLength)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_int64getArgument
 func w2_int64getArgument(context unsafe.Pointer, id int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Int64getArgument(id)
+	result, err := vmHooks.Int64getArgument(id)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_int64finish
 func w2_int64finish(context unsafe.Pointer, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.Int64finish(value)
+	err := vmHooks.Int64finish(value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_int64storageStore
 func w2_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Int64storageStore(executor.MemPtr(keyOffset), keyLength, value)
+	result, err := vmHooks.Int64storageStore(executor.MemPtr(keyOffset), keyLength, value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_int64storageLoad
 func w2_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Int64storageLoad(executor.MemPtr(keyOffset), keyLength)
+	result, err := vmHooks.Int64storageLoad(executor.MemPtr(keyOffset), keyLength)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_sha256

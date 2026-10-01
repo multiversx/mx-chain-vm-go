@@ -1939,108 +1939,111 @@ func (w *WrapperVMHooks) ManagedMapContains(mMapHandle int32, keyHandle int32) (
 }
 
 // SmallIntGetUnsignedArgument VM hook wrapper
-func (w *WrapperVMHooks) SmallIntGetUnsignedArgument(id int32) int64 {
+func (w *WrapperVMHooks) SmallIntGetUnsignedArgument(id int32) (int64, error) {
 	callInfo := fmt.Sprintf("SmallIntGetUnsignedArgument(%d)", id)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SmallIntGetUnsignedArgument(id)
+	result, err := w.wrappedVMHooks.SmallIntGetUnsignedArgument(id)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SmallIntGetSignedArgument VM hook wrapper
-func (w *WrapperVMHooks) SmallIntGetSignedArgument(id int32) int64 {
+func (w *WrapperVMHooks) SmallIntGetSignedArgument(id int32) (int64, error) {
 	callInfo := fmt.Sprintf("SmallIntGetSignedArgument(%d)", id)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SmallIntGetSignedArgument(id)
+	result, err := w.wrappedVMHooks.SmallIntGetSignedArgument(id)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SmallIntFinishUnsigned VM hook wrapper
-func (w *WrapperVMHooks) SmallIntFinishUnsigned(value int64) {
+func (w *WrapperVMHooks) SmallIntFinishUnsigned(value int64) error {
 	callInfo := fmt.Sprintf("SmallIntFinishUnsigned(%d)", value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.SmallIntFinishUnsigned(value)
+	err := w.wrappedVMHooks.SmallIntFinishUnsigned(value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // SmallIntFinishSigned VM hook wrapper
-func (w *WrapperVMHooks) SmallIntFinishSigned(value int64) {
+func (w *WrapperVMHooks) SmallIntFinishSigned(value int64) error {
 	callInfo := fmt.Sprintf("SmallIntFinishSigned(%d)", value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.SmallIntFinishSigned(value)
+	err := w.wrappedVMHooks.SmallIntFinishSigned(value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // SmallIntStorageStoreUnsigned VM hook wrapper
-func (w *WrapperVMHooks) SmallIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
+func (w *WrapperVMHooks) SmallIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) (int32, error) {
 	callInfo := fmt.Sprintf("SmallIntStorageStoreUnsigned(%d, %d, %d)", keyOffset, keyLength, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
+	result, err := w.wrappedVMHooks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SmallIntStorageStoreSigned VM hook wrapper
-func (w *WrapperVMHooks) SmallIntStorageStoreSigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
+func (w *WrapperVMHooks) SmallIntStorageStoreSigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) (int32, error) {
 	callInfo := fmt.Sprintf("SmallIntStorageStoreSigned(%d, %d, %d)", keyOffset, keyLength, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
+	result, err := w.wrappedVMHooks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SmallIntStorageLoadUnsigned VM hook wrapper
-func (w *WrapperVMHooks) SmallIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (w *WrapperVMHooks) SmallIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength) (int64, error) {
 	callInfo := fmt.Sprintf("SmallIntStorageLoadUnsigned(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // SmallIntStorageLoadSigned VM hook wrapper
-func (w *WrapperVMHooks) SmallIntStorageLoadSigned(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (w *WrapperVMHooks) SmallIntStorageLoadSigned(keyOffset executor.MemPtr, keyLength executor.MemLength) (int64, error) {
 	callInfo := fmt.Sprintf("SmallIntStorageLoadSigned(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.SmallIntStorageLoadSigned(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.SmallIntStorageLoadSigned(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Int64getArgument VM hook wrapper
-func (w *WrapperVMHooks) Int64getArgument(id int32) int64 {
+func (w *WrapperVMHooks) Int64getArgument(id int32) (int64, error) {
 	callInfo := fmt.Sprintf("Int64getArgument(%d)", id)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.Int64getArgument(id)
+	result, err := w.wrappedVMHooks.Int64getArgument(id)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Int64finish VM hook wrapper
-func (w *WrapperVMHooks) Int64finish(value int64) {
+func (w *WrapperVMHooks) Int64finish(value int64) error {
 	callInfo := fmt.Sprintf("Int64finish(%d)", value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.Int64finish(value)
+	err := w.wrappedVMHooks.Int64finish(value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // Int64storageStore VM hook wrapper
-func (w *WrapperVMHooks) Int64storageStore(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
+func (w *WrapperVMHooks) Int64storageStore(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) (int32, error) {
 	callInfo := fmt.Sprintf("Int64storageStore(%d, %d, %d)", keyOffset, keyLength, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.Int64storageStore(keyOffset, keyLength, value)
+	result, err := w.wrappedVMHooks.Int64storageStore(keyOffset, keyLength, value)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Int64storageLoad VM hook wrapper
-func (w *WrapperVMHooks) Int64storageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (w *WrapperVMHooks) Int64storageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength) (int64, error) {
 	callInfo := fmt.Sprintf("Int64storageLoad(%d, %d)", keyOffset, keyLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.Int64storageLoad(keyOffset, keyLength)
+	result, err := w.wrappedVMHooks.Int64storageLoad(keyOffset, keyLength)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // Sha256 VM hook wrapper

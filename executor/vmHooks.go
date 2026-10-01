@@ -262,18 +262,18 @@ type ManagedMapVMHooks interface {
 }
 
 type SmallIntVMHooks interface {
-	SmallIntGetUnsignedArgument(id int32) int64
-	SmallIntGetSignedArgument(id int32) int64
-	SmallIntFinishUnsigned(value int64)
-	SmallIntFinishSigned(value int64)
-	SmallIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, value int64) int32
-	SmallIntStorageStoreSigned(keyOffset MemPtr, keyLength MemLength, value int64) int32
-	SmallIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength) int64
-	SmallIntStorageLoadSigned(keyOffset MemPtr, keyLength MemLength) int64
-	Int64getArgument(id int32) int64
-	Int64finish(value int64)
-	Int64storageStore(keyOffset MemPtr, keyLength MemLength, value int64) int32
-	Int64storageLoad(keyOffset MemPtr, keyLength MemLength) int64
+	SmallIntGetUnsignedArgument(id int32) (int64, error)
+	SmallIntGetSignedArgument(id int32) (int64, error)
+	SmallIntFinishUnsigned(value int64) error
+	SmallIntFinishSigned(value int64) error
+	SmallIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, value int64) (int32, error)
+	SmallIntStorageStoreSigned(keyOffset MemPtr, keyLength MemLength, value int64) (int32, error)
+	SmallIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength) (int64, error)
+	SmallIntStorageLoadSigned(keyOffset MemPtr, keyLength MemLength) (int64, error)
+	Int64getArgument(id int32) (int64, error)
+	Int64finish(value int64) error
+	Int64storageStore(keyOffset MemPtr, keyLength MemLength, value int64) (int32, error)
+	Int64storageLoad(keyOffset MemPtr, keyLength MemLength) (int64, error)
 }
 
 type CryptoVMHooks interface {
