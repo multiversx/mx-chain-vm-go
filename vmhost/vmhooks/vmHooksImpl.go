@@ -92,11 +92,6 @@ func (context *VMHooksImpl) GetStorageContext() vmhost.StorageContext {
 	return context.host.Storage()
 }
 
-// FailExecution fails the execution with the provided error
-func (context *VMHooksImpl) FailExecution(err error) {
-	FailExecution(context.host, err)
-}
-
 // GetEnableEpochsHandler returns the enable epochs handler
 func (context *VMHooksImpl) GetEnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return context.host.EnableEpochsHandler()
