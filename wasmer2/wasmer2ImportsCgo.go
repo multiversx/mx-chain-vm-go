@@ -1350,133 +1350,205 @@ func w2_managedIsBuiltinFunction(context unsafe.Pointer, functionNameHandle int3
 //export w2_bigFloatNewFromParts
 func w2_bigFloatNewFromParts(context unsafe.Pointer, integralPart int32, fractionalPart int32, exponent int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
+	result, err := vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatNewFromFrac
 func w2_bigFloatNewFromFrac(context unsafe.Pointer, numerator int64, denominator int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatNewFromFrac(numerator, denominator)
+	result, err := vmHooks.BigFloatNewFromFrac(numerator, denominator)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatNewFromSci
 func w2_bigFloatNewFromSci(context unsafe.Pointer, significand int64, exponent int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatNewFromSci(significand, exponent)
+	result, err := vmHooks.BigFloatNewFromSci(significand, exponent)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatAdd
 func w2_bigFloatAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
+	err := vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatSub
 func w2_bigFloatSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
+	err := vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatMul
 func w2_bigFloatMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
+	err := vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatDiv
 func w2_bigFloatDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
+	err := vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatNeg
 func w2_bigFloatNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatNeg(destinationHandle, opHandle)
+	err := vmHooks.BigFloatNeg(destinationHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatClone
 func w2_bigFloatClone(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatClone(destinationHandle, opHandle)
+	err := vmHooks.BigFloatClone(destinationHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatCmp
 func w2_bigFloatCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatCmp(op1Handle, op2Handle)
+	result, err := vmHooks.BigFloatCmp(op1Handle, op2Handle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatAbs
 func w2_bigFloatAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatAbs(destinationHandle, opHandle)
+	err := vmHooks.BigFloatAbs(destinationHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatSign
 func w2_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatSign(opHandle)
+	result, err := vmHooks.BigFloatSign(opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatSqrt
 func w2_bigFloatSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSqrt(destinationHandle, opHandle)
+	err := vmHooks.BigFloatSqrt(destinationHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatPow
 func w2_bigFloatPow(context unsafe.Pointer, destinationHandle int32, opHandle int32, exponent int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
+	err := vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatFloor
 func w2_bigFloatFloor(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
+	err := vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatCeil
 func w2_bigFloatCeil(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
+	err := vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatTruncate
 func w2_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
+	err := vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatSetInt64
 func w2_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSetInt64(destinationHandle, value)
+	err := vmHooks.BigFloatSetInt64(destinationHandle, value)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatIsInt
 func w2_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatIsInt(opHandle)
+	result, err := vmHooks.BigFloatIsInt(opHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
+	return result
 }
 
 //export w2_bigFloatSetBigInt
 func w2_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle int32, bigIntHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
+	err := vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatGetConstPi
 func w2_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatGetConstPi(destinationHandle)
+	err := vmHooks.BigFloatGetConstPi(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigFloatGetConstE
 func w2_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatGetConstE(destinationHandle)
+	err := vmHooks.BigFloatGetConstE(destinationHandle)
+	if err != nil {
+		vmHooks.HandleHookError(err)
+	}
 }
 
 //export w2_bigIntGetUnsignedArgument

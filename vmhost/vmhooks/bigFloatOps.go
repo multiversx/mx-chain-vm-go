@@ -42,44 +42,40 @@ func areAllZero(values ...*big.Float) bool {
 	return true
 }
 
-func setResultIfNotInfinity(host vmhost.VMHost, result *big.Float, destinationHandle int32) {
+func setResultIfNotInfinity(host vmhost.VMHost, result *big.Float, destinationHandle int32) error {
 	managedType := host.ManagedTypes()
 	if result.IsInf() {
-		FailExecution(host, vmhost.ErrInfinityFloatOperation)
-		return
+		return vmhost.ErrInfinityFloatOperation
 	}
 
 	exponent := result.MantExp(nil)
 	if managedType.BigFloatExpIsNotValid(exponent) {
-		FailExecution(host, vmhost.ErrExponentTooBigOrTooSmall)
-		return
+		return vmhost.ErrExponentTooBigOrTooSmall
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		FailExecution(host, err)
-		return
+		return err
 	}
 
 	dest.Set(result)
+	return nil
 }
 
 // BigFloatNewFromParts VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, exponent int32) int32 {
+func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, exponent int32) (int32, error) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatNewFromPartsName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 
 	if exponent > 0 {
-		context.FailExecution(vmhost.ErrPositiveExponent)
-		return -1
+		return -1, vmhost.ErrPositiveExponent
 	}
 
 	var bigFractional *big.Float
@@ -90,8 +86,7 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 		bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
 		bigFractional, err = vmMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
 		if err != nil {
-			context.FailExecution(err)
-			return -1
+			return -1, err
 		}
 	}
 
@@ -99,101 +94,89 @@ func (context *VMHooksImpl) BigFloatNewFromParts(integralPart, fractionalPart, e
 	if integralPart >= 0 {
 		value, err = vmMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if err != nil {
-			context.FailExecution(err)
-			return -1
+			return -1, err
 		}
 	} else {
 		value, err = vmMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if err != nil {
-			context.FailExecution(err)
-			return -1
+			return -1, err
 		}
 	}
 	handle, err := managedType.PutBigFloat(value)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
-	return handle
+	return handle, nil
 }
 
 // BigFloatNewFromFrac VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatNewFromFrac(numerator, denominator int64) int32 {
+func (context *VMHooksImpl) BigFloatNewFromFrac(numerator, denominator int64) (int32, error) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatNewFromFracName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 
 	if denominator == 0 {
-		context.FailExecution(vmhost.ErrDivZero)
-		return -1
+		return -1, vmhost.ErrDivZero
 	}
 
 	bigNumerator := big.NewFloat(float64(numerator))
 	bigDenominator := big.NewFloat(float64(denominator))
 	value, err := vmMath.QuoBigFloat(bigNumerator, bigDenominator)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 	handle, err := managedType.PutBigFloat(value)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
-	return handle
+	return handle, nil
 }
 
 // BigFloatNewFromSci VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatNewFromSci(significand, exponent int64) int32 {
+func (context *VMHooksImpl) BigFloatNewFromSci(significand, exponent int64) (int32, error) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatNewFromSciName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 
 	if exponent > 0 {
-		context.FailExecution(vmhost.ErrPositiveExponent)
-		return -1
+		return -1, vmhost.ErrPositiveExponent
 	}
 	if exponent < -322 {
 		handle, err := managedType.PutBigFloat(big.NewFloat(0))
 		if err != nil {
-			context.FailExecution(err)
-			return -1
+			return -1, err
 		}
-		return handle
+		return handle, nil
 	}
 
 	bigSignificand := big.NewFloat(float64(significand))
 	bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
 	value, err := vmMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 	handle, err := managedType.PutBigFloat(value)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
-	return handle
+	return handle, nil
 }
 
 // BigFloatAdd VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatAdd(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigFloatAdd(destinationHandle, op1Handle, op2Handle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatAddName)
@@ -201,28 +184,25 @@ func (context *VMHooksImpl) BigFloatAdd(destinationHandle, op1Handle, op2Handle 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAdd
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatAddName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	resultAdd, err := vmMath.AddBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
-	setResultIfNotInfinity(context.GetVMHost(), resultAdd, destinationHandle)
+	return setResultIfNotInfinity(context.GetVMHost(), resultAdd, destinationHandle)
 }
 
 // BigFloatSub VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatSub(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigFloatSub(destinationHandle, op1Handle, op2Handle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatSubName)
@@ -230,27 +210,24 @@ func (context *VMHooksImpl) BigFloatSub(destinationHandle, op1Handle, op2Handle 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSub
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	resultSub, err := vmMath.SubBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
-	setResultIfNotInfinity(context.GetVMHost(), resultSub, destinationHandle)
+	return setResultIfNotInfinity(context.GetVMHost(), resultSub, destinationHandle)
 }
 
 // BigFloatMul VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatMul(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigFloatMul(destinationHandle, op1Handle, op2Handle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatMulName)
@@ -258,28 +235,25 @@ func (context *VMHooksImpl) BigFloatMul(destinationHandle, op1Handle, op2Handle 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatMul
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	resultMul, err := vmMath.MulBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
-	setResultIfNotInfinity(context.GetVMHost(), resultMul, destinationHandle)
+	return setResultIfNotInfinity(context.GetVMHost(), resultMul, destinationHandle)
 }
 
 // BigFloatDiv VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatDiv(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigFloatDiv(destinationHandle, op1Handle, op2Handle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatDivName)
@@ -287,32 +261,28 @@ func (context *VMHooksImpl) BigFloatDiv(destinationHandle, op1Handle, op2Handle 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatDiv
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	if areAllZero(op1, op2) {
-		context.FailExecution(vmhost.ErrAllOperandsAreEqualToZero)
-		return
+		return vmhost.ErrAllOperandsAreEqualToZero
 	}
 
 	resultDiv, err := vmMath.QuoBigFloat(op1, op2)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
-	setResultIfNotInfinity(context.GetVMHost(), resultDiv, destinationHandle)
+	return setResultIfNotInfinity(context.GetVMHost(), resultDiv, destinationHandle)
 }
 
 // BigFloatNeg VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatNeg(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatNeg(destinationHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatNegName)
@@ -320,27 +290,25 @@ func (context *VMHooksImpl) BigFloatNeg(destinationHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNeg
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	dest.Neg(op)
+	return nil
 }
 
 // BigFloatClone VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatClone(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatClone(destinationHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatCloneName)
@@ -348,27 +316,25 @@ func (context *VMHooksImpl) BigFloatClone(destinationHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatClone
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	dest.Copy(op)
+	return nil
 }
 
 // BigFloatCmp VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
+func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) (int32, error) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatCmpName)
@@ -376,22 +342,20 @@ func (context *VMHooksImpl) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCmp
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return -2
+		return -2, err
 	}
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return -2
+		return -2, err
 	}
-	return int32(op1.Cmp(op2))
+	return int32(op1.Cmp(op2)), nil
 }
 
 // BigFloatAbs VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatAbs(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatAbs(destinationHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatAbsName)
@@ -399,48 +363,44 @@ func (context *VMHooksImpl) BigFloatAbs(destinationHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	dest.Abs(op)
+	return nil
 }
 
 // BigFloatSign VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatSign(opHandle int32) int32 {
+func (context *VMHooksImpl) BigFloatSign(opHandle int32) (int32, error) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatSignName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return -2
+		return -2, err
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return -2
+		return -2, err
 	}
-	return int32(op.Sign())
+	return int32(op.Sign()), nil
 }
 
 // BigFloatSqrt VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatSqrt(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatSqrt(destinationHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatSqrtName)
@@ -448,36 +408,32 @@ func (context *VMHooksImpl) BigFloatSqrt(destinationHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSqrt
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	op, err := managedType.GetBigFloat(opHandle)
 
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	if op.Sign() < 0 {
-		context.FailExecution(vmhost.ErrBadLowerBounds)
-		return
+		return vmhost.ErrBadLowerBounds
 	}
 	resultSqrt, err := vmMath.SqrtBigFloat(op)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	dest.Set(resultSqrt)
+	return nil
 }
 
 // BigFloatPow VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent int32) {
+func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatPowName)
@@ -490,14 +446,12 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	opBigInt := big.NewInt(0)
@@ -511,16 +465,14 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
 	err = managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	powResult, err := context.pow(op, exponent)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
-	setResultIfNotInfinity(context.GetVMHost(), powResult, destinationHandle)
+	return setResultIfNotInfinity(context.GetVMHost(), powResult, destinationHandle)
 }
 
 func (context *VMHooksImpl) pow(base *big.Float, exp int32) (*big.Float, error) {
@@ -544,7 +496,7 @@ func (context *VMHooksImpl) pow(base *big.Float, exp int32) (*big.Float, error) 
 
 // BigFloatFloor VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatFloorName)
@@ -552,35 +504,33 @@ func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatFloor
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op.Int(bigIntOp)
 	if op.IsInt() {
-		return
+		return nil
 	}
 	if bigIntOp.Sign() < 0 {
 		bigIntOp.Sub(bigIntOp, big.NewInt(1))
 	}
+	return nil
 }
 
 // BigFloatCeil VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatCeilName)
@@ -588,35 +538,33 @@ func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCeil
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op.Int(bigIntOp)
 	if op.IsInt() {
-		return
+		return nil
 	}
 	if bigIntOp.Sign() > 0 {
 		bigIntOp.Add(bigIntOp, big.NewInt(1))
 	}
+	return nil
 }
 
 // BigFloatTruncate VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
+func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatTruncateName)
@@ -624,50 +572,47 @@ func (context *VMHooksImpl) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatTruncate
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	op.Int(bigIntValue)
+	return nil
 }
 
 // BigFloatSetInt64 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatSetInt64(destinationHandle int32, value int64) {
+func (context *VMHooksImpl) BigFloatSetInt64(destinationHandle int32, value int64) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetInt64
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatSetInt64Name, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	dest.SetInt64(value)
+	return nil
 }
 
 // BigFloatIsInt VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatIsInt(opHandle int32) int32 {
+func (context *VMHooksImpl) BigFloatIsInt(opHandle int32) (int32, error) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatIsIntName)
@@ -675,24 +620,22 @@ func (context *VMHooksImpl) BigFloatIsInt(opHandle int32) int32 {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatIsInt
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return -1
+		return -1, err
 	}
 	if op.IsInt() {
-		return 1
+		return 1, nil
 	}
-	return 0
+	return 0, nil
 }
 
 // BigFloatSetBigInt VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatSetBigInt(destinationHandle, bigIntHandle int32) {
+func (context *VMHooksImpl) BigFloatSetBigInt(destinationHandle, bigIntHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(bigFloatSetBigIntName)
@@ -700,64 +643,59 @@ func (context *VMHooksImpl) BigFloatSetBigInt(destinationHandle, bigIntHandle in
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetBigInt
 	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	bigIntValue, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(bigIntValue)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	resultSetInt := big.NewFloat(0).SetInt(bigIntValue)
-	setResultIfNotInfinity(context.GetVMHost(), resultSetInt, destinationHandle)
+	return setResultIfNotInfinity(context.GetVMHost(), resultSetInt, destinationHandle)
 }
 
 // BigFloatGetConstPi VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatGetConstPi(destinationHandle int32) {
+func (context *VMHooksImpl) BigFloatGetConstPi(destinationHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetConst
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatGetConstPiName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	pi, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	pi.SetFloat64(math.Pi)
+	return nil
 }
 
 // BigFloatGetConstE VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *VMHooksImpl) BigFloatGetConstE(destinationHandle int32) {
+func (context *VMHooksImpl) BigFloatGetConstE(destinationHandle int32) error {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetConst
 	err := metering.UseGasBoundedAndAddTracedGas(bigFloatGetConstEName, gasToUse)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 
 	e, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if err != nil {
-		context.FailExecution(err)
-		return
+		return err
 	}
 	e.SetFloat64(math.E)
+	return nil
 }

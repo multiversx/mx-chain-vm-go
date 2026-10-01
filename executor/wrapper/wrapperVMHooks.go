@@ -1124,185 +1124,201 @@ func (w *WrapperVMHooks) ManagedIsBuiltinFunction(functionNameHandle int32) int3
 }
 
 // BigFloatNewFromParts VM hook wrapper
-func (w *WrapperVMHooks) BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32 {
+func (w *WrapperVMHooks) BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigFloatNewFromParts(%d, %d, %d)", integralPart, fractionalPart, exponent)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
+	result, err := w.wrappedVMHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatNewFromFrac VM hook wrapper
-func (w *WrapperVMHooks) BigFloatNewFromFrac(numerator int64, denominator int64) int32 {
+func (w *WrapperVMHooks) BigFloatNewFromFrac(numerator int64, denominator int64) (int32, error) {
 	callInfo := fmt.Sprintf("BigFloatNewFromFrac(%d, %d)", numerator, denominator)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigFloatNewFromFrac(numerator, denominator)
+	result, err := w.wrappedVMHooks.BigFloatNewFromFrac(numerator, denominator)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatNewFromSci VM hook wrapper
-func (w *WrapperVMHooks) BigFloatNewFromSci(significand int64, exponent int64) int32 {
+func (w *WrapperVMHooks) BigFloatNewFromSci(significand int64, exponent int64) (int32, error) {
 	callInfo := fmt.Sprintf("BigFloatNewFromSci(%d, %d)", significand, exponent)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigFloatNewFromSci(significand, exponent)
+	result, err := w.wrappedVMHooks.BigFloatNewFromSci(significand, exponent)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatAdd VM hook wrapper
-func (w *WrapperVMHooks) BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigFloatAdd(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatSub VM hook wrapper
-func (w *WrapperVMHooks) BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigFloatSub(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatMul VM hook wrapper
-func (w *WrapperVMHooks) BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigFloatMul(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatDiv VM hook wrapper
-func (w *WrapperVMHooks) BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigFloatDiv(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatNeg VM hook wrapper
-func (w *WrapperVMHooks) BigFloatNeg(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatNeg(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatNeg(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatNeg(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatNeg(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatClone VM hook wrapper
-func (w *WrapperVMHooks) BigFloatClone(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatClone(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatClone(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatClone(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatClone(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatCmp VM hook wrapper
-func (w *WrapperVMHooks) BigFloatCmp(op1Handle int32, op2Handle int32) int32 {
+func (w *WrapperVMHooks) BigFloatCmp(op1Handle int32, op2Handle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigFloatCmp(%d, %d)", op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigFloatCmp(op1Handle, op2Handle)
+	result, err := w.wrappedVMHooks.BigFloatCmp(op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatAbs VM hook wrapper
-func (w *WrapperVMHooks) BigFloatAbs(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatAbs(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatAbs(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatAbs(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatAbs(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatSign VM hook wrapper
-func (w *WrapperVMHooks) BigFloatSign(opHandle int32) int32 {
+func (w *WrapperVMHooks) BigFloatSign(opHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigFloatSign(%d)", opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigFloatSign(opHandle)
+	result, err := w.wrappedVMHooks.BigFloatSign(opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatSqrt VM hook wrapper
-func (w *WrapperVMHooks) BigFloatSqrt(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatSqrt(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatSqrt(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatSqrt(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatSqrt(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatPow VM hook wrapper
-func (w *WrapperVMHooks) BigFloatPow(destinationHandle int32, opHandle int32, exponent int32) {
+func (w *WrapperVMHooks) BigFloatPow(destinationHandle int32, opHandle int32, exponent int32) error {
 	callInfo := fmt.Sprintf("BigFloatPow(%d, %d, %d)", destinationHandle, opHandle, exponent)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatPow(destinationHandle, opHandle, exponent)
+	err := w.wrappedVMHooks.BigFloatPow(destinationHandle, opHandle, exponent)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatFloor VM hook wrapper
-func (w *WrapperVMHooks) BigFloatFloor(destBigIntHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatFloor(destBigIntHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatFloor(%d, %d)", destBigIntHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatFloor(destBigIntHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatFloor(destBigIntHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatCeil VM hook wrapper
-func (w *WrapperVMHooks) BigFloatCeil(destBigIntHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatCeil(destBigIntHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatCeil(%d, %d)", destBigIntHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatCeil(destBigIntHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatCeil(destBigIntHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatTruncate VM hook wrapper
-func (w *WrapperVMHooks) BigFloatTruncate(destBigIntHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigFloatTruncate(destBigIntHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatTruncate(%d, %d)", destBigIntHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatTruncate(destBigIntHandle, opHandle)
+	err := w.wrappedVMHooks.BigFloatTruncate(destBigIntHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatSetInt64 VM hook wrapper
-func (w *WrapperVMHooks) BigFloatSetInt64(destinationHandle int32, value int64) {
+func (w *WrapperVMHooks) BigFloatSetInt64(destinationHandle int32, value int64) error {
 	callInfo := fmt.Sprintf("BigFloatSetInt64(%d, %d)", destinationHandle, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatSetInt64(destinationHandle, value)
+	err := w.wrappedVMHooks.BigFloatSetInt64(destinationHandle, value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatIsInt VM hook wrapper
-func (w *WrapperVMHooks) BigFloatIsInt(opHandle int32) int32 {
+func (w *WrapperVMHooks) BigFloatIsInt(opHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigFloatIsInt(%d)", opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigFloatIsInt(opHandle)
+	result, err := w.wrappedVMHooks.BigFloatIsInt(opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigFloatSetBigInt VM hook wrapper
-func (w *WrapperVMHooks) BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32) {
+func (w *WrapperVMHooks) BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatSetBigInt(%d, %d)", destinationHandle, bigIntHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
+	err := w.wrappedVMHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatGetConstPi VM hook wrapper
-func (w *WrapperVMHooks) BigFloatGetConstPi(destinationHandle int32) {
+func (w *WrapperVMHooks) BigFloatGetConstPi(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatGetConstPi(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatGetConstPi(destinationHandle)
+	err := w.wrappedVMHooks.BigFloatGetConstPi(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigFloatGetConstE VM hook wrapper
-func (w *WrapperVMHooks) BigFloatGetConstE(destinationHandle int32) {
+func (w *WrapperVMHooks) BigFloatGetConstE(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("BigFloatGetConstE(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigFloatGetConstE(destinationHandle)
+	err := w.wrappedVMHooks.BigFloatGetConstE(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntGetUnsignedArgument VM hook wrapper

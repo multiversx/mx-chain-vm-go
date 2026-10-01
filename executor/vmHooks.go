@@ -154,28 +154,28 @@ type ManagedVMHooks interface {
 }
 
 type BigFloatVMHooks interface {
-	BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32
-	BigFloatNewFromFrac(numerator int64, denominator int64) int32
-	BigFloatNewFromSci(significand int64, exponent int64) int32
-	BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatNeg(destinationHandle int32, opHandle int32)
-	BigFloatClone(destinationHandle int32, opHandle int32)
-	BigFloatCmp(op1Handle int32, op2Handle int32) int32
-	BigFloatAbs(destinationHandle int32, opHandle int32)
-	BigFloatSign(opHandle int32) int32
-	BigFloatSqrt(destinationHandle int32, opHandle int32)
-	BigFloatPow(destinationHandle int32, opHandle int32, exponent int32)
-	BigFloatFloor(destBigIntHandle int32, opHandle int32)
-	BigFloatCeil(destBigIntHandle int32, opHandle int32)
-	BigFloatTruncate(destBigIntHandle int32, opHandle int32)
-	BigFloatSetInt64(destinationHandle int32, value int64)
-	BigFloatIsInt(opHandle int32) int32
-	BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32)
-	BigFloatGetConstPi(destinationHandle int32)
-	BigFloatGetConstE(destinationHandle int32)
+	BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) (int32, error)
+	BigFloatNewFromFrac(numerator int64, denominator int64) (int32, error)
+	BigFloatNewFromSci(significand int64, exponent int64) (int32, error)
+	BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigFloatNeg(destinationHandle int32, opHandle int32) error
+	BigFloatClone(destinationHandle int32, opHandle int32) error
+	BigFloatCmp(op1Handle int32, op2Handle int32) (int32, error)
+	BigFloatAbs(destinationHandle int32, opHandle int32) error
+	BigFloatSign(opHandle int32) (int32, error)
+	BigFloatSqrt(destinationHandle int32, opHandle int32) error
+	BigFloatPow(destinationHandle int32, opHandle int32, exponent int32) error
+	BigFloatFloor(destBigIntHandle int32, opHandle int32) error
+	BigFloatCeil(destBigIntHandle int32, opHandle int32) error
+	BigFloatTruncate(destBigIntHandle int32, opHandle int32) error
+	BigFloatSetInt64(destinationHandle int32, value int64) error
+	BigFloatIsInt(opHandle int32) (int32, error)
+	BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32) error
+	BigFloatGetConstPi(destinationHandle int32) error
+	BigFloatGetConstE(destinationHandle int32) error
 }
 
 type BigIntVMHooks interface {
