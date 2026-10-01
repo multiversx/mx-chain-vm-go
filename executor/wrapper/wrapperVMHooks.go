@@ -1348,351 +1348,381 @@ func (w *WrapperVMHooks) BigFloatGetConstE(destinationHandle int32) error {
 }
 
 // BigIntGetUnsignedArgument VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetUnsignedArgument(id int32, destinationHandle int32) {
+func (w *WrapperVMHooks) BigIntGetUnsignedArgument(id int32, destinationHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntGetUnsignedArgument(%d, %d)", id, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetUnsignedArgument(id, destinationHandle)
+	err := w.wrappedVMHooks.BigIntGetUnsignedArgument(id, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntGetSignedArgument VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetSignedArgument(id int32, destinationHandle int32) {
+func (w *WrapperVMHooks) BigIntGetSignedArgument(id int32, destinationHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntGetSignedArgument(%d, %d)", id, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetSignedArgument(id, destinationHandle)
+	err := w.wrappedVMHooks.BigIntGetSignedArgument(id, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntStorageStoreUnsigned VM hook wrapper
-func (w *WrapperVMHooks) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntStorageStoreUnsigned(%d, %d, %d)", keyOffset, keyLength, sourceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
+	result, err := w.wrappedVMHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntStorageLoadUnsigned VM hook wrapper
-func (w *WrapperVMHooks) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntStorageLoadUnsigned(%d, %d, %d)", keyOffset, keyLength, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
+	result, err := w.wrappedVMHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntGetCallValue VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetCallValue(destinationHandle int32) {
+func (w *WrapperVMHooks) BigIntGetCallValue(destinationHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntGetCallValue(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetCallValue(destinationHandle)
+	err := w.wrappedVMHooks.BigIntGetCallValue(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntGetESDTCallValue VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetESDTCallValue(destination int32) {
+func (w *WrapperVMHooks) BigIntGetESDTCallValue(destination int32) error {
 	callInfo := fmt.Sprintf("BigIntGetESDTCallValue(%d)", destination)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetESDTCallValue(destination)
+	err := w.wrappedVMHooks.BigIntGetESDTCallValue(destination)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntGetESDTCallValueByIndex VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) {
+func (w *WrapperVMHooks) BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) error {
 	callInfo := fmt.Sprintf("BigIntGetESDTCallValueByIndex(%d, %d)", destinationHandle, index)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
+	err := w.wrappedVMHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntGetExternalBalance VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) {
+func (w *WrapperVMHooks) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) error {
 	callInfo := fmt.Sprintf("BigIntGetExternalBalance(%d, %d)", addressOffset, result)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetExternalBalance(addressOffset, result)
+	err := w.wrappedVMHooks.BigIntGetExternalBalance(addressOffset, result)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntGetESDTExternalBalance VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetESDTExternalBalance(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64, resultHandle int32) {
+func (w *WrapperVMHooks) BigIntGetESDTExternalBalance(addressOffset executor.MemPtr, tokenIDOffset executor.MemPtr, tokenIDLen executor.MemLength, nonce int64, resultHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntGetESDTExternalBalance(%d, %d, %d, %d, %d)", addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
+	err := w.wrappedVMHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntNew VM hook wrapper
-func (w *WrapperVMHooks) BigIntNew(smallValue int64) int32 {
+func (w *WrapperVMHooks) BigIntNew(smallValue int64) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntNew(%d)", smallValue)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntNew(smallValue)
+	result, err := w.wrappedVMHooks.BigIntNew(smallValue)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntUnsignedByteLength VM hook wrapper
-func (w *WrapperVMHooks) BigIntUnsignedByteLength(referenceHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntUnsignedByteLength(referenceHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntUnsignedByteLength(%d)", referenceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntUnsignedByteLength(referenceHandle)
+	result, err := w.wrappedVMHooks.BigIntUnsignedByteLength(referenceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntSignedByteLength VM hook wrapper
-func (w *WrapperVMHooks) BigIntSignedByteLength(referenceHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntSignedByteLength(referenceHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntSignedByteLength(%d)", referenceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntSignedByteLength(referenceHandle)
+	result, err := w.wrappedVMHooks.BigIntSignedByteLength(referenceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntGetUnsignedBytes VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntGetUnsignedBytes(%d, %d)", referenceHandle, byteOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
+	result, err := w.wrappedVMHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntGetSignedBytes VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetSignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
+func (w *WrapperVMHooks) BigIntGetSignedBytes(referenceHandle int32, byteOffset executor.MemPtr) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntGetSignedBytes(%d, %d)", referenceHandle, byteOffset)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
+	result, err := w.wrappedVMHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntSetUnsignedBytes VM hook wrapper
-func (w *WrapperVMHooks) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
+func (w *WrapperVMHooks) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) error {
 	callInfo := fmt.Sprintf("BigIntSetUnsignedBytes(%d, %d, %d)", destinationHandle, byteOffset, byteLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
+	err := w.wrappedVMHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntSetSignedBytes VM hook wrapper
-func (w *WrapperVMHooks) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
+func (w *WrapperVMHooks) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) error {
 	callInfo := fmt.Sprintf("BigIntSetSignedBytes(%d, %d, %d)", destinationHandle, byteOffset, byteLength)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
+	err := w.wrappedVMHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntIsInt64 VM hook wrapper
-func (w *WrapperVMHooks) BigIntIsInt64(destinationHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntIsInt64(destinationHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntIsInt64(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntIsInt64(destinationHandle)
+	result, err := w.wrappedVMHooks.BigIntIsInt64(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntGetInt64 VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetInt64(destinationHandle int32) int64 {
+func (w *WrapperVMHooks) BigIntGetInt64(destinationHandle int32) (int64, error) {
 	callInfo := fmt.Sprintf("BigIntGetInt64(%d)", destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntGetInt64(destinationHandle)
+	result, err := w.wrappedVMHooks.BigIntGetInt64(destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntSetInt64 VM hook wrapper
-func (w *WrapperVMHooks) BigIntSetInt64(destinationHandle int32, value int64) {
+func (w *WrapperVMHooks) BigIntSetInt64(destinationHandle int32, value int64) error {
 	callInfo := fmt.Sprintf("BigIntSetInt64(%d, %d)", destinationHandle, value)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntSetInt64(destinationHandle, value)
+	err := w.wrappedVMHooks.BigIntSetInt64(destinationHandle, value)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntAdd VM hook wrapper
-func (w *WrapperVMHooks) BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntAdd(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntSub VM hook wrapper
-func (w *WrapperVMHooks) BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntSub(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntMul VM hook wrapper
-func (w *WrapperVMHooks) BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntMul(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntTDiv VM hook wrapper
-func (w *WrapperVMHooks) BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntTDiv(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntTMod VM hook wrapper
-func (w *WrapperVMHooks) BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntTMod(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntEDiv VM hook wrapper
-func (w *WrapperVMHooks) BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntEDiv(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntEMod VM hook wrapper
-func (w *WrapperVMHooks) BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntEMod(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntSqrt VM hook wrapper
-func (w *WrapperVMHooks) BigIntSqrt(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigIntSqrt(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntSqrt(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntSqrt(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigIntSqrt(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntPow VM hook wrapper
-func (w *WrapperVMHooks) BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntPow(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntLog2 VM hook wrapper
-func (w *WrapperVMHooks) BigIntLog2(op1Handle int32) int32 {
+func (w *WrapperVMHooks) BigIntLog2(op1Handle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntLog2(%d)", op1Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntLog2(op1Handle)
+	result, err := w.wrappedVMHooks.BigIntLog2(op1Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntAbs VM hook wrapper
-func (w *WrapperVMHooks) BigIntAbs(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigIntAbs(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntAbs(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntAbs(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigIntAbs(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntNeg VM hook wrapper
-func (w *WrapperVMHooks) BigIntNeg(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigIntNeg(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntNeg(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntNeg(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigIntNeg(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntSign VM hook wrapper
-func (w *WrapperVMHooks) BigIntSign(opHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntSign(opHandle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntSign(%d)", opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntSign(opHandle)
+	result, err := w.wrappedVMHooks.BigIntSign(opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntCmp VM hook wrapper
-func (w *WrapperVMHooks) BigIntCmp(op1Handle int32, op2Handle int32) int32 {
+func (w *WrapperVMHooks) BigIntCmp(op1Handle int32, op2Handle int32) (int32, error) {
 	callInfo := fmt.Sprintf("BigIntCmp(%d, %d)", op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	result := w.wrappedVMHooks.BigIntCmp(op1Handle, op2Handle)
+	result, err := w.wrappedVMHooks.BigIntCmp(op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
-	return result
+	return result, err
 }
 
 // BigIntNot VM hook wrapper
-func (w *WrapperVMHooks) BigIntNot(destinationHandle int32, opHandle int32) {
+func (w *WrapperVMHooks) BigIntNot(destinationHandle int32, opHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntNot(%d, %d)", destinationHandle, opHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntNot(destinationHandle, opHandle)
+	err := w.wrappedVMHooks.BigIntNot(destinationHandle, opHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntAnd VM hook wrapper
-func (w *WrapperVMHooks) BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntAnd(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntOr VM hook wrapper
-func (w *WrapperVMHooks) BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntOr(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntXor VM hook wrapper
-func (w *WrapperVMHooks) BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32) {
+func (w *WrapperVMHooks) BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32) error {
 	callInfo := fmt.Sprintf("BigIntXor(%d, %d, %d)", destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
+	err := w.wrappedVMHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntShr VM hook wrapper
-func (w *WrapperVMHooks) BigIntShr(destinationHandle int32, opHandle int32, bits int32) {
+func (w *WrapperVMHooks) BigIntShr(destinationHandle int32, opHandle int32, bits int32) error {
 	callInfo := fmt.Sprintf("BigIntShr(%d, %d, %d)", destinationHandle, opHandle, bits)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntShr(destinationHandle, opHandle, bits)
+	err := w.wrappedVMHooks.BigIntShr(destinationHandle, opHandle, bits)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntShl VM hook wrapper
-func (w *WrapperVMHooks) BigIntShl(destinationHandle int32, opHandle int32, bits int32) {
+func (w *WrapperVMHooks) BigIntShl(destinationHandle int32, opHandle int32, bits int32) error {
 	callInfo := fmt.Sprintf("BigIntShl(%d, %d, %d)", destinationHandle, opHandle, bits)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntShl(destinationHandle, opHandle, bits)
+	err := w.wrappedVMHooks.BigIntShl(destinationHandle, opHandle, bits)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntFinishUnsigned VM hook wrapper
-func (w *WrapperVMHooks) BigIntFinishUnsigned(referenceHandle int32) {
+func (w *WrapperVMHooks) BigIntFinishUnsigned(referenceHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntFinishUnsigned(%d)", referenceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntFinishUnsigned(referenceHandle)
+	err := w.wrappedVMHooks.BigIntFinishUnsigned(referenceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntFinishSigned VM hook wrapper
-func (w *WrapperVMHooks) BigIntFinishSigned(referenceHandle int32) {
+func (w *WrapperVMHooks) BigIntFinishSigned(referenceHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntFinishSigned(%d)", referenceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntFinishSigned(referenceHandle)
+	err := w.wrappedVMHooks.BigIntFinishSigned(referenceHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // BigIntToString VM hook wrapper
-func (w *WrapperVMHooks) BigIntToString(bigIntHandle int32, destinationHandle int32) {
+func (w *WrapperVMHooks) BigIntToString(bigIntHandle int32, destinationHandle int32) error {
 	callInfo := fmt.Sprintf("BigIntToString(%d, %d)", bigIntHandle, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
-	w.wrappedVMHooks.BigIntToString(bigIntHandle, destinationHandle)
+	err := w.wrappedVMHooks.BigIntToString(bigIntHandle, destinationHandle)
 	w.logger.LogVMHookCallAfter(callInfo)
+	return err
 }
 
 // MBufferNew VM hook wrapper

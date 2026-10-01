@@ -179,48 +179,48 @@ type BigFloatVMHooks interface {
 }
 
 type BigIntVMHooks interface {
-	BigIntGetUnsignedArgument(id int32, destinationHandle int32)
-	BigIntGetSignedArgument(id int32, destinationHandle int32)
-	BigIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, sourceHandle int32) int32
-	BigIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength, destinationHandle int32) int32
-	BigIntGetCallValue(destinationHandle int32)
-	BigIntGetESDTCallValue(destination int32)
-	BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32)
-	BigIntGetExternalBalance(addressOffset MemPtr, result int32)
-	BigIntGetESDTExternalBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultHandle int32)
-	BigIntNew(smallValue int64) int32
-	BigIntUnsignedByteLength(referenceHandle int32) int32
-	BigIntSignedByteLength(referenceHandle int32) int32
-	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset MemPtr) int32
-	BigIntGetSignedBytes(referenceHandle int32, byteOffset MemPtr) int32
-	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength)
-	BigIntSetSignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength)
-	BigIntIsInt64(destinationHandle int32) int32
-	BigIntGetInt64(destinationHandle int32) int64
-	BigIntSetInt64(destinationHandle int32, value int64)
-	BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntSqrt(destinationHandle int32, opHandle int32)
-	BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntLog2(op1Handle int32) int32
-	BigIntAbs(destinationHandle int32, opHandle int32)
-	BigIntNeg(destinationHandle int32, opHandle int32)
-	BigIntSign(opHandle int32) int32
-	BigIntCmp(op1Handle int32, op2Handle int32) int32
-	BigIntNot(destinationHandle int32, opHandle int32)
-	BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntShr(destinationHandle int32, opHandle int32, bits int32)
-	BigIntShl(destinationHandle int32, opHandle int32, bits int32)
-	BigIntFinishUnsigned(referenceHandle int32)
-	BigIntFinishSigned(referenceHandle int32)
-	BigIntToString(bigIntHandle int32, destinationHandle int32)
+	BigIntGetUnsignedArgument(id int32, destinationHandle int32) error
+	BigIntGetSignedArgument(id int32, destinationHandle int32) error
+	BigIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, sourceHandle int32) (int32, error)
+	BigIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength, destinationHandle int32) (int32, error)
+	BigIntGetCallValue(destinationHandle int32) error
+	BigIntGetESDTCallValue(destination int32) error
+	BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) error
+	BigIntGetExternalBalance(addressOffset MemPtr, result int32) error
+	BigIntGetESDTExternalBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultHandle int32) error
+	BigIntNew(smallValue int64) (int32, error)
+	BigIntUnsignedByteLength(referenceHandle int32) (int32, error)
+	BigIntSignedByteLength(referenceHandle int32) (int32, error)
+	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset MemPtr) (int32, error)
+	BigIntGetSignedBytes(referenceHandle int32, byteOffset MemPtr) (int32, error)
+	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength) error
+	BigIntSetSignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength) error
+	BigIntIsInt64(destinationHandle int32) (int32, error)
+	BigIntGetInt64(destinationHandle int32) (int64, error)
+	BigIntSetInt64(destinationHandle int32, value int64) error
+	BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntSqrt(destinationHandle int32, opHandle int32) error
+	BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntLog2(op1Handle int32) (int32, error)
+	BigIntAbs(destinationHandle int32, opHandle int32) error
+	BigIntNeg(destinationHandle int32, opHandle int32) error
+	BigIntSign(opHandle int32) (int32, error)
+	BigIntCmp(op1Handle int32, op2Handle int32) (int32, error)
+	BigIntNot(destinationHandle int32, opHandle int32) error
+	BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32) error
+	BigIntShr(destinationHandle int32, opHandle int32, bits int32) error
+	BigIntShl(destinationHandle int32, opHandle int32, bits int32) error
+	BigIntFinishUnsigned(referenceHandle int32) error
+	BigIntFinishSigned(referenceHandle int32) error
+	BigIntToString(bigIntHandle int32, destinationHandle int32) error
 }
 
 type ManagedBufferVMHooks interface {

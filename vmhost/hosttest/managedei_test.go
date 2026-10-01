@@ -294,10 +294,13 @@ func Test_BigIntToString(t *testing.T) {
 						sourceHandle := managedTypes.NewBigInt(asBigInt)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.BigIntToStringWithHost(
+						err := vmhooks.BigIntToStringWithHost(
 							host,
 							sourceHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if string(bytesResult) != asString {
@@ -328,13 +331,19 @@ func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{})
 		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
 
 		inputHandle := int32(0)
-		vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
-		result := vmHooksImpl.BigIntGetInt64(inputHandle)
+		err := vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
+		if err != nil {
+			vmHooksImpl.HandleHookError(err)
+		}
+		result, err := vmHooksImpl.BigIntGetInt64(inputHandle)
+		if err != nil {
+			vmHooksImpl.HandleHookError(err)
+		}
 		if result < 0 {
 			return parentInstance
 		}
 
-		err := vmHooksImpl.SmallIntFinishSigned(result)
+		err = vmHooksImpl.SmallIntFinishSigned(result)
 		if err != nil {
 			vmHooksImpl.HandleHookError(err)
 		}
