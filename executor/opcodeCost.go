@@ -4,10 +4,14 @@
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-package wasmer2
+package executor
 
-import "github.com/multiversx/mx-chain-vm-go/executor"
-
+// OpcodeCost is the gas cost of every opcode the executor meters.
+//
+// Distinct from WASMOpcodeCost, which carries the whole WASM opcode set as the gas schedule
+// supplies it: this is the subset the metering middleware knows about, in the exact field
+// order its FFI counterpart vm_exec_opcode_cost_t declares. Backends pass it across the
+// boundary by reinterpreting one as the other, and each asserts that the two sizes agree.
 type OpcodeCost struct {
 	Block              uint32
 	Br                 uint32
@@ -143,7 +147,9 @@ type OpcodeCost struct {
 	LocalAllocate      uint32
 }
 
-func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {
+// ExtractOpcodeCost narrows the full WASM opcode cost set down to the opcodes the executor
+// meters, in the field order the FFI expects.
+func ExtractOpcodeCost(wasmOps *WASMOpcodeCost) *OpcodeCost {
 	return &OpcodeCost{
 		Block:              wasmOps.Block,
 		Br:                 wasmOps.Br,

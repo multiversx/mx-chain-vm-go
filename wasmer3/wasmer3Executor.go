@@ -57,7 +57,7 @@ func NewExecutor(config ExecutorConfig) (*Wasmer3Executor, error) {
 	// The executor reads both during the call and retains neither, so they are freed here.
 	cCost := (*cOpcodeCostT)(C.malloc(C.size_t(unsafe.Sizeof(cOpcodeCostT{}))))
 	defer C.free(unsafe.Pointer(cCost))
-	*cCost = *(*cOpcodeCostT)(unsafe.Pointer(extractOpcodeCost(config.WASMOpcodeCost)))
+	*cCost = *(*cOpcodeCostT)(unsafe.Pointer(executor.ExtractOpcodeCost(config.WASMOpcodeCost)))
 
 	cConfig := (*C.struct_vm_exec2_executor_config_t)(
 		C.malloc(C.size_t(unsafe.Sizeof(C.struct_vm_exec2_executor_config_t{}))))
@@ -136,7 +136,7 @@ func (wasmerExecutor *Wasmer3Executor) Close() {
 	wasmerExecutor.cExecutor = nil
 }
 
-// Tripwire for an opcode added to one side of the cost table and not the other. Both structs
-// are generated from the same opcode list, which is what makes reinterpreting one as the
-// other sound; this is what catches the day that stops being true.
-var _ [unsafe.Sizeof(cOpcodeCostT{})]byte = [unsafe.Sizeof(OpcodeCost{})]byte{}
+// Tripwire for an opcode added to one side of the cost table and not the other.
+// executor.OpcodeCost is shared by every backend and vm_exec_opcode_cost_t is per-library, so
+// each backend has to assert the match against its own header; this is wasmer3's.
+var _ [unsafe.Sizeof(cOpcodeCostT{})]byte = [unsafe.Sizeof(executor.OpcodeCost{})]byte{}

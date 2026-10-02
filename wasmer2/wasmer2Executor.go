@@ -18,7 +18,7 @@ type Wasmer2Executor struct {
 	vmHooksPtr     uintptr
 	vmHooksPtrPtr  unsafe.Pointer
 
-	opcodeCost *OpcodeCost
+	opcodeCost *executor.OpcodeCost
 }
 
 // CreateExecutor creates a new wasmer executor.
@@ -51,7 +51,7 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 // SetOpcodeConfig sets the opcode version and opcode costs, based on the gas schedule.
 func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) {
 	// extract only wasmer2 opcodes
-	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
+	wasmerExecutor.opcodeCost = executor.ExtractOpcodeCost(wasmOps)
 	cWasmerExecutorSetOpcodeConfig(
 		wasmerExecutor.cgoExecutor,
 		(int32)(opcodeVersion),
@@ -140,3 +140,8 @@ func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooksPtrPtr = unsafe.Pointer(&localPtr)
 	cWasmerExecutorContextDataSet(wasmerExecutor.cgoExecutor, wasmerExecutor.vmHooksPtrPtr)
 }
+
+// Tripwire for an opcode added to one side of the cost table and not the other.
+// executor.OpcodeCost is shared by every backend and vm_exec_opcode_cost_t is per-library, so
+// each backend has to assert the match against its own header; this is wasmer2's.
+var _ [unsafe.Sizeof(cWasmerOpcodeCostT{})]byte = [unsafe.Sizeof(executor.OpcodeCost{})]byte{}

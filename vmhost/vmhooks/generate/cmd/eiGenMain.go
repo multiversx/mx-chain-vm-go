@@ -68,9 +68,8 @@ func main() {
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
-	writeExecutorOpcodeCosts()
-	writeWasmer2OpcodeCost()
-	writeWasmer3OpcodeCost()
+	writeExecutorWASMOpcodeCosts()
+	writeExecutorOpcodeCost()
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeRustOpcodeCost()
@@ -206,8 +205,16 @@ func writeRustVMHooksSignatures(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustVMHooksSignatures(out, eiMetadata)
 }
 
-func writeExecutorOpcodeCosts() {
+func writeExecutorWASMOpcodeCosts() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/gasCostWASM.go")
+	defer out.Close()
+	eapigen.WriteExecutorWASMOpcodeCost(out)
+}
+
+// The metered subset, shared by every backend. Previously generated once per backend, into
+// wasmer2/opcodeCost.go and wasmer3/opcodeCost.go.
+func writeExecutorOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/opcodeCost.go")
 	defer out.Close()
 	eapigen.WriteExecutorOpcodeCost(out)
 }
@@ -222,18 +229,6 @@ func writeWASMOpcodeCostConfigHelpers() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/config.txt")
 	defer out.Close()
 	eapigen.WriteWASMOpcodeCostConfigHelpers(out)
-}
-
-func writeWasmer2OpcodeCost() {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/opcodeCost.go")
-	defer out.Close()
-	eapigen.WriteWasmer2OpcodeCost(out)
-}
-
-func writeWasmer3OpcodeCost() {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer3/opcodeCost.go")
-	defer out.Close()
-	eapigen.WriteWasmer3OpcodeCost(out)
 }
 
 func writeRustOpcodeCost() {
