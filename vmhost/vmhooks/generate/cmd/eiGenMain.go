@@ -70,6 +70,7 @@ func main() {
 
 	writeExecutorOpcodeCosts()
 	writeWasmer2OpcodeCost()
+	writeWasmer3OpcodeCost()
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeRustOpcodeCost()
@@ -227,6 +228,12 @@ func writeWasmer2OpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/opcodeCost.go")
 	defer out.Close()
 	eapigen.WriteWasmer2OpcodeCost(out)
+}
+
+func writeWasmer3OpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer3/opcodeCost.go")
+	defer out.Close()
+	eapigen.WriteWasmer3OpcodeCost(out)
 }
 
 func writeRustOpcodeCost() {

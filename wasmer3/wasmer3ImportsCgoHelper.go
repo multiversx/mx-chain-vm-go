@@ -5,18 +5,25 @@ package wasmer3
 import "C"
 
 import (
+	"runtime/cgo"
 	"unsafe"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-// getVMHooksFromHookContext recovers the Go VM hooks object from field 0 of the hook context.
+// getVMHooksFromHookContext builds the VM hooks that service this one host call.
 //
-// The executor treats that field as an opaque word and only hands it back; what it holds is
-// a pointer to an executor.VMHooks interface value, supplied when the instance was created.
-// There is one such object per live instance.
+// Field 0 of the hook context is the handle the instance was created with. The executor
+// treats it as an opaque word and only hands it back; what it identifies is the instance's
+// VM hooks provider. An integer handle rather than a pointer because cgo forbids storing a
+// Go pointer in C memory, and because a handle stays valid under a moving collector.
+//
+// The hooks are built per call, not per instance, so that the instance state they reach
+// through is the one belonging to this call. See VMHooksProvider for why that matters.
 func getVMHooksFromHookContext(ctx *C.vm_exec2_hook_context_t) executor.VMHooks {
-	return *(*executor.VMHooks)(unsafe.Pointer(ctx.go_vm_hooks))
+	hooks := cgo.Handle(ctx.go_vm_hooks).Value().(*instanceHooks)
+
+	return hooks.provider.VMHooksForCall(&InstanceState{ctx: ctx, owner: hooks})
 }
 
 func funcPointer(cFuncPtr unsafe.Pointer) *[0]byte {

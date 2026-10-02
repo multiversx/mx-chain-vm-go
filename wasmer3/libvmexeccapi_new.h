@@ -276,9 +276,15 @@ typedef struct vm_exec2_hook_result_t {
  */
 typedef struct vm_exec2_hook_context_t {
   /**
-   * The Go VM hooks object for this instance. Read by the Go side, never by Rust.
+   * The caller's VM hooks handle for this instance. Read by the caller, never by Rust.
+   *
+   * An opaque word rather than a pointer, deliberately: Rust only stores it and hands it
+   * back, and the Go side needs it to be an integer. cgo forbids storing a Go pointer in
+   * C memory, so what Go puts here is a `runtime/cgo.Handle`, which is a `uintptr` by
+   * construction. Typing the field as a pointer would force Go to convert it back with
+   * `unsafe.Pointer(uintptr(...))`, exactly the pattern `go vet` rejects.
    */
-  void *go_vm_hooks;
+  uintptr_t go_vm_hooks;
   /**
    * Erased `&mut ExperimentalInstanceState<'_>`; null while no call is active.
    */
@@ -653,14 +659,16 @@ void vm_exec2_executor_destroy(struct vm_exec2_executor_t *executor);
 /**
  * Creates an instance.
  *
- * `go_vm_hooks` is the Go VM hooks object for *this* instance; it is handed back to every
- * VM hook as field 0 of the hook context. It must stay alive for the instance's lifetime.
+ * `go_vm_hooks` is the caller's VM hooks handle for *this* instance; it is handed back to
+ * every VM hook as field 0 of the hook context, and is otherwise opaque here. Whatever it
+ * refers to must stay alive for the instance's lifetime. From Go it is a `cgo.Handle`,
+ * which is why it is an integer and not a pointer.
  *
  * # Safety
  *
  * C API function, works with raw object pointers.
  */
-enum vm_exec2_status_t vm_exec2_new_instance(struct vm_exec2_executor_t *executor, struct vm_exec2_instance_t **instance_out, const uint8_t *wasm_bytes, uint32_t wasm_bytes_len, const struct vm_exec2_compilation_options_t *options, void *go_vm_hooks, char *err_buf, int err_buf_len);
+enum vm_exec2_status_t vm_exec2_new_instance(struct vm_exec2_executor_t *executor, struct vm_exec2_instance_t **instance_out, const uint8_t *wasm_bytes, uint32_t wasm_bytes_len, const struct vm_exec2_compilation_options_t *options, uintptr_t go_vm_hooks, char *err_buf, int err_buf_len);
 
 /**
  * Destroys an instance. Does nothing if `instance` is null.
