@@ -77,8 +77,8 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(tb)
 	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks:     vmhooks.NewVMHooksImpl(host),
-		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
+		VMHooksProvider: vmhooks.NewVMHooksProvider(host),
+		OpcodeCosts:     gasCostConfig.WASMOpcodeCost,
 	})
 	require.Nil(tb, err)
 	runtimeCtx, err := NewRuntimeContext(

@@ -62,6 +62,13 @@ type Wasmer3Instance struct {
 	cInstance   *cInstanceT
 	hooksHandle cgo.Handle
 
+	// importedFunctions is read once at creation, because the question the VM asks of it is
+	// "is this name imported?" for each entry of a 21-name blocklist, on every contract it
+	// validates. The legacy C API could only answer one name at a time, so that cost 21 cgo
+	// calls; this one hands over the whole list in a pair of calls, so it costs two and the
+	// rest is a map lookup.
+	importedFunctions map[string]struct{}
+
 	// inCall guards against re-entering this same instance, which the Rust side cannot
 	// survive: ExperimentalInstance::call takes &mut self, so a second call while the first
 	// is in flight aliases a mutable borrow. Nesting into a *different* instance is fine and
@@ -148,6 +155,17 @@ func (instance *Wasmer3Instance) ImportedFunctionNames() ([]string, error) {
 		func() C.int { return cInstanceImportedFunctionNamesLength(instance.cInstance) },
 		func(dest []byte) C.int { return cInstanceImportedFunctionNames(instance.cInstance, dest) },
 	)
+}
+
+// IsFunctionImported reports whether the contract imports a VM hook by that name.
+//
+// Answered from the set captured at creation, not from the executor, so it costs nothing to
+// ask repeatedly. That matters because the contract validator asks it once per name of a
+// blocklist for every contract it checks.
+func (instance *Wasmer3Instance) IsFunctionImported(name string) bool {
+	_, imported := instance.importedFunctions[name]
+
+	return imported
 }
 
 // Close releases the instance and the hooks handle that reaches back into Go.

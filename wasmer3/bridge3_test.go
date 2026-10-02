@@ -230,8 +230,22 @@ type testHooksProvider struct {
 	log *hookLog
 }
 
-func (provider *testHooksProvider) VMHooksForCall(state *InstanceState) executor.VMHooks {
-	return &testVMHooks{state: state, log: provider.log}
+func (provider *testHooksProvider) VMHooksForCall(state executor.InstanceState) executor.VMHooks {
+	return &testVMHooks{state: callScopedState(state), log: provider.log}
+}
+
+func (provider *testHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
+	panic("this backend has no instance-lifetime state; see wasmer3/vmHooksProvider.go")
+}
+
+// callScopedState recovers the concrete state the hook context produced.
+//
+// The tests reach further than executor.InstanceState does — gas and memory size as well as
+// memory access — because the boundary offers more than the VM currently asks of it, and all
+// of it has to be exercised. The assertion is safe by construction: this provider is only ever
+// called by this package's own shims.
+func callScopedState(state executor.InstanceState) *InstanceState {
+	return state.(*InstanceState)
 }
 
 // --- Fixtures ----------------------------------------------------------------
@@ -592,8 +606,12 @@ type nestingHooksProvider struct {
 	inner *Wasmer3Instance
 }
 
-func (provider *nestingHooksProvider) VMHooksForCall(state *InstanceState) executor.VMHooks {
-	return &nestingVMHooks{state: state, log: provider.log, inner: provider.inner}
+func (provider *nestingHooksProvider) VMHooksForCall(state executor.InstanceState) executor.VMHooks {
+	return &nestingVMHooks{state: callScopedState(state), log: provider.log, inner: provider.inner}
+}
+
+func (provider *nestingHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
+	panic("this backend has no instance-lifetime state; see wasmer3/vmHooksProvider.go")
 }
 
 func TestHookReentersTheExecutor(t *testing.T) {
@@ -650,8 +668,12 @@ type reentrantHooksProvider struct {
 	self func() *Wasmer3Instance
 }
 
-func (provider *reentrantHooksProvider) VMHooksForCall(_ *InstanceState) executor.VMHooks {
+func (provider *reentrantHooksProvider) VMHooksForCall(_ executor.InstanceState) executor.VMHooks {
 	return &reentrantVMHooks{log: provider.log, self: provider.self}
+}
+
+func (provider *reentrantHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
+	panic("this backend has no instance-lifetime state; see wasmer3/vmHooksProvider.go")
 }
 
 // TestSameInstanceReentryIsRejected pins down the invariant the guard exists for.
@@ -681,4 +703,25 @@ func TestSameInstanceReentryIsRejected(t *testing.T) {
 
 	// Usable again afterwards, so the guard releases on the way out.
 	callOk(t, instance, "doNothing")
+}
+
+// TestIsFunctionImported covers the question the contract validator actually asks.
+//
+// It checks a 21-name blocklist against every contract it validates. The legacy C API could
+// only answer one name per call; here the names are captured once at creation, so the
+// validator's loop never reaches the executor at all.
+func TestIsFunctionImported(t *testing.T) {
+	instance, _ := newHooksInstance(t)
+
+	require.True(t, instance.IsFunctionImported("getGasLeft"))
+	require.True(t, instance.IsFunctionImported("storageLoadLength"))
+
+	// Names the contract exports rather than imports must not count as imported.
+	require.False(t, instance.IsFunctionImported("doNothing"))
+
+	// A hook that exists but this contract does not use.
+	require.False(t, instance.IsFunctionImported("transferValue"))
+
+	require.False(t, instance.IsFunctionImported(""))
+	require.False(t, instance.IsFunctionImported("doesNotExist"))
 }

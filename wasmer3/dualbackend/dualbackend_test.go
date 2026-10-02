@@ -59,7 +59,11 @@ type stubVMHooks struct {
 	executor.VMHooks
 }
 
-func (stubVMHooks) VMHooksForCall(_ *wasmer3.InstanceState) executor.VMHooks {
+func (stubVMHooks) VMHooksForCall(_ executor.InstanceState) executor.VMHooks {
+	return stubVMHooks{}
+}
+
+func (stubVMHooks) VMHooksForInstanceLifetime() executor.VMHooks {
 	return stubVMHooks{}
 }
 
@@ -87,9 +91,9 @@ func uniformOpcodeCost(cost uint32) *executor.WASMOpcodeCost {
 // wasmer 2.2 trap handlers.
 func newWasmer2Instance(t *testing.T) executor.Instance {
 	wasmerExecutor, err := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks:       stubVMHooks{},
-		OpcodeVersion: executor.OpcodeVersionV2,
-		OpcodeCosts:   uniformOpcodeCost(1),
+		VMHooksProvider: stubVMHooks{},
+		OpcodeVersion:   executor.OpcodeVersionV2,
+		OpcodeCosts:     uniformOpcodeCost(1),
 	})
 	require.Nil(t, err)
 

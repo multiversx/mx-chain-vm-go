@@ -83,7 +83,7 @@ func NewExecutor(config ExecutorConfig) (*Wasmer3Executor, error) {
 func (wasmerExecutor *Wasmer3Executor) NewInstance(
 	contractCode []byte,
 	options CompilationOptions,
-	hooks VMHooksProvider,
+	hooks executor.VMHooksProvider,
 ) (*Wasmer3Instance, error) {
 	if len(contractCode) == 0 {
 		return nil, ErrInvalidBytecode
@@ -120,7 +120,19 @@ func (wasmerExecutor *Wasmer3Executor) NewInstance(
 		return nil, err
 	}
 
-	return &Wasmer3Instance{cInstance: cInstance, hooksHandle: handle}, nil
+	instance := &Wasmer3Instance{cInstance: cInstance, hooksHandle: handle}
+
+	imported, err := instance.ImportedFunctionNames()
+	if err != nil {
+		instance.Close()
+		return nil, err
+	}
+	instance.importedFunctions = make(map[string]struct{}, len(imported))
+	for _, name := range imported {
+		instance.importedFunctions[name] = struct{}{}
+	}
+
+	return instance, nil
 }
 
 // Close releases the executor.

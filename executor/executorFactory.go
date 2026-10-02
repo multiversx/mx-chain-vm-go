@@ -4,7 +4,7 @@ import "github.com/multiversx/mx-chain-core-go/core/check"
 
 // ExecutorFactoryArgs define the Executor configurations that come from the VM, especially the hooks and the gas costs.
 type ExecutorFactoryArgs struct {
-	VMHooks                  VMHooks
+	VMHooksProvider          VMHooksProvider
 	OpcodeVersion            OpcodeVersion
 	OpcodeCosts              *WASMOpcodeCost
 	RkyvSerializationEnabled bool
