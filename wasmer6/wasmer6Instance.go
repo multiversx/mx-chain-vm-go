@@ -107,10 +107,10 @@ func (instance *Wasmer6Instance) Call(funcName string, pointsLimit uint64) (Call
 	defer func() { instance.inCall = false }()
 
 	buf := newErrBuf()
-	var cResult C.struct_vm_exec_w6_call_result_t
+	var cResult C.struct_vm_exec_call_result_t
 
 	status := cInstanceCall(instance.cInstance, funcName, pointsLimit, &cResult, buf)
-	if status != C.VM_EXEC_W6_OK {
+	if status != C.VM_EXEC_OK {
 		return CallResult{}, buf.asError(status, "instance call failed")
 	}
 

@@ -6,8 +6,8 @@ import (
 
 // The new C ABI's hook signature: a context pointer in, one 16-byte result struct out.
 const (
-	cgo3ContextType = "vm_exec_w6_hook_context_t*"
-	cgo3ResultType  = "vm_exec_w6_hook_result_t"
+	cgo3ContextType = "vm_exec_hook_context_t*"
+	cgo3ResultType  = "vm_exec_hook_result_t"
 )
 
 type cgo3Writer struct {
@@ -73,7 +73,7 @@ func (writer *cgo3Writer) writeHeader(out *eiGenWriter, eiMetadata *EIMetadata) 
 // corrupting the stack at the first call.
 func (writer *cgo3Writer) writeSignatureCheck(out *eiGenWriter, eiMetadata *EIMetadata) {
 	out.WriteString(`//
-// static const vm_exec_w6_vm_hook_c_func_pointers w6_signature_check __attribute__((unused)) = {`)
+// static const vm_exec_vm_hook_c_func_pointers w6_signature_check __attribute__((unused)) = {`)
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("\n//     .%s = %s,",
@@ -100,8 +100,8 @@ func (writer *cgo3Writer) writePopulateFuncPointers(out *eiGenWriter, eiMetadata
 	out.WriteString(`// populateCgoFunctionPointers builds the table of VM hook implementations handed to the
 // executor at creation. The executor copies it, so the result does not need to outlive the
 // call.
-func populateCgoFunctionPointers() *C.vm_exec_w6_vm_hook_c_func_pointers {
-	return &C.vm_exec_w6_vm_hook_c_func_pointers{`)
+func populateCgoFunctionPointers() *C.vm_exec_vm_hook_c_func_pointers {
+	return &C.vm_exec_vm_hook_c_func_pointers{`)
 
 	maxNameLength := longestFuncNameLengthSnake(eiMetadata)
 	for _, funcMetadata := range eiMetadata.AllFunctions {
@@ -137,7 +137,7 @@ func (writer *cgo3Writer) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadat
 		))
 		out.WriteString(fmt.Sprintf("func %s(ctx *C.%s",
 			writer.cgoFuncName(funcMetadata),
-			"vm_exec_w6_hook_context_t",
+			"vm_exec_hook_context_t",
 		))
 		for _, arg := range funcMetadata.Arguments {
 			out.WriteString(fmt.Sprintf(", %s %s", arg.Name, cgoExportType(arg.Type)))

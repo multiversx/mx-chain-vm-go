@@ -142,6 +142,6 @@ func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooks) {
 }
 
 // Tripwire for an opcode added to one side of the cost table and not the other.
-// executor.OpcodeCost is shared by every backend and vm_exec_opcode_cost_t is per-library, so
+// executor.OpcodeCost is shared by every backend and vm_legacy_opcode_cost_t is per-library, so
 // each backend has to assert the match against its own header; this is wasmer2's.
 var _ [unsafe.Sizeof(cWasmerOpcodeCostT{})]byte = [unsafe.Sizeof(executor.OpcodeCost{})]byte{}

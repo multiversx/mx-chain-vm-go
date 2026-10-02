@@ -20,7 +20,7 @@ import (
 //
 // The hooks are built per call, not per instance, so that the instance state they reach
 // through is the one belonging to this call. See VMHooksProvider for why that matters.
-func getVMHooksFromHookContext(ctx *C.vm_exec_w6_hook_context_t) executor.VMHooks {
+func getVMHooksFromHookContext(ctx *C.vm_exec_hook_context_t) executor.VMHooks {
 	hooks := cgo.Handle(ctx.go_vm_hooks).Value().(*instanceHooks)
 	state := &InstanceState{ctx: ctx, owner: hooks}
 
@@ -39,10 +39,10 @@ func funcPointer(cFuncPtr unsafe.Pointer) *[0]byte {
 //
 // The sentinel is what keeps "no early exit" distinct from early-exit code 0, which is a real
 // code reserved for the legacy async call.
-func hookOk(value int64) C.vm_exec_w6_hook_result_t {
-	return C.vm_exec_w6_hook_result_t{
+func hookOk(value int64) C.vm_exec_hook_result_t {
+	return C.vm_exec_hook_result_t{
 		value:      C.int64_t(value),
-		early_exit: C.VM_EXEC_W6_NO_EARLY_EXIT,
+		early_exit: C.VM_EXEC_NO_EARLY_EXIT,
 	}
 }
 
@@ -53,10 +53,10 @@ func hookOk(value int64) C.vm_exec_w6_hook_result_t {
 // needs in order to stop the instance. Under this executor the breakpoint that
 // HandleHookError still sets is redundant — the early exit itself stops execution — and it
 // goes away with the breakpoint removal; see PLAN-go-breakpoint-removal.md.
-func hookEarlyExit(vmHooks executor.VMHooks, err error) C.vm_exec_w6_hook_result_t {
+func hookEarlyExit(vmHooks executor.VMHooks, err error) C.vm_exec_hook_result_t {
 	vmHooks.HandleHookError(err)
 
-	return C.vm_exec_w6_hook_result_t{
+	return C.vm_exec_hook_result_t{
 		value:      0,
 		early_exit: C.uint64_t(executor.EarlyExitCodeOf(err)),
 	}

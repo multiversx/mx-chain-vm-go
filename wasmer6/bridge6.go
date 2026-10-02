@@ -16,16 +16,16 @@ import (
 
 type cExecutorT = C.struct_vm_exec_w6_executor_t
 type cInstanceT = C.struct_vm_exec_w6_instance_t
-type cStatusT = C.enum_vm_exec_w6_status_t
-type cHookContextT = C.vm_exec_w6_hook_context_t
+type cStatusT = C.vm_exec_status_t
+type cHookContextT = C.vm_exec_hook_context_t
 type cOpcodeCostT = C.struct_vm_exec_opcode_cost_t
-type cVMHookPointers = C.vm_exec_w6_vm_hook_c_func_pointers
+type cVMHookPointers = C.vm_exec_vm_hook_c_func_pointers
 
 // --- Executor lifecycle ------------------------------------------------------
 
 func cNewExecutor(
 	executorOut **cExecutorT,
-	config *C.struct_vm_exec_w6_executor_config_t,
+	config *C.struct_vm_exec_executor_config_t,
 	hookTable *cVMHookPointers,
 	buf errBuf,
 ) cStatusT {
@@ -42,7 +42,7 @@ func cNewInstance(
 	executor *cExecutorT,
 	instanceOut **cInstanceT,
 	wasmBytes []byte,
-	options *C.struct_vm_exec_w6_compilation_options_t,
+	options *C.struct_vm_exec_compilation_options_t,
 	goVMHooks uintptr,
 	buf errBuf,
 ) cStatusT {
@@ -68,7 +68,7 @@ func cInstanceCall(
 	instance *cInstanceT,
 	funcName string,
 	pointsLimit uint64,
-	resultOut *C.struct_vm_exec_w6_call_result_t,
+	resultOut *C.struct_vm_exec_call_result_t,
 	buf errBuf,
 ) cStatusT {
 	cFuncName := C.CString(funcName)

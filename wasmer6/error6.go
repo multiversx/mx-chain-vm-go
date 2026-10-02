@@ -52,7 +52,7 @@ var (
 // Taken from the library rather than picked here, so that the two cannot drift: the Rust
 // side sizes it to hold every message the executor currently produces, and truncates
 // silently beyond it.
-var errBufLen = C.int(C.VM_EXEC_W6_ERROR_BUF_RECOMMENDED_LEN)
+var errBufLen = C.int(C.VM_EXEC_ERROR_BUF_RECOMMENDED_LEN)
 
 // errBuf is the caller-provided buffer every fallible call writes its message into.
 //
@@ -87,17 +87,17 @@ func (buf errBuf) message() string {
 // Mapping the non-message statuses to distinct sentinels rather than to the message channel
 // is what lets a caller use errors.Is on them: a stale context in particular is a bug in
 // the caller's lifetime handling, not a contract failure, and worth telling apart.
-func (buf errBuf) asError(status C.enum_vm_exec_w6_status_t, context string) error {
+func (buf errBuf) asError(status C.vm_exec_status_t, context string) error {
 	switch status {
-	case C.VM_EXEC_W6_OK:
+	case C.VM_EXEC_OK:
 		return nil
-	case C.VM_EXEC_W6_NULL_POINTER:
+	case C.VM_EXEC_NULL_POINTER:
 		return fmt.Errorf("%s: %w", context, ErrNullPointer)
-	case C.VM_EXEC_W6_STALE_CONTEXT:
+	case C.VM_EXEC_STALE_CONTEXT:
 		return fmt.Errorf("%s: %w", context, ErrStaleContext)
-	case C.VM_EXEC_W6_PANIC:
+	case C.VM_EXEC_PANIC:
 		return fmt.Errorf("%s: %w", context, ErrPanic)
-	case C.VM_EXEC_W6_ERROR:
+	case C.VM_EXEC_ERROR:
 		return fmt.Errorf("%s: %s", context, buf.message())
 	default:
 		return fmt.Errorf("%s: unknown executor status %d", context, int(status))
@@ -107,5 +107,5 @@ func (buf errBuf) asError(status C.enum_vm_exec_w6_status_t, context string) err
 // asErrorFromCode is asError for the calls that return a count, where a negative result
 // carries a status in the same code space.
 func (buf errBuf) asErrorFromCode(code int64, context string) error {
-	return buf.asError(C.enum_vm_exec_w6_status_t(code), context)
+	return buf.asError(C.vm_exec_status_t(code), context)
 }

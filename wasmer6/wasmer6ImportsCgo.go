@@ -11,285 +11,285 @@ package wasmer6
 // #include <stdlib.h>
 // #include "./libvmexeccapi_w6.h"
 //
-// extern vm_exec_w6_hook_result_t w6_getGasLeft(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getSCAddress(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getOwnerAddress(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getShardOfAddress(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset);
-// extern vm_exec_w6_hook_result_t w6_isSmartContract(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset);
-// extern vm_exec_w6_hook_result_t w6_signalError(vm_exec_w6_hook_context_t* ctx, int32_t messageOffset, int32_t messageLength);
-// extern vm_exec_w6_hook_result_t w6_getExternalBalance(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getBlockHash(vm_exec_w6_hook_context_t* ctx, long long nonce, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getESDTBalance(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getESDTNFTNameLength(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
-// extern vm_exec_w6_hook_result_t w6_getESDTNFTAttributeLength(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
-// extern vm_exec_w6_hook_result_t w6_getESDTNFTURILength(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenData(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueHandle, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesHandle, int32_t urisOffset);
-// extern vm_exec_w6_hook_result_t w6_getESDTLocalRoles(vm_exec_w6_hook_context_t* ctx, int32_t tokenIdHandle);
-// extern vm_exec_w6_hook_result_t w6_validateTokenIdentifier(vm_exec_w6_hook_context_t* ctx, int32_t tokenIdHandle);
-// extern vm_exec_w6_hook_result_t w6_transferValue(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_transferValueExecute(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_transferESDTExecute(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_transferESDTNFTExecute(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_multiTransferESDTNFTExecute(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t numTokenTransfers, int32_t tokenTransfersArgsLengthOffset, int32_t tokenTransferDataOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_createAsyncCall(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t dataLength, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback);
-// extern vm_exec_w6_hook_result_t w6_setAsyncContextCallback(vm_exec_w6_hook_context_t* ctx, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
-// extern vm_exec_w6_hook_result_t w6_upgradeContract(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, long long gasLimit, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_upgradeFromSourceContract(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, long long gasLimit, int32_t valueOffset, int32_t sourceContractAddressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_deleteContract(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, long long gasLimit, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_asyncCall(vm_exec_w6_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_getArgumentLength(vm_exec_w6_hook_context_t* ctx, int32_t id);
-// extern vm_exec_w6_hook_result_t w6_getArgument(vm_exec_w6_hook_context_t* ctx, int32_t id, int32_t argOffset);
-// extern vm_exec_w6_hook_result_t w6_getFunction(vm_exec_w6_hook_context_t* ctx, int32_t functionOffset);
-// extern vm_exec_w6_hook_result_t w6_getNumArguments(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_storageStore(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t dataOffset, int32_t dataLength);
-// extern vm_exec_w6_hook_result_t w6_storageLoadLength(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_storageLoadFromAddress(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t keyOffset, int32_t keyLength, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_storageLoad(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_setStorageLock(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
-// extern vm_exec_w6_hook_result_t w6_getStorageLock(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_isStorageLocked(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_clearStorageLock(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_getCaller(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_checkNoPayment(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getCallValue(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getESDTValue(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getESDTValueByIndex(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset, int32_t index);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenName(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenNameByIndex(vm_exec_w6_hook_context_t* ctx, int32_t resultOffset, int32_t index);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenNonce(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenNonceByIndex(vm_exec_w6_hook_context_t* ctx, int32_t index);
-// extern vm_exec_w6_hook_result_t w6_getCurrentESDTNFTNonce(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenType(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getESDTTokenTypeByIndex(vm_exec_w6_hook_context_t* ctx, int32_t index);
-// extern vm_exec_w6_hook_result_t w6_getNumESDTTransfers(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getCallValueTokenName(vm_exec_w6_hook_context_t* ctx, int32_t callValueOffset, int32_t tokenNameOffset);
-// extern vm_exec_w6_hook_result_t w6_getCallValueTokenNameByIndex(vm_exec_w6_hook_context_t* ctx, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
-// extern vm_exec_w6_hook_result_t w6_isReservedFunctionName(vm_exec_w6_hook_context_t* ctx, int32_t nameHandle);
-// extern vm_exec_w6_hook_result_t w6_writeLog(vm_exec_w6_hook_context_t* ctx, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
-// extern vm_exec_w6_hook_result_t w6_writeEventLog(vm_exec_w6_hook_context_t* ctx, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
-// extern vm_exec_w6_hook_result_t w6_getBlockTimestamp(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getBlockTimestampMs(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getBlockNonce(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getBlockRound(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getBlockEpoch(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getBlockRandomSeed(vm_exec_w6_hook_context_t* ctx, int32_t pointer);
-// extern vm_exec_w6_hook_result_t w6_getStateRootHash(vm_exec_w6_hook_context_t* ctx, int32_t pointer);
-// extern vm_exec_w6_hook_result_t w6_getPrevBlockTimestamp(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getPrevBlockTimestampMs(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getPrevBlockNonce(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getPrevBlockRound(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getPrevBlockEpoch(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getPrevBlockRandomSeed(vm_exec_w6_hook_context_t* ctx, int32_t pointer);
-// extern vm_exec_w6_hook_result_t w6_getBlockRoundTimeMs(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_epochStartBlockTimestampMs(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_epochStartBlockNonce(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_epochStartBlockRound(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_finish(vm_exec_w6_hook_context_t* ctx, int32_t pointer, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_executeOnSameContext(vm_exec_w6_hook_context_t* ctx, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_executeOnDestContext(vm_exec_w6_hook_context_t* ctx, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_executeReadOnly(vm_exec_w6_hook_context_t* ctx, long long gasLimit, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_createContract(vm_exec_w6_hook_context_t* ctx, long long gasLimit, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_deployFromSourceContract(vm_exec_w6_hook_context_t* ctx, long long gasLimit, int32_t valueOffset, int32_t sourceContractAddressOffset, int32_t codeMetadataOffset, int32_t resultAddressOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_getNumReturnData(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_getReturnDataSize(vm_exec_w6_hook_context_t* ctx, int32_t resultID);
-// extern vm_exec_w6_hook_result_t w6_getReturnData(vm_exec_w6_hook_context_t* ctx, int32_t resultID, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_cleanReturnData(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_deleteFromReturnData(vm_exec_w6_hook_context_t* ctx, int32_t resultID);
-// extern vm_exec_w6_hook_result_t w6_getOriginalTxHash(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_getCurrentTxHash(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_getPrevTxHash(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_managedSCAddress(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_managedOwnerAddress(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_managedCaller(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetOriginalCallerAddr(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetRelayerAddr(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_managedSignalError(vm_exec_w6_hook_context_t* ctx, int32_t errHandle);
-// extern vm_exec_w6_hook_result_t w6_managedWriteLog(vm_exec_w6_hook_context_t* ctx, int32_t topicsHandle, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetOriginalTxHash(vm_exec_w6_hook_context_t* ctx, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetStateRootHash(vm_exec_w6_hook_context_t* ctx, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetBlockRandomSeed(vm_exec_w6_hook_context_t* ctx, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetPrevBlockRandomSeed(vm_exec_w6_hook_context_t* ctx, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetReturnData(vm_exec_w6_hook_context_t* ctx, int32_t resultID, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetMultiESDTCallValue(vm_exec_w6_hook_context_t* ctx, int32_t multiCallValueHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetAllTransfersCallValue(vm_exec_w6_hook_context_t* ctx, int32_t transferCallValuesListHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetBackTransfers(vm_exec_w6_hook_context_t* ctx, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetESDTBalance(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetESDTTokenData(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetESDTTokenType(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t typeHandle);
-// extern vm_exec_w6_hook_result_t w6_managedAsyncCall(vm_exec_w6_hook_context_t* ctx, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
-// extern vm_exec_w6_hook_result_t w6_managedCreateAsyncCall(vm_exec_w6_hook_context_t* ctx, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback, int32_t callbackClosureHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetCallbackClosure(vm_exec_w6_hook_context_t* ctx, int32_t callbackClosureHandle);
-// extern vm_exec_w6_hook_result_t w6_managedUpgradeFromSourceContract(vm_exec_w6_hook_context_t* ctx, int32_t destHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedUpgradeContract(vm_exec_w6_hook_context_t* ctx, int32_t destHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedDeleteContract(vm_exec_w6_hook_context_t* ctx, int32_t destHandle, long long gasLimit, int32_t argumentsHandle);
-// extern vm_exec_w6_hook_result_t w6_managedDeployFromSourceContract(vm_exec_w6_hook_context_t* ctx, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedCreateContract(vm_exec_w6_hook_context_t* ctx, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedExecuteReadOnly(vm_exec_w6_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedExecuteOnSameContext(vm_exec_w6_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedExecuteOnDestContext(vm_exec_w6_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedExecuteOnDestContextWithErrorReturn(vm_exec_w6_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_managedMultiTransferESDTNFTExecute(vm_exec_w6_hook_context_t* ctx, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern vm_exec_w6_hook_result_t w6_managedMultiTransferESDTNFTExecuteWithReturn(vm_exec_w6_hook_context_t* ctx, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern vm_exec_w6_hook_result_t w6_managedMultiTransferESDTNFTExecuteByUser(vm_exec_w6_hook_context_t* ctx, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern vm_exec_w6_hook_result_t w6_managedTransferValueExecute(vm_exec_w6_hook_context_t* ctx, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern vm_exec_w6_hook_result_t w6_managedIsESDTFrozen(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
-// extern vm_exec_w6_hook_result_t w6_managedIsESDTLimitedTransfer(vm_exec_w6_hook_context_t* ctx, int32_t tokenIDHandle);
-// extern vm_exec_w6_hook_result_t w6_managedIsESDTPaused(vm_exec_w6_hook_context_t* ctx, int32_t tokenIDHandle);
-// extern vm_exec_w6_hook_result_t w6_managedBufferToHex(vm_exec_w6_hook_context_t* ctx, int32_t sourceHandle, int32_t destHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetCodeMetadata(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t responseHandle);
-// extern vm_exec_w6_hook_result_t w6_managedGetCodeHash(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t codeHashHandle);
-// extern vm_exec_w6_hook_result_t w6_managedIsBuiltinFunction(vm_exec_w6_hook_context_t* ctx, int32_t functionNameHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatNewFromParts(vm_exec_w6_hook_context_t* ctx, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
-// extern vm_exec_w6_hook_result_t w6_bigFloatNewFromFrac(vm_exec_w6_hook_context_t* ctx, long long numerator, long long denominator);
-// extern vm_exec_w6_hook_result_t w6_bigFloatNewFromSci(vm_exec_w6_hook_context_t* ctx, long long significand, long long exponent);
-// extern vm_exec_w6_hook_result_t w6_bigFloatAdd(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatSub(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatMul(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatDiv(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatNeg(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatClone(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatCmp(vm_exec_w6_hook_context_t* ctx, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatAbs(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatSign(vm_exec_w6_hook_context_t* ctx, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatSqrt(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatPow(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
-// extern vm_exec_w6_hook_result_t w6_bigFloatFloor(vm_exec_w6_hook_context_t* ctx, int32_t destBigIntHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatCeil(vm_exec_w6_hook_context_t* ctx, int32_t destBigIntHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatTruncate(vm_exec_w6_hook_context_t* ctx, int32_t destBigIntHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatSetInt64(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, long long value);
-// extern vm_exec_w6_hook_result_t w6_bigFloatIsInt(vm_exec_w6_hook_context_t* ctx, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatSetBigInt(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t bigIntHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatGetConstPi(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigFloatGetConstE(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetUnsignedArgument(vm_exec_w6_hook_context_t* ctx, int32_t id, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetSignedArgument(vm_exec_w6_hook_context_t* ctx, int32_t id, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntStorageStoreUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t sourceHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntStorageLoadUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetCallValue(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetESDTCallValue(vm_exec_w6_hook_context_t* ctx, int32_t destination);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetESDTCallValueByIndex(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t index);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetExternalBalance(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t result);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetESDTExternalBalance(vm_exec_w6_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntNew(vm_exec_w6_hook_context_t* ctx, long long smallValue);
-// extern vm_exec_w6_hook_result_t w6_bigIntUnsignedByteLength(vm_exec_w6_hook_context_t* ctx, int32_t referenceHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntSignedByteLength(vm_exec_w6_hook_context_t* ctx, int32_t referenceHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetUnsignedBytes(vm_exec_w6_hook_context_t* ctx, int32_t referenceHandle, int32_t byteOffset);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetSignedBytes(vm_exec_w6_hook_context_t* ctx, int32_t referenceHandle, int32_t byteOffset);
-// extern vm_exec_w6_hook_result_t w6_bigIntSetUnsignedBytes(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
-// extern vm_exec_w6_hook_result_t w6_bigIntSetSignedBytes(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
-// extern vm_exec_w6_hook_result_t w6_bigIntIsInt64(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntGetInt64(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntSetInt64(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, long long value);
-// extern vm_exec_w6_hook_result_t w6_bigIntAdd(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntSub(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntMul(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntTDiv(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntTMod(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntEDiv(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntEMod(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntSqrt(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntPow(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntLog2(vm_exec_w6_hook_context_t* ctx, int32_t op1Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntAbs(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntNeg(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntSign(vm_exec_w6_hook_context_t* ctx, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntCmp(vm_exec_w6_hook_context_t* ctx, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntNot(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntAnd(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntOr(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntXor(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern vm_exec_w6_hook_result_t w6_bigIntShr(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle, int32_t bits);
-// extern vm_exec_w6_hook_result_t w6_bigIntShl(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle, int32_t bits);
-// extern vm_exec_w6_hook_result_t w6_bigIntFinishUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t referenceHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntFinishSigned(vm_exec_w6_hook_context_t* ctx, int32_t referenceHandle);
-// extern vm_exec_w6_hook_result_t w6_bigIntToString(vm_exec_w6_hook_context_t* ctx, int32_t bigIntHandle, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferNew(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_mBufferNewFromBytes(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset, int32_t dataLength);
-// extern vm_exec_w6_hook_result_t w6_mBufferGetLength(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferGetBytes(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_mBufferGetByteSlice(vm_exec_w6_hook_context_t* ctx, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_mBufferCopyByteSlice(vm_exec_w6_hook_context_t* ctx, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferEq(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle1, int32_t mBufferHandle2);
-// extern vm_exec_w6_hook_result_t w6_mBufferSetBytes(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
-// extern vm_exec_w6_hook_result_t w6_mBufferSetByteSlice(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t startingPosition, int32_t dataLength, int32_t dataOffset);
-// extern vm_exec_w6_hook_result_t w6_mBufferAppend(vm_exec_w6_hook_context_t* ctx, int32_t accumulatorHandle, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferAppendBytes(vm_exec_w6_hook_context_t* ctx, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
-// extern vm_exec_w6_hook_result_t w6_mBufferToBigIntUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferToBigIntSigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferFromBigIntUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferFromBigIntSigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferToSmallIntUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferToSmallIntSigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferFromSmallIntUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, long long value);
-// extern vm_exec_w6_hook_result_t w6_mBufferFromSmallIntSigned(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, long long value);
-// extern vm_exec_w6_hook_result_t w6_mBufferToBigFloat(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigFloatHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferFromBigFloat(vm_exec_w6_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigFloatHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferStorageStore(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t sourceHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferStorageLoad(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferStorageLoadFromAddress(vm_exec_w6_hook_context_t* ctx, int32_t addressHandle, int32_t keyHandle, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferGetArgument(vm_exec_w6_hook_context_t* ctx, int32_t id, int32_t destinationHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferFinish(vm_exec_w6_hook_context_t* ctx, int32_t sourceHandle);
-// extern vm_exec_w6_hook_result_t w6_mBufferSetRandom(vm_exec_w6_hook_context_t* ctx, int32_t destinationHandle, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_managedMapNew(vm_exec_w6_hook_context_t* ctx);
-// extern vm_exec_w6_hook_result_t w6_managedMapPut(vm_exec_w6_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle, int32_t valueHandle);
-// extern vm_exec_w6_hook_result_t w6_managedMapGet(vm_exec_w6_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
-// extern vm_exec_w6_hook_result_t w6_managedMapRemove(vm_exec_w6_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
-// extern vm_exec_w6_hook_result_t w6_managedMapContains(vm_exec_w6_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle);
-// extern vm_exec_w6_hook_result_t w6_smallIntGetUnsignedArgument(vm_exec_w6_hook_context_t* ctx, int32_t id);
-// extern vm_exec_w6_hook_result_t w6_smallIntGetSignedArgument(vm_exec_w6_hook_context_t* ctx, int32_t id);
-// extern vm_exec_w6_hook_result_t w6_smallIntFinishUnsigned(vm_exec_w6_hook_context_t* ctx, long long value);
-// extern vm_exec_w6_hook_result_t w6_smallIntFinishSigned(vm_exec_w6_hook_context_t* ctx, long long value);
-// extern vm_exec_w6_hook_result_t w6_smallIntStorageStoreUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long value);
-// extern vm_exec_w6_hook_result_t w6_smallIntStorageStoreSigned(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long value);
-// extern vm_exec_w6_hook_result_t w6_smallIntStorageLoadUnsigned(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_smallIntStorageLoadSigned(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_int64getArgument(vm_exec_w6_hook_context_t* ctx, int32_t id);
-// extern vm_exec_w6_hook_result_t w6_int64finish(vm_exec_w6_hook_context_t* ctx, long long value);
-// extern vm_exec_w6_hook_result_t w6_int64storageStore(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long value);
-// extern vm_exec_w6_hook_result_t w6_int64storageLoad(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
-// extern vm_exec_w6_hook_result_t w6_sha256(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_managedSha256(vm_exec_w6_hook_context_t* ctx, int32_t inputHandle, int32_t outputHandle);
-// extern vm_exec_w6_hook_result_t w6_keccak256(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_managedKeccak256(vm_exec_w6_hook_context_t* ctx, int32_t inputHandle, int32_t outputHandle);
-// extern vm_exec_w6_hook_result_t w6_ripemd160(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_managedRipemd160(vm_exec_w6_hook_context_t* ctx, int32_t inputHandle, int32_t outputHandle);
-// extern vm_exec_w6_hook_result_t w6_verifyBLS(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern vm_exec_w6_hook_result_t w6_managedVerifyBLS(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern vm_exec_w6_hook_result_t w6_verifyEd25519(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern vm_exec_w6_hook_result_t w6_managedVerifyEd25519(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern vm_exec_w6_hook_result_t w6_verifyCustomSecp256k1(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t hashType);
-// extern vm_exec_w6_hook_result_t w6_managedVerifyCustomSecp256k1(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle, int32_t hashType);
-// extern vm_exec_w6_hook_result_t w6_verifySecp256k1(vm_exec_w6_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern vm_exec_w6_hook_result_t w6_managedVerifySecp256k1(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern vm_exec_w6_hook_result_t w6_encodeSecp256k1DerSignature(vm_exec_w6_hook_context_t* ctx, int32_t rOffset, int32_t rLength, int32_t sOffset, int32_t sLength, int32_t sigOffset);
-// extern vm_exec_w6_hook_result_t w6_managedEncodeSecp256k1DerSignature(vm_exec_w6_hook_context_t* ctx, int32_t rHandle, int32_t sHandle, int32_t sigHandle);
-// extern vm_exec_w6_hook_result_t w6_addEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
-// extern vm_exec_w6_hook_result_t w6_doubleEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
-// extern vm_exec_w6_hook_result_t w6_isOnCurveEC(vm_exec_w6_hook_context_t* ctx, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
-// extern vm_exec_w6_hook_result_t w6_scalarBaseMultEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_managedScalarBaseMultEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_scalarMultEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataOffset, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_managedScalarMultEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_marshalEC(vm_exec_w6_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_managedMarshalEC(vm_exec_w6_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_marshalCompressedEC(vm_exec_w6_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_managedMarshalCompressedEC(vm_exec_w6_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_unmarshalEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_managedUnmarshalEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_unmarshalCompressedEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
-// extern vm_exec_w6_hook_result_t w6_managedUnmarshalCompressedEC(vm_exec_w6_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_generateKeyEC(vm_exec_w6_hook_context_t* ctx, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
-// extern vm_exec_w6_hook_result_t w6_managedGenerateKeyEC(vm_exec_w6_hook_context_t* ctx, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultHandle);
-// extern vm_exec_w6_hook_result_t w6_createEC(vm_exec_w6_hook_context_t* ctx, int32_t dataOffset, int32_t dataLength);
-// extern vm_exec_w6_hook_result_t w6_managedCreateEC(vm_exec_w6_hook_context_t* ctx, int32_t dataHandle);
-// extern vm_exec_w6_hook_result_t w6_getCurveLengthEC(vm_exec_w6_hook_context_t* ctx, int32_t ecHandle);
-// extern vm_exec_w6_hook_result_t w6_getPrivKeyByteLengthEC(vm_exec_w6_hook_context_t* ctx, int32_t ecHandle);
-// extern vm_exec_w6_hook_result_t w6_ellipticCurveGetValues(vm_exec_w6_hook_context_t* ctx, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
-// extern vm_exec_w6_hook_result_t w6_managedVerifySecp256r1(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern vm_exec_w6_hook_result_t w6_managedVerifyBLSSignatureShare(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern vm_exec_w6_hook_result_t w6_managedVerifyBLSAggregatedSignature(vm_exec_w6_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_getGasLeft(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getSCAddress(vm_exec_hook_context_t* ctx, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getOwnerAddress(vm_exec_hook_context_t* ctx, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getShardOfAddress(vm_exec_hook_context_t* ctx, int32_t addressOffset);
+// extern vm_exec_hook_result_t w6_isSmartContract(vm_exec_hook_context_t* ctx, int32_t addressOffset);
+// extern vm_exec_hook_result_t w6_signalError(vm_exec_hook_context_t* ctx, int32_t messageOffset, int32_t messageLength);
+// extern vm_exec_hook_result_t w6_getExternalBalance(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getBlockHash(vm_exec_hook_context_t* ctx, long long nonce, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getESDTBalance(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getESDTNFTNameLength(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern vm_exec_hook_result_t w6_getESDTNFTAttributeLength(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern vm_exec_hook_result_t w6_getESDTNFTURILength(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern vm_exec_hook_result_t w6_getESDTTokenData(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueHandle, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesHandle, int32_t urisOffset);
+// extern vm_exec_hook_result_t w6_getESDTLocalRoles(vm_exec_hook_context_t* ctx, int32_t tokenIdHandle);
+// extern vm_exec_hook_result_t w6_validateTokenIdentifier(vm_exec_hook_context_t* ctx, int32_t tokenIdHandle);
+// extern vm_exec_hook_result_t w6_transferValue(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern vm_exec_hook_result_t w6_transferValueExecute(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_transferESDTExecute(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_transferESDTNFTExecute(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_multiTransferESDTNFTExecute(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t numTokenTransfers, int32_t tokenTransfersArgsLengthOffset, int32_t tokenTransferDataOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_createAsyncCall(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t dataLength, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback);
+// extern vm_exec_hook_result_t w6_setAsyncContextCallback(vm_exec_hook_context_t* ctx, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
+// extern vm_exec_hook_result_t w6_upgradeContract(vm_exec_hook_context_t* ctx, int32_t destOffset, long long gasLimit, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_upgradeFromSourceContract(vm_exec_hook_context_t* ctx, int32_t destOffset, long long gasLimit, int32_t valueOffset, int32_t sourceContractAddressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_deleteContract(vm_exec_hook_context_t* ctx, int32_t destOffset, long long gasLimit, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_asyncCall(vm_exec_hook_context_t* ctx, int32_t destOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern vm_exec_hook_result_t w6_getArgumentLength(vm_exec_hook_context_t* ctx, int32_t id);
+// extern vm_exec_hook_result_t w6_getArgument(vm_exec_hook_context_t* ctx, int32_t id, int32_t argOffset);
+// extern vm_exec_hook_result_t w6_getFunction(vm_exec_hook_context_t* ctx, int32_t functionOffset);
+// extern vm_exec_hook_result_t w6_getNumArguments(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_storageStore(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t dataOffset, int32_t dataLength);
+// extern vm_exec_hook_result_t w6_storageLoadLength(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_storageLoadFromAddress(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t keyOffset, int32_t keyLength, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_storageLoad(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_setStorageLock(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
+// extern vm_exec_hook_result_t w6_getStorageLock(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_isStorageLocked(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_clearStorageLock(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_getCaller(vm_exec_hook_context_t* ctx, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_checkNoPayment(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getCallValue(vm_exec_hook_context_t* ctx, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getESDTValue(vm_exec_hook_context_t* ctx, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getESDTValueByIndex(vm_exec_hook_context_t* ctx, int32_t resultOffset, int32_t index);
+// extern vm_exec_hook_result_t w6_getESDTTokenName(vm_exec_hook_context_t* ctx, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_getESDTTokenNameByIndex(vm_exec_hook_context_t* ctx, int32_t resultOffset, int32_t index);
+// extern vm_exec_hook_result_t w6_getESDTTokenNonce(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getESDTTokenNonceByIndex(vm_exec_hook_context_t* ctx, int32_t index);
+// extern vm_exec_hook_result_t w6_getCurrentESDTNFTNonce(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
+// extern vm_exec_hook_result_t w6_getESDTTokenType(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getESDTTokenTypeByIndex(vm_exec_hook_context_t* ctx, int32_t index);
+// extern vm_exec_hook_result_t w6_getNumESDTTransfers(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getCallValueTokenName(vm_exec_hook_context_t* ctx, int32_t callValueOffset, int32_t tokenNameOffset);
+// extern vm_exec_hook_result_t w6_getCallValueTokenNameByIndex(vm_exec_hook_context_t* ctx, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
+// extern vm_exec_hook_result_t w6_isReservedFunctionName(vm_exec_hook_context_t* ctx, int32_t nameHandle);
+// extern vm_exec_hook_result_t w6_writeLog(vm_exec_hook_context_t* ctx, int32_t dataPointer, int32_t dataLength, int32_t topicPtr, int32_t numTopics);
+// extern vm_exec_hook_result_t w6_writeEventLog(vm_exec_hook_context_t* ctx, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
+// extern vm_exec_hook_result_t w6_getBlockTimestamp(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getBlockTimestampMs(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getBlockNonce(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getBlockRound(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getBlockEpoch(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getBlockRandomSeed(vm_exec_hook_context_t* ctx, int32_t pointer);
+// extern vm_exec_hook_result_t w6_getStateRootHash(vm_exec_hook_context_t* ctx, int32_t pointer);
+// extern vm_exec_hook_result_t w6_getPrevBlockTimestamp(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getPrevBlockTimestampMs(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getPrevBlockNonce(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getPrevBlockRound(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getPrevBlockEpoch(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getPrevBlockRandomSeed(vm_exec_hook_context_t* ctx, int32_t pointer);
+// extern vm_exec_hook_result_t w6_getBlockRoundTimeMs(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_epochStartBlockTimestampMs(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_epochStartBlockNonce(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_epochStartBlockRound(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_finish(vm_exec_hook_context_t* ctx, int32_t pointer, int32_t length);
+// extern vm_exec_hook_result_t w6_executeOnSameContext(vm_exec_hook_context_t* ctx, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_executeOnDestContext(vm_exec_hook_context_t* ctx, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_executeReadOnly(vm_exec_hook_context_t* ctx, long long gasLimit, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_createContract(vm_exec_hook_context_t* ctx, long long gasLimit, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_deployFromSourceContract(vm_exec_hook_context_t* ctx, long long gasLimit, int32_t valueOffset, int32_t sourceContractAddressOffset, int32_t codeMetadataOffset, int32_t resultAddressOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_getNumReturnData(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_getReturnDataSize(vm_exec_hook_context_t* ctx, int32_t resultID);
+// extern vm_exec_hook_result_t w6_getReturnData(vm_exec_hook_context_t* ctx, int32_t resultID, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_cleanReturnData(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_deleteFromReturnData(vm_exec_hook_context_t* ctx, int32_t resultID);
+// extern vm_exec_hook_result_t w6_getOriginalTxHash(vm_exec_hook_context_t* ctx, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_getCurrentTxHash(vm_exec_hook_context_t* ctx, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_getPrevTxHash(vm_exec_hook_context_t* ctx, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_managedSCAddress(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_managedOwnerAddress(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_managedCaller(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_managedGetOriginalCallerAddr(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_managedGetRelayerAddr(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_managedSignalError(vm_exec_hook_context_t* ctx, int32_t errHandle);
+// extern vm_exec_hook_result_t w6_managedWriteLog(vm_exec_hook_context_t* ctx, int32_t topicsHandle, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_managedGetOriginalTxHash(vm_exec_hook_context_t* ctx, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedGetStateRootHash(vm_exec_hook_context_t* ctx, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedGetBlockRandomSeed(vm_exec_hook_context_t* ctx, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedGetPrevBlockRandomSeed(vm_exec_hook_context_t* ctx, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedGetReturnData(vm_exec_hook_context_t* ctx, int32_t resultID, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedGetMultiESDTCallValue(vm_exec_hook_context_t* ctx, int32_t multiCallValueHandle);
+// extern vm_exec_hook_result_t w6_managedGetAllTransfersCallValue(vm_exec_hook_context_t* ctx, int32_t transferCallValuesListHandle);
+// extern vm_exec_hook_result_t w6_managedGetBackTransfers(vm_exec_hook_context_t* ctx, int32_t esdtTransfersValueHandle, int32_t egldValueHandle);
+// extern vm_exec_hook_result_t w6_managedGetESDTBalance(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
+// extern vm_exec_hook_result_t w6_managedGetESDTTokenData(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
+// extern vm_exec_hook_result_t w6_managedGetESDTTokenType(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t typeHandle);
+// extern vm_exec_hook_result_t w6_managedAsyncCall(vm_exec_hook_context_t* ctx, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
+// extern vm_exec_hook_result_t w6_managedCreateAsyncCall(vm_exec_hook_context_t* ctx, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successOffset, int32_t successLength, int32_t errorOffset, int32_t errorLength, long long gas, long long extraGasForCallback, int32_t callbackClosureHandle);
+// extern vm_exec_hook_result_t w6_managedGetCallbackClosure(vm_exec_hook_context_t* ctx, int32_t callbackClosureHandle);
+// extern vm_exec_hook_result_t w6_managedUpgradeFromSourceContract(vm_exec_hook_context_t* ctx, int32_t destHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedUpgradeContract(vm_exec_hook_context_t* ctx, int32_t destHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedDeleteContract(vm_exec_hook_context_t* ctx, int32_t destHandle, long long gasLimit, int32_t argumentsHandle);
+// extern vm_exec_hook_result_t w6_managedDeployFromSourceContract(vm_exec_hook_context_t* ctx, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedCreateContract(vm_exec_hook_context_t* ctx, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedExecuteReadOnly(vm_exec_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedExecuteOnSameContext(vm_exec_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedExecuteOnDestContext(vm_exec_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedExecuteOnDestContextWithErrorReturn(vm_exec_hook_context_t* ctx, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_managedMultiTransferESDTNFTExecute(vm_exec_hook_context_t* ctx, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern vm_exec_hook_result_t w6_managedMultiTransferESDTNFTExecuteWithReturn(vm_exec_hook_context_t* ctx, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern vm_exec_hook_result_t w6_managedMultiTransferESDTNFTExecuteByUser(vm_exec_hook_context_t* ctx, int32_t userHandle, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern vm_exec_hook_result_t w6_managedTransferValueExecute(vm_exec_hook_context_t* ctx, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern vm_exec_hook_result_t w6_managedIsESDTFrozen(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
+// extern vm_exec_hook_result_t w6_managedIsESDTLimitedTransfer(vm_exec_hook_context_t* ctx, int32_t tokenIDHandle);
+// extern vm_exec_hook_result_t w6_managedIsESDTPaused(vm_exec_hook_context_t* ctx, int32_t tokenIDHandle);
+// extern vm_exec_hook_result_t w6_managedBufferToHex(vm_exec_hook_context_t* ctx, int32_t sourceHandle, int32_t destHandle);
+// extern vm_exec_hook_result_t w6_managedGetCodeMetadata(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t responseHandle);
+// extern vm_exec_hook_result_t w6_managedGetCodeHash(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t codeHashHandle);
+// extern vm_exec_hook_result_t w6_managedIsBuiltinFunction(vm_exec_hook_context_t* ctx, int32_t functionNameHandle);
+// extern vm_exec_hook_result_t w6_bigFloatNewFromParts(vm_exec_hook_context_t* ctx, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
+// extern vm_exec_hook_result_t w6_bigFloatNewFromFrac(vm_exec_hook_context_t* ctx, long long numerator, long long denominator);
+// extern vm_exec_hook_result_t w6_bigFloatNewFromSci(vm_exec_hook_context_t* ctx, long long significand, long long exponent);
+// extern vm_exec_hook_result_t w6_bigFloatAdd(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigFloatSub(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigFloatMul(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigFloatDiv(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigFloatNeg(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatClone(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatCmp(vm_exec_hook_context_t* ctx, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigFloatAbs(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatSign(vm_exec_hook_context_t* ctx, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatSqrt(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatPow(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
+// extern vm_exec_hook_result_t w6_bigFloatFloor(vm_exec_hook_context_t* ctx, int32_t destBigIntHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatCeil(vm_exec_hook_context_t* ctx, int32_t destBigIntHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatTruncate(vm_exec_hook_context_t* ctx, int32_t destBigIntHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatSetInt64(vm_exec_hook_context_t* ctx, int32_t destinationHandle, long long value);
+// extern vm_exec_hook_result_t w6_bigFloatIsInt(vm_exec_hook_context_t* ctx, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigFloatSetBigInt(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t bigIntHandle);
+// extern vm_exec_hook_result_t w6_bigFloatGetConstPi(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigFloatGetConstE(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntGetUnsignedArgument(vm_exec_hook_context_t* ctx, int32_t id, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntGetSignedArgument(vm_exec_hook_context_t* ctx, int32_t id, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntStorageStoreUnsigned(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t sourceHandle);
+// extern vm_exec_hook_result_t w6_bigIntStorageLoadUnsigned(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntGetCallValue(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntGetESDTCallValue(vm_exec_hook_context_t* ctx, int32_t destination);
+// extern vm_exec_hook_result_t w6_bigIntGetESDTCallValueByIndex(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t index);
+// extern vm_exec_hook_result_t w6_bigIntGetExternalBalance(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t result);
+// extern vm_exec_hook_result_t w6_bigIntGetESDTExternalBalance(vm_exec_hook_context_t* ctx, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_bigIntNew(vm_exec_hook_context_t* ctx, long long smallValue);
+// extern vm_exec_hook_result_t w6_bigIntUnsignedByteLength(vm_exec_hook_context_t* ctx, int32_t referenceHandle);
+// extern vm_exec_hook_result_t w6_bigIntSignedByteLength(vm_exec_hook_context_t* ctx, int32_t referenceHandle);
+// extern vm_exec_hook_result_t w6_bigIntGetUnsignedBytes(vm_exec_hook_context_t* ctx, int32_t referenceHandle, int32_t byteOffset);
+// extern vm_exec_hook_result_t w6_bigIntGetSignedBytes(vm_exec_hook_context_t* ctx, int32_t referenceHandle, int32_t byteOffset);
+// extern vm_exec_hook_result_t w6_bigIntSetUnsignedBytes(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
+// extern vm_exec_hook_result_t w6_bigIntSetSignedBytes(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
+// extern vm_exec_hook_result_t w6_bigIntIsInt64(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntGetInt64(vm_exec_hook_context_t* ctx, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_bigIntSetInt64(vm_exec_hook_context_t* ctx, int32_t destinationHandle, long long value);
+// extern vm_exec_hook_result_t w6_bigIntAdd(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntSub(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntMul(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntTDiv(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntTMod(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntEDiv(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntEMod(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntSqrt(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigIntPow(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntLog2(vm_exec_hook_context_t* ctx, int32_t op1Handle);
+// extern vm_exec_hook_result_t w6_bigIntAbs(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigIntNeg(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigIntSign(vm_exec_hook_context_t* ctx, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigIntCmp(vm_exec_hook_context_t* ctx, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntNot(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle);
+// extern vm_exec_hook_result_t w6_bigIntAnd(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntOr(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntXor(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern vm_exec_hook_result_t w6_bigIntShr(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle, int32_t bits);
+// extern vm_exec_hook_result_t w6_bigIntShl(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t opHandle, int32_t bits);
+// extern vm_exec_hook_result_t w6_bigIntFinishUnsigned(vm_exec_hook_context_t* ctx, int32_t referenceHandle);
+// extern vm_exec_hook_result_t w6_bigIntFinishSigned(vm_exec_hook_context_t* ctx, int32_t referenceHandle);
+// extern vm_exec_hook_result_t w6_bigIntToString(vm_exec_hook_context_t* ctx, int32_t bigIntHandle, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_mBufferNew(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_mBufferNewFromBytes(vm_exec_hook_context_t* ctx, int32_t dataOffset, int32_t dataLength);
+// extern vm_exec_hook_result_t w6_mBufferGetLength(vm_exec_hook_context_t* ctx, int32_t mBufferHandle);
+// extern vm_exec_hook_result_t w6_mBufferGetBytes(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_mBufferGetByteSlice(vm_exec_hook_context_t* ctx, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_mBufferCopyByteSlice(vm_exec_hook_context_t* ctx, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_mBufferEq(vm_exec_hook_context_t* ctx, int32_t mBufferHandle1, int32_t mBufferHandle2);
+// extern vm_exec_hook_result_t w6_mBufferSetBytes(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
+// extern vm_exec_hook_result_t w6_mBufferSetByteSlice(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t startingPosition, int32_t dataLength, int32_t dataOffset);
+// extern vm_exec_hook_result_t w6_mBufferAppend(vm_exec_hook_context_t* ctx, int32_t accumulatorHandle, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_mBufferAppendBytes(vm_exec_hook_context_t* ctx, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
+// extern vm_exec_hook_result_t w6_mBufferToBigIntUnsigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern vm_exec_hook_result_t w6_mBufferToBigIntSigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern vm_exec_hook_result_t w6_mBufferFromBigIntUnsigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern vm_exec_hook_result_t w6_mBufferFromBigIntSigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern vm_exec_hook_result_t w6_mBufferToSmallIntUnsigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle);
+// extern vm_exec_hook_result_t w6_mBufferToSmallIntSigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle);
+// extern vm_exec_hook_result_t w6_mBufferFromSmallIntUnsigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, long long value);
+// extern vm_exec_hook_result_t w6_mBufferFromSmallIntSigned(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, long long value);
+// extern vm_exec_hook_result_t w6_mBufferToBigFloat(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigFloatHandle);
+// extern vm_exec_hook_result_t w6_mBufferFromBigFloat(vm_exec_hook_context_t* ctx, int32_t mBufferHandle, int32_t bigFloatHandle);
+// extern vm_exec_hook_result_t w6_mBufferStorageStore(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t sourceHandle);
+// extern vm_exec_hook_result_t w6_mBufferStorageLoad(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_mBufferStorageLoadFromAddress(vm_exec_hook_context_t* ctx, int32_t addressHandle, int32_t keyHandle, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_mBufferGetArgument(vm_exec_hook_context_t* ctx, int32_t id, int32_t destinationHandle);
+// extern vm_exec_hook_result_t w6_mBufferFinish(vm_exec_hook_context_t* ctx, int32_t sourceHandle);
+// extern vm_exec_hook_result_t w6_mBufferSetRandom(vm_exec_hook_context_t* ctx, int32_t destinationHandle, int32_t length);
+// extern vm_exec_hook_result_t w6_managedMapNew(vm_exec_hook_context_t* ctx);
+// extern vm_exec_hook_result_t w6_managedMapPut(vm_exec_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle, int32_t valueHandle);
+// extern vm_exec_hook_result_t w6_managedMapGet(vm_exec_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern vm_exec_hook_result_t w6_managedMapRemove(vm_exec_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle, int32_t outValueHandle);
+// extern vm_exec_hook_result_t w6_managedMapContains(vm_exec_hook_context_t* ctx, int32_t mMapHandle, int32_t keyHandle);
+// extern vm_exec_hook_result_t w6_smallIntGetUnsignedArgument(vm_exec_hook_context_t* ctx, int32_t id);
+// extern vm_exec_hook_result_t w6_smallIntGetSignedArgument(vm_exec_hook_context_t* ctx, int32_t id);
+// extern vm_exec_hook_result_t w6_smallIntFinishUnsigned(vm_exec_hook_context_t* ctx, long long value);
+// extern vm_exec_hook_result_t w6_smallIntFinishSigned(vm_exec_hook_context_t* ctx, long long value);
+// extern vm_exec_hook_result_t w6_smallIntStorageStoreUnsigned(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long value);
+// extern vm_exec_hook_result_t w6_smallIntStorageStoreSigned(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long value);
+// extern vm_exec_hook_result_t w6_smallIntStorageLoadUnsigned(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_smallIntStorageLoadSigned(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_int64getArgument(vm_exec_hook_context_t* ctx, int32_t id);
+// extern vm_exec_hook_result_t w6_int64finish(vm_exec_hook_context_t* ctx, long long value);
+// extern vm_exec_hook_result_t w6_int64storageStore(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, long long value);
+// extern vm_exec_hook_result_t w6_int64storageLoad(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength);
+// extern vm_exec_hook_result_t w6_sha256(vm_exec_hook_context_t* ctx, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_managedSha256(vm_exec_hook_context_t* ctx, int32_t inputHandle, int32_t outputHandle);
+// extern vm_exec_hook_result_t w6_keccak256(vm_exec_hook_context_t* ctx, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_managedKeccak256(vm_exec_hook_context_t* ctx, int32_t inputHandle, int32_t outputHandle);
+// extern vm_exec_hook_result_t w6_ripemd160(vm_exec_hook_context_t* ctx, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_managedRipemd160(vm_exec_hook_context_t* ctx, int32_t inputHandle, int32_t outputHandle);
+// extern vm_exec_hook_result_t w6_verifyBLS(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern vm_exec_hook_result_t w6_managedVerifyBLS(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_verifyEd25519(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern vm_exec_hook_result_t w6_managedVerifyEd25519(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_verifyCustomSecp256k1(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t hashType);
+// extern vm_exec_hook_result_t w6_managedVerifyCustomSecp256k1(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle, int32_t hashType);
+// extern vm_exec_hook_result_t w6_verifySecp256k1(vm_exec_hook_context_t* ctx, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern vm_exec_hook_result_t w6_managedVerifySecp256k1(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_encodeSecp256k1DerSignature(vm_exec_hook_context_t* ctx, int32_t rOffset, int32_t rLength, int32_t sOffset, int32_t sLength, int32_t sigOffset);
+// extern vm_exec_hook_result_t w6_managedEncodeSecp256k1DerSignature(vm_exec_hook_context_t* ctx, int32_t rHandle, int32_t sHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_addEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
+// extern vm_exec_hook_result_t w6_doubleEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
+// extern vm_exec_hook_result_t w6_isOnCurveEC(vm_exec_hook_context_t* ctx, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
+// extern vm_exec_hook_result_t w6_scalarBaseMultEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern vm_exec_hook_result_t w6_managedScalarBaseMultEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_scalarMultEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataOffset, int32_t length);
+// extern vm_exec_hook_result_t w6_managedScalarMultEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_marshalEC(vm_exec_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_managedMarshalEC(vm_exec_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_marshalCompressedEC(vm_exec_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_managedMarshalCompressedEC(vm_exec_hook_context_t* ctx, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_unmarshalEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern vm_exec_hook_result_t w6_managedUnmarshalEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_unmarshalCompressedEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern vm_exec_hook_result_t w6_managedUnmarshalCompressedEC(vm_exec_hook_context_t* ctx, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_generateKeyEC(vm_exec_hook_context_t* ctx, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
+// extern vm_exec_hook_result_t w6_managedGenerateKeyEC(vm_exec_hook_context_t* ctx, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultHandle);
+// extern vm_exec_hook_result_t w6_createEC(vm_exec_hook_context_t* ctx, int32_t dataOffset, int32_t dataLength);
+// extern vm_exec_hook_result_t w6_managedCreateEC(vm_exec_hook_context_t* ctx, int32_t dataHandle);
+// extern vm_exec_hook_result_t w6_getCurveLengthEC(vm_exec_hook_context_t* ctx, int32_t ecHandle);
+// extern vm_exec_hook_result_t w6_getPrivKeyByteLengthEC(vm_exec_hook_context_t* ctx, int32_t ecHandle);
+// extern vm_exec_hook_result_t w6_ellipticCurveGetValues(vm_exec_hook_context_t* ctx, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
+// extern vm_exec_hook_result_t w6_managedVerifySecp256r1(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_managedVerifyBLSSignatureShare(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern vm_exec_hook_result_t w6_managedVerifyBLSAggregatedSignature(vm_exec_hook_context_t* ctx, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
 //
-// static const vm_exec_w6_vm_hook_c_func_pointers w6_signature_check __attribute__((unused)) = {
+// static const vm_exec_vm_hook_c_func_pointers w6_signature_check __attribute__((unused)) = {
 //     .get_gas_left_func_ptr = w6_getGasLeft,
 //     .get_sc_address_func_ptr = w6_getSCAddress,
 //     .get_owner_address_func_ptr = w6_getOwnerAddress,
@@ -578,8 +578,8 @@ import (
 // populateCgoFunctionPointers builds the table of VM hook implementations handed to the
 // executor at creation. The executor copies it, so the result does not need to outlive the
 // call.
-func populateCgoFunctionPointers() *C.vm_exec_w6_vm_hook_c_func_pointers {
-	return &C.vm_exec_w6_vm_hook_c_func_pointers{
+func populateCgoFunctionPointers() *C.vm_exec_vm_hook_c_func_pointers {
+	return &C.vm_exec_vm_hook_c_func_pointers{
 		get_gas_left_func_ptr:                                        funcPointer(C.w6_getGasLeft),
 		get_sc_address_func_ptr:                                      funcPointer(C.w6_getSCAddress),
 		get_owner_address_func_ptr:                                   funcPointer(C.w6_getOwnerAddress),
@@ -861,7 +861,7 @@ func populateCgoFunctionPointers() *C.vm_exec_w6_vm_hook_c_func_pointers {
 }
 
 //export w6_getGasLeft
-func w6_getGasLeft(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getGasLeft(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetGasLeft()
 	if err != nil {
@@ -871,7 +871,7 @@ func w6_getGasLeft(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t 
 }
 
 //export w6_getSCAddress
-func w6_getSCAddress(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getSCAddress(ctx *C.vm_exec_hook_context_t, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetSCAddress(executor.MemPtr(resultOffset))
 	if err != nil {
@@ -881,7 +881,7 @@ func w6_getSCAddress(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_
 }
 
 //export w6_getOwnerAddress
-func w6_getOwnerAddress(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getOwnerAddress(ctx *C.vm_exec_hook_context_t, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetOwnerAddress(executor.MemPtr(resultOffset))
 	if err != nil {
@@ -891,7 +891,7 @@ func w6_getOwnerAddress(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.
 }
 
 //export w6_getShardOfAddress
-func w6_getShardOfAddress(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getShardOfAddress(ctx *C.vm_exec_hook_context_t, addressOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetShardOfAddress(executor.MemPtr(addressOffset))
 	if err != nil {
@@ -901,7 +901,7 @@ func w6_getShardOfAddress(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32)
 }
 
 //export w6_isSmartContract
-func w6_isSmartContract(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_isSmartContract(ctx *C.vm_exec_hook_context_t, addressOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.IsSmartContract(executor.MemPtr(addressOffset))
 	if err != nil {
@@ -911,7 +911,7 @@ func w6_isSmartContract(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32) C
 }
 
 //export w6_signalError
-func w6_signalError(ctx *C.vm_exec_w6_hook_context_t, messageOffset int32, messageLength int32) C.vm_exec_w6_hook_result_t {
+func w6_signalError(ctx *C.vm_exec_hook_context_t, messageOffset int32, messageLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.SignalError(executor.MemPtr(messageOffset), messageLength)
 	if err != nil {
@@ -921,7 +921,7 @@ func w6_signalError(ctx *C.vm_exec_w6_hook_context_t, messageOffset int32, messa
 }
 
 //export w6_getExternalBalance
-func w6_getExternalBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getExternalBalance(ctx *C.vm_exec_hook_context_t, addressOffset int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(resultOffset))
 	if err != nil {
@@ -931,7 +931,7 @@ func w6_getExternalBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32
 }
 
 //export w6_getBlockHash
-func w6_getBlockHash(ctx *C.vm_exec_w6_hook_context_t, nonce int64, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getBlockHash(ctx *C.vm_exec_hook_context_t, nonce int64, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockHash(nonce, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -941,7 +941,7 @@ func w6_getBlockHash(ctx *C.vm_exec_w6_hook_context_t, nonce int64, resultOffset
 }
 
 //export w6_getESDTBalance
-func w6_getESDTBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTBalance(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -951,7 +951,7 @@ func w6_getESDTBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, to
 }
 
 //export w6_getESDTNFTNameLength
-func w6_getESDTNFTNameLength(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) C.vm_exec_w6_hook_result_t {
+func w6_getESDTNFTNameLength(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTNFTNameLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 	if err != nil {
@@ -961,7 +961,7 @@ func w6_getESDTNFTNameLength(ctx *C.vm_exec_w6_hook_context_t, addressOffset int
 }
 
 //export w6_getESDTNFTAttributeLength
-func w6_getESDTNFTAttributeLength(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) C.vm_exec_w6_hook_result_t {
+func w6_getESDTNFTAttributeLength(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTNFTAttributeLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 	if err != nil {
@@ -971,7 +971,7 @@ func w6_getESDTNFTAttributeLength(ctx *C.vm_exec_w6_hook_context_t, addressOffse
 }
 
 //export w6_getESDTNFTURILength
-func w6_getESDTNFTURILength(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) C.vm_exec_w6_hook_result_t {
+func w6_getESDTNFTURILength(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTNFTURILength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 	if err != nil {
@@ -981,7 +981,7 @@ func w6_getESDTNFTURILength(ctx *C.vm_exec_w6_hook_context_t, addressOffset int3
 }
 
 //export w6_getESDTTokenData
-func w6_getESDTTokenData(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, valueHandle int32, propertiesOffset int32, hashOffset int32, nameOffset int32, attributesOffset int32, creatorOffset int32, royaltiesHandle int32, urisOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenData(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, valueHandle int32, propertiesOffset int32, hashOffset int32, nameOffset int32, attributesOffset int32, creatorOffset int32, royaltiesHandle int32, urisOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenData(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, valueHandle, executor.MemPtr(propertiesOffset), executor.MemPtr(hashOffset), executor.MemPtr(nameOffset), executor.MemPtr(attributesOffset), executor.MemPtr(creatorOffset), royaltiesHandle, executor.MemPtr(urisOffset))
 	if err != nil {
@@ -991,7 +991,7 @@ func w6_getESDTTokenData(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, 
 }
 
 //export w6_getESDTLocalRoles
-func w6_getESDTLocalRoles(ctx *C.vm_exec_w6_hook_context_t, tokenIdHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTLocalRoles(ctx *C.vm_exec_hook_context_t, tokenIdHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTLocalRoles(tokenIdHandle)
 	if err != nil {
@@ -1001,7 +1001,7 @@ func w6_getESDTLocalRoles(ctx *C.vm_exec_w6_hook_context_t, tokenIdHandle int32)
 }
 
 //export w6_validateTokenIdentifier
-func w6_validateTokenIdentifier(ctx *C.vm_exec_w6_hook_context_t, tokenIdHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_validateTokenIdentifier(ctx *C.vm_exec_hook_context_t, tokenIdHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ValidateTokenIdentifier(tokenIdHandle)
 	if err != nil {
@@ -1011,7 +1011,7 @@ func w6_validateTokenIdentifier(ctx *C.vm_exec_w6_hook_context_t, tokenIdHandle 
 }
 
 //export w6_transferValue
-func w6_transferValue(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valueOffset int32, dataOffset int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_transferValue(ctx *C.vm_exec_hook_context_t, destOffset int32, valueOffset int32, dataOffset int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.TransferValue(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
 	if err != nil {
@@ -1021,7 +1021,7 @@ func w6_transferValue(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valueO
 }
 
 //export w6_transferValueExecute
-func w6_transferValueExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_transferValueExecute(ctx *C.vm_exec_hook_context_t, destOffset int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.TransferValueExecute(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1031,7 +1031,7 @@ func w6_transferValueExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int32,
 }
 
 //export w6_transferESDTExecute
-func w6_transferESDTExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_transferESDTExecute(ctx *C.vm_exec_hook_context_t, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.TransferESDTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1041,7 +1041,7 @@ func w6_transferESDTExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, 
 }
 
 //export w6_transferESDTNFTExecute
-func w6_transferESDTNFTExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, nonce int64, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_transferESDTNFTExecute(ctx *C.vm_exec_hook_context_t, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, nonce int64, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.TransferESDTNFTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), nonce, gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1051,7 +1051,7 @@ func w6_transferESDTNFTExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int3
 }
 
 //export w6_multiTransferESDTNFTExecute
-func w6_multiTransferESDTNFTExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, numTokenTransfers int32, tokenTransfersArgsLengthOffset int32, tokenTransferDataOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_multiTransferESDTNFTExecute(ctx *C.vm_exec_hook_context_t, destOffset int32, numTokenTransfers int32, tokenTransfersArgsLengthOffset int32, tokenTransferDataOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MultiTransferESDTNFTExecute(executor.MemPtr(destOffset), numTokenTransfers, executor.MemPtr(tokenTransfersArgsLengthOffset), executor.MemPtr(tokenTransferDataOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1061,7 +1061,7 @@ func w6_multiTransferESDTNFTExecute(ctx *C.vm_exec_w6_hook_context_t, destOffset
 }
 
 //export w6_createAsyncCall
-func w6_createAsyncCall(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valueOffset int32, dataOffset int32, dataLength int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64) C.vm_exec_w6_hook_result_t {
+func w6_createAsyncCall(ctx *C.vm_exec_hook_context_t, destOffset int32, valueOffset int32, dataOffset int32, dataLength int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.CreateAsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), dataLength, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback)
 	if err != nil {
@@ -1071,7 +1071,7 @@ func w6_createAsyncCall(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valu
 }
 
 //export w6_setAsyncContextCallback
-func w6_setAsyncContextCallback(ctx *C.vm_exec_w6_hook_context_t, callback int32, callbackLength int32, data int32, dataLength int32, gas int64) C.vm_exec_w6_hook_result_t {
+func w6_setAsyncContextCallback(ctx *C.vm_exec_hook_context_t, callback int32, callbackLength int32, data int32, dataLength int32, gas int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SetAsyncContextCallback(executor.MemPtr(callback), callbackLength, executor.MemPtr(data), dataLength, gas)
 	if err != nil {
@@ -1081,7 +1081,7 @@ func w6_setAsyncContextCallback(ctx *C.vm_exec_w6_hook_context_t, callback int32
 }
 
 //export w6_upgradeContract
-func w6_upgradeContract(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_upgradeContract(ctx *C.vm_exec_hook_context_t, destOffset int32, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.UpgradeContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1091,7 +1091,7 @@ func w6_upgradeContract(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, gasL
 }
 
 //export w6_upgradeFromSourceContract
-func w6_upgradeFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_upgradeFromSourceContract(ctx *C.vm_exec_hook_context_t, destOffset int32, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.UpgradeFromSourceContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1101,7 +1101,7 @@ func w6_upgradeFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, destOffset i
 }
 
 //export w6_deleteContract
-func w6_deleteContract(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, gasLimit int64, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_deleteContract(ctx *C.vm_exec_hook_context_t, destOffset int32, gasLimit int64, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.DeleteContract(executor.MemPtr(destOffset), gasLimit, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1111,7 +1111,7 @@ func w6_deleteContract(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, gasLi
 }
 
 //export w6_asyncCall
-func w6_asyncCall(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valueOffset int32, dataOffset int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_asyncCall(ctx *C.vm_exec_hook_context_t, destOffset int32, valueOffset int32, dataOffset int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.AsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
 	if err != nil {
@@ -1121,7 +1121,7 @@ func w6_asyncCall(ctx *C.vm_exec_w6_hook_context_t, destOffset int32, valueOffse
 }
 
 //export w6_getArgumentLength
-func w6_getArgumentLength(ctx *C.vm_exec_w6_hook_context_t, id int32) C.vm_exec_w6_hook_result_t {
+func w6_getArgumentLength(ctx *C.vm_exec_hook_context_t, id int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetArgumentLength(id)
 	if err != nil {
@@ -1131,7 +1131,7 @@ func w6_getArgumentLength(ctx *C.vm_exec_w6_hook_context_t, id int32) C.vm_exec_
 }
 
 //export w6_getArgument
-func w6_getArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, argOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getArgument(ctx *C.vm_exec_hook_context_t, id int32, argOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetArgument(id, executor.MemPtr(argOffset))
 	if err != nil {
@@ -1141,7 +1141,7 @@ func w6_getArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, argOffset int32)
 }
 
 //export w6_getFunction
-func w6_getFunction(ctx *C.vm_exec_w6_hook_context_t, functionOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getFunction(ctx *C.vm_exec_hook_context_t, functionOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetFunction(executor.MemPtr(functionOffset))
 	if err != nil {
@@ -1151,7 +1151,7 @@ func w6_getFunction(ctx *C.vm_exec_w6_hook_context_t, functionOffset int32) C.vm
 }
 
 //export w6_getNumArguments
-func w6_getNumArguments(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getNumArguments(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetNumArguments()
 	if err != nil {
@@ -1161,7 +1161,7 @@ func w6_getNumArguments(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_resu
 }
 
 //export w6_storageStore
-func w6_storageStore(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) C.vm_exec_w6_hook_result_t {
+func w6_storageStore(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.StorageStore(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset), dataLength)
 	if err != nil {
@@ -1171,7 +1171,7 @@ func w6_storageStore(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLengt
 }
 
 //export w6_storageLoadLength
-func w6_storageLoadLength(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_storageLoadLength(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.StorageLoadLength(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -1181,7 +1181,7 @@ func w6_storageLoadLength(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, key
 }
 
 //export w6_storageLoadFromAddress
-func w6_storageLoadFromAddress(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_storageLoadFromAddress(ctx *C.vm_exec_hook_context_t, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.StorageLoadFromAddress(executor.MemPtr(addressOffset), executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1191,7 +1191,7 @@ func w6_storageLoadFromAddress(ctx *C.vm_exec_w6_hook_context_t, addressOffset i
 }
 
 //export w6_storageLoad
-func w6_storageLoad(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_storageLoad(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.StorageLoad(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1201,7 +1201,7 @@ func w6_storageLoad(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength
 }
 
 //export w6_setStorageLock
-func w6_setStorageLock(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, lockTimestamp int64) C.vm_exec_w6_hook_result_t {
+func w6_setStorageLock(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, lockTimestamp int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SetStorageLock(executor.MemPtr(keyOffset), keyLength, lockTimestamp)
 	if err != nil {
@@ -1211,7 +1211,7 @@ func w6_setStorageLock(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLen
 }
 
 //export w6_getStorageLock
-func w6_getStorageLock(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_getStorageLock(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetStorageLock(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -1221,7 +1221,7 @@ func w6_getStorageLock(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLen
 }
 
 //export w6_isStorageLocked
-func w6_isStorageLocked(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_isStorageLocked(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.IsStorageLocked(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -1231,7 +1231,7 @@ func w6_isStorageLocked(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLe
 }
 
 //export w6_clearStorageLock
-func w6_clearStorageLock(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_clearStorageLock(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ClearStorageLock(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -1241,7 +1241,7 @@ func w6_clearStorageLock(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyL
 }
 
 //export w6_getCaller
-func w6_getCaller(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getCaller(ctx *C.vm_exec_hook_context_t, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetCaller(executor.MemPtr(resultOffset))
 	if err != nil {
@@ -1251,7 +1251,7 @@ func w6_getCaller(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exe
 }
 
 //export w6_checkNoPayment
-func w6_checkNoPayment(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_checkNoPayment(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.CheckNoPayment()
 	if err != nil {
@@ -1261,7 +1261,7 @@ func w6_checkNoPayment(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_resul
 }
 
 //export w6_getCallValue
-func w6_getCallValue(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getCallValue(ctx *C.vm_exec_hook_context_t, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetCallValue(executor.MemPtr(resultOffset))
 	if err != nil {
@@ -1271,7 +1271,7 @@ func w6_getCallValue(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_
 }
 
 //export w6_getESDTValue
-func w6_getESDTValue(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTValue(ctx *C.vm_exec_hook_context_t, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTValue(executor.MemPtr(resultOffset))
 	if err != nil {
@@ -1281,7 +1281,7 @@ func w6_getESDTValue(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_
 }
 
 //export w6_getESDTValueByIndex
-func w6_getESDTValueByIndex(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32, index int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTValueByIndex(ctx *C.vm_exec_hook_context_t, resultOffset int32, index int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTValueByIndex(executor.MemPtr(resultOffset), index)
 	if err != nil {
@@ -1291,7 +1291,7 @@ func w6_getESDTValueByIndex(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32
 }
 
 //export w6_getESDTTokenName
-func w6_getESDTTokenName(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenName(ctx *C.vm_exec_hook_context_t, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenName(executor.MemPtr(resultOffset))
 	if err != nil {
@@ -1301,7 +1301,7 @@ func w6_getESDTTokenName(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32) C
 }
 
 //export w6_getESDTTokenNameByIndex
-func w6_getESDTTokenNameByIndex(ctx *C.vm_exec_w6_hook_context_t, resultOffset int32, index int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenNameByIndex(ctx *C.vm_exec_hook_context_t, resultOffset int32, index int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenNameByIndex(executor.MemPtr(resultOffset), index)
 	if err != nil {
@@ -1311,7 +1311,7 @@ func w6_getESDTTokenNameByIndex(ctx *C.vm_exec_w6_hook_context_t, resultOffset i
 }
 
 //export w6_getESDTTokenNonce
-func w6_getESDTTokenNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenNonce(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenNonce()
 	if err != nil {
@@ -1321,7 +1321,7 @@ func w6_getESDTTokenNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_re
 }
 
 //export w6_getESDTTokenNonceByIndex
-func w6_getESDTTokenNonceByIndex(ctx *C.vm_exec_w6_hook_context_t, index int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenNonceByIndex(ctx *C.vm_exec_hook_context_t, index int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenNonceByIndex(index)
 	if err != nil {
@@ -1331,7 +1331,7 @@ func w6_getESDTTokenNonceByIndex(ctx *C.vm_exec_w6_hook_context_t, index int32) 
 }
 
 //export w6_getCurrentESDTNFTNonce
-func w6_getCurrentESDTNFTNonce(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) C.vm_exec_w6_hook_result_t {
+func w6_getCurrentESDTNFTNonce(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetCurrentESDTNFTNonce(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen)
 	if err != nil {
@@ -1341,7 +1341,7 @@ func w6_getCurrentESDTNFTNonce(ctx *C.vm_exec_w6_hook_context_t, addressOffset i
 }
 
 //export w6_getESDTTokenType
-func w6_getESDTTokenType(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenType(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenType()
 	if err != nil {
@@ -1351,7 +1351,7 @@ func w6_getESDTTokenType(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_res
 }
 
 //export w6_getESDTTokenTypeByIndex
-func w6_getESDTTokenTypeByIndex(ctx *C.vm_exec_w6_hook_context_t, index int32) C.vm_exec_w6_hook_result_t {
+func w6_getESDTTokenTypeByIndex(ctx *C.vm_exec_hook_context_t, index int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetESDTTokenTypeByIndex(index)
 	if err != nil {
@@ -1361,7 +1361,7 @@ func w6_getESDTTokenTypeByIndex(ctx *C.vm_exec_w6_hook_context_t, index int32) C
 }
 
 //export w6_getNumESDTTransfers
-func w6_getNumESDTTransfers(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getNumESDTTransfers(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetNumESDTTransfers()
 	if err != nil {
@@ -1371,7 +1371,7 @@ func w6_getNumESDTTransfers(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_
 }
 
 //export w6_getCallValueTokenName
-func w6_getCallValueTokenName(ctx *C.vm_exec_w6_hook_context_t, callValueOffset int32, tokenNameOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getCallValueTokenName(ctx *C.vm_exec_hook_context_t, callValueOffset int32, tokenNameOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetCallValueTokenName(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset))
 	if err != nil {
@@ -1381,7 +1381,7 @@ func w6_getCallValueTokenName(ctx *C.vm_exec_w6_hook_context_t, callValueOffset 
 }
 
 //export w6_getCallValueTokenNameByIndex
-func w6_getCallValueTokenNameByIndex(ctx *C.vm_exec_w6_hook_context_t, callValueOffset int32, tokenNameOffset int32, index int32) C.vm_exec_w6_hook_result_t {
+func w6_getCallValueTokenNameByIndex(ctx *C.vm_exec_hook_context_t, callValueOffset int32, tokenNameOffset int32, index int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetCallValueTokenNameByIndex(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset), index)
 	if err != nil {
@@ -1391,7 +1391,7 @@ func w6_getCallValueTokenNameByIndex(ctx *C.vm_exec_w6_hook_context_t, callValue
 }
 
 //export w6_isReservedFunctionName
-func w6_isReservedFunctionName(ctx *C.vm_exec_w6_hook_context_t, nameHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_isReservedFunctionName(ctx *C.vm_exec_hook_context_t, nameHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.IsReservedFunctionName(nameHandle)
 	if err != nil {
@@ -1401,7 +1401,7 @@ func w6_isReservedFunctionName(ctx *C.vm_exec_w6_hook_context_t, nameHandle int3
 }
 
 //export w6_writeLog
-func w6_writeLog(ctx *C.vm_exec_w6_hook_context_t, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) C.vm_exec_w6_hook_result_t {
+func w6_writeLog(ctx *C.vm_exec_hook_context_t, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.WriteLog(executor.MemPtr(dataPointer), dataLength, executor.MemPtr(topicPtr), numTopics)
 	if err != nil {
@@ -1411,7 +1411,7 @@ func w6_writeLog(ctx *C.vm_exec_w6_hook_context_t, dataPointer int32, dataLength
 }
 
 //export w6_writeEventLog
-func w6_writeEventLog(ctx *C.vm_exec_w6_hook_context_t, numTopics int32, topicLengthsOffset int32, topicOffset int32, dataOffset int32, dataLength int32) C.vm_exec_w6_hook_result_t {
+func w6_writeEventLog(ctx *C.vm_exec_hook_context_t, numTopics int32, topicLengthsOffset int32, topicOffset int32, dataOffset int32, dataLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.WriteEventLog(numTopics, executor.MemPtr(topicLengthsOffset), executor.MemPtr(topicOffset), executor.MemPtr(dataOffset), dataLength)
 	if err != nil {
@@ -1421,7 +1421,7 @@ func w6_writeEventLog(ctx *C.vm_exec_w6_hook_context_t, numTopics int32, topicLe
 }
 
 //export w6_getBlockTimestamp
-func w6_getBlockTimestamp(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getBlockTimestamp(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockTimestamp()
 	if err != nil {
@@ -1431,7 +1431,7 @@ func w6_getBlockTimestamp(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_re
 }
 
 //export w6_getBlockTimestampMs
-func w6_getBlockTimestampMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getBlockTimestampMs(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockTimestampMs()
 	if err != nil {
@@ -1441,7 +1441,7 @@ func w6_getBlockTimestampMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_
 }
 
 //export w6_getBlockNonce
-func w6_getBlockNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getBlockNonce(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockNonce()
 	if err != nil {
@@ -1451,7 +1451,7 @@ func w6_getBlockNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result
 }
 
 //export w6_getBlockRound
-func w6_getBlockRound(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getBlockRound(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockRound()
 	if err != nil {
@@ -1461,7 +1461,7 @@ func w6_getBlockRound(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result
 }
 
 //export w6_getBlockEpoch
-func w6_getBlockEpoch(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getBlockEpoch(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockEpoch()
 	if err != nil {
@@ -1471,7 +1471,7 @@ func w6_getBlockEpoch(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result
 }
 
 //export w6_getBlockRandomSeed
-func w6_getBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, pointer int32) C.vm_exec_w6_hook_result_t {
+func w6_getBlockRandomSeed(ctx *C.vm_exec_hook_context_t, pointer int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetBlockRandomSeed(executor.MemPtr(pointer))
 	if err != nil {
@@ -1481,7 +1481,7 @@ func w6_getBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, pointer int32) C.vm
 }
 
 //export w6_getStateRootHash
-func w6_getStateRootHash(ctx *C.vm_exec_w6_hook_context_t, pointer int32) C.vm_exec_w6_hook_result_t {
+func w6_getStateRootHash(ctx *C.vm_exec_hook_context_t, pointer int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetStateRootHash(executor.MemPtr(pointer))
 	if err != nil {
@@ -1491,7 +1491,7 @@ func w6_getStateRootHash(ctx *C.vm_exec_w6_hook_context_t, pointer int32) C.vm_e
 }
 
 //export w6_getPrevBlockTimestamp
-func w6_getPrevBlockTimestamp(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getPrevBlockTimestamp(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetPrevBlockTimestamp()
 	if err != nil {
@@ -1501,7 +1501,7 @@ func w6_getPrevBlockTimestamp(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hoo
 }
 
 //export w6_getPrevBlockTimestampMs
-func w6_getPrevBlockTimestampMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getPrevBlockTimestampMs(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetPrevBlockTimestampMs()
 	if err != nil {
@@ -1511,7 +1511,7 @@ func w6_getPrevBlockTimestampMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_h
 }
 
 //export w6_getPrevBlockNonce
-func w6_getPrevBlockNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getPrevBlockNonce(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetPrevBlockNonce()
 	if err != nil {
@@ -1521,7 +1521,7 @@ func w6_getPrevBlockNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_re
 }
 
 //export w6_getPrevBlockRound
-func w6_getPrevBlockRound(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getPrevBlockRound(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetPrevBlockRound()
 	if err != nil {
@@ -1531,7 +1531,7 @@ func w6_getPrevBlockRound(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_re
 }
 
 //export w6_getPrevBlockEpoch
-func w6_getPrevBlockEpoch(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getPrevBlockEpoch(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetPrevBlockEpoch()
 	if err != nil {
@@ -1541,7 +1541,7 @@ func w6_getPrevBlockEpoch(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_re
 }
 
 //export w6_getPrevBlockRandomSeed
-func w6_getPrevBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, pointer int32) C.vm_exec_w6_hook_result_t {
+func w6_getPrevBlockRandomSeed(ctx *C.vm_exec_hook_context_t, pointer int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
 	if err != nil {
@@ -1551,7 +1551,7 @@ func w6_getPrevBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, pointer int32) 
 }
 
 //export w6_getBlockRoundTimeMs
-func w6_getBlockRoundTimeMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getBlockRoundTimeMs(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetBlockRoundTimeMs()
 	if err != nil {
@@ -1561,7 +1561,7 @@ func w6_getBlockRoundTimeMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_
 }
 
 //export w6_epochStartBlockTimestampMs
-func w6_epochStartBlockTimestampMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_epochStartBlockTimestampMs(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.EpochStartBlockTimestampMs()
 	if err != nil {
@@ -1571,7 +1571,7 @@ func w6_epochStartBlockTimestampMs(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w
 }
 
 //export w6_epochStartBlockNonce
-func w6_epochStartBlockNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_epochStartBlockNonce(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.EpochStartBlockNonce()
 	if err != nil {
@@ -1581,7 +1581,7 @@ func w6_epochStartBlockNonce(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook
 }
 
 //export w6_epochStartBlockRound
-func w6_epochStartBlockRound(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_epochStartBlockRound(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.EpochStartBlockRound()
 	if err != nil {
@@ -1591,7 +1591,7 @@ func w6_epochStartBlockRound(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook
 }
 
 //export w6_finish
-func w6_finish(ctx *C.vm_exec_w6_hook_context_t, pointer int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_finish(ctx *C.vm_exec_hook_context_t, pointer int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.Finish(executor.MemPtr(pointer), length)
 	if err != nil {
@@ -1601,7 +1601,7 @@ func w6_finish(ctx *C.vm_exec_w6_hook_context_t, pointer int32, length int32) C.
 }
 
 //export w6_executeOnSameContext
-func w6_executeOnSameContext(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_executeOnSameContext(ctx *C.vm_exec_hook_context_t, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ExecuteOnSameContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1611,7 +1611,7 @@ func w6_executeOnSameContext(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, a
 }
 
 //export w6_executeOnDestContext
-func w6_executeOnDestContext(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_executeOnDestContext(ctx *C.vm_exec_hook_context_t, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ExecuteOnDestContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1621,7 +1621,7 @@ func w6_executeOnDestContext(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, a
 }
 
 //export w6_executeReadOnly
-func w6_executeReadOnly(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, addressOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_executeReadOnly(ctx *C.vm_exec_hook_context_t, gasLimit int64, addressOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ExecuteReadOnly(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1631,7 +1631,7 @@ func w6_executeReadOnly(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, addres
 }
 
 //export w6_createContract
-func w6_createContract(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, resultOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_createContract(ctx *C.vm_exec_hook_context_t, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, resultOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.CreateContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, executor.MemPtr(resultOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1641,7 +1641,7 @@ func w6_createContract(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, valueOf
 }
 
 //export w6_deployFromSourceContract
-func w6_deployFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, resultAddressOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_deployFromSourceContract(ctx *C.vm_exec_hook_context_t, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, resultAddressOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.DeployFromSourceContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), executor.MemPtr(resultAddressOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1651,7 +1651,7 @@ func w6_deployFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, gasLimit int6
 }
 
 //export w6_getNumReturnData
-func w6_getNumReturnData(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_getNumReturnData(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetNumReturnData()
 	if err != nil {
@@ -1661,7 +1661,7 @@ func w6_getNumReturnData(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_res
 }
 
 //export w6_getReturnDataSize
-func w6_getReturnDataSize(ctx *C.vm_exec_w6_hook_context_t, resultID int32) C.vm_exec_w6_hook_result_t {
+func w6_getReturnDataSize(ctx *C.vm_exec_hook_context_t, resultID int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetReturnDataSize(resultID)
 	if err != nil {
@@ -1671,7 +1671,7 @@ func w6_getReturnDataSize(ctx *C.vm_exec_w6_hook_context_t, resultID int32) C.vm
 }
 
 //export w6_getReturnData
-func w6_getReturnData(ctx *C.vm_exec_w6_hook_context_t, resultID int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getReturnData(ctx *C.vm_exec_hook_context_t, resultID int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetReturnData(resultID, executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1681,7 +1681,7 @@ func w6_getReturnData(ctx *C.vm_exec_w6_hook_context_t, resultID int32, dataOffs
 }
 
 //export w6_cleanReturnData
-func w6_cleanReturnData(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_cleanReturnData(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.CleanReturnData()
 	if err != nil {
@@ -1691,7 +1691,7 @@ func w6_cleanReturnData(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_resu
 }
 
 //export w6_deleteFromReturnData
-func w6_deleteFromReturnData(ctx *C.vm_exec_w6_hook_context_t, resultID int32) C.vm_exec_w6_hook_result_t {
+func w6_deleteFromReturnData(ctx *C.vm_exec_hook_context_t, resultID int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.DeleteFromReturnData(resultID)
 	if err != nil {
@@ -1701,7 +1701,7 @@ func w6_deleteFromReturnData(ctx *C.vm_exec_w6_hook_context_t, resultID int32) C
 }
 
 //export w6_getOriginalTxHash
-func w6_getOriginalTxHash(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getOriginalTxHash(ctx *C.vm_exec_hook_context_t, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetOriginalTxHash(executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1711,7 +1711,7 @@ func w6_getOriginalTxHash(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32) C.
 }
 
 //export w6_getCurrentTxHash
-func w6_getCurrentTxHash(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getCurrentTxHash(ctx *C.vm_exec_hook_context_t, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetCurrentTxHash(executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1721,7 +1721,7 @@ func w6_getCurrentTxHash(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32) C.v
 }
 
 //export w6_getPrevTxHash
-func w6_getPrevTxHash(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_getPrevTxHash(ctx *C.vm_exec_hook_context_t, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.GetPrevTxHash(executor.MemPtr(dataOffset))
 	if err != nil {
@@ -1731,7 +1731,7 @@ func w6_getPrevTxHash(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32) C.vm_e
 }
 
 //export w6_managedSCAddress
-func w6_managedSCAddress(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedSCAddress(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedSCAddress(destinationHandle)
 	if err != nil {
@@ -1741,7 +1741,7 @@ func w6_managedSCAddress(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int
 }
 
 //export w6_managedOwnerAddress
-func w6_managedOwnerAddress(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedOwnerAddress(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedOwnerAddress(destinationHandle)
 	if err != nil {
@@ -1751,7 +1751,7 @@ func w6_managedOwnerAddress(ctx *C.vm_exec_w6_hook_context_t, destinationHandle 
 }
 
 //export w6_managedCaller
-func w6_managedCaller(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedCaller(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedCaller(destinationHandle)
 	if err != nil {
@@ -1761,7 +1761,7 @@ func w6_managedCaller(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32)
 }
 
 //export w6_managedGetOriginalCallerAddr
-func w6_managedGetOriginalCallerAddr(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetOriginalCallerAddr(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
 	if err != nil {
@@ -1771,7 +1771,7 @@ func w6_managedGetOriginalCallerAddr(ctx *C.vm_exec_w6_hook_context_t, destinati
 }
 
 //export w6_managedGetRelayerAddr
-func w6_managedGetRelayerAddr(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetRelayerAddr(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetRelayerAddr(destinationHandle)
 	if err != nil {
@@ -1781,7 +1781,7 @@ func w6_managedGetRelayerAddr(ctx *C.vm_exec_w6_hook_context_t, destinationHandl
 }
 
 //export w6_managedSignalError
-func w6_managedSignalError(ctx *C.vm_exec_w6_hook_context_t, errHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedSignalError(ctx *C.vm_exec_hook_context_t, errHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedSignalError(errHandle)
 	if err != nil {
@@ -1791,7 +1791,7 @@ func w6_managedSignalError(ctx *C.vm_exec_w6_hook_context_t, errHandle int32) C.
 }
 
 //export w6_managedWriteLog
-func w6_managedWriteLog(ctx *C.vm_exec_w6_hook_context_t, topicsHandle int32, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedWriteLog(ctx *C.vm_exec_hook_context_t, topicsHandle int32, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
 	if err != nil {
@@ -1801,7 +1801,7 @@ func w6_managedWriteLog(ctx *C.vm_exec_w6_hook_context_t, topicsHandle int32, da
 }
 
 //export w6_managedGetOriginalTxHash
-func w6_managedGetOriginalTxHash(ctx *C.vm_exec_w6_hook_context_t, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetOriginalTxHash(ctx *C.vm_exec_hook_context_t, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetOriginalTxHash(resultHandle)
 	if err != nil {
@@ -1811,7 +1811,7 @@ func w6_managedGetOriginalTxHash(ctx *C.vm_exec_w6_hook_context_t, resultHandle 
 }
 
 //export w6_managedGetStateRootHash
-func w6_managedGetStateRootHash(ctx *C.vm_exec_w6_hook_context_t, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetStateRootHash(ctx *C.vm_exec_hook_context_t, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetStateRootHash(resultHandle)
 	if err != nil {
@@ -1821,7 +1821,7 @@ func w6_managedGetStateRootHash(ctx *C.vm_exec_w6_hook_context_t, resultHandle i
 }
 
 //export w6_managedGetBlockRandomSeed
-func w6_managedGetBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetBlockRandomSeed(ctx *C.vm_exec_hook_context_t, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetBlockRandomSeed(resultHandle)
 	if err != nil {
@@ -1831,7 +1831,7 @@ func w6_managedGetBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, resultHandle
 }
 
 //export w6_managedGetPrevBlockRandomSeed
-func w6_managedGetPrevBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetPrevBlockRandomSeed(ctx *C.vm_exec_hook_context_t, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
 	if err != nil {
@@ -1841,7 +1841,7 @@ func w6_managedGetPrevBlockRandomSeed(ctx *C.vm_exec_w6_hook_context_t, resultHa
 }
 
 //export w6_managedGetReturnData
-func w6_managedGetReturnData(ctx *C.vm_exec_w6_hook_context_t, resultID int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetReturnData(ctx *C.vm_exec_hook_context_t, resultID int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetReturnData(resultID, resultHandle)
 	if err != nil {
@@ -1851,7 +1851,7 @@ func w6_managedGetReturnData(ctx *C.vm_exec_w6_hook_context_t, resultID int32, r
 }
 
 //export w6_managedGetMultiESDTCallValue
-func w6_managedGetMultiESDTCallValue(ctx *C.vm_exec_w6_hook_context_t, multiCallValueHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetMultiESDTCallValue(ctx *C.vm_exec_hook_context_t, multiCallValueHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 	if err != nil {
@@ -1861,7 +1861,7 @@ func w6_managedGetMultiESDTCallValue(ctx *C.vm_exec_w6_hook_context_t, multiCall
 }
 
 //export w6_managedGetAllTransfersCallValue
-func w6_managedGetAllTransfersCallValue(ctx *C.vm_exec_w6_hook_context_t, transferCallValuesListHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetAllTransfersCallValue(ctx *C.vm_exec_hook_context_t, transferCallValuesListHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
 	if err != nil {
@@ -1871,7 +1871,7 @@ func w6_managedGetAllTransfersCallValue(ctx *C.vm_exec_w6_hook_context_t, transf
 }
 
 //export w6_managedGetBackTransfers
-func w6_managedGetBackTransfers(ctx *C.vm_exec_w6_hook_context_t, esdtTransfersValueHandle int32, egldValueHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetBackTransfers(ctx *C.vm_exec_hook_context_t, esdtTransfersValueHandle int32, egldValueHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 	if err != nil {
@@ -1881,7 +1881,7 @@ func w6_managedGetBackTransfers(ctx *C.vm_exec_w6_hook_context_t, esdtTransfersV
 }
 
 //export w6_managedGetESDTBalance
-func w6_managedGetESDTBalance(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetESDTBalance(ctx *C.vm_exec_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
 	if err != nil {
@@ -1891,7 +1891,7 @@ func w6_managedGetESDTBalance(ctx *C.vm_exec_w6_hook_context_t, addressHandle in
 }
 
 //export w6_managedGetESDTTokenData
-func w6_managedGetESDTTokenData(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetESDTTokenData(ctx *C.vm_exec_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 	if err != nil {
@@ -1901,7 +1901,7 @@ func w6_managedGetESDTTokenData(ctx *C.vm_exec_w6_hook_context_t, addressHandle 
 }
 
 //export w6_managedGetESDTTokenType
-func w6_managedGetESDTTokenType(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetESDTTokenType(ctx *C.vm_exec_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 	if err != nil {
@@ -1911,7 +1911,7 @@ func w6_managedGetESDTTokenType(ctx *C.vm_exec_w6_hook_context_t, addressHandle 
 }
 
 //export w6_managedAsyncCall
-func w6_managedAsyncCall(ctx *C.vm_exec_w6_hook_context_t, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedAsyncCall(ctx *C.vm_exec_hook_context_t, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
@@ -1921,7 +1921,7 @@ func w6_managedAsyncCall(ctx *C.vm_exec_w6_hook_context_t, destHandle int32, val
 }
 
 //export w6_managedCreateAsyncCall
-func w6_managedCreateAsyncCall(ctx *C.vm_exec_w6_hook_context_t, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64, callbackClosureHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedCreateAsyncCall(ctx *C.vm_exec_hook_context_t, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64, callbackClosureHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback, callbackClosureHandle)
 	if err != nil {
@@ -1931,7 +1931,7 @@ func w6_managedCreateAsyncCall(ctx *C.vm_exec_w6_hook_context_t, destHandle int3
 }
 
 //export w6_managedGetCallbackClosure
-func w6_managedGetCallbackClosure(ctx *C.vm_exec_w6_hook_context_t, callbackClosureHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetCallbackClosure(ctx *C.vm_exec_hook_context_t, callbackClosureHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
 	if err != nil {
@@ -1941,7 +1941,7 @@ func w6_managedGetCallbackClosure(ctx *C.vm_exec_w6_hook_context_t, callbackClos
 }
 
 //export w6_managedUpgradeFromSourceContract
-func w6_managedUpgradeFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedUpgradeFromSourceContract(ctx *C.vm_exec_hook_context_t, destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	if err != nil {
@@ -1951,7 +1951,7 @@ func w6_managedUpgradeFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, destH
 }
 
 //export w6_managedUpgradeContract
-func w6_managedUpgradeContract(ctx *C.vm_exec_w6_hook_context_t, destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedUpgradeContract(ctx *C.vm_exec_hook_context_t, destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	if err != nil {
@@ -1961,7 +1961,7 @@ func w6_managedUpgradeContract(ctx *C.vm_exec_w6_hook_context_t, destHandle int3
 }
 
 //export w6_managedDeleteContract
-func w6_managedDeleteContract(ctx *C.vm_exec_w6_hook_context_t, destHandle int32, gasLimit int64, argumentsHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedDeleteContract(ctx *C.vm_exec_hook_context_t, destHandle int32, gasLimit int64, argumentsHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
 	if err != nil {
@@ -1971,7 +1971,7 @@ func w6_managedDeleteContract(ctx *C.vm_exec_w6_hook_context_t, destHandle int32
 }
 
 //export w6_managedDeployFromSourceContract
-func w6_managedDeployFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedDeployFromSourceContract(ctx *C.vm_exec_hook_context_t, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	if err != nil {
@@ -1981,7 +1981,7 @@ func w6_managedDeployFromSourceContract(ctx *C.vm_exec_w6_hook_context_t, gas in
 }
 
 //export w6_managedCreateContract
-func w6_managedCreateContract(ctx *C.vm_exec_w6_hook_context_t, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedCreateContract(ctx *C.vm_exec_hook_context_t, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	if err != nil {
@@ -1991,7 +1991,7 @@ func w6_managedCreateContract(ctx *C.vm_exec_w6_hook_context_t, gas int64, value
 }
 
 //export w6_managedExecuteReadOnly
-func w6_managedExecuteReadOnly(ctx *C.vm_exec_w6_hook_context_t, gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedExecuteReadOnly(ctx *C.vm_exec_hook_context_t, gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
@@ -2001,7 +2001,7 @@ func w6_managedExecuteReadOnly(ctx *C.vm_exec_w6_hook_context_t, gas int64, addr
 }
 
 //export w6_managedExecuteOnSameContext
-func w6_managedExecuteOnSameContext(ctx *C.vm_exec_w6_hook_context_t, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedExecuteOnSameContext(ctx *C.vm_exec_hook_context_t, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
@@ -2011,7 +2011,7 @@ func w6_managedExecuteOnSameContext(ctx *C.vm_exec_w6_hook_context_t, gas int64,
 }
 
 //export w6_managedExecuteOnDestContext
-func w6_managedExecuteOnDestContext(ctx *C.vm_exec_w6_hook_context_t, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedExecuteOnDestContext(ctx *C.vm_exec_hook_context_t, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
@@ -2021,7 +2021,7 @@ func w6_managedExecuteOnDestContext(ctx *C.vm_exec_w6_hook_context_t, gas int64,
 }
 
 //export w6_managedExecuteOnDestContextWithErrorReturn
-func w6_managedExecuteOnDestContextWithErrorReturn(ctx *C.vm_exec_w6_hook_context_t, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedExecuteOnDestContextWithErrorReturn(ctx *C.vm_exec_hook_context_t, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
@@ -2031,7 +2031,7 @@ func w6_managedExecuteOnDestContextWithErrorReturn(ctx *C.vm_exec_w6_hook_contex
 }
 
 //export w6_managedMultiTransferESDTNFTExecute
-func w6_managedMultiTransferESDTNFTExecute(ctx *C.vm_exec_w6_hook_context_t, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMultiTransferESDTNFTExecute(ctx *C.vm_exec_hook_context_t, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
@@ -2041,7 +2041,7 @@ func w6_managedMultiTransferESDTNFTExecute(ctx *C.vm_exec_w6_hook_context_t, dst
 }
 
 //export w6_managedMultiTransferESDTNFTExecuteWithReturn
-func w6_managedMultiTransferESDTNFTExecuteWithReturn(ctx *C.vm_exec_w6_hook_context_t, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMultiTransferESDTNFTExecuteWithReturn(ctx *C.vm_exec_hook_context_t, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
@@ -2051,7 +2051,7 @@ func w6_managedMultiTransferESDTNFTExecuteWithReturn(ctx *C.vm_exec_w6_hook_cont
 }
 
 //export w6_managedMultiTransferESDTNFTExecuteByUser
-func w6_managedMultiTransferESDTNFTExecuteByUser(ctx *C.vm_exec_w6_hook_context_t, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMultiTransferESDTNFTExecuteByUser(ctx *C.vm_exec_hook_context_t, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
@@ -2061,7 +2061,7 @@ func w6_managedMultiTransferESDTNFTExecuteByUser(ctx *C.vm_exec_w6_hook_context_
 }
 
 //export w6_managedTransferValueExecute
-func w6_managedTransferValueExecute(ctx *C.vm_exec_w6_hook_context_t, dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedTransferValueExecute(ctx *C.vm_exec_hook_context_t, dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
@@ -2071,7 +2071,7 @@ func w6_managedTransferValueExecute(ctx *C.vm_exec_w6_hook_context_t, dstHandle 
 }
 
 //export w6_managedIsESDTFrozen
-func w6_managedIsESDTFrozen(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64) C.vm_exec_w6_hook_result_t {
+func w6_managedIsESDTFrozen(ctx *C.vm_exec_hook_context_t, addressHandle int32, tokenIDHandle int32, nonce int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
 	if err != nil {
@@ -2081,7 +2081,7 @@ func w6_managedIsESDTFrozen(ctx *C.vm_exec_w6_hook_context_t, addressHandle int3
 }
 
 //export w6_managedIsESDTLimitedTransfer
-func w6_managedIsESDTLimitedTransfer(ctx *C.vm_exec_w6_hook_context_t, tokenIDHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedIsESDTLimitedTransfer(ctx *C.vm_exec_hook_context_t, tokenIDHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
 	if err != nil {
@@ -2091,7 +2091,7 @@ func w6_managedIsESDTLimitedTransfer(ctx *C.vm_exec_w6_hook_context_t, tokenIDHa
 }
 
 //export w6_managedIsESDTPaused
-func w6_managedIsESDTPaused(ctx *C.vm_exec_w6_hook_context_t, tokenIDHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedIsESDTPaused(ctx *C.vm_exec_hook_context_t, tokenIDHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedIsESDTPaused(tokenIDHandle)
 	if err != nil {
@@ -2101,7 +2101,7 @@ func w6_managedIsESDTPaused(ctx *C.vm_exec_w6_hook_context_t, tokenIDHandle int3
 }
 
 //export w6_managedBufferToHex
-func w6_managedBufferToHex(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32, destHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedBufferToHex(ctx *C.vm_exec_hook_context_t, sourceHandle int32, destHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
 	if err != nil {
@@ -2111,7 +2111,7 @@ func w6_managedBufferToHex(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32,
 }
 
 //export w6_managedGetCodeMetadata
-func w6_managedGetCodeMetadata(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, responseHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetCodeMetadata(ctx *C.vm_exec_hook_context_t, addressHandle int32, responseHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
 	if err != nil {
@@ -2121,7 +2121,7 @@ func w6_managedGetCodeMetadata(ctx *C.vm_exec_w6_hook_context_t, addressHandle i
 }
 
 //export w6_managedGetCodeHash
-func w6_managedGetCodeHash(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, codeHashHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGetCodeHash(ctx *C.vm_exec_hook_context_t, addressHandle int32, codeHashHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 	if err != nil {
@@ -2131,7 +2131,7 @@ func w6_managedGetCodeHash(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32
 }
 
 //export w6_managedIsBuiltinFunction
-func w6_managedIsBuiltinFunction(ctx *C.vm_exec_w6_hook_context_t, functionNameHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedIsBuiltinFunction(ctx *C.vm_exec_hook_context_t, functionNameHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
 	if err != nil {
@@ -2141,7 +2141,7 @@ func w6_managedIsBuiltinFunction(ctx *C.vm_exec_w6_hook_context_t, functionNameH
 }
 
 //export w6_bigFloatNewFromParts
-func w6_bigFloatNewFromParts(ctx *C.vm_exec_w6_hook_context_t, integralPart int32, fractionalPart int32, exponent int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatNewFromParts(ctx *C.vm_exec_hook_context_t, integralPart int32, fractionalPart int32, exponent int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
 	if err != nil {
@@ -2151,7 +2151,7 @@ func w6_bigFloatNewFromParts(ctx *C.vm_exec_w6_hook_context_t, integralPart int3
 }
 
 //export w6_bigFloatNewFromFrac
-func w6_bigFloatNewFromFrac(ctx *C.vm_exec_w6_hook_context_t, numerator int64, denominator int64) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatNewFromFrac(ctx *C.vm_exec_hook_context_t, numerator int64, denominator int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigFloatNewFromFrac(numerator, denominator)
 	if err != nil {
@@ -2161,7 +2161,7 @@ func w6_bigFloatNewFromFrac(ctx *C.vm_exec_w6_hook_context_t, numerator int64, d
 }
 
 //export w6_bigFloatNewFromSci
-func w6_bigFloatNewFromSci(ctx *C.vm_exec_w6_hook_context_t, significand int64, exponent int64) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatNewFromSci(ctx *C.vm_exec_hook_context_t, significand int64, exponent int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigFloatNewFromSci(significand, exponent)
 	if err != nil {
@@ -2171,7 +2171,7 @@ func w6_bigFloatNewFromSci(ctx *C.vm_exec_w6_hook_context_t, significand int64, 
 }
 
 //export w6_bigFloatAdd
-func w6_bigFloatAdd(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatAdd(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2181,7 +2181,7 @@ func w6_bigFloatAdd(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatSub
-func w6_bigFloatSub(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatSub(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2191,7 +2191,7 @@ func w6_bigFloatSub(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatMul
-func w6_bigFloatMul(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatMul(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2201,7 +2201,7 @@ func w6_bigFloatMul(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatDiv
-func w6_bigFloatDiv(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatDiv(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2211,7 +2211,7 @@ func w6_bigFloatDiv(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatNeg
-func w6_bigFloatNeg(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatNeg(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatNeg(destinationHandle, opHandle)
 	if err != nil {
@@ -2221,7 +2221,7 @@ func w6_bigFloatNeg(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatClone
-func w6_bigFloatClone(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatClone(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatClone(destinationHandle, opHandle)
 	if err != nil {
@@ -2231,7 +2231,7 @@ func w6_bigFloatClone(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32,
 }
 
 //export w6_bigFloatCmp
-func w6_bigFloatCmp(ctx *C.vm_exec_w6_hook_context_t, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatCmp(ctx *C.vm_exec_hook_context_t, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigFloatCmp(op1Handle, op2Handle)
 	if err != nil {
@@ -2241,7 +2241,7 @@ func w6_bigFloatCmp(ctx *C.vm_exec_w6_hook_context_t, op1Handle int32, op2Handle
 }
 
 //export w6_bigFloatAbs
-func w6_bigFloatAbs(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatAbs(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatAbs(destinationHandle, opHandle)
 	if err != nil {
@@ -2251,7 +2251,7 @@ func w6_bigFloatAbs(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatSign
-func w6_bigFloatSign(ctx *C.vm_exec_w6_hook_context_t, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatSign(ctx *C.vm_exec_hook_context_t, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigFloatSign(opHandle)
 	if err != nil {
@@ -2261,7 +2261,7 @@ func w6_bigFloatSign(ctx *C.vm_exec_w6_hook_context_t, opHandle int32) C.vm_exec
 }
 
 //export w6_bigFloatSqrt
-func w6_bigFloatSqrt(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatSqrt(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatSqrt(destinationHandle, opHandle)
 	if err != nil {
@@ -2271,7 +2271,7 @@ func w6_bigFloatSqrt(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, 
 }
 
 //export w6_bigFloatPow
-func w6_bigFloatPow(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32, exponent int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatPow(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32, exponent int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
 	if err != nil {
@@ -2281,7 +2281,7 @@ func w6_bigFloatPow(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, o
 }
 
 //export w6_bigFloatFloor
-func w6_bigFloatFloor(ctx *C.vm_exec_w6_hook_context_t, destBigIntHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatFloor(ctx *C.vm_exec_hook_context_t, destBigIntHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
 	if err != nil {
@@ -2291,7 +2291,7 @@ func w6_bigFloatFloor(ctx *C.vm_exec_w6_hook_context_t, destBigIntHandle int32, 
 }
 
 //export w6_bigFloatCeil
-func w6_bigFloatCeil(ctx *C.vm_exec_w6_hook_context_t, destBigIntHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatCeil(ctx *C.vm_exec_hook_context_t, destBigIntHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
 	if err != nil {
@@ -2301,7 +2301,7 @@ func w6_bigFloatCeil(ctx *C.vm_exec_w6_hook_context_t, destBigIntHandle int32, o
 }
 
 //export w6_bigFloatTruncate
-func w6_bigFloatTruncate(ctx *C.vm_exec_w6_hook_context_t, destBigIntHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatTruncate(ctx *C.vm_exec_hook_context_t, destBigIntHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
 	if err != nil {
@@ -2311,7 +2311,7 @@ func w6_bigFloatTruncate(ctx *C.vm_exec_w6_hook_context_t, destBigIntHandle int3
 }
 
 //export w6_bigFloatSetInt64
-func w6_bigFloatSetInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatSetInt64(ctx *C.vm_exec_hook_context_t, destinationHandle int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatSetInt64(destinationHandle, value)
 	if err != nil {
@@ -2321,7 +2321,7 @@ func w6_bigFloatSetInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int
 }
 
 //export w6_bigFloatIsInt
-func w6_bigFloatIsInt(ctx *C.vm_exec_w6_hook_context_t, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatIsInt(ctx *C.vm_exec_hook_context_t, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigFloatIsInt(opHandle)
 	if err != nil {
@@ -2331,7 +2331,7 @@ func w6_bigFloatIsInt(ctx *C.vm_exec_w6_hook_context_t, opHandle int32) C.vm_exe
 }
 
 //export w6_bigFloatSetBigInt
-func w6_bigFloatSetBigInt(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, bigIntHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatSetBigInt(ctx *C.vm_exec_hook_context_t, destinationHandle int32, bigIntHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
 	if err != nil {
@@ -2341,7 +2341,7 @@ func w6_bigFloatSetBigInt(ctx *C.vm_exec_w6_hook_context_t, destinationHandle in
 }
 
 //export w6_bigFloatGetConstPi
-func w6_bigFloatGetConstPi(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatGetConstPi(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatGetConstPi(destinationHandle)
 	if err != nil {
@@ -2351,7 +2351,7 @@ func w6_bigFloatGetConstPi(ctx *C.vm_exec_w6_hook_context_t, destinationHandle i
 }
 
 //export w6_bigFloatGetConstE
-func w6_bigFloatGetConstE(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigFloatGetConstE(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigFloatGetConstE(destinationHandle)
 	if err != nil {
@@ -2361,7 +2361,7 @@ func w6_bigFloatGetConstE(ctx *C.vm_exec_w6_hook_context_t, destinationHandle in
 }
 
 //export w6_bigIntGetUnsignedArgument
-func w6_bigIntGetUnsignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetUnsignedArgument(ctx *C.vm_exec_hook_context_t, id int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
 	if err != nil {
@@ -2371,7 +2371,7 @@ func w6_bigIntGetUnsignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, de
 }
 
 //export w6_bigIntGetSignedArgument
-func w6_bigIntGetSignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetSignedArgument(ctx *C.vm_exec_hook_context_t, id int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetSignedArgument(id, destinationHandle)
 	if err != nil {
@@ -2381,7 +2381,7 @@ func w6_bigIntGetSignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, dest
 }
 
 //export w6_bigIntStorageStoreUnsigned
-func w6_bigIntStorageStoreUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, sourceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntStorageStoreUnsigned(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, sourceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, sourceHandle)
 	if err != nil {
@@ -2391,7 +2391,7 @@ func w6_bigIntStorageStoreUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset i
 }
 
 //export w6_bigIntStorageLoadUnsigned
-func w6_bigIntStorageLoadUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntStorageLoadUnsigned(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength, destinationHandle)
 	if err != nil {
@@ -2401,7 +2401,7 @@ func w6_bigIntStorageLoadUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset in
 }
 
 //export w6_bigIntGetCallValue
-func w6_bigIntGetCallValue(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetCallValue(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetCallValue(destinationHandle)
 	if err != nil {
@@ -2411,7 +2411,7 @@ func w6_bigIntGetCallValue(ctx *C.vm_exec_w6_hook_context_t, destinationHandle i
 }
 
 //export w6_bigIntGetESDTCallValue
-func w6_bigIntGetESDTCallValue(ctx *C.vm_exec_w6_hook_context_t, destination int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetESDTCallValue(ctx *C.vm_exec_hook_context_t, destination int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetESDTCallValue(destination)
 	if err != nil {
@@ -2421,7 +2421,7 @@ func w6_bigIntGetESDTCallValue(ctx *C.vm_exec_w6_hook_context_t, destination int
 }
 
 //export w6_bigIntGetESDTCallValueByIndex
-func w6_bigIntGetESDTCallValueByIndex(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, index int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetESDTCallValueByIndex(ctx *C.vm_exec_hook_context_t, destinationHandle int32, index int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
 	if err != nil {
@@ -2431,7 +2431,7 @@ func w6_bigIntGetESDTCallValueByIndex(ctx *C.vm_exec_w6_hook_context_t, destinat
 }
 
 //export w6_bigIntGetExternalBalance
-func w6_bigIntGetExternalBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, result int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetExternalBalance(ctx *C.vm_exec_hook_context_t, addressOffset int32, result int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetExternalBalance(executor.MemPtr(addressOffset), result)
 	if err != nil {
@@ -2441,7 +2441,7 @@ func w6_bigIntGetExternalBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset
 }
 
 //export w6_bigIntGetESDTExternalBalance
-func w6_bigIntGetESDTExternalBalance(ctx *C.vm_exec_w6_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetESDTExternalBalance(ctx *C.vm_exec_hook_context_t, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntGetESDTExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, resultHandle)
 	if err != nil {
@@ -2451,7 +2451,7 @@ func w6_bigIntGetESDTExternalBalance(ctx *C.vm_exec_w6_hook_context_t, addressOf
 }
 
 //export w6_bigIntNew
-func w6_bigIntNew(ctx *C.vm_exec_w6_hook_context_t, smallValue int64) C.vm_exec_w6_hook_result_t {
+func w6_bigIntNew(ctx *C.vm_exec_hook_context_t, smallValue int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntNew(smallValue)
 	if err != nil {
@@ -2461,7 +2461,7 @@ func w6_bigIntNew(ctx *C.vm_exec_w6_hook_context_t, smallValue int64) C.vm_exec_
 }
 
 //export w6_bigIntUnsignedByteLength
-func w6_bigIntUnsignedByteLength(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntUnsignedByteLength(ctx *C.vm_exec_hook_context_t, referenceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntUnsignedByteLength(referenceHandle)
 	if err != nil {
@@ -2471,7 +2471,7 @@ func w6_bigIntUnsignedByteLength(ctx *C.vm_exec_w6_hook_context_t, referenceHand
 }
 
 //export w6_bigIntSignedByteLength
-func w6_bigIntSignedByteLength(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSignedByteLength(ctx *C.vm_exec_hook_context_t, referenceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntSignedByteLength(referenceHandle)
 	if err != nil {
@@ -2481,7 +2481,7 @@ func w6_bigIntSignedByteLength(ctx *C.vm_exec_w6_hook_context_t, referenceHandle
 }
 
 //export w6_bigIntGetUnsignedBytes
-func w6_bigIntGetUnsignedBytes(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int32, byteOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetUnsignedBytes(ctx *C.vm_exec_hook_context_t, referenceHandle int32, byteOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntGetUnsignedBytes(referenceHandle, executor.MemPtr(byteOffset))
 	if err != nil {
@@ -2491,7 +2491,7 @@ func w6_bigIntGetUnsignedBytes(ctx *C.vm_exec_w6_hook_context_t, referenceHandle
 }
 
 //export w6_bigIntGetSignedBytes
-func w6_bigIntGetSignedBytes(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int32, byteOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetSignedBytes(ctx *C.vm_exec_hook_context_t, referenceHandle int32, byteOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntGetSignedBytes(referenceHandle, executor.MemPtr(byteOffset))
 	if err != nil {
@@ -2501,7 +2501,7 @@ func w6_bigIntGetSignedBytes(ctx *C.vm_exec_w6_hook_context_t, referenceHandle i
 }
 
 //export w6_bigIntSetUnsignedBytes
-func w6_bigIntSetUnsignedBytes(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, byteOffset int32, byteLength int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSetUnsignedBytes(ctx *C.vm_exec_hook_context_t, destinationHandle int32, byteOffset int32, byteLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntSetUnsignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 	if err != nil {
@@ -2511,7 +2511,7 @@ func w6_bigIntSetUnsignedBytes(ctx *C.vm_exec_w6_hook_context_t, destinationHand
 }
 
 //export w6_bigIntSetSignedBytes
-func w6_bigIntSetSignedBytes(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, byteOffset int32, byteLength int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSetSignedBytes(ctx *C.vm_exec_hook_context_t, destinationHandle int32, byteOffset int32, byteLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntSetSignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 	if err != nil {
@@ -2521,7 +2521,7 @@ func w6_bigIntSetSignedBytes(ctx *C.vm_exec_w6_hook_context_t, destinationHandle
 }
 
 //export w6_bigIntIsInt64
-func w6_bigIntIsInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntIsInt64(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntIsInt64(destinationHandle)
 	if err != nil {
@@ -2531,7 +2531,7 @@ func w6_bigIntIsInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32)
 }
 
 //export w6_bigIntGetInt64
-func w6_bigIntGetInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntGetInt64(ctx *C.vm_exec_hook_context_t, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntGetInt64(destinationHandle)
 	if err != nil {
@@ -2541,7 +2541,7 @@ func w6_bigIntGetInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32
 }
 
 //export w6_bigIntSetInt64
-func w6_bigIntSetInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSetInt64(ctx *C.vm_exec_hook_context_t, destinationHandle int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntSetInt64(destinationHandle, value)
 	if err != nil {
@@ -2551,7 +2551,7 @@ func w6_bigIntSetInt64(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32
 }
 
 //export w6_bigIntAdd
-func w6_bigIntAdd(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntAdd(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2561,7 +2561,7 @@ func w6_bigIntAdd(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1
 }
 
 //export w6_bigIntSub
-func w6_bigIntSub(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSub(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2571,7 +2571,7 @@ func w6_bigIntSub(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1
 }
 
 //export w6_bigIntMul
-func w6_bigIntMul(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntMul(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2581,7 +2581,7 @@ func w6_bigIntMul(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1
 }
 
 //export w6_bigIntTDiv
-func w6_bigIntTDiv(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntTDiv(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2591,7 +2591,7 @@ func w6_bigIntTDiv(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op
 }
 
 //export w6_bigIntTMod
-func w6_bigIntTMod(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntTMod(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2601,7 +2601,7 @@ func w6_bigIntTMod(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op
 }
 
 //export w6_bigIntEDiv
-func w6_bigIntEDiv(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntEDiv(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2611,7 +2611,7 @@ func w6_bigIntEDiv(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op
 }
 
 //export w6_bigIntEMod
-func w6_bigIntEMod(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntEMod(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2621,7 +2621,7 @@ func w6_bigIntEMod(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op
 }
 
 //export w6_bigIntSqrt
-func w6_bigIntSqrt(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSqrt(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntSqrt(destinationHandle, opHandle)
 	if err != nil {
@@ -2631,7 +2631,7 @@ func w6_bigIntSqrt(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op
 }
 
 //export w6_bigIntPow
-func w6_bigIntPow(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntPow(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2641,7 +2641,7 @@ func w6_bigIntPow(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1
 }
 
 //export w6_bigIntLog2
-func w6_bigIntLog2(ctx *C.vm_exec_w6_hook_context_t, op1Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntLog2(ctx *C.vm_exec_hook_context_t, op1Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntLog2(op1Handle)
 	if err != nil {
@@ -2651,7 +2651,7 @@ func w6_bigIntLog2(ctx *C.vm_exec_w6_hook_context_t, op1Handle int32) C.vm_exec_
 }
 
 //export w6_bigIntAbs
-func w6_bigIntAbs(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntAbs(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntAbs(destinationHandle, opHandle)
 	if err != nil {
@@ -2661,7 +2661,7 @@ func w6_bigIntAbs(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opH
 }
 
 //export w6_bigIntNeg
-func w6_bigIntNeg(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntNeg(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntNeg(destinationHandle, opHandle)
 	if err != nil {
@@ -2671,7 +2671,7 @@ func w6_bigIntNeg(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opH
 }
 
 //export w6_bigIntSign
-func w6_bigIntSign(ctx *C.vm_exec_w6_hook_context_t, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntSign(ctx *C.vm_exec_hook_context_t, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntSign(opHandle)
 	if err != nil {
@@ -2681,7 +2681,7 @@ func w6_bigIntSign(ctx *C.vm_exec_w6_hook_context_t, opHandle int32) C.vm_exec_w
 }
 
 //export w6_bigIntCmp
-func w6_bigIntCmp(ctx *C.vm_exec_w6_hook_context_t, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntCmp(ctx *C.vm_exec_hook_context_t, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.BigIntCmp(op1Handle, op2Handle)
 	if err != nil {
@@ -2691,7 +2691,7 @@ func w6_bigIntCmp(ctx *C.vm_exec_w6_hook_context_t, op1Handle int32, op2Handle i
 }
 
 //export w6_bigIntNot
-func w6_bigIntNot(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntNot(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntNot(destinationHandle, opHandle)
 	if err != nil {
@@ -2701,7 +2701,7 @@ func w6_bigIntNot(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opH
 }
 
 //export w6_bigIntAnd
-func w6_bigIntAnd(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntAnd(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2711,7 +2711,7 @@ func w6_bigIntAnd(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1
 }
 
 //export w6_bigIntOr
-func w6_bigIntOr(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntOr(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2721,7 +2721,7 @@ func w6_bigIntOr(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1H
 }
 
 //export w6_bigIntXor
-func w6_bigIntXor(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntXor(ctx *C.vm_exec_hook_context_t, destinationHandle int32, op1Handle int32, op2Handle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
@@ -2731,7 +2731,7 @@ func w6_bigIntXor(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, op1
 }
 
 //export w6_bigIntShr
-func w6_bigIntShr(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32, bits int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntShr(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32, bits int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntShr(destinationHandle, opHandle, bits)
 	if err != nil {
@@ -2741,7 +2741,7 @@ func w6_bigIntShr(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opH
 }
 
 //export w6_bigIntShl
-func w6_bigIntShl(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opHandle int32, bits int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntShl(ctx *C.vm_exec_hook_context_t, destinationHandle int32, opHandle int32, bits int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntShl(destinationHandle, opHandle, bits)
 	if err != nil {
@@ -2751,7 +2751,7 @@ func w6_bigIntShl(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, opH
 }
 
 //export w6_bigIntFinishUnsigned
-func w6_bigIntFinishUnsigned(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntFinishUnsigned(ctx *C.vm_exec_hook_context_t, referenceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntFinishUnsigned(referenceHandle)
 	if err != nil {
@@ -2761,7 +2761,7 @@ func w6_bigIntFinishUnsigned(ctx *C.vm_exec_w6_hook_context_t, referenceHandle i
 }
 
 //export w6_bigIntFinishSigned
-func w6_bigIntFinishSigned(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntFinishSigned(ctx *C.vm_exec_hook_context_t, referenceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntFinishSigned(referenceHandle)
 	if err != nil {
@@ -2771,7 +2771,7 @@ func w6_bigIntFinishSigned(ctx *C.vm_exec_w6_hook_context_t, referenceHandle int
 }
 
 //export w6_bigIntToString
-func w6_bigIntToString(ctx *C.vm_exec_w6_hook_context_t, bigIntHandle int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_bigIntToString(ctx *C.vm_exec_hook_context_t, bigIntHandle int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.BigIntToString(bigIntHandle, destinationHandle)
 	if err != nil {
@@ -2781,7 +2781,7 @@ func w6_bigIntToString(ctx *C.vm_exec_w6_hook_context_t, bigIntHandle int32, des
 }
 
 //export w6_mBufferNew
-func w6_mBufferNew(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_mBufferNew(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferNew()
 	if err != nil {
@@ -2791,7 +2791,7 @@ func w6_mBufferNew(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t 
 }
 
 //export w6_mBufferNewFromBytes
-func w6_mBufferNewFromBytes(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, dataLength int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferNewFromBytes(ctx *C.vm_exec_hook_context_t, dataOffset int32, dataLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferNewFromBytes(executor.MemPtr(dataOffset), dataLength)
 	if err != nil {
@@ -2801,7 +2801,7 @@ func w6_mBufferNewFromBytes(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, 
 }
 
 //export w6_mBufferGetLength
-func w6_mBufferGetLength(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferGetLength(ctx *C.vm_exec_hook_context_t, mBufferHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferGetLength(mBufferHandle)
 	if err != nil {
@@ -2811,7 +2811,7 @@ func w6_mBufferGetLength(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32) 
 }
 
 //export w6_mBufferGetBytes
-func w6_mBufferGetBytes(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferGetBytes(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferGetBytes(mBufferHandle, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -2821,7 +2821,7 @@ func w6_mBufferGetBytes(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, r
 }
 
 //export w6_mBufferGetByteSlice
-func w6_mBufferGetByteSlice(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferGetByteSlice(ctx *C.vm_exec_hook_context_t, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -2831,7 +2831,7 @@ func w6_mBufferGetByteSlice(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32
 }
 
 //export w6_mBufferCopyByteSlice
-func w6_mBufferCopyByteSlice(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferCopyByteSlice(ctx *C.vm_exec_hook_context_t, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
 	if err != nil {
@@ -2841,7 +2841,7 @@ func w6_mBufferCopyByteSlice(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int3
 }
 
 //export w6_mBufferEq
-func w6_mBufferEq(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle1 int32, mBufferHandle2 int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferEq(ctx *C.vm_exec_hook_context_t, mBufferHandle1 int32, mBufferHandle2 int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
 	if err != nil {
@@ -2851,7 +2851,7 @@ func w6_mBufferEq(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle1 int32, mBuffe
 }
 
 //export w6_mBufferSetBytes
-func w6_mBufferSetBytes(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, dataOffset int32, dataLength int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferSetBytes(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, dataOffset int32, dataLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferSetBytes(mBufferHandle, executor.MemPtr(dataOffset), dataLength)
 	if err != nil {
@@ -2861,7 +2861,7 @@ func w6_mBufferSetBytes(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, d
 }
 
 //export w6_mBufferSetByteSlice
-func w6_mBufferSetByteSlice(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferSetByteSlice(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, executor.MemPtr(dataOffset))
 	if err != nil {
@@ -2871,7 +2871,7 @@ func w6_mBufferSetByteSlice(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int3
 }
 
 //export w6_mBufferAppend
-func w6_mBufferAppend(ctx *C.vm_exec_w6_hook_context_t, accumulatorHandle int32, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferAppend(ctx *C.vm_exec_hook_context_t, accumulatorHandle int32, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
 	if err != nil {
@@ -2881,7 +2881,7 @@ func w6_mBufferAppend(ctx *C.vm_exec_w6_hook_context_t, accumulatorHandle int32,
 }
 
 //export w6_mBufferAppendBytes
-func w6_mBufferAppendBytes(ctx *C.vm_exec_w6_hook_context_t, accumulatorHandle int32, dataOffset int32, dataLength int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferAppendBytes(ctx *C.vm_exec_hook_context_t, accumulatorHandle int32, dataOffset int32, dataLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferAppendBytes(accumulatorHandle, executor.MemPtr(dataOffset), dataLength)
 	if err != nil {
@@ -2891,7 +2891,7 @@ func w6_mBufferAppendBytes(ctx *C.vm_exec_w6_hook_context_t, accumulatorHandle i
 }
 
 //export w6_mBufferToBigIntUnsigned
-func w6_mBufferToBigIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferToBigIntUnsigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
 	if err != nil {
@@ -2901,7 +2901,7 @@ func w6_mBufferToBigIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle 
 }
 
 //export w6_mBufferToBigIntSigned
-func w6_mBufferToBigIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferToBigIntSigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
 	if err != nil {
@@ -2911,7 +2911,7 @@ func w6_mBufferToBigIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle in
 }
 
 //export w6_mBufferFromBigIntUnsigned
-func w6_mBufferFromBigIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferFromBigIntUnsigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
 	if err != nil {
@@ -2921,7 +2921,7 @@ func w6_mBufferFromBigIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandl
 }
 
 //export w6_mBufferFromBigIntSigned
-func w6_mBufferFromBigIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferFromBigIntSigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, bigIntHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
 	if err != nil {
@@ -2931,7 +2931,7 @@ func w6_mBufferFromBigIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle 
 }
 
 //export w6_mBufferToSmallIntUnsigned
-func w6_mBufferToSmallIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferToSmallIntUnsigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
 	if err != nil {
@@ -2941,7 +2941,7 @@ func w6_mBufferToSmallIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandl
 }
 
 //export w6_mBufferToSmallIntSigned
-func w6_mBufferToSmallIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferToSmallIntSigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferToSmallIntSigned(mBufferHandle)
 	if err != nil {
@@ -2951,7 +2951,7 @@ func w6_mBufferToSmallIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle 
 }
 
 //export w6_mBufferFromSmallIntUnsigned
-func w6_mBufferFromSmallIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_mBufferFromSmallIntUnsigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
 	if err != nil {
@@ -2961,7 +2961,7 @@ func w6_mBufferFromSmallIntUnsigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHan
 }
 
 //export w6_mBufferFromSmallIntSigned
-func w6_mBufferFromSmallIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_mBufferFromSmallIntSigned(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 	if err != nil {
@@ -2971,7 +2971,7 @@ func w6_mBufferFromSmallIntSigned(ctx *C.vm_exec_w6_hook_context_t, mBufferHandl
 }
 
 //export w6_mBufferToBigFloat
-func w6_mBufferToBigFloat(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, bigFloatHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferToBigFloat(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, bigFloatHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
 	if err != nil {
@@ -2981,7 +2981,7 @@ func w6_mBufferToBigFloat(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32,
 }
 
 //export w6_mBufferFromBigFloat
-func w6_mBufferFromBigFloat(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int32, bigFloatHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferFromBigFloat(ctx *C.vm_exec_hook_context_t, mBufferHandle int32, bigFloatHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
 	if err != nil {
@@ -2991,7 +2991,7 @@ func w6_mBufferFromBigFloat(ctx *C.vm_exec_w6_hook_context_t, mBufferHandle int3
 }
 
 //export w6_mBufferStorageStore
-func w6_mBufferStorageStore(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, sourceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferStorageStore(ctx *C.vm_exec_hook_context_t, keyHandle int32, sourceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
 	if err != nil {
@@ -3001,7 +3001,7 @@ func w6_mBufferStorageStore(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, s
 }
 
 //export w6_mBufferStorageLoad
-func w6_mBufferStorageLoad(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferStorageLoad(ctx *C.vm_exec_hook_context_t, keyHandle int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
 	if err != nil {
@@ -3011,7 +3011,7 @@ func w6_mBufferStorageLoad(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, de
 }
 
 //export w6_mBufferStorageLoadFromAddress
-func w6_mBufferStorageLoadFromAddress(ctx *C.vm_exec_w6_hook_context_t, addressHandle int32, keyHandle int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferStorageLoadFromAddress(ctx *C.vm_exec_hook_context_t, addressHandle int32, keyHandle int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
 	if err != nil {
@@ -3021,7 +3021,7 @@ func w6_mBufferStorageLoadFromAddress(ctx *C.vm_exec_w6_hook_context_t, addressH
 }
 
 //export w6_mBufferGetArgument
-func w6_mBufferGetArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, destinationHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferGetArgument(ctx *C.vm_exec_hook_context_t, id int32, destinationHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferGetArgument(id, destinationHandle)
 	if err != nil {
@@ -3031,7 +3031,7 @@ func w6_mBufferGetArgument(ctx *C.vm_exec_w6_hook_context_t, id int32, destinati
 }
 
 //export w6_mBufferFinish
-func w6_mBufferFinish(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferFinish(ctx *C.vm_exec_hook_context_t, sourceHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferFinish(sourceHandle)
 	if err != nil {
@@ -3041,7 +3041,7 @@ func w6_mBufferFinish(ctx *C.vm_exec_w6_hook_context_t, sourceHandle int32) C.vm
 }
 
 //export w6_mBufferSetRandom
-func w6_mBufferSetRandom(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_mBufferSetRandom(ctx *C.vm_exec_hook_context_t, destinationHandle int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MBufferSetRandom(destinationHandle, length)
 	if err != nil {
@@ -3051,7 +3051,7 @@ func w6_mBufferSetRandom(ctx *C.vm_exec_w6_hook_context_t, destinationHandle int
 }
 
 //export w6_managedMapNew
-func w6_managedMapNew(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result_t {
+func w6_managedMapNew(ctx *C.vm_exec_hook_context_t) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMapNew()
 	if err != nil {
@@ -3061,7 +3061,7 @@ func w6_managedMapNew(ctx *C.vm_exec_w6_hook_context_t) C.vm_exec_w6_hook_result
 }
 
 //export w6_managedMapPut
-func w6_managedMapPut(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, keyHandle int32, valueHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMapPut(ctx *C.vm_exec_hook_context_t, mMapHandle int32, keyHandle int32, valueHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
 	if err != nil {
@@ -3071,7 +3071,7 @@ func w6_managedMapPut(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, keyHan
 }
 
 //export w6_managedMapGet
-func w6_managedMapGet(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, keyHandle int32, outValueHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMapGet(ctx *C.vm_exec_hook_context_t, mMapHandle int32, keyHandle int32, outValueHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
@@ -3081,7 +3081,7 @@ func w6_managedMapGet(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, keyHan
 }
 
 //export w6_managedMapRemove
-func w6_managedMapRemove(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, keyHandle int32, outValueHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMapRemove(ctx *C.vm_exec_hook_context_t, mMapHandle int32, keyHandle int32, outValueHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
@@ -3091,7 +3091,7 @@ func w6_managedMapRemove(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, key
 }
 
 //export w6_managedMapContains
-func w6_managedMapContains(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, keyHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMapContains(ctx *C.vm_exec_hook_context_t, mMapHandle int32, keyHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMapContains(mMapHandle, keyHandle)
 	if err != nil {
@@ -3101,7 +3101,7 @@ func w6_managedMapContains(ctx *C.vm_exec_w6_hook_context_t, mMapHandle int32, k
 }
 
 //export w6_smallIntGetUnsignedArgument
-func w6_smallIntGetUnsignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32) C.vm_exec_w6_hook_result_t {
+func w6_smallIntGetUnsignedArgument(ctx *C.vm_exec_hook_context_t, id int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SmallIntGetUnsignedArgument(id)
 	if err != nil {
@@ -3111,7 +3111,7 @@ func w6_smallIntGetUnsignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32) 
 }
 
 //export w6_smallIntGetSignedArgument
-func w6_smallIntGetSignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32) C.vm_exec_w6_hook_result_t {
+func w6_smallIntGetSignedArgument(ctx *C.vm_exec_hook_context_t, id int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SmallIntGetSignedArgument(id)
 	if err != nil {
@@ -3121,7 +3121,7 @@ func w6_smallIntGetSignedArgument(ctx *C.vm_exec_w6_hook_context_t, id int32) C.
 }
 
 //export w6_smallIntFinishUnsigned
-func w6_smallIntFinishUnsigned(ctx *C.vm_exec_w6_hook_context_t, value int64) C.vm_exec_w6_hook_result_t {
+func w6_smallIntFinishUnsigned(ctx *C.vm_exec_hook_context_t, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.SmallIntFinishUnsigned(value)
 	if err != nil {
@@ -3131,7 +3131,7 @@ func w6_smallIntFinishUnsigned(ctx *C.vm_exec_w6_hook_context_t, value int64) C.
 }
 
 //export w6_smallIntFinishSigned
-func w6_smallIntFinishSigned(ctx *C.vm_exec_w6_hook_context_t, value int64) C.vm_exec_w6_hook_result_t {
+func w6_smallIntFinishSigned(ctx *C.vm_exec_hook_context_t, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.SmallIntFinishSigned(value)
 	if err != nil {
@@ -3141,7 +3141,7 @@ func w6_smallIntFinishSigned(ctx *C.vm_exec_w6_hook_context_t, value int64) C.vm
 }
 
 //export w6_smallIntStorageStoreUnsigned
-func w6_smallIntStorageStoreUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_smallIntStorageStoreUnsigned(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SmallIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, value)
 	if err != nil {
@@ -3151,7 +3151,7 @@ func w6_smallIntStorageStoreUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset
 }
 
 //export w6_smallIntStorageStoreSigned
-func w6_smallIntStorageStoreSigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_smallIntStorageStoreSigned(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SmallIntStorageStoreSigned(executor.MemPtr(keyOffset), keyLength, value)
 	if err != nil {
@@ -3161,7 +3161,7 @@ func w6_smallIntStorageStoreSigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset i
 }
 
 //export w6_smallIntStorageLoadUnsigned
-func w6_smallIntStorageLoadUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_smallIntStorageLoadUnsigned(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SmallIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -3171,7 +3171,7 @@ func w6_smallIntStorageLoadUnsigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset 
 }
 
 //export w6_smallIntStorageLoadSigned
-func w6_smallIntStorageLoadSigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_smallIntStorageLoadSigned(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.SmallIntStorageLoadSigned(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -3181,7 +3181,7 @@ func w6_smallIntStorageLoadSigned(ctx *C.vm_exec_w6_hook_context_t, keyOffset in
 }
 
 //export w6_int64getArgument
-func w6_int64getArgument(ctx *C.vm_exec_w6_hook_context_t, id int32) C.vm_exec_w6_hook_result_t {
+func w6_int64getArgument(ctx *C.vm_exec_hook_context_t, id int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.Int64getArgument(id)
 	if err != nil {
@@ -3191,7 +3191,7 @@ func w6_int64getArgument(ctx *C.vm_exec_w6_hook_context_t, id int32) C.vm_exec_w
 }
 
 //export w6_int64finish
-func w6_int64finish(ctx *C.vm_exec_w6_hook_context_t, value int64) C.vm_exec_w6_hook_result_t {
+func w6_int64finish(ctx *C.vm_exec_hook_context_t, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.Int64finish(value)
 	if err != nil {
@@ -3201,7 +3201,7 @@ func w6_int64finish(ctx *C.vm_exec_w6_hook_context_t, value int64) C.vm_exec_w6_
 }
 
 //export w6_int64storageStore
-func w6_int64storageStore(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, value int64) C.vm_exec_w6_hook_result_t {
+func w6_int64storageStore(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, value int64) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.Int64storageStore(executor.MemPtr(keyOffset), keyLength, value)
 	if err != nil {
@@ -3211,7 +3211,7 @@ func w6_int64storageStore(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, key
 }
 
 //export w6_int64storageLoad
-func w6_int64storageLoad(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_w6_hook_result_t {
+func w6_int64storageLoad(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.Int64storageLoad(executor.MemPtr(keyOffset), keyLength)
 	if err != nil {
@@ -3221,7 +3221,7 @@ func w6_int64storageLoad(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyL
 }
 
 //export w6_sha256
-func w6_sha256(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, length int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_sha256(ctx *C.vm_exec_hook_context_t, dataOffset int32, length int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.Sha256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -3231,7 +3231,7 @@ func w6_sha256(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, length int32,
 }
 
 //export w6_managedSha256
-func w6_managedSha256(ctx *C.vm_exec_w6_hook_context_t, inputHandle int32, outputHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedSha256(ctx *C.vm_exec_hook_context_t, inputHandle int32, outputHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedSha256(inputHandle, outputHandle)
 	if err != nil {
@@ -3241,7 +3241,7 @@ func w6_managedSha256(ctx *C.vm_exec_w6_hook_context_t, inputHandle int32, outpu
 }
 
 //export w6_keccak256
-func w6_keccak256(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, length int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_keccak256(ctx *C.vm_exec_hook_context_t, dataOffset int32, length int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.Keccak256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -3251,7 +3251,7 @@ func w6_keccak256(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, length int
 }
 
 //export w6_managedKeccak256
-func w6_managedKeccak256(ctx *C.vm_exec_w6_hook_context_t, inputHandle int32, outputHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedKeccak256(ctx *C.vm_exec_hook_context_t, inputHandle int32, outputHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedKeccak256(inputHandle, outputHandle)
 	if err != nil {
@@ -3261,7 +3261,7 @@ func w6_managedKeccak256(ctx *C.vm_exec_w6_hook_context_t, inputHandle int32, ou
 }
 
 //export w6_ripemd160
-func w6_ripemd160(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, length int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_ripemd160(ctx *C.vm_exec_hook_context_t, dataOffset int32, length int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.Ripemd160(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -3271,7 +3271,7 @@ func w6_ripemd160(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, length int
 }
 
 //export w6_managedRipemd160
-func w6_managedRipemd160(ctx *C.vm_exec_w6_hook_context_t, inputHandle int32, outputHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedRipemd160(ctx *C.vm_exec_hook_context_t, inputHandle int32, outputHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedRipemd160(inputHandle, outputHandle)
 	if err != nil {
@@ -3281,7 +3281,7 @@ func w6_managedRipemd160(ctx *C.vm_exec_w6_hook_context_t, inputHandle int32, ou
 }
 
 //export w6_verifyBLS
-func w6_verifyBLS(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_verifyBLS(ctx *C.vm_exec_hook_context_t, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.VerifyBLS(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 	if err != nil {
@@ -3291,7 +3291,7 @@ func w6_verifyBLS(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, messageOffs
 }
 
 //export w6_managedVerifyBLS
-func w6_managedVerifyBLS(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifyBLS(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
 	if err != nil {
@@ -3301,7 +3301,7 @@ func w6_managedVerifyBLS(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, mess
 }
 
 //export w6_verifyEd25519
-func w6_verifyEd25519(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_verifyEd25519(ctx *C.vm_exec_hook_context_t, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.VerifyEd25519(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 	if err != nil {
@@ -3311,7 +3311,7 @@ func w6_verifyEd25519(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, message
 }
 
 //export w6_managedVerifyEd25519
-func w6_managedVerifyEd25519(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifyEd25519(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
 	if err != nil {
@@ -3321,7 +3321,7 @@ func w6_managedVerifyEd25519(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, 
 }
 
 //export w6_verifyCustomSecp256k1
-func w6_verifyCustomSecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32, hashType int32) C.vm_exec_w6_hook_result_t {
+func w6_verifyCustomSecp256k1(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32, hashType int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.VerifyCustomSecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset), hashType)
 	if err != nil {
@@ -3331,7 +3331,7 @@ func w6_verifyCustomSecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32,
 }
 
 //export w6_managedVerifyCustomSecp256k1
-func w6_managedVerifyCustomSecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifyCustomSecp256k1(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
 	if err != nil {
@@ -3341,7 +3341,7 @@ func w6_managedVerifyCustomSecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyHandle
 }
 
 //export w6_verifySecp256k1
-func w6_verifySecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_verifySecp256k1(ctx *C.vm_exec_hook_context_t, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.VerifySecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 	if err != nil {
@@ -3351,7 +3351,7 @@ func w6_verifySecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyOffset int32, keyLe
 }
 
 //export w6_managedVerifySecp256k1
-func w6_managedVerifySecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifySecp256k1(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
 	if err != nil {
@@ -3361,7 +3361,7 @@ func w6_managedVerifySecp256k1(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32
 }
 
 //export w6_encodeSecp256k1DerSignature
-func w6_encodeSecp256k1DerSignature(ctx *C.vm_exec_w6_hook_context_t, rOffset int32, rLength int32, sOffset int32, sLength int32, sigOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_encodeSecp256k1DerSignature(ctx *C.vm_exec_hook_context_t, rOffset int32, rLength int32, sOffset int32, sLength int32, sigOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.EncodeSecp256k1DerSignature(executor.MemPtr(rOffset), rLength, executor.MemPtr(sOffset), sLength, executor.MemPtr(sigOffset))
 	if err != nil {
@@ -3371,7 +3371,7 @@ func w6_encodeSecp256k1DerSignature(ctx *C.vm_exec_w6_hook_context_t, rOffset in
 }
 
 //export w6_managedEncodeSecp256k1DerSignature
-func w6_managedEncodeSecp256k1DerSignature(ctx *C.vm_exec_w6_hook_context_t, rHandle int32, sHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedEncodeSecp256k1DerSignature(ctx *C.vm_exec_hook_context_t, rHandle int32, sHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
 	if err != nil {
@@ -3381,7 +3381,7 @@ func w6_managedEncodeSecp256k1DerSignature(ctx *C.vm_exec_w6_hook_context_t, rHa
 }
 
 //export w6_addEC
-func w6_addEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_addEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
 	if err != nil {
@@ -3391,7 +3391,7 @@ func w6_addEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHand
 }
 
 //export w6_doubleEC
-func w6_doubleEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_doubleEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	err := vmHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
 	if err != nil {
@@ -3401,7 +3401,7 @@ func w6_doubleEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultH
 }
 
 //export w6_isOnCurveEC
-func w6_isOnCurveEC(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32, pointXHandle int32, pointYHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_isOnCurveEC(ctx *C.vm_exec_hook_context_t, ecHandle int32, pointXHandle int32, pointYHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
 	if err != nil {
@@ -3411,7 +3411,7 @@ func w6_isOnCurveEC(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32, pointXHand
 }
 
 //export w6_scalarBaseMultEC
-func w6_scalarBaseMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_scalarBaseMultEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 	if err != nil {
@@ -3421,7 +3421,7 @@ func w6_scalarBaseMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, 
 }
 
 //export w6_managedScalarBaseMultEC
-func w6_managedScalarBaseMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedScalarBaseMultEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	if err != nil {
@@ -3431,7 +3431,7 @@ func w6_managedScalarBaseMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle 
 }
 
 //export w6_scalarMultEC
-func w6_scalarMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_scalarMultEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, executor.MemPtr(dataOffset), length)
 	if err != nil {
@@ -3441,7 +3441,7 @@ func w6_scalarMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yRes
 }
 
 //export w6_managedScalarMultEC
-func w6_managedScalarMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedScalarMultEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
 	if err != nil {
@@ -3451,7 +3451,7 @@ func w6_managedScalarMultEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int3
 }
 
 //export w6_marshalEC
-func w6_marshalEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_marshalEC(ctx *C.vm_exec_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -3461,7 +3461,7 @@ func w6_marshalEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32, yPairHand
 }
 
 //export w6_managedMarshalEC
-func w6_managedMarshalEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMarshalEC(ctx *C.vm_exec_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 	if err != nil {
@@ -3471,7 +3471,7 @@ func w6_managedMarshalEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32, yP
 }
 
 //export w6_marshalCompressedEC
-func w6_marshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_marshalCompressedEC(ctx *C.vm_exec_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -3481,7 +3481,7 @@ func w6_marshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32,
 }
 
 //export w6_managedMarshalCompressedEC
-func w6_managedMarshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedMarshalCompressedEC(ctx *C.vm_exec_hook_context_t, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 	if err != nil {
@@ -3491,7 +3491,7 @@ func w6_managedMarshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xPairHandle
 }
 
 //export w6_unmarshalEC
-func w6_unmarshalEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_unmarshalEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 	if err != nil {
@@ -3501,7 +3501,7 @@ func w6_unmarshalEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResu
 }
 
 //export w6_managedUnmarshalEC
-func w6_managedUnmarshalEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedUnmarshalEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	if err != nil {
@@ -3511,7 +3511,7 @@ func w6_managedUnmarshalEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32
 }
 
 //export w6_unmarshalCompressedEC
-func w6_unmarshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) C.vm_exec_w6_hook_result_t {
+func w6_unmarshalCompressedEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 	if err != nil {
@@ -3521,7 +3521,7 @@ func w6_unmarshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle in
 }
 
 //export w6_managedUnmarshalCompressedEC
-func w6_managedUnmarshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedUnmarshalCompressedEC(ctx *C.vm_exec_hook_context_t, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	if err != nil {
@@ -3531,7 +3531,7 @@ func w6_managedUnmarshalCompressedEC(ctx *C.vm_exec_w6_hook_context_t, xResultHa
 }
 
 //export w6_generateKeyEC
-func w6_generateKeyEC(ctx *C.vm_exec_w6_hook_context_t, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) C.vm_exec_w6_hook_result_t {
+func w6_generateKeyEC(ctx *C.vm_exec_hook_context_t, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, executor.MemPtr(resultOffset))
 	if err != nil {
@@ -3541,7 +3541,7 @@ func w6_generateKeyEC(ctx *C.vm_exec_w6_hook_context_t, xPubKeyHandle int32, yPu
 }
 
 //export w6_managedGenerateKeyEC
-func w6_managedGenerateKeyEC(ctx *C.vm_exec_w6_hook_context_t, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedGenerateKeyEC(ctx *C.vm_exec_hook_context_t, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
 	if err != nil {
@@ -3551,7 +3551,7 @@ func w6_managedGenerateKeyEC(ctx *C.vm_exec_w6_hook_context_t, xPubKeyHandle int
 }
 
 //export w6_createEC
-func w6_createEC(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, dataLength int32) C.vm_exec_w6_hook_result_t {
+func w6_createEC(ctx *C.vm_exec_hook_context_t, dataOffset int32, dataLength int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.CreateEC(executor.MemPtr(dataOffset), dataLength)
 	if err != nil {
@@ -3561,7 +3561,7 @@ func w6_createEC(ctx *C.vm_exec_w6_hook_context_t, dataOffset int32, dataLength 
 }
 
 //export w6_managedCreateEC
-func w6_managedCreateEC(ctx *C.vm_exec_w6_hook_context_t, dataHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedCreateEC(ctx *C.vm_exec_hook_context_t, dataHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedCreateEC(dataHandle)
 	if err != nil {
@@ -3571,7 +3571,7 @@ func w6_managedCreateEC(ctx *C.vm_exec_w6_hook_context_t, dataHandle int32) C.vm
 }
 
 //export w6_getCurveLengthEC
-func w6_getCurveLengthEC(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_getCurveLengthEC(ctx *C.vm_exec_hook_context_t, ecHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetCurveLengthEC(ecHandle)
 	if err != nil {
@@ -3581,7 +3581,7 @@ func w6_getCurveLengthEC(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32) C.vm_
 }
 
 //export w6_getPrivKeyByteLengthEC
-func w6_getPrivKeyByteLengthEC(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_getPrivKeyByteLengthEC(ctx *C.vm_exec_hook_context_t, ecHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.GetPrivKeyByteLengthEC(ecHandle)
 	if err != nil {
@@ -3591,7 +3591,7 @@ func w6_getPrivKeyByteLengthEC(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32)
 }
 
 //export w6_ellipticCurveGetValues
-func w6_ellipticCurveGetValues(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_ellipticCurveGetValues(ctx *C.vm_exec_hook_context_t, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 	if err != nil {
@@ -3601,7 +3601,7 @@ func w6_ellipticCurveGetValues(ctx *C.vm_exec_w6_hook_context_t, ecHandle int32,
 }
 
 //export w6_managedVerifySecp256r1
-func w6_managedVerifySecp256r1(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifySecp256r1(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
 	if err != nil {
@@ -3611,7 +3611,7 @@ func w6_managedVerifySecp256r1(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32
 }
 
 //export w6_managedVerifyBLSSignatureShare
-func w6_managedVerifyBLSSignatureShare(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifyBLSSignatureShare(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
 	if err != nil {
@@ -3621,7 +3621,7 @@ func w6_managedVerifyBLSSignatureShare(ctx *C.vm_exec_w6_hook_context_t, keyHand
 }
 
 //export w6_managedVerifyBLSAggregatedSignature
-func w6_managedVerifyBLSAggregatedSignature(ctx *C.vm_exec_w6_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_w6_hook_result_t {
+func w6_managedVerifyBLSAggregatedSignature(ctx *C.vm_exec_hook_context_t, keyHandle int32, messageHandle int32, sigHandle int32) C.vm_exec_hook_result_t {
 	vmHooks := getVMHooksFromHookContext(ctx)
 	result, err := vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 	if err != nil {

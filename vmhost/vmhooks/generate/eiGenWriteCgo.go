@@ -105,7 +105,7 @@ func (writer *cgoWriter) cgoFuncName(funcMetadata *EIFunction) string {
 func WriteWasmer2Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
 	writer := &cgoWriter{
 		goPackage: "wasmer2legacy",
-		cgoPrefix: "w2_",
+		cgoPrefix: "w2l_",
 	}
 	writer.writeHeader(out, eiMetadata)
 	writer.writeCgoFunctions(out, eiMetadata)

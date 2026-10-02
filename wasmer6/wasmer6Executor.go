@@ -66,8 +66,8 @@ func NewExecutor(config ExecutorConfig) (*Wasmer6Executor, error) {
 	defer C.free(unsafe.Pointer(cCost))
 	*cCost = *(*cOpcodeCostT)(unsafe.Pointer(executor.ExtractOpcodeCost(config.WASMOpcodeCost)))
 
-	cConfig := (*C.struct_vm_exec_w6_executor_config_t)(
-		C.malloc(C.size_t(unsafe.Sizeof(C.struct_vm_exec_w6_executor_config_t{}))))
+	cConfig := (*C.struct_vm_exec_executor_config_t)(
+		C.malloc(C.size_t(unsafe.Sizeof(C.struct_vm_exec_executor_config_t{}))))
 	defer C.free(unsafe.Pointer(cConfig))
 	cConfig.opcode_version = C.int32_t(config.OpcodeVersion)
 	cConfig.opcode_cost = cCost
@@ -96,7 +96,7 @@ func (wasmerExecutor *Wasmer6Executor) NewInstance(
 		return nil, ErrInvalidBytecode
 	}
 
-	cOptions := C.struct_vm_exec_w6_compilation_options_t{
+	cOptions := C.struct_vm_exec_compilation_options_t{
 		unmetered_locals:      C.uint64_t(options.UnmeteredLocals),
 		max_memory_grow:       C.uint64_t(options.MaxMemoryGrow),
 		max_memory_grow_delta: C.uint64_t(options.MaxMemoryGrowDelta),

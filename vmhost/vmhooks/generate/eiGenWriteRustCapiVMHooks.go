@@ -12,16 +12,16 @@ use std::ffi::c_void;
 
 use multiversx_chain_vm_executor::{MemLength, MemPtr};
 
-use crate::capi_vm_hook_pointers::vm_exec_vm_hook_c_func_pointers;
+use crate::capi_vm_hook_pointers::vm_legacy_vm_hook_c_func_pointers;
 
 #[derive(Debug)]
 pub struct CapiVMHooks {
     pub vm_hooks_ptr: *mut c_void,
-    pub c_func_pointers_ptr: vm_exec_vm_hook_c_func_pointers,
+    pub c_func_pointers_ptr: vm_legacy_vm_hook_c_func_pointers,
 }
 
 impl CapiVMHooks {
-    pub fn new(c_func_pointers_ptr: vm_exec_vm_hook_c_func_pointers) -> Self {
+    pub fn new(c_func_pointers_ptr: vm_legacy_vm_hook_c_func_pointers) -> Self {
         Self {
             vm_hooks_ptr: std::ptr::null_mut(),
             c_func_pointers_ptr,

@@ -59,8 +59,8 @@ func main() {
 	writeRustVMHooksSignatures(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
-	writeRustCapiW6VMHooks(eiMetadata)
-	writeRustCapiW6VMHooksPointers(eiMetadata)
+	writeRustCapiCommonVMHooks(eiMetadata)
+	writeRustCapiCommonVMHooksPointers(eiMetadata)
 	writeRustWasmerProdImports(eiMetadata)
 	writeRustWasmerExperimentalImports(eiMetadata)
 	writeRustVHDispatcherLegacy(eiMetadata)
@@ -72,6 +72,7 @@ func main() {
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeRustOpcodeCost()
+	writeRustCapiLegacyOpcodeCost()
 	writeRustCapiOpcodeCost()
 	writeRustWasmerOpcodeCost()
 	writeOpcodeWhitelisted()
@@ -164,16 +165,16 @@ func writeRustCapiVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustCapiVMHooksPointers(out, eiMetadata)
 }
 
-func writeRustCapiW6VMHooks(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook.rs")
+func writeRustCapiCommonVMHooks(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capiCommon_vm_hook.rs")
 	defer out.Close()
-	eapigen.WriteRustCapiW6VMHooks(out, eiMetadata)
+	eapigen.WriteRustCapiCommonVMHooks(out, eiMetadata)
 }
 
-func writeRustCapiW6VMHooksPointers(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook_pointers.rs")
+func writeRustCapiCommonVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capiCommon_vm_hook_pointers.rs")
 	defer out.Close()
-	eapigen.WriteRustCapiW6VMHooksPointers(out, eiMetadata)
+	eapigen.WriteRustCapiCommonVMHooksPointers(out, eiMetadata)
 }
 
 func writeRustWasmerProdImports(eiMetadata *eapigen.EIMetadata) {
@@ -232,10 +233,18 @@ func writeRustOpcodeCost() {
 	eapigen.WriteRustOpcodeCost(out)
 }
 
+// Two outputs from one opcode list: the legacy C API's own type, and the shared one the new
+// crates publish. Same layout, different names, so both can appear in one binary.
+func writeRustCapiLegacyOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capi_legacy_opcode_cost.rs")
+	defer out.Close()
+	eapigen.WriteRustCapiOpcodeCost(out, "vm_legacy_opcode_cost_t")
+}
+
 func writeRustCapiOpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs")
 	defer out.Close()
-	eapigen.WriteRustCapiOpcodeCost(out)
+	eapigen.WriteRustCapiOpcodeCost(out, "vm_exec_opcode_cost_t")
 }
 
 func writeRustWasmerOpcodeCost() {
@@ -284,7 +293,7 @@ func tryCopyFilesToMxExecutorRsRepo() {
 		filepath.Join(rustExecutorPath, "vm-executor/src/opcode_cost.rs"),
 	)
 	copyFile(
-		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs"),
+		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_legacy_opcode_cost.rs"),
 		filepath.Join(rustExecutorPath, "c-api-legacy/src/capi_opcode_cost.rs"),
 	)
 	copyFile(
@@ -297,15 +306,15 @@ func tryCopyFilesToMxExecutorRsRepo() {
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs"),
-		filepath.Join(rustExecutorPath, "c-api-wasmer6/src/capi_opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "c-api-common/src/capi_opcode_cost.rs"),
 	)
 	copyFile(
-		filepath.Join(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook.rs"),
-		filepath.Join(rustExecutorPath, "c-api-wasmer6/src/capi_vm_hooks.rs"),
+		filepath.Join(pathToApiPackage, "generate/cmd/output/capiCommon_vm_hook.rs"),
+		filepath.Join(rustExecutorPath, "c-api-common/src/capi_vm_hooks.rs"),
 	)
 	copyFile(
-		filepath.Join(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook_pointers.rs"),
-		filepath.Join(rustExecutorPath, "c-api-wasmer6/src/capi_vm_hook_pointers.rs"),
+		filepath.Join(pathToApiPackage, "generate/cmd/output/capiCommon_vm_hook_pointers.rs"),
+		filepath.Join(rustExecutorPath, "c-api-common/src/capi_vm_hook_pointers.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_imports.rs"),

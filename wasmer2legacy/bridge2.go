@@ -22,14 +22,14 @@ type cUint C.uint
 type cUint32T C.uint32_t
 type cUint8T C.uint8_t
 
-type cWasmerExecutorT C.vm_exec_executor_t
-type cWasmerInstanceT C.vm_exec_instance_t
-type cWasmerOpcodeCostT C.vm_exec_opcode_cost_t
-type cWasmerResultT C.vm_exec_result_t
-type cWasmerCompilationOptions C.vm_exec_compilation_options_t
-type cWasmerVmHookPointers = C.vm_exec_vm_hook_c_func_pointers
+type cWasmerExecutorT C.vm_legacy_executor_t
+type cWasmerInstanceT C.vm_legacy_instance_t
+type cWasmerOpcodeCostT C.vm_legacy_opcode_cost_t
+type cWasmerResultT C.vm_legacy_result_t
+type cWasmerCompilationOptions C.vm_legacy_compilation_options_t
+type cWasmerVmHookPointers = C.vm_legacy_vm_hook_c_func_pointers
 
-const cWasmerOk = C.VM_EXEC_OK
+const cWasmerOk = C.VM_LEGACY_OK
 
 // toCWasmerCompilationOptions converts field-by-field instead of reinterpreting
 // executor.CompilationOptions as cWasmerCompilationOptions via unsafe.Pointer, so a field
@@ -46,7 +46,7 @@ func toCWasmerCompilationOptions(options executor.CompilationOptions) cWasmerCom
 	}
 }
 
-// Tripwire for a field added to vm_exec_compilation_options_t without a matching
+// Tripwire for a field added to vm_legacy_compilation_options_t without a matching
 // field (and conversion above) added to executor.CompilationOptions: the two
 // composite literal lengths differ, so this fails to compile.
 var _ [unsafe.Sizeof(executor.CompilationOptions{})]byte = [unsafe.Sizeof(cWasmerCompilationOptions{})]byte{}
@@ -69,42 +69,42 @@ func cWasmerExecutorSetOpcodeConfig(
 	opcodeCost *cWasmerOpcodeCostT,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_set_opcode_config(
-		(*C.vm_exec_executor_t)(executor),
+		(*C.vm_legacy_executor_t)(executor),
 		(C.int32_t)(opcodeVersion),
-		(*C.vm_exec_opcode_cost_t)(opcodeCost),
+		(*C.vm_legacy_opcode_cost_t)(opcodeCost),
 	))
 }
 
 func cWasmerInstanceSetGasLimit(instance *cWasmerInstanceT, gasLimit uint64) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_set_points_limit(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(C.uint64_t)(gasLimit),
 	))
 }
 
 func cWasmerInstanceSetPointsUsed(instance *cWasmerInstanceT, points uint64) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_set_points_used(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(C.uint64_t)(points),
 	))
 }
 
 func cWasmerInstanceGetPointsUsed(instance *cWasmerInstanceT) uint64 {
 	return uint64(C.vm_exec_instance_get_points_used(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
 func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_set_breakpoint_value(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(C.uint64_t)(value),
 	))
 }
 
 func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
 	return uint64(C.vm_exec_instance_get_breakpoint_value(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
@@ -114,7 +114,7 @@ func cWasmerInstanceCache(
 	cacheLen *cUint32T,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_cache(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(**C.uchar)(unsafe.Pointer(cacheBytes)),
 		(*C.uint32_t)(cacheLen),
 	))
@@ -128,11 +128,11 @@ func cWasmerInstanceFromCache(
 	options *cWasmerCompilationOptions,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_from_cache(
-		(*C.vm_exec_executor_t)(executor),
-		(**C.vm_exec_instance_t)(unsafe.Pointer(instance)),
+		(*C.vm_legacy_executor_t)(executor),
+		(**C.vm_legacy_instance_t)(unsafe.Pointer(instance)),
 		(*C.uchar)(cacheBytes),
 		(C.uint32_t)(cacheLen),
-		(*C.vm_exec_compilation_options_t)(options),
+		(*C.vm_legacy_compilation_options_t)(options),
 	))
 }
 
@@ -141,8 +141,8 @@ func cWasmerNewExecutor(
 	vmHookPointersPtrPtr unsafe.Pointer,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_new_executor(
-		(**C.vm_exec_executor_t)(unsafe.Pointer(executor)),
-		(**C.vm_exec_vm_hook_c_func_pointers)(vmHookPointersPtrPtr),
+		(**C.vm_legacy_executor_t)(unsafe.Pointer(executor)),
+		(**C.vm_legacy_vm_hook_c_func_pointers)(vmHookPointersPtrPtr),
 	))
 }
 
@@ -154,11 +154,11 @@ func cWasmerInstantiateWithOptions(
 	options *cWasmerCompilationOptions,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_new_instance(
-		(*C.vm_exec_executor_t)(executor),
-		(**C.vm_exec_instance_t)(unsafe.Pointer(instance)),
+		(*C.vm_legacy_executor_t)(executor),
+		(**C.vm_legacy_instance_t)(unsafe.Pointer(instance)),
 		(*C.uchar)(wasmBytes),
 		(C.uint)(wasmBytesLength),
-		(*C.vm_exec_compilation_options_t)(options),
+		(*C.vm_legacy_compilation_options_t)(options),
 	))
 }
 
@@ -167,7 +167,7 @@ func cWasmerInstanceCall(
 	name *cChar,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_call(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(*C.char)(name),
 	))
 }
@@ -177,7 +177,7 @@ func cWasmerInstanceHasFunction(
 	name *cChar,
 ) cInt {
 	return (cInt)(C.vm_exec_instance_has_function(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(*C.char)(name),
 	))
 }
@@ -187,20 +187,20 @@ func cWasmerInstanceHasImportedFunction(
 	name *cChar,
 ) cInt {
 	return (cInt)(C.vm_exec_instance_has_imported_function(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(*C.char)(name),
 	))
 }
 
 func cWasmerInstanceExportedFunctionNamesLength(instance *cWasmerInstanceT) cInt {
 	return (cInt)(C.vm_exported_function_names_length(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
 func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cChar, length cInt) cInt {
 	return (cInt)(C.vm_exported_function_names(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(*C.char)(buffer),
 		(C.int)(length),
 	))
@@ -208,26 +208,26 @@ func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cC
 
 func cWasmerCheckSignatures(instance *cWasmerInstanceT) cInt {
 	return (cInt)(C.vm_check_signatures(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
 func cWasmerExecutorContextDataSet(executor *cWasmerExecutorT, vmHooksPtr unsafe.Pointer) {
 	C.vm_exec_executor_set_vm_hooks_ptr(
-		(*C.vm_exec_executor_t)(executor),
+		(*C.vm_legacy_executor_t)(executor),
 		vmHooksPtr,
 	)
 }
 
 func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
 	C.vm_exec_instance_destroy(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	)
 }
 
 func cWasmerInstanceReset(instance *cWasmerInstanceT) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_reset(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
@@ -244,19 +244,19 @@ func cWasmerLastErrorMessage(buffer *cChar, length cInt) cInt {
 
 func cWasmerMemoryDataLength(instance *cWasmerInstanceT) cUint32T {
 	return (cUint32T)(C.vm_exec_instance_memory_data_length(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
 func cWasmerMemoryData(instance *cWasmerInstanceT) *cUint8T {
 	return (*cUint8T)(C.vm_exec_instance_memory_data(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
 func cWasmerMemoryGrow(instance *cWasmerInstanceT, numberOfPages cUint32T) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_instance_memory_grow(
-		(*C.vm_exec_instance_t)(instance),
+		(*C.vm_legacy_instance_t)(instance),
 		(C.uint32_t)(numberOfPages),
 	))
 }
