@@ -46,7 +46,7 @@ func main() {
 	writeVMHooks(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
-	writeWasmer3ImportsCgo(eiMetadata)
+	writeWasmer6ImportsCgo(eiMetadata)
 
 	writeExecutorVMHookNames(eiMetadata)
 
@@ -59,8 +59,8 @@ func main() {
 	writeRustVMHooksSignatures(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
-	writeRustCapi2VMHooks(eiMetadata)
-	writeRustCapi2VMHooksPointers(eiMetadata)
+	writeRustCapiW6VMHooks(eiMetadata)
+	writeRustCapiW6VMHooksPointers(eiMetadata)
 	writeRustWasmerProdImports(eiMetadata)
 	writeRustWasmerExperimentalImports(eiMetadata)
 	writeRustVHDispatcherLegacy(eiMetadata)
@@ -96,15 +96,15 @@ func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2ImportsCgo.go")
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2legacy/wasmer2ImportsCgo.go")
 	defer out.Close()
 	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
-func writeWasmer3ImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer3/wasmer3ImportsCgo.go")
+func writeWasmer6ImportsCgo(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer6/wasmer6ImportsCgo.go")
 	defer out.Close()
-	eapigen.WriteWasmer3Cgo(out, eiMetadata)
+	eapigen.WriteWasmer6Cgo(out, eiMetadata)
 }
 
 // The hook names, shared by every executor. Previously generated once per executor, into
@@ -164,16 +164,16 @@ func writeRustCapiVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustCapiVMHooksPointers(out, eiMetadata)
 }
 
-func writeRustCapi2VMHooks(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capi2_vm_hook.rs")
+func writeRustCapiW6VMHooks(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook.rs")
 	defer out.Close()
-	eapigen.WriteRustCapi2VMHooks(out, eiMetadata)
+	eapigen.WriteRustCapiW6VMHooks(out, eiMetadata)
 }
 
-func writeRustCapi2VMHooksPointers(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capi2_vm_hook_pointers.rs")
+func writeRustCapiW6VMHooksPointers(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook_pointers.rs")
 	defer out.Close()
-	eapigen.WriteRustCapi2VMHooksPointers(out, eiMetadata)
+	eapigen.WriteRustCapiW6VMHooksPointers(out, eiMetadata)
 }
 
 func writeRustWasmerProdImports(eiMetadata *eapigen.EIMetadata) {
@@ -207,7 +207,7 @@ func writeExecutorWASMOpcodeCosts() {
 }
 
 // The metered subset, shared by every backend. Previously generated once per backend, into
-// wasmer2/opcodeCost.go and wasmer3/opcodeCost.go.
+// wasmer2/opcodeCost.go and wasmer6/opcodeCost.go.
 func writeExecutorOpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/opcodeCost.go")
 	defer out.Close()
@@ -285,27 +285,27 @@ func tryCopyFilesToMxExecutorRsRepo() {
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs"),
-		filepath.Join(rustExecutorPath, "c-api/src/capi_opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "c-api-legacy/src/capi_opcode_cost.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook.rs"),
-		filepath.Join(rustExecutorPath, "c-api/src/capi_vm_hooks.rs"),
+		filepath.Join(rustExecutorPath, "c-api-legacy/src/capi_vm_hooks.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_vm_hook_pointers.rs"),
-		filepath.Join(rustExecutorPath, "c-api/src/capi_vm_hook_pointers.rs"),
+		filepath.Join(rustExecutorPath, "c-api-legacy/src/capi_vm_hook_pointers.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/capi_opcode_cost.rs"),
-		filepath.Join(rustExecutorPath, "c-api-new/src/capi_opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "c-api-wasmer6/src/capi_opcode_cost.rs"),
 	)
 	copyFile(
-		filepath.Join(pathToApiPackage, "generate/cmd/output/capi2_vm_hook.rs"),
-		filepath.Join(rustExecutorPath, "c-api-new/src/capi_vm_hooks.rs"),
+		filepath.Join(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook.rs"),
+		filepath.Join(rustExecutorPath, "c-api-wasmer6/src/capi_vm_hooks.rs"),
 	)
 	copyFile(
-		filepath.Join(pathToApiPackage, "generate/cmd/output/capi2_vm_hook_pointers.rs"),
-		filepath.Join(rustExecutorPath, "c-api-new/src/capi_vm_hook_pointers.rs"),
+		filepath.Join(pathToApiPackage, "generate/cmd/output/capiW6_vm_hook_pointers.rs"),
+		filepath.Join(rustExecutorPath, "c-api-wasmer6/src/capi_vm_hook_pointers.rs"),
 	)
 	copyFile(
 		filepath.Join(pathToApiPackage, "generate/cmd/output/wasmer_imports.rs"),

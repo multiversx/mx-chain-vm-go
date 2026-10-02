@@ -1,7 +1,7 @@
-package wasmer3
+package wasmer6
 
 // #include <stdlib.h>
-// #include "./libvmexeccapi_new.h"
+// #include "./libvmexeccapi_w6.h"
 import "C"
 
 import (
@@ -38,8 +38,8 @@ type CompilationOptions struct {
 	OpcodeTrace        bool
 }
 
-// Wasmer3Executor creates instances of the Wasmer 6 backend.
-type Wasmer3Executor struct {
+// Wasmer6Executor creates instances of the Wasmer 6 backend.
+type Wasmer6Executor struct {
 	cExecutor *cExecutorT
 
 	// Kept so that the legacy Executor interface, whose NewInstanceWithOptions takes neither,
@@ -51,7 +51,7 @@ type Wasmer3Executor struct {
 
 // NewExecutor creates an executor from one configuration struct and the generated hook
 // table.
-func NewExecutor(config ExecutorConfig) (*Wasmer3Executor, error) {
+func NewExecutor(config ExecutorConfig) (*Wasmer6Executor, error) {
 	if config.WASMOpcodeCost == nil {
 		return nil, ErrMissingOpcodeCost
 	}
@@ -66,8 +66,8 @@ func NewExecutor(config ExecutorConfig) (*Wasmer3Executor, error) {
 	defer C.free(unsafe.Pointer(cCost))
 	*cCost = *(*cOpcodeCostT)(unsafe.Pointer(executor.ExtractOpcodeCost(config.WASMOpcodeCost)))
 
-	cConfig := (*C.struct_vm_exec2_executor_config_t)(
-		C.malloc(C.size_t(unsafe.Sizeof(C.struct_vm_exec2_executor_config_t{}))))
+	cConfig := (*C.struct_vm_exec_w6_executor_config_t)(
+		C.malloc(C.size_t(unsafe.Sizeof(C.struct_vm_exec_w6_executor_config_t{}))))
 	defer C.free(unsafe.Pointer(cConfig))
 	cConfig.opcode_version = C.int32_t(config.OpcodeVersion)
 	cConfig.opcode_cost = cCost
@@ -78,25 +78,25 @@ func NewExecutor(config ExecutorConfig) (*Wasmer3Executor, error) {
 		return nil, err
 	}
 
-	logWasmer3.Trace("wasmer3 executor created")
+	logWasmer6.Trace("wasmer6 executor created")
 
-	return &Wasmer3Executor{cExecutor: cExecutor, config: config}, nil
+	return &Wasmer6Executor{cExecutor: cExecutor, config: config}, nil
 }
 
 // NewInstance compiles and instantiates a contract.
 //
 // hooks is the VM hooks provider for this one instance. It is reached from every hook call
 // the instance makes, and must stay usable until the instance is closed.
-func (wasmerExecutor *Wasmer3Executor) NewInstance(
+func (wasmerExecutor *Wasmer6Executor) NewInstance(
 	contractCode []byte,
 	options CompilationOptions,
 	hooks executor.VMHooksProvider,
-) (*Wasmer3Instance, error) {
+) (*Wasmer6Instance, error) {
 	if len(contractCode) == 0 {
 		return nil, ErrInvalidBytecode
 	}
 
-	cOptions := C.struct_vm_exec2_compilation_options_t{
+	cOptions := C.struct_vm_exec_w6_compilation_options_t{
 		unmetered_locals:      C.uint64_t(options.UnmeteredLocals),
 		max_memory_grow:       C.uint64_t(options.MaxMemoryGrow),
 		max_memory_grow_delta: C.uint64_t(options.MaxMemoryGrowDelta),
@@ -128,7 +128,7 @@ func (wasmerExecutor *Wasmer3Executor) NewInstance(
 		return nil, err
 	}
 
-	instance := &Wasmer3Instance{
+	instance := &Wasmer6Instance{
 		cInstance:   cInstance,
 		hooksHandle: handle,
 		hooks:       bridge,
@@ -152,7 +152,7 @@ func (wasmerExecutor *Wasmer3Executor) NewInstance(
 //
 // Instances outlive it safely: the hook table is copied into each one at creation, and
 // nothing else is shared, so the two can be closed in either order.
-func (wasmerExecutor *Wasmer3Executor) Close() {
+func (wasmerExecutor *Wasmer6Executor) Close() {
 	if wasmerExecutor.cExecutor == nil {
 		return
 	}
@@ -163,5 +163,5 @@ func (wasmerExecutor *Wasmer3Executor) Close() {
 
 // Tripwire for an opcode added to one side of the cost table and not the other.
 // executor.OpcodeCost is shared by every backend and vm_exec_opcode_cost_t is per-library, so
-// each backend has to assert the match against its own header; this is wasmer3's.
+// each backend has to assert the match against its own header; this is wasmer6's.
 var _ [unsafe.Sizeof(cOpcodeCostT{})]byte = [unsafe.Sizeof(executor.OpcodeCost{})]byte{}

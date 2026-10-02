@@ -1,10 +1,10 @@
-package wasmer3
+package wasmer6
 
 // Transitional: executor.Instance as it is today, served by an instance whose own interface is
 // already the narrower one.
 //
 // Everything in this file exists because the Go VM has not yet been converged onto the second
-// interface set (PLAN-go-ffi.md, Phase 4b item 1). It is kept apart from wasmer3Instance.go so
+// interface set (PLAN-go-ffi.md, Phase 4b item 1). It is kept apart from wasmer6Instance.go so
 // that the split stays visible, and so that this file can be deleted rather than untangled.
 //
 // Three groups:
@@ -24,7 +24,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ = (executor.Instance)((*Wasmer3Instance)(nil))
+var _ = (executor.Instance)((*Wasmer6Instance)(nil))
 
 // --- Forwarding, with the error dropped ---------------------------------------
 
@@ -33,10 +33,10 @@ var _ = (executor.Instance)((*Wasmer3Instance)(nil))
 // The legacy signature has nowhere to report a failure, so a failure is logged and reported as
 // zero. That is the pre-existing convention, not a new one: the legacy backend ignores the
 // same status code without even looking at it.
-func (instance *Wasmer3Instance) GetPointsUsed() uint64 {
+func (instance *Wasmer6Instance) GetPointsUsed() uint64 {
 	points, err := instance.PointsUsed()
 	if err != nil {
-		logWasmer3.Error("GetPointsUsed failed", "err", err)
+		logWasmer6.Error("GetPointsUsed failed", "err", err)
 		return 0
 	}
 
@@ -44,10 +44,10 @@ func (instance *Wasmer3Instance) GetPointsUsed() uint64 {
 }
 
 // HasFunction reports whether the contract exports a function by that name.
-func (instance *Wasmer3Instance) GetFunctionNames() []string {
+func (instance *Wasmer6Instance) GetFunctionNames() []string {
 	names, err := instance.ExportedFunctionNames()
 	if err != nil {
-		logWasmer3.Error("GetFunctionNames failed", "err", err)
+		logWasmer6.Error("GetFunctionNames failed", "err", err)
 		return nil
 	}
 
@@ -55,7 +55,7 @@ func (instance *Wasmer3Instance) GetFunctionNames() []string {
 }
 
 // ValidateFunctionArities checks that every endpoint takes no arguments and returns none.
-func (instance *Wasmer3Instance) ValidateFunctionArities() error {
+func (instance *Wasmer6Instance) ValidateFunctionArities() error {
 	if !instance.CheckSignatures() {
 		return executor.ErrFunctionNonvoidSignature
 	}
@@ -69,7 +69,7 @@ func (instance *Wasmer3Instance) ValidateFunctionArities() error {
 //
 // Only answerable while a hook is running, because that is when this executor can address the
 // instance's memory at all, and it is also the only time the VM asks.
-func (instance *Wasmer3Instance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+func (instance *Wasmer6Instance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
 	state, err := instance.stateInActiveCall()
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (instance *Wasmer3Instance) MemLoad(memPtr executor.MemPtr, length executor
 }
 
 // MemStore writes to the instance memory at the given offset. See MemLoad.
-func (instance *Wasmer3Instance) MemStore(memPtr executor.MemPtr, data []byte) error {
+func (instance *Wasmer6Instance) MemStore(memPtr executor.MemPtr, data []byte) error {
 	state, err := instance.stateInActiveCall()
 	if err != nil {
 		return err
@@ -89,16 +89,16 @@ func (instance *Wasmer3Instance) MemStore(memPtr executor.MemPtr, data []byte) e
 }
 
 // MemLength returns the size of the instance memory in bytes. Used only by tests.
-func (instance *Wasmer3Instance) MemLength() uint32 {
+func (instance *Wasmer6Instance) MemLength() uint32 {
 	state, err := instance.stateInActiveCall()
 	if err != nil {
-		logWasmer3.Error("MemLength failed", "err", err)
+		logWasmer6.Error("MemLength failed", "err", err)
 		return 0
 	}
 
 	length, err := state.MemLength()
 	if err != nil {
-		logWasmer3.Error("MemLength failed", "err", err)
+		logWasmer6.Error("MemLength failed", "err", err)
 		return 0
 	}
 
@@ -106,7 +106,7 @@ func (instance *Wasmer3Instance) MemLength() uint32 {
 }
 
 // MemGrow grows the instance memory by whole pages. Used only by tests.
-func (instance *Wasmer3Instance) MemGrow(pages uint32) error {
+func (instance *Wasmer6Instance) MemGrow(pages uint32) error {
 	state, err := instance.stateInActiveCall()
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func (instance *Wasmer3Instance) MemGrow(pages uint32) error {
 }
 
 // MemDump yields the entire contents of the memory. Used only by tests.
-func (instance *Wasmer3Instance) MemDump() []byte {
+func (instance *Wasmer6Instance) MemDump() []byte {
 	length := instance.MemLength()
 	if length == 0 {
 		return nil
@@ -126,7 +126,7 @@ func (instance *Wasmer3Instance) MemDump() []byte {
 
 	data, err := instance.MemLoad(0, executor.MemLength(length))
 	if err != nil {
-		logWasmer3.Error("MemDump failed", "err", err)
+		logWasmer6.Error("MemDump failed", "err", err)
 		return nil
 	}
 
@@ -139,20 +139,20 @@ func (instance *Wasmer3Instance) MemDump() []byte {
 // context and not on the instance handle. The VM does write it from outside one place — when
 // it resets a warm instance's counter — which this executor does not yet support anyway. See
 // PLAN-go-ffi.md, Phase 4b.
-func (instance *Wasmer3Instance) SetPointsUsed(points uint64) {
+func (instance *Wasmer6Instance) SetPointsUsed(points uint64) {
 	state, err := instance.stateInActiveCall()
 	if err != nil {
-		logWasmer3.Error("SetPointsUsed failed", "err", err)
+		logWasmer6.Error("SetPointsUsed failed", "err", err)
 		return
 	}
 
 	if err := state.SetPointsUsed(points); err != nil {
-		logWasmer3.Error("SetPointsUsed failed", "err", err)
+		logWasmer6.Error("SetPointsUsed failed", "err", err)
 	}
 }
 
 // stateInActiveCall returns the state of the hook currently running on this instance.
-func (instance *Wasmer3Instance) stateInActiveCall() (*InstanceState, error) {
+func (instance *Wasmer6Instance) stateInActiveCall() (*InstanceState, error) {
 	if instance.hooks == nil || instance.hooks.activeState == nil {
 		return nil, fmt.Errorf("%w: no host call is running on this instance", ErrStaleContext)
 	}
@@ -167,7 +167,7 @@ func (instance *Wasmer3Instance) stateInActiveCall() (*InstanceState, error) {
 // In the new interface the limit is an argument of the call rather than a property of the
 // compiled module, which is where it belongs: it changes on every invocation while the module
 // does not. The legacy interface sets it beforehand, so it is held here until CallFunction.
-func (instance *Wasmer3Instance) SetGasLimit(gasLimit uint64) {
+func (instance *Wasmer6Instance) SetGasLimit(gasLimit uint64) {
 	instance.gasLimit = gasLimit
 }
 
@@ -180,7 +180,7 @@ func (instance *Wasmer3Instance) SetGasLimit(gasLimit uint64) {
 // call stopped now arrives *with* the result, and is written into the breakpoint slot below
 // only so that the VM's existing readers still find it. An early exit needs no translation at
 // all, because the Go hook already recorded its own breakpoint before returning.
-func (instance *Wasmer3Instance) CallFunction(functionName string) error {
+func (instance *Wasmer6Instance) CallFunction(functionName string) error {
 	result, err := instance.Call(functionName, instance.gasLimit)
 	if err != nil {
 		return err
@@ -208,19 +208,19 @@ func (instance *Wasmer3Instance) CallFunction(functionName string) error {
 // There is no wasm global to write here: this executor reports why a call stopped in the call
 // result instead of leaving the reason in a global for the VM to poll. The value is kept so
 // that GetBreakpointValue answers consistently, which is all the VM uses it for.
-func (instance *Wasmer3Instance) SetBreakpointValue(value uint64) {
+func (instance *Wasmer6Instance) SetBreakpointValue(value uint64) {
 	instance.breakpoint = value
 }
 
 // GetBreakpointValue returns the last breakpoint set, whether by the VM or by a call result.
-func (instance *Wasmer3Instance) GetBreakpointValue() uint64 {
+func (instance *Wasmer6Instance) GetBreakpointValue() uint64 {
 	return instance.breakpoint
 }
 
 // --- Lifecycle --------------------------------------------------------------
 
 // Clean releases the instance.
-func (instance *Wasmer3Instance) Clean() bool {
+func (instance *Wasmer6Instance) Clean() bool {
 	if instance.cleaned {
 		return false
 	}
@@ -232,7 +232,7 @@ func (instance *Wasmer3Instance) Clean() bool {
 }
 
 // IsAlreadyCleaned reports whether Clean has already run.
-func (instance *Wasmer3Instance) IsAlreadyCleaned() bool {
+func (instance *Wasmer6Instance) IsAlreadyCleaned() bool {
 	return instance.cleaned
 }
 
@@ -241,12 +241,12 @@ func (instance *Wasmer3Instance) IsAlreadyCleaned() bool {
 // Captured at creation rather than derived from the handle on each call, because the instance
 // tracker keys its bookkeeping by this and still asks for it after the instance is closed —
 // at which point the handle is nil and every closed instance would answer the same thing.
-func (instance *Wasmer3Instance) ID() string {
+func (instance *Wasmer6Instance) ID() string {
 	return instance.id
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.
-func (instance *Wasmer3Instance) IsInterfaceNil() bool {
+func (instance *Wasmer6Instance) IsInterfaceNil() bool {
 	return instance == nil
 }
 
@@ -254,27 +254,27 @@ func (instance *Wasmer3Instance) IsInterfaceNil() bool {
 
 // HasMemory reports whether the contract declares a memory. Always true here: the executor
 // rejects a module without exactly one memory at instantiation, so a live instance has one.
-func (instance *Wasmer3Instance) HasMemory() bool {
+func (instance *Wasmer6Instance) HasMemory() bool {
 	return true
 }
 
 // Reset is not supported yet; see PLAN-go-ffi.md, Phase 6. Returning false makes the instance
 // tracker treat the instance as unusable for warm reuse, which is the correct outcome.
-func (instance *Wasmer3Instance) Reset() bool {
+func (instance *Wasmer6Instance) Reset() bool {
 	return false
 }
 
 // Cache is not supported yet; see PLAN-go-ffi.md, Phase 6.
-func (instance *Wasmer3Instance) Cache() ([]byte, error) {
+func (instance *Wasmer6Instance) Cache() ([]byte, error) {
 	return nil, ErrCacheUnsupported
 }
 
 // SetVMHooksPtr is a no-op. The legacy C API had no per-instance hooks pointer and the VM
 // never called this; the new one carries a per-instance handle from creation instead.
-func (instance *Wasmer3Instance) SetVMHooksPtr(_ uintptr) {
+func (instance *Wasmer6Instance) SetVMHooksPtr(_ uintptr) {
 }
 
 // GetVMHooksPtr is a no-op. See SetVMHooksPtr.
-func (instance *Wasmer3Instance) GetVMHooksPtr() uintptr {
+func (instance *Wasmer6Instance) GetVMHooksPtr() uintptr {
 	return 0
 }

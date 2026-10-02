@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2legacy
 
 // #include <stdlib.h>
 import "C"

@@ -6,8 +6,8 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
-	"github.com/multiversx/mx-chain-vm-go/wasmer3"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer6"
 )
 
 // hookSequenceUnder runs a scenario folder under one executor and returns the recorded sequence
@@ -51,20 +51,20 @@ func TestExecutorsAgreeOnHookSequence(t *testing.T) {
 		folder = "adder/scenarios/adder.scen.json"
 	}
 
-	withWasmer2 := hookSequenceUnder(t, folder, wasmer2.ExecutorFactory())
-	withWasmer3 := hookSequenceUnder(t, folder, wasmer3.ExecutorFactory())
+	withWasmer2Legacy := hookSequenceUnder(t, folder, wasmer2legacy.ExecutorFactory())
+	withWasmer6 := hookSequenceUnder(t, folder, wasmer6.ExecutorFactory())
 
-	if withWasmer2 == withWasmer3 {
+	if withWasmer2Legacy == withWasmer6 {
 		return
 	}
 
 	// Written out rather than diffed inline, because the sequences run to thousands of lines
 	// for anything bigger than adder and a testing.T failure message is the wrong place for
 	// them.
-	writeDiffArtifact(t, "hookSequence_wasmer2.txt", withWasmer2)
-	writeDiffArtifact(t, "hookSequence_wasmer3.txt", withWasmer3)
+	writeDiffArtifact(t, "hookSequence_wasmer2legacy.txt", withWasmer2Legacy)
+	writeDiffArtifact(t, "hookSequence_wasmer6.txt", withWasmer6)
 
-	t.Errorf("the two executors produced different hook sequences; see hookSequence_wasmer*.txt")
+	t.Errorf("the two executors produced different hook sequences; see hookSequence_*.txt")
 }
 
 func writeDiffArtifact(t *testing.T, name string, content string) {

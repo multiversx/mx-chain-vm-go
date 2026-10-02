@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2legacy
 
 // #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR}
 // #cgo linux,amd64 LDFLAGS:-lvmexeccapi

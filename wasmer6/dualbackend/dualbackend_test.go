@@ -7,21 +7,21 @@
 // carrying both, chosen by a flag, so that the differential run is a flag rather than two
 // builds. The one thing that could rule it out is not size or symbols but **trap handling**.
 // Both runtimes install process-global signal handlers for the faults a wasm trap raises —
-// wasmer 2.2 forcibly, through vm_force_sighandler_reinstall, which wasmer2.CreateExecutor
+// wasmer 2.2 forcibly, through vm_force_sighandler_reinstall, which wasmer2legacy.CreateExecutor
 // calls on every executor it builds; wasmer 6 lazily, when it first builds a store. Whoever
 // installs last wins unless the handlers chain, and the failure mode is not a red test but a
 // mishandled fault, so it has to be observed rather than assumed.
 //
 // This package is behind a build tag because it is the one place that deliberately links
 // both libraries into one binary, which the plan otherwise forbids: libvmexeccapi and
-// libvmexeccapi2 each contain their own copy of wasmer 2.2, so a shipped binary must link
+// libvmexeccapi_w6 each contain their own copy of wasmer 2.2, so a shipped binary must link
 // exactly one.
 //
 // Handler installation is global and guarded by a Once, so the two initialisation orders
 // cannot both be exercised in one process. Run them separately:
 //
-//	go test -tags dualbackend ./wasmer3/dualbackend/ -run TestWasmer3TrapsWithWasmer2First -v
-//	go test -tags dualbackend ./wasmer3/dualbackend/ -run TestWasmer2TrapsWithWasmer3First -v
+//	go test -tags dualbackend ./wasmer6/dualbackend/ -run TestWasmer6TrapsWithWasmer2First -v
+//	go test -tags dualbackend ./wasmer6/dualbackend/ -run TestWasmer2TrapsWithWasmer6First -v
 package dualbackend
 
 import (
@@ -30,8 +30,8 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
-	"github.com/multiversx/mx-chain-vm-go/wasmer3"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer6"
 	"github.com/stretchr/testify/require"
 )
 
@@ -90,7 +90,7 @@ func uniformOpcodeCost(cost uint32) *executor.WASMOpcodeCost {
 // newWasmer2Instance builds a legacy executor, which is what forcibly reinstalls the
 // wasmer 2.2 trap handlers.
 func newWasmer2Instance(t *testing.T) executor.Instance {
-	wasmerExecutor, err := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	wasmerExecutor, err := wasmer2legacy.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooksProvider: stubVMHooks{},
 		OpcodeVersion:   executor.OpcodeVersionV2,
 		OpcodeCosts:     uniformOpcodeCost(1),
@@ -110,10 +110,10 @@ func newWasmer2Instance(t *testing.T) executor.Instance {
 	return instance
 }
 
-// newWasmer3Instance builds a new-FFI executor, which is what makes wasmer 6 install its
+// newWasmer6Instance builds a new-FFI executor, which is what makes wasmer 6 install its
 // own handlers.
-func newWasmer3Instance(t *testing.T) *wasmer3.Wasmer3Instance {
-	wasmerExecutor, err := wasmer3.NewExecutor(wasmer3.ExecutorConfig{
+func newWasmer6Instance(t *testing.T) *wasmer6.Wasmer6Instance {
+	wasmerExecutor, err := wasmer6.NewExecutor(wasmer6.ExecutorConfig{
 		OpcodeVersion:  executor.OpcodeVersionV2,
 		WASMOpcodeCost: uniformOpcodeCost(1),
 	})
@@ -122,7 +122,7 @@ func newWasmer3Instance(t *testing.T) *wasmer3.Wasmer3Instance {
 
 	instance, err := wasmerExecutor.NewInstance(
 		trapContract(t),
-		wasmer3.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
+		wasmer6.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
 		stubVMHooks{},
 	)
 	require.Nil(t, err)
@@ -133,26 +133,26 @@ func newWasmer3Instance(t *testing.T) *wasmer3.Wasmer3Instance {
 
 // --- The experiment ----------------------------------------------------------
 
-// TestWasmer3TrapsWithWasmer2First is the order that matters most.
+// TestWasmer6TrapsWithWasmer2First is the order that matters most.
 //
-// wasmer2.CreateExecutor calls vm_force_sighandler_reinstall unconditionally, so it is the
+// wasmer2legacy.CreateExecutor calls vm_force_sighandler_reinstall unconditionally, so it is the
 // one that can overwrite a handler wasmer 6 has already installed. If it does so without
 // chaining, the traps below take down the process instead of coming back as results.
-func TestWasmer3TrapsWithWasmer2First(t *testing.T) {
+func TestWasmer6TrapsWithWasmer2First(t *testing.T) {
 	legacy := newWasmer2Instance(t)
 	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend is alive")
 
-	instance := newWasmer3Instance(t)
+	instance := newWasmer6Instance(t)
 
 	result, err := instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer3.CallOk, result.Kind, "new backend is alive")
+	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend is alive")
 
 	for _, funcName := range []string{"trapUnreachable", "trapMemory"} {
 		t.Run(funcName, func(t *testing.T) {
 			result, err := instance.Call(funcName, 10_000_000)
 			require.Nil(t, err)
-			require.Equal(t, wasmer3.CallRuntimeError, result.Kind,
+			require.Equal(t, wasmer6.CallRuntimeError, result.Kind,
 				"the trap was caught and reported: %+v", result)
 			t.Logf("%s reported: %s", funcName, result.Message)
 		})
@@ -162,19 +162,19 @@ func TestWasmer3TrapsWithWasmer2First(t *testing.T) {
 	// handler that merely did not crash.
 	result, err = instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer3.CallOk, result.Kind, "new backend survived its traps")
+	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend survived its traps")
 
 	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend survived them too")
 }
 
-// TestWasmer2TrapsWithWasmer3First is the mirror: wasmer 6 installs first, and the legacy
+// TestWasmer2TrapsWithWasmer6First is the mirror: wasmer 6 installs first, and the legacy
 // backend has to keep working through its own traps afterwards.
-func TestWasmer2TrapsWithWasmer3First(t *testing.T) {
-	instance := newWasmer3Instance(t)
+func TestWasmer2TrapsWithWasmer6First(t *testing.T) {
+	instance := newWasmer6Instance(t)
 
 	result, err := instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer3.CallOk, result.Kind, "new backend is alive")
+	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend is alive")
 
 	legacy := newWasmer2Instance(t)
 	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend is alive")
@@ -191,5 +191,5 @@ func TestWasmer2TrapsWithWasmer3First(t *testing.T) {
 
 	result, err = instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer3.CallOk, result.Kind, "new backend survived them too")
+	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend survived them too")
 }

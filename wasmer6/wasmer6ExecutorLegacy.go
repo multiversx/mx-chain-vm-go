@@ -1,7 +1,7 @@
-package wasmer3
+package wasmer6
 
 // Transitional: executor.Executor as it is today, plus the factory that lets a test select
-// this backend. See the note at the top of wasmer3InstanceLegacy.go.
+// this backend. See the note at the top of wasmer6InstanceLegacy.go.
 
 import (
 	"os/signal"
@@ -10,19 +10,19 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ = (executor.Executor)((*Wasmer3Executor)(nil))
-var _ = (executor.ExecutorAbstractFactory)((*Wasmer3ExecutorFactory)(nil))
+var _ = (executor.Executor)((*Wasmer6Executor)(nil))
+var _ = (executor.ExecutorAbstractFactory)((*Wasmer6ExecutorFactory)(nil))
 
-// Wasmer3ExecutorFactory builds Wasmer 6 executors.
-type Wasmer3ExecutorFactory struct{}
+// Wasmer6ExecutorFactory builds Wasmer 6 executors.
+type Wasmer6ExecutorFactory struct{}
 
 // ExecutorFactory returns the Wasmer 6 executor factory.
-func ExecutorFactory() *Wasmer3ExecutorFactory {
-	return &Wasmer3ExecutorFactory{}
+func ExecutorFactory() *Wasmer6ExecutorFactory {
+	return &Wasmer6ExecutorFactory{}
 }
 
 // CreateExecutor creates a new executor.
-func (wef *Wasmer3ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+func (wef *Wasmer6ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
 	// Same as the legacy factory does, and for the same reason: the runtime installs its own
 	// trap handlers, and Go's must not be left in front of them.
 	signal.Reset()
@@ -49,7 +49,7 @@ func (wef *Wasmer3ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.
-func (wef *Wasmer3ExecutorFactory) IsInterfaceNil() bool {
+func (wef *Wasmer6ExecutorFactory) IsInterfaceNil() bool {
 	return wef == nil
 }
 
@@ -59,7 +59,7 @@ func (wef *Wasmer3ExecutorFactory) IsInterfaceNil() bool {
 // to change it is to build another one. That is behaviour-preserving for the single caller,
 // GasScheduleChange, which already clears the warm instance cache: no instance survives the
 // change, so nothing observes the swap. See PLAN-go-ffi.md, gate G4.
-func (wasmerExecutor *Wasmer3Executor) SetOpcodeConfig(
+func (wasmerExecutor *Wasmer6Executor) SetOpcodeConfig(
 	opcodeVersion executor.OpcodeVersion,
 	wasmOps *executor.WASMOpcodeCost,
 ) {
@@ -68,7 +68,7 @@ func (wasmerExecutor *Wasmer3Executor) SetOpcodeConfig(
 		WASMOpcodeCost: wasmOps,
 	})
 	if err != nil {
-		logWasmer3.Error("could not apply new opcode config", "err", err)
+		logWasmer6.Error("could not apply new opcode config", "err", err)
 		return
 	}
 
@@ -81,12 +81,12 @@ func (wasmerExecutor *Wasmer3Executor) SetOpcodeConfig(
 }
 
 // FunctionNames returns the low-level function names provided to contracts.
-func (wasmerExecutor *Wasmer3Executor) FunctionNames() vmcommon.FunctionNames {
+func (wasmerExecutor *Wasmer6Executor) FunctionNames() vmcommon.FunctionNames {
 	return executor.VMHookNames
 }
 
 // NewInstanceWithOptions creates a new instance from WASM bytecode.
-func (wasmerExecutor *Wasmer3Executor) NewInstanceWithOptions(
+func (wasmerExecutor *Wasmer6Executor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
@@ -108,7 +108,7 @@ func (wasmerExecutor *Wasmer3Executor) NewInstanceWithOptions(
 }
 
 // NewInstanceFromCompiledCodeWithOptions is not supported yet; see PLAN-go-ffi.md, Phase 6.
-func (wasmerExecutor *Wasmer3Executor) NewInstanceFromCompiledCodeWithOptions(
+func (wasmerExecutor *Wasmer6Executor) NewInstanceFromCompiledCodeWithOptions(
 	_ []byte,
 	_ executor.CompilationOptions,
 ) (executor.Instance, error) {
@@ -116,7 +116,7 @@ func (wasmerExecutor *Wasmer3Executor) NewInstanceFromCompiledCodeWithOptions(
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.
-func (wasmerExecutor *Wasmer3Executor) IsInterfaceNil() bool {
+func (wasmerExecutor *Wasmer6Executor) IsInterfaceNil() bool {
 	return wasmerExecutor == nil
 }
 

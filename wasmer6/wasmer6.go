@@ -1,4 +1,4 @@
-// Package wasmer3 is the cgo bridge to the new executor C API (`libvmexeccapi2`), which
+// Package wasmer6 is the cgo bridge to the new executor C API (`libvmexeccapi_w6`), which
 // exposes the Wasmer 6 backend through the second set of executor traits.
 //
 // It is deliberately *not* an implementation of executor.Executor yet. The Go VM still
@@ -12,13 +12,13 @@
 //
 //   - Outward calls, Go to Rust: everything in bridge3.go. The VM creates an executor and
 //     instances, calls functions, and reads gas.
-//   - Inward calls, Rust to Go: the generated shims in wasmer3ImportsCgo.go. Each one is
+//   - Inward calls, Rust to Go: the generated shims in wasmer6ImportsCgo.go. Each one is
 //     handed a hook context, recovers the VM hooks for the instance from it, and may call
 //     back through the context to reach the instance's memory and gas.
-package wasmer3
+package wasmer6
 
 import logger "github.com/multiversx/mx-chain-logger-go"
 
 // Logger for this executor, matching the name wasmer2 uses so that the two are configured
 // together.
-var logWasmer3 = logger.GetOrCreate("vm/executor")
+var logWasmer6 = logger.GetOrCreate("vm/executor")

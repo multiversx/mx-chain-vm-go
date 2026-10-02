@@ -1,7 +1,7 @@
-package wasmer3
+package wasmer6
 
 // #include <stdlib.h>
-// #include "./libvmexeccapi_new.h"
+// #include "./libvmexeccapi_w6.h"
 import "C"
 
 import (
@@ -53,12 +53,12 @@ type CallResult struct {
 	Message string
 }
 
-// Wasmer3Instance is one instantiated contract.
+// Wasmer6Instance is one instantiated contract.
 //
 // The methods here are the outside view — what the VM can do to an instance between calls.
 // Everything a *hook* needs is on InstanceState instead, reached through the hook context,
 // because under Wasmer 6 memory and gas are only addressable from inside a host call.
-type Wasmer3Instance struct {
+type Wasmer6Instance struct {
 	cInstance   *cInstanceT
 	hooksHandle cgo.Handle
 
@@ -80,7 +80,7 @@ type Wasmer3Instance struct {
 	inCall bool
 
 	// hooks is this instance's side of the hook bridge, kept so that the legacy interface can
-	// reach the state of a running hook. See wasmer3InstanceLegacy.go.
+	// reach the state of a running hook. See wasmer6InstanceLegacy.go.
 	hooks *instanceHooks
 
 	// gasLimit is the limit for the next call, which the legacy interface sets beforehand.
@@ -99,7 +99,7 @@ type Wasmer3Instance struct {
 //
 // The returned error reports a failure of the boundary itself. A failure of the *contract*
 // is not an error: it comes back as the CallResult kind, which is the point of the enum.
-func (instance *Wasmer3Instance) Call(funcName string, pointsLimit uint64) (CallResult, error) {
+func (instance *Wasmer6Instance) Call(funcName string, pointsLimit uint64) (CallResult, error) {
 	if instance.inCall {
 		return CallResult{}, ErrInstanceReentered
 	}
@@ -107,10 +107,10 @@ func (instance *Wasmer3Instance) Call(funcName string, pointsLimit uint64) (Call
 	defer func() { instance.inCall = false }()
 
 	buf := newErrBuf()
-	var cResult C.struct_vm_exec2_call_result_t
+	var cResult C.struct_vm_exec_w6_call_result_t
 
 	status := cInstanceCall(instance.cInstance, funcName, pointsLimit, &cResult, buf)
-	if status != C.VM_EXEC2_OK {
+	if status != C.VM_EXEC_W6_OK {
 		return CallResult{}, buf.asError(status, "instance call failed")
 	}
 
@@ -132,8 +132,8 @@ func (instance *Wasmer3Instance) Call(funcName string, pointsLimit uint64) (Call
 // PointsUsed returns the gas consumed so far.
 //
 // Named apart from the legacy GetPointsUsed, which has nowhere to report a failure; see
-// wasmer3InstanceLegacy.go.
-func (instance *Wasmer3Instance) PointsUsed() (uint64, error) {
+// wasmer6InstanceLegacy.go.
+func (instance *Wasmer6Instance) PointsUsed() (uint64, error) {
 	buf := newErrBuf()
 	var points C.uint64_t
 
@@ -147,17 +147,17 @@ func (instance *Wasmer3Instance) PointsUsed() (uint64, error) {
 
 // CheckSignatures reports whether every exported function takes no arguments and returns no
 // results, which is what the contract ABI requires.
-func (instance *Wasmer3Instance) CheckSignatures() bool {
+func (instance *Wasmer6Instance) CheckSignatures() bool {
 	return cInstanceCheckSignatures(instance.cInstance) == 1
 }
 
 // HasFunction reports whether the contract exports a function by that name.
-func (instance *Wasmer3Instance) HasFunction(funcName string) bool {
+func (instance *Wasmer6Instance) HasFunction(funcName string) bool {
 	return cInstanceHasFunction(instance.cInstance, funcName) == 1
 }
 
 // ExportedFunctionNames returns the names of the contract's endpoints.
-func (instance *Wasmer3Instance) ExportedFunctionNames() ([]string, error) {
+func (instance *Wasmer6Instance) ExportedFunctionNames() ([]string, error) {
 	return readNames(
 		func() C.int { return cInstanceExportedFunctionNamesLength(instance.cInstance) },
 		func(dest []byte) C.int { return cInstanceExportedFunctionNames(instance.cInstance, dest) },
@@ -168,7 +168,7 @@ func (instance *Wasmer3Instance) ExportedFunctionNames() ([]string, error) {
 //
 // This is what the contract validator needs, and it is new: the legacy API could only answer
 // "is this particular name imported?", one name at a time against a hardcoded list.
-func (instance *Wasmer3Instance) ImportedFunctionNames() ([]string, error) {
+func (instance *Wasmer6Instance) ImportedFunctionNames() ([]string, error) {
 	return readNames(
 		func() C.int { return cInstanceImportedFunctionNamesLength(instance.cInstance) },
 		func(dest []byte) C.int { return cInstanceImportedFunctionNames(instance.cInstance, dest) },
@@ -180,7 +180,7 @@ func (instance *Wasmer3Instance) ImportedFunctionNames() ([]string, error) {
 // Answered from the set captured at creation, not from the executor, so it costs nothing to
 // ask repeatedly. That matters because the contract validator asks it once per name of a
 // blocklist for every contract it checks.
-func (instance *Wasmer3Instance) IsFunctionImported(name string) bool {
+func (instance *Wasmer6Instance) IsFunctionImported(name string) bool {
 	_, imported := instance.importedFunctions[name]
 
 	return imported
@@ -190,7 +190,7 @@ func (instance *Wasmer3Instance) IsFunctionImported(name string) bool {
 //
 // In that order: once the instance is gone no hook can run, so the handle is safe to drop.
 // Dropping it first would leave a window in which a hook could resolve a deleted handle.
-func (instance *Wasmer3Instance) Close() {
+func (instance *Wasmer6Instance) Close() {
 	if instance.cInstance == nil {
 		return
 	}

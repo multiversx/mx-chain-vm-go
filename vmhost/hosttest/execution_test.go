@@ -24,7 +24,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -141,7 +141,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
-	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer2legacy.ExecutorFactory())
 }
 
 func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
@@ -332,7 +332,7 @@ func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
+	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2legacy.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory1).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -344,7 +344,7 @@ func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
+	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2legacy.ExecutorFactory())
 	host2 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory2).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).

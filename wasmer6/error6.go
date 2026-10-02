@@ -1,7 +1,7 @@
-package wasmer3
+package wasmer6
 
 // #include <stdlib.h>
-// #include "./libvmexeccapi_new.h"
+// #include "./libvmexeccapi_w6.h"
 import "C"
 
 import (
@@ -18,7 +18,7 @@ var (
 
 	// ErrStaleContext is reported when a hook context is used outside the host call it
 	// belongs to. It is the dynamic replacement for the borrow the Rust side cannot
-	// express across C; see the hook context docs in libvmexeccapi_new.h.
+	// express across C; see the hook context docs in libvmexeccapi_w6.h.
 	ErrStaleContext = errors.New("hook context used outside its host call")
 
 	// ErrPanic is reported when a Rust panic was caught at the boundary. A panic must
@@ -52,7 +52,7 @@ var (
 // Taken from the library rather than picked here, so that the two cannot drift: the Rust
 // side sizes it to hold every message the executor currently produces, and truncates
 // silently beyond it.
-var errBufLen = C.int(C.VM_EXEC2_ERROR_BUF_RECOMMENDED_LEN)
+var errBufLen = C.int(C.VM_EXEC_W6_ERROR_BUF_RECOMMENDED_LEN)
 
 // errBuf is the caller-provided buffer every fallible call writes its message into.
 //
@@ -87,17 +87,17 @@ func (buf errBuf) message() string {
 // Mapping the non-message statuses to distinct sentinels rather than to the message channel
 // is what lets a caller use errors.Is on them: a stale context in particular is a bug in
 // the caller's lifetime handling, not a contract failure, and worth telling apart.
-func (buf errBuf) asError(status C.enum_vm_exec2_status_t, context string) error {
+func (buf errBuf) asError(status C.enum_vm_exec_w6_status_t, context string) error {
 	switch status {
-	case C.VM_EXEC2_OK:
+	case C.VM_EXEC_W6_OK:
 		return nil
-	case C.VM_EXEC2_NULL_POINTER:
+	case C.VM_EXEC_W6_NULL_POINTER:
 		return fmt.Errorf("%s: %w", context, ErrNullPointer)
-	case C.VM_EXEC2_STALE_CONTEXT:
+	case C.VM_EXEC_W6_STALE_CONTEXT:
 		return fmt.Errorf("%s: %w", context, ErrStaleContext)
-	case C.VM_EXEC2_PANIC:
+	case C.VM_EXEC_W6_PANIC:
 		return fmt.Errorf("%s: %w", context, ErrPanic)
-	case C.VM_EXEC2_ERROR:
+	case C.VM_EXEC_W6_ERROR:
 		return fmt.Errorf("%s: %s", context, buf.message())
 	default:
 		return fmt.Errorf("%s: unknown executor status %d", context, int(status))
@@ -107,5 +107,5 @@ func (buf errBuf) asError(status C.enum_vm_exec2_status_t, context string) error
 // asErrorFromCode is asError for the calls that return a count, where a negative result
 // carries a status in the same code space.
 func (buf errBuf) asErrorFromCode(code int64, context string) error {
-	return buf.asError(C.enum_vm_exec2_status_t(code), context)
+	return buf.asError(C.enum_vm_exec_w6_status_t(code), context)
 }

@@ -1,5 +1,5 @@
 // Package wasmer2 is a Go library to run WebAssembly binaries.
-package wasmer2
+package wasmer2legacy
 
 import logger "github.com/multiversx/mx-chain-logger-go"
 

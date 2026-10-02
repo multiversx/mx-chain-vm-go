@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
-	"github.com/multiversx/mx-chain-vm-go/wasmer3"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer6"
 )
 
 // TestCErc20Executors runs the same scenario suite under each executor in turn, in one process.
@@ -17,13 +17,13 @@ import (
 //
 // Running them in one process is the point: both libraries are loaded and both runtimes'
 // trap handlers are installed, so this also exercises the coexistence that
-// wasmer3/dualbackend/ tests directly.
+// wasmer6/dualbackend/ tests directly.
 func TestCErc20Executors(t *testing.T) {
-	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
-	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
-	testCERC20WithExecutorFactory(t, wasmer3.ExecutorFactory())
-	testCERC20WithExecutorFactory(t, wasmer3.ExecutorFactory())
-	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2legacy.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2legacy.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer6.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer6.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2legacy.ExecutorFactory())
 }
 
 func testCERC20WithExecutorFactory(t *testing.T, factory executor.ExecutorAbstractFactory) {
