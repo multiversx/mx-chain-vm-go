@@ -37,6 +37,10 @@ var (
 	// mean a contract running for free.
 	ErrMissingOpcodeCost = errors.New("executor config has no opcode cost table")
 
+	// ErrCacheUnsupported is reported for the instance cache path, which this executor does
+	// not implement yet. See PLAN-go-ffi.md, Phase 6.
+	ErrCacheUnsupported = errors.New("instance caching is not supported by this executor")
+
 	// ErrInstanceReentered is reported when a hook calls back into the instance it is
 	// running in. Nesting into another instance is supported; nesting into the same one is
 	// not, and this is where that becomes an error rather than undefined behaviour.

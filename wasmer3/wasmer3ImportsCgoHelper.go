@@ -22,8 +22,13 @@ import (
 // through is the one belonging to this call. See VMHooksProvider for why that matters.
 func getVMHooksFromHookContext(ctx *C.vm_exec2_hook_context_t) executor.VMHooks {
 	hooks := cgo.Handle(ctx.go_vm_hooks).Value().(*instanceHooks)
+	state := &InstanceState{ctx: ctx, owner: hooks}
 
-	return hooks.provider.VMHooksForCall(&InstanceState{ctx: ctx, owner: hooks})
+	// Published for the VM's instance-level memory and gas calls, which still arrive through
+	// executor.Instance rather than through the state below. See instanceHooks.activeState.
+	hooks.activeState = state
+
+	return hooks.provider.VMHooksForCall(state)
 }
 
 func funcPointer(cFuncPtr unsafe.Pointer) *[0]byte {

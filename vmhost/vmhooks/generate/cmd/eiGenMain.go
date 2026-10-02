@@ -46,10 +46,9 @@ func main() {
 	writeVMHooks(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
-	writeWasmer2Names(eiMetadata)
 	writeWasmer3ImportsCgo(eiMetadata)
 
-	writeNamesForMockExecutor(eiMetadata)
+	writeExecutorVMHookNames(eiMetadata)
 
 	tryCreateRustOutputDirectory()
 
@@ -108,16 +107,12 @@ func writeWasmer3ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteWasmer3Cgo(out, eiMetadata)
 }
 
-func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2Names.go")
+// The hook names, shared by every executor. Previously generated once per executor, into
+// wasmer2/wasmer2Names.go and mock/context/executorMockFunc.go.
+func writeExecutorVMHookNames(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHookNames.go")
 	defer out.Close()
-	eapigen.WriteNames(out, "wasmer2", eiMetadata)
-}
-
-func writeNamesForMockExecutor(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../mock/context/executorMockFunc.go")
-	defer out.Close()
-	eapigen.WriteNames(out, "mock", eiMetadata)
+	eapigen.WriteExecutorVMHookNames(out, eiMetadata)
 }
 
 func tryCreateRustOutputDirectory() {

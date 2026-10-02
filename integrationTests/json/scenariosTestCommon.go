@@ -92,6 +92,13 @@ func (mtb *ScenariosTestBuilder) WithExecutorLogs() *ScenariosTestBuilder {
 	return mtb
 }
 
+// WithCustomExecutorLogs sets a caller-supplied logger, so that the caller can read the log
+// back afterwards. WithExecutorLogs keeps the logger private and is read through CheckLog.
+func (mtb *ScenariosTestBuilder) WithCustomExecutorLogs(logger executorwrapper.ExecutorLogger) *ScenariosTestBuilder {
+	mtb.executorLogger = logger
+	return mtb
+}
+
 // WithConsoleExecutorLogs sets a custom logger
 func (mtb *ScenariosTestBuilder) WithConsoleExecutorLogs() *ScenariosTestBuilder {
 	mtb.executorLogger = executorwrapper.NewConsoleLogger()

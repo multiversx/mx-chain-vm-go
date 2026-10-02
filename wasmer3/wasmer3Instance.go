@@ -78,6 +78,21 @@ type Wasmer3Instance struct {
 	// all, and a lock would imply otherwise; what this catches is the single-goroutine
 	// re-entry a hook could perform, which is the mistake that is actually available to make.
 	inCall bool
+
+	// hooks is this instance's side of the hook bridge, kept so that the legacy interface can
+	// reach the state of a running hook. See wasmer3InstanceLegacy.go.
+	hooks *instanceHooks
+
+	// gasLimit is the limit for the next call, which the legacy interface sets beforehand.
+	gasLimit uint64
+
+	// breakpoint stands in for the wasm global this executor no longer has.
+	breakpoint uint64
+
+	cleaned bool
+
+	// id is stable for the instance's whole life, including after it is closed. See ID().
+	id string
 }
 
 // Call invokes an exported function with a gas limit for this call.
@@ -114,8 +129,11 @@ func (instance *Wasmer3Instance) Call(funcName string, pointsLimit uint64) (Call
 	return result, nil
 }
 
-// GetPointsUsed returns the gas consumed so far.
-func (instance *Wasmer3Instance) GetPointsUsed() (uint64, error) {
+// PointsUsed returns the gas consumed so far.
+//
+// Named apart from the legacy GetPointsUsed, which has nowhere to report a failure; see
+// wasmer3InstanceLegacy.go.
+func (instance *Wasmer3Instance) PointsUsed() (uint64, error) {
 	buf := newErrBuf()
 	var points C.uint64_t
 

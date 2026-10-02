@@ -18,6 +18,18 @@ var _ = (executor.InstanceState)((*InstanceState)(nil))
 type instanceHooks struct {
 	provider executor.VMHooksProvider
 
+	// activeState is the state of the hook currently running on this instance, or nil.
+	//
+	// It exists only because the VM still reaches wasm memory through executor.Instance
+	// rather than through the state it was handed — see PLAN-go-ffi.md, Phase 4b item 1. Once
+	// Instance is shrunk to the outside view, this goes away with it.
+	//
+	// It is never cleared, and does not need to be. A context used after its call has ended
+	// fails the executor's token check and comes back as ErrStaleContext, which is the whole
+	// point of that check; and the slot cannot be clobbered mid-call, because a nested call
+	// runs on a different instance and re-entering the same one is refused outright.
+	activeState *InstanceState
+
 	// stateErrBuf is shared by every state operation this instance's hooks perform.
 	//
 	// Sharing is safe, and not merely convenient: a state operation is a single cgo call

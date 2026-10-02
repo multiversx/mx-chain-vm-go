@@ -8,6 +8,7 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer3"
 )
 
 // EnvVMEXECUTOR is the name of the environment variable that controls the default test executor
@@ -15,6 +16,11 @@ var EnvVMEXECUTOR = "VMEXECUTOR"
 
 // ExecWasmer2 is the value of the EnvVMEXECUTOR variable which selects Wasmer 2
 var ExecWasmer2 = "wasmer2"
+
+// ExecWasmer3 is the value of the EnvVMEXECUTOR variable which selects Wasmer 6, through the
+// second executor interface set. Not the default: see PLAN-go-ffi.md, Phase 4b, for what the
+// Go side still has to converge before it can be.
+var ExecWasmer3 = "wasmer3"
 
 var defaultExecutorString = ExecWasmer2
 
@@ -24,6 +30,10 @@ func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorAbstractFacto
 
 	if execStr == ExecWasmer2 {
 		return wasmer2.ExecutorFactory()
+	}
+
+	if execStr == ExecWasmer3 {
+		return wasmer3.ExecutorFactory()
 	}
 
 	if tb == (testing.TB)(nil) {

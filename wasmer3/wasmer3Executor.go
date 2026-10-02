@@ -5,6 +5,7 @@ package wasmer3
 import "C"
 
 import (
+	"fmt"
 	"runtime/cgo"
 	"unsafe"
 
@@ -40,6 +41,12 @@ type CompilationOptions struct {
 // Wasmer3Executor creates instances of the Wasmer 6 backend.
 type Wasmer3Executor struct {
 	cExecutor *cExecutorT
+
+	// Kept so that the legacy Executor interface, whose NewInstanceWithOptions takes neither,
+	// can still create instances; and so that SetOpcodeConfig can rebuild the C executor
+	// rather than mutate a configuration this API deliberately makes immutable.
+	config   ExecutorConfig
+	provider executor.VMHooksProvider
 }
 
 // NewExecutor creates an executor from one configuration struct and the generated hook
@@ -73,7 +80,7 @@ func NewExecutor(config ExecutorConfig) (*Wasmer3Executor, error) {
 
 	logWasmer3.Trace("wasmer3 executor created")
 
-	return &Wasmer3Executor{cExecutor: cExecutor}, nil
+	return &Wasmer3Executor{cExecutor: cExecutor, config: config}, nil
 }
 
 // NewInstance compiles and instantiates a contract.
@@ -100,10 +107,11 @@ func (wasmerExecutor *Wasmer3Executor) NewInstance(
 	// forbids storing a Go pointer in C memory, and a handle is an integer index into a Go
 	// side table, which is exactly what that rule leaves available. It is released in
 	// Close, and leaks the entry if Close is never called.
-	handle := cgo.NewHandle(&instanceHooks{
+	bridge := &instanceHooks{
 		provider:    hooks,
 		stateErrBuf: newErrBuf(),
-	})
+	}
+	handle := cgo.NewHandle(bridge)
 
 	buf := newErrBuf()
 	var cInstance *cInstanceT
@@ -120,7 +128,12 @@ func (wasmerExecutor *Wasmer3Executor) NewInstance(
 		return nil, err
 	}
 
-	instance := &Wasmer3Instance{cInstance: cInstance, hooksHandle: handle}
+	instance := &Wasmer3Instance{
+		cInstance:   cInstance,
+		hooksHandle: handle,
+		hooks:       bridge,
+		id:          fmt.Sprintf("%p", cInstance),
+	}
 
 	imported, err := instance.ImportedFunctionNames()
 	if err != nil {

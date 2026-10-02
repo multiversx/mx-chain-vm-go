@@ -477,7 +477,7 @@ func TestGasAccounting(t *testing.T) {
 
 	callOk(t, instance, "checkI64Result")
 
-	used, err := instance.GetPointsUsed()
+	used, err := instance.PointsUsed()
 	require.Nil(t, err)
 	require.Greater(t, used, uint64(0))
 }

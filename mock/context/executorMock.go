@@ -61,7 +61,7 @@ func (executorMock *ExecutorMock) SetOpcodeConfig(_ executor.OpcodeVersion, _ *e
 
 // FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
-	return functionNames
+	return executor.VMHookNames
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a

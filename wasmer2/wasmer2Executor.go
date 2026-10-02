@@ -68,7 +68,7 @@ func (wasmerExecutor *Wasmer2Executor) SetSIGSEGVPassthrough() {
 }
 
 func (wasmerExecutor *Wasmer2Executor) FunctionNames() vmcommon.FunctionNames {
-	return functionNames
+	return executor.VMHookNames
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,

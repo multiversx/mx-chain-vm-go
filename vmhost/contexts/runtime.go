@@ -331,7 +331,19 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 	return context.iTracker.GetCodeSize()
 }
 
+// saveCompiledCode persists the compiled module and keeps the instance warm.
+//
+// The two are independent and are kept that way: an executor that cannot serialise a module
+// can still have its instance reused, and one that fails to persist should not silently lose
+// the warm instance as well. They used to share an early return, so a failure to serialise
+// skipped the warm save too — invisible with the legacy executor, where serialising does not
+// fail, and the single cause of every instance-tracker failure under the new one.
 func (context *runtimeContext) saveCompiledCode() {
+	context.saveCompiledCodeToStorage()
+	context.saveWarmInstance()
+}
+
+func (context *runtimeContext) saveCompiledCodeToStorage() {
 	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
@@ -347,8 +359,6 @@ func (context *runtimeContext) saveCompiledCode() {
 	if !found {
 		logRuntime.Trace("save compiled code silent fail, code hash not found")
 	}
-
-	context.saveWarmInstance()
 }
 
 func (context *runtimeContext) saveWarmInstance() {
