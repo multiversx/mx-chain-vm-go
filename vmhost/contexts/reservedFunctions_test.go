@@ -180,4 +180,3 @@ func TestReservedFunctions_DynamicActiveBuiltin(t *testing.T) {
 	isActive = false
 	require.False(t, reserved.IsReserved("dynamicBuiltin"))
 }
-

@@ -1937,5 +1937,3 @@ func TestHost_BigFloatPow_NegativeExponent(t *testing.T) {
 		})
 	}
 }
-
-

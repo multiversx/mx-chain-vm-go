@@ -444,7 +444,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		vInput := host.createVerificationInputForCreate(input)
 		errVerify := host.outputVerifier.Verify(vInput, localOutput)
 		if errVerify != nil {
-			log.Error("exit boundary VM output verification failed", "error", errVerify)
+			log.Debug("exit boundary VM output verification failed", "error", errVerify)
 			localOutput = host.Output().CreateVMOutputInCaseOfError(errVerify)
 			localErr = errVerify
 		}
@@ -540,7 +540,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		vInput := host.createVerificationInputForCall(input)
 		errVerify := host.outputVerifier.Verify(vInput, localOutput)
 		if errVerify != nil {
-			log.Error("exit boundary VM output verification failed", "error", errVerify)
+			log.Debug("exit boundary VM output verification failed", "error", errVerify)
 			localOutput = host.Output().CreateVMOutputInCaseOfError(errVerify)
 			localErr = errVerify
 		}

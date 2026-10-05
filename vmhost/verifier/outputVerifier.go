@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
+	"sort"
 	"strings"
 
 	"github.com/multiversx/mx-chain-core-go/core"
@@ -12,6 +13,18 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 )
+
+func getSortedAccountKeys(m map[string]*vmcommon.OutputAccount) []string {
+	if len(m) == 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
 
 const AddressLen = 32
 const EGLDTokenIdentifier = "EGLD-000000"
@@ -164,7 +177,11 @@ func (v *vmOutputVerifier) verifyReturnCodeStateIsolation(output *vmcommon.VMOut
 			ErrGasRefundOnFailedExecution, output.ReturnCode, output.GasRefund.String())
 	}
 
-	for _, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
+		if acc == nil {
+			continue
+		}
 		if len(acc.StorageUpdates) > 0 {
 			return fmt.Errorf("%w: returnCode=%s account=%x storageUpdates=%d",
 				ErrStorageUpdateOnFailedExecution, output.ReturnCode, acc.Address, len(acc.StorageUpdates))
@@ -217,7 +234,8 @@ func (v *vmOutputVerifier) verifyIdentityAndAddressIntegrity(input *Verification
 		deletedSet[delKey] = struct{}{}
 	}
 
-	for addrKey, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			return fmt.Errorf("%w: nil output account for key %x", ErrInvalidAccountAddress, []byte(addrKey))
 		}
@@ -287,7 +305,8 @@ func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput
 	}
 
 	netSum := big.NewInt(0)
-	for _, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
 		}
@@ -323,7 +342,8 @@ func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput
 
 // 4. Non-Negative Balance Check: Ensures no account balance is overdrawn below zero.
 func (v *vmOutputVerifier) verifyNonNegativeBalances(_ *VerificationInput, output *vmcommon.VMOutput) error {
-	for _, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
 		}
@@ -394,7 +414,8 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 
 	// 5.3 Extract Outflows from OutputTransfers
 	outflowTransfers := make([]transferRecord, 0)
-	for _, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
 		}
@@ -634,7 +655,8 @@ func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmc
 	}
 
 	sumGasUsed := uint64(0)
-	for _, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
 		}
@@ -690,7 +712,8 @@ func (v *vmOutputVerifier) verifyReadOnlyPurity(input *VerificationInput, output
 		return fmt.Errorf("%w: gas refund > 0 in read-only mode", ErrReadOnlyStateChange)
 	}
 
-	for _, acc := range output.OutputAccounts {
+	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
 		}

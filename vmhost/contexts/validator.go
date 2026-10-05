@@ -11,8 +11,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-const allowedCharsInFunctionName = "abcdefghijklmnopqrstuvwxyz0123456789_"
-
 var reservedFunctionsActivationFlag = map[string]core.EnableEpochFlag{
 	"mbufferToSmallIntUnsigned":                    vmhost.BarnardOpcodesFlag,
 	"mbufferToSmallIntSigned":                      vmhost.BarnardOpcodesFlag,
@@ -347,6 +345,9 @@ func (validator *wasmValidator) verifyCodeSection(payload []byte) error {
 			return fmt.Errorf("%w: malformed locals count: %v", vmhost.ErrContractInvalid, errLocals)
 		}
 		offset = newOffset
+		if offset > bodyEnd {
+			return fmt.Errorf("%w: locals exceed function body", vmhost.ErrContractInvalid)
+		}
 
 		for j := uint32(0); j < numLocals; j++ {
 			_, newOffset, errLocal := decodeVarUint32(payload, offset)
@@ -357,6 +358,10 @@ func (validator *wasmValidator) verifyCodeSection(payload []byte) error {
 			if offset > bodyEnd {
 				return fmt.Errorf("%w: locals exceed function body", vmhost.ErrContractInvalid)
 			}
+		}
+
+		if offset > bodyEnd {
+			return fmt.Errorf("%w: locals exceed function body", vmhost.ErrContractInvalid)
 		}
 
 		err = validator.scanInstructions(payload[offset:bodyEnd])

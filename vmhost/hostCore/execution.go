@@ -299,6 +299,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	blockchain := host.Blockchain()
 	output := host.Output()
+	// Output state rollback is gated to preserve historical execution compatibility
+	// with pre-v1.5.50 blocks during importdb (e.g. epochs 1819, 2060).
 	isOutputRollbackEnabled := host.Runtime().FixCorrectSmallIntAndGasLimits()
 
 	blockchain.PushState()
@@ -628,7 +630,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	blockchain.PushState()
 
 	var err error
- 
+
 	defer func() { host.finishExecuteOnSameContext(err) }()
 
 	// Perform a value transfer to the called SC. If the execution fails, this

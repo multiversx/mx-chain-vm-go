@@ -118,8 +118,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ClearStateStackFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	CleanInstanceFunc func()
-	UnsetInstanceFunc func()
+	CleanInstanceFunc   func()
+	UnsetInstanceFunc   func()
 	AbandonInstanceFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceTrackerFunc func() vmhost.InstanceTracker
