@@ -11,7 +11,10 @@ import (
 )
 
 func TestForbiddenOps_BulkAndSIMD(t *testing.T) {
-	wasmModules := []string{"data-drop", "memory-init", "memory-fill", "memory-copy", "simd"}
+	wasmModules := []string{
+		"data-drop", "memory-init", "memory-fill", "memory-copy", "simd",
+		"table-get", "table-grow", "table-init", "table-set", "table-size",
+	}
 
 	for _, moduleName := range wasmModules {
 		testCase := testcommon.BuildInstanceCallTest(t).

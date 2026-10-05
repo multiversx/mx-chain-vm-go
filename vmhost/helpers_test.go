@@ -2,6 +2,7 @@ package vmhost
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -40,4 +41,32 @@ func TestInverseBytes(t *testing.T) {
 
 	result = InverseBytes([]byte("a"))
 	require.Equal(t, []byte("a"), result)
+}
+
+func TestWrappableError_UnwrapAndErrorsIs(t *testing.T) {
+	t.Parallel()
+
+	baseErr := errors.New("base error")
+	targetErr := errors.New("target error")
+
+	// 1. Single error wrapped
+	wErr1 := WrapError(baseErr)
+	require.True(t, errors.Is(wErr1, baseErr))
+	require.False(t, errors.Is(wErr1, targetErr))
+	require.Equal(t, baseErr, errors.Unwrap(wErr1))
+
+	// 2. Multiple wrapped errors
+	wErr2 := wErr1.WrapWithError(targetErr)
+	require.True(t, errors.Is(wErr2, baseErr))
+	require.True(t, errors.Is(wErr2, targetErr))
+
+	// 3. Unwrap chain traversal should not panic
+	current := error(wErr2)
+	for current != nil {
+		current = errors.Unwrap(current)
+	}
+
+	// 4. Unwrap on empty wrappableError should return nil
+	emptyErr := &wrappableError{}
+	require.Nil(t, emptyErr.Unwrap())
 }

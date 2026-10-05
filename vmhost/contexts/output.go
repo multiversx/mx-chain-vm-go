@@ -84,7 +84,7 @@ func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 // PushState appends the current vmOutput to the state stack
 func (context *outputContext) PushState() {
 	newState := newVMOutput()
-	mergeVMOutputs(newState, context.outputState)
+	MergeVMOutputs(newState, context.outputState)
 	context.stateStack = append(context.stateStack, newState)
 }
 
@@ -114,9 +114,9 @@ func (context *outputContext) PopMergeActiveState() {
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
-	mergeVMOutputs(prevState, context.outputState)
-	context.outputState = newVMOutput()
-	mergeVMOutputs(context.outputState, prevState)
+	mergeAllTransfers := context.host.Runtime().FixCorrectSmallIntAndGasLimits()
+	mergeVMOutputsConditionally(prevState, context.outputState, mergeAllTransfers)
+	context.outputState = prevState
 }
 
 // PopDiscard removes the latest entry from the state stack, but maintaining
@@ -147,14 +147,21 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
+	isFixEnabled := context.host.Runtime().FixCorrectSmallIntAndGasLimits()
+
 	for _, account := range context.outputState.OutputAccounts {
-		newTransfers := make([]vmcommon.OutputTransfer, 0)
-		for _, existingTransfer := range account.OutputTransfers {
-			if isNonAsyncCallTransfer(existingTransfer) {
-				newTransfers = append(newTransfers, existingTransfer)
+		if isFixEnabled {
+			account.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+			account.GasUsed = 0
+		} else {
+			newTransfers := make([]vmcommon.OutputTransfer, 0)
+			for _, existingTransfer := range account.OutputTransfers {
+				if isNonAsyncCallTransfer(existingTransfer) {
+					newTransfers = append(newTransfers, existingTransfer)
+				}
 			}
+			account.OutputTransfers = newTransfers
 		}
-		account.OutputTransfers = newTransfers
 	}
 
 	logOutput.Trace("state content censored")
@@ -309,11 +316,18 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return err
 	}
 
-	isAsyncCall := context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall
+	isAsyncCall := false
+	if !context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		isAsyncCall = context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall
+	}
 	hasValue := value.Cmp(vmhost.Zero) > 0
 	if checkPayable && !payable && hasValue && !isAsyncCall {
 		logOutput.Trace("transfer value", "error", vmhost.ErrAccountNotPayable)
 		return vmhost.ErrAccountNotPayable
+	}
+
+	if value.Cmp(vmhost.Zero) > 0 && context.host.Runtime().ReadOnly() {
+		return vmhost.ErrInvalidCallOnReadOnlyMode
 	}
 
 	senderAcc, _ := context.GetOutputAccount(sender)
@@ -321,12 +335,6 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
-
-	if value.Cmp(vmhost.Zero) > 0 {
-		if context.host.Runtime().ReadOnly() {
-			return vmhost.ErrInvalidCallOnReadOnlyMode
-		}
-	}
 
 	return nil
 }
@@ -369,6 +377,12 @@ func (context *outputContext) Transfer(
 	input []byte,
 	callType vm.CallType,
 ) error {
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() && context.host.Runtime().ReadOnly() {
+		if value.Cmp(vmhost.Zero) > 0 || gasLimit > 0 || len(input) > 0 {
+			return vmhost.ErrInvalidCallOnReadOnlyMode
+		}
+	}
+
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	isBackTransfer := context.isBackTransferWithoutExecution(sender, destination, input)
 	checkPayable := checkPayableIfNotCallback || !isBackTransfer
@@ -537,9 +551,9 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 // RemoveNonUpdatedStorage removes non updated storage from output state
 func (context *outputContext) RemoveNonUpdatedStorage() {
 	for _, outAcc := range context.outputState.OutputAccounts {
-		for _, storageUpdate := range outAcc.StorageUpdates {
+		for key, storageUpdate := range outAcc.StorageUpdates {
 			if !storageUpdate.Written {
-				delete(outAcc.StorageUpdates, string(storageUpdate.Offset))
+				delete(outAcc.StorageUpdates, key)
 			}
 		}
 	}
@@ -562,6 +576,10 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
 func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() && context.host.Runtime().ReadOnly() {
+		return
+	}
+
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = bytes.Clone(input.ContractCode)
 	newSCAccount.CodeMetadata = bytes.Clone(input.ContractCodeMetadata)
@@ -569,6 +587,12 @@ func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
 
 	var empty struct{}
 	context.codeUpdates[string(input.ContractAddress)] = empty
+}
+
+// HasCodeUpdate returns true if code was deployed or updated for this address in the current transaction
+func (context *outputContext) HasCodeUpdate(address []byte) bool {
+	_, ok := context.codeUpdates[string(address)]
+	return ok
 }
 
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
@@ -662,22 +686,40 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 
 // AddToActiveState merges the given vmOutput with the outputState.
 func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
-	if rightOutput.GasRefund != nil {
-		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
+	if rightOutput == nil {
+		return
 	}
 
+	accumulatedRefund := big.NewInt(0)
+	if context.outputState.GasRefund != nil {
+		accumulatedRefund.Set(context.outputState.GasRefund)
+	}
+	if rightOutput.GasRefund != nil {
+		accumulatedRefund.Add(accumulatedRefund, rightOutput.GasRefund)
+	}
+
+	accumulatedDeltas := make(map[string]*big.Int)
 	for _, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := context.outputState.OutputAccounts[string(rightAccount.Address)]
-		if !ok {
+		if !ok || rightAccount.BalanceDelta == nil {
 			continue
 		}
 
-		if rightAccount.BalanceDelta != nil {
-			rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
+		leftDelta := leftAccount.BalanceDelta
+		if leftDelta == nil {
+			leftDelta = big.NewInt(0)
 		}
+		accumulatedDeltas[string(rightAccount.Address)] = new(big.Int).Add(rightAccount.BalanceDelta, leftDelta)
 	}
 
 	mergeVMOutputsConditionally(context.outputState, rightOutput, true)
+
+	for addr, delta := range accumulatedDeltas {
+		if leftAccount, ok := context.outputState.OutputAccounts[addr]; ok {
+			leftAccount.BalanceDelta = delta
+		}
+	}
+	context.outputState.GasRefund = accumulatedRefund
 }
 
 // NextOutputTransferIndex returns next available output transfer index
@@ -697,7 +739,8 @@ func (context *outputContext) SetCrtTransferIndex(index uint32) {
 	context.crtTransferIndex = index
 }
 
-func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+// MergeVMOutputs merges rightOutput into leftOutput
+func MergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
 	mergeVMOutputsConditionally(leftOutput, rightOutput, false)
 }
 
@@ -707,14 +750,14 @@ func mergeVMOutputsConditionally(leftOutput *vmcommon.VMOutput, rightOutput *vmc
 	}
 
 	for rightKey, rightAccount := range rightOutput.OutputAccounts {
-		if !bytes.Equal([]byte(rightKey), rightAccount.Address) {
+		if rightAccount == nil || string(rightAccount.Address) != rightKey {
 			continue
 		}
 
-		leftAccount, ok := leftOutput.OutputAccounts[string(rightAccount.Address)]
+		leftAccount, ok := leftOutput.OutputAccounts[rightKey]
 		if !ok {
 			leftAccount = &vmcommon.OutputAccount{}
-			leftOutput.OutputAccounts[string(rightAccount.Address)] = leftAccount
+			leftOutput.OutputAccounts[rightKey] = leftAccount
 		}
 		mergeOutputAccounts(leftAccount, rightAccount, mergeAllTransfers)
 	}
@@ -765,7 +808,9 @@ func mergeOutputAccounts(
 
 	mergeTransfers(leftAccount, rightAccount, mergeAllTransfers)
 
-	leftAccount.GasUsed = rightAccount.GasUsed
+	if !mergeAllTransfers || rightAccount.GasUsed > 0 {
+		leftAccount.GasUsed = rightAccount.GasUsed
+	}
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress

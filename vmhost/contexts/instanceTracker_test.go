@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -362,4 +363,82 @@ func checkInstances(t *testing.T, iTracker *instanceTracker) {
 	require.Len(t, iTracker.instanceStack, 0)
 	require.Len(t, iTracker.codeHashStack, 0)
 	require.Nil(t, iTracker.CheckInstances())
+}
+
+func TestInstanceTracker_SetNewInstance_TooManyInstancesCleansColdInstanceAndLeavesStateIntact(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	var lastAcceptedInstance *mock.InstanceMock
+	for i := 0; i < warmCacheSize-2; i++ {
+		inst := mock.NewInstanceMock([]byte{byte(i)})
+		err := iTracker.SetNewInstance(inst, Bytecode)
+		require.Nil(t, err)
+		lastAcceptedInstance = inst
+	}
+
+	require.Equal(t, warmCacheSize-2, len(iTracker.instances))
+	require.Equal(t, warmCacheSize-2, iTracker.numRunningInstances)
+	require.Equal(t, lastAcceptedInstance, iTracker.instance)
+
+	// 99th cold instance must be rejected, cleaned, and must not mutate tracker state
+	rejectedColdInstance := mock.NewInstanceMock([]byte("rejected"))
+	err = iTracker.SetNewInstance(rejectedColdInstance, Bytecode)
+	require.Equal(t, errTooManyInstances, err)
+	require.True(t, rejectedColdInstance.IsAlreadyCleaned(), "rejected cold instance must be cleaned")
+	require.Equal(t, warmCacheSize-2, len(iTracker.instances), "instances map must not be modified on error")
+	require.Equal(t, warmCacheSize-2, iTracker.numRunningInstances, "numRunningInstances must not be incremented on error")
+	require.Equal(t, lastAcceptedInstance, iTracker.instance, "active instance must remain unchanged")
+
+	// Nil instance check
+	require.Equal(t, errNilInstance, iTracker.SetNewInstance(nil, Bytecode))
+}
+
+func TestInstanceTracker_ConcurrentAccess(t *testing.T) {
+	t.Parallel()
+
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	inst1 := mock.NewInstanceMock([]byte("inst1"))
+	err = iTracker.SetNewInstance(inst1, Bytecode)
+	require.Nil(t, err)
+
+	done := make(chan struct{})
+	go func() {
+		for i := 0; i < 500; i++ {
+			_ = iTracker.Instance()
+		}
+		close(done)
+	}()
+
+	for i := 0; i < 500; i++ {
+		inst := mock.NewInstanceMock([]byte(fmt.Sprintf("loop%d", i)))
+		iTracker.ReplaceInstance(inst)
+		iTracker.UnsetInstance()
+	}
+	<-done
+}
+
+func TestInstanceTracker_AbandonInstance_Ok(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	inst1 := mock.NewInstanceMock([]byte("inst1"))
+	err = iTracker.SetNewInstance(inst1, Bytecode)
+	require.Nil(t, err)
+	iTracker.SetCodeHash([]byte("code1"))
+	iTracker.SaveAsWarmInstance()
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 1, warm)
+	require.Equal(t, 0, cold)
+
+	iTracker.AbandonInstance()
+
+	require.Nil(t, iTracker.Instance())
+	require.True(t, inst1.IsAlreadyCleaned())
+	warm, cold = iTracker.NumRunningInstances()
+	require.Equal(t, 0, warm)
+	require.Equal(t, 0, cold)
 }

@@ -156,7 +156,11 @@ type RuntimeContext interface {
 	SetPointsUsed(gasPoints uint64)
 	UseGasBoundedShouldFailExecution() bool
 	AttributeExtraGasUsage() bool
+	FixCorrectSmallIntAndGasLimits() bool
+	ComputeCodeHash(code []byte) []byte
 	CleanInstance()
+	UnsetInstance()
+	AbandonInstance()
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
@@ -259,6 +263,7 @@ type OutputContext interface {
 	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
+	HasCodeUpdate(address []byte) bool
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 	NextOutputTransferIndex() uint32
 	GetCrtTransferIndex() uint32

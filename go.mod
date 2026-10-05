@@ -2,6 +2,8 @@ module github.com/multiversx/mx-chain-vm-go
 
 go 1.26
 
+toolchain go1.26.2
+
 require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd/btcec/v2 v2.5.0

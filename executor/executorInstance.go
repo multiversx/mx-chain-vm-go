@@ -26,4 +26,5 @@ type Instance interface {
 	GetVMHooksPtr() uintptr
 	ID() string
 	IsAlreadyCleaned() bool
+	Abandon()
 }

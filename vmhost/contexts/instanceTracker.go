@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
@@ -17,6 +18,7 @@ var _ vmhost.InstanceTracker = (*instanceTracker)(nil)
 type instanceCacheLevel int
 
 var errTooManyInstances = errors.New("too many instances")
+var errNilInstance = errors.New("nil instance")
 
 const (
 	// Warm indicates that the instance to track is a warm instance
@@ -34,6 +36,7 @@ var _ vmhost.StateStack = (*instanceTracker)(nil)
 var logTracker = logger.GetOrCreate("vm/tracker")
 
 type instanceTracker struct {
+	mut                 sync.RWMutex
 	codeHash            []byte
 	codeSize            uint64
 	numRunningInstances int
@@ -69,6 +72,9 @@ func NewInstanceTracker() (*instanceTracker, error) {
 
 // InitState initializes the internal instanceTracker state
 func (tracker *instanceTracker) InitState() {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 	tracker.instances = make(map[string]executor.Instance)
@@ -138,6 +144,8 @@ func (tracker *instanceTracker) StackSize() uint64 {
 
 // Instance returns the active instance
 func (tracker *instanceTracker) Instance() executor.Instance {
+	tracker.mut.RLock()
+	defer tracker.mut.RUnlock()
 	return tracker.instance
 }
 
@@ -228,6 +236,32 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 	}
 }
 
+// AbandonInstance evicts the active instance from the warm instance cache and unsets it
+// without calling Clean() / destroying its CGO memory, preventing SIGSEGV crashes if the
+// instance is still executing on an unresponsive CGO thread.
+func (tracker *instanceTracker) AbandonInstance() {
+	tracker.mut.Lock()
+	instance := tracker.instance
+	codeHash := tracker.codeHash
+	tracker.instance = nil
+	tracker.codeHash = nil
+	tracker.mut.Unlock()
+
+	if check.IfNil(instance) {
+		logTracker.Trace("cannot abandon, instance already nil")
+		return
+	}
+
+	instance.Abandon()
+
+	if codeHash != nil {
+		tracker.warmInstanceCache.Remove(codeHash)
+	}
+	tracker.updateNumRunningInstances(-1)
+	numWarmInstances, numColdInstances := tracker.NumRunningInstances()
+	logTracker.Trace("instance abandoned; num instances", "warm", numWarmInstances, "cold", numColdInstances)
+}
+
 // SaveAsWarmInstance saves the active instance into the internal warm instance cache
 func (tracker *instanceTracker) SaveAsWarmInstance() {
 	lenCacheBeforeSaving := tracker.warmInstanceCache.Len()
@@ -283,6 +317,23 @@ func (tracker *instanceTracker) GetCodeSize() uint64 {
 
 // SetNewInstance sets the given instance as active and tracks its creation
 func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) error {
+	if check.IfNil(instance) {
+		return errNilInstance
+	}
+
+	_, exists := tracker.instances[instance.ID()]
+	newCount := len(tracker.instances)
+	if !exists {
+		newCount++
+	}
+
+	if newCount >= warmCacheSize-1 {
+		if cacheLevel != Warm {
+			_ = instance.Clean()
+		}
+		return errTooManyInstances
+	}
+
 	tracker.ReplaceInstance(instance)
 	tracker.cacheLevel = cacheLevel
 	if cacheLevel != Warm {
@@ -290,14 +341,14 @@ func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cache
 	}
 	tracker.instances[instance.ID()] = instance
 
-	if len(tracker.instances) >= warmCacheSize-1 {
-		return errTooManyInstances
-	}
 	return nil
 }
 
 // ReplaceInstance replaces the currently active instance with the given one
 func (tracker *instanceTracker) ReplaceInstance(instance executor.Instance) {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+
 	var previousInstanceID string
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("ReplaceInstance: previous instance was nil")
@@ -314,6 +365,9 @@ func (tracker *instanceTracker) ReplaceInstance(instance executor.Instance) {
 
 // UnsetInstance replaces the currently active instance with nil
 func (tracker *instanceTracker) UnsetInstance() {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("UnsetInstance: current instance is already nil")
 		return

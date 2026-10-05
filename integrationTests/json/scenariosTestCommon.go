@@ -54,6 +54,7 @@ func ScenariosTest(t *testing.T) *ScenariosTestBuilder {
 		t:                   t,
 		folder:              "",
 		singleFile:          "",
+		exclusions:          nil,
 		pathReplacements:    make(map[string]string),
 		executorLogger:      nil,
 		executorFactory:     nil,

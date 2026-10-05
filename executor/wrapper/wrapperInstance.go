@@ -67,6 +67,12 @@ func (inst *WrapperInstance) IsAlreadyCleaned() bool {
 	return result
 }
 
+// Abandon wraps the call to the underlying instance.
+func (inst *WrapperInstance) Abandon() {
+	inst.wrappedInstance.Abandon()
+	inst.logger.LogExecutorEvent("Abandon")
+}
+
 // CallFunction wraps the call to the underlying instance.
 func (inst *WrapperInstance) CallFunction(functionName string) error {
 	inst.logger.LogExecutorEvent(fmt.Sprintf("CallFunction(%s):", functionName))

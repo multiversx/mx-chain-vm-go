@@ -20,6 +20,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/verifier"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
@@ -36,6 +37,7 @@ var _ scenexec.VMInterface = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
+const timeoutGracePeriod = 200 * time.Millisecond
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
@@ -47,6 +49,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.BarnardOpcodesFlag,
 	vmhost.FixGetBalanceFlag,
 	vmhost.AttributeExtraGasUsageFlag,
+	vmhost.FixCorrectSmallIntAndGasLimitsFlag,
 }
 
 // vmHost implements HostContext interface.
@@ -75,6 +78,7 @@ type vmHost struct {
 
 	transferLogIdentifiers    map[string]bool
 	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
+	outputVerifier            verifier.OutputVerifier
 }
 
 // NewVMHost creates a new VM vmHost
@@ -200,6 +204,8 @@ func NewVMHost(
 	host.transferLogIdentifiers["ESDTTransfer"] = true
 	host.transferLogIdentifiers["ESDTNFTTransfer"] = true
 	host.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
+
+	host.outputVerifier = verifier.NewVMOutputVerifier()
 
 	return host, nil
 }
@@ -405,14 +411,18 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
+	var localOutput *vmcommon.VMOutput
+	var localErr error
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				err = vmhost.ErrExecutionPanicked
-				host.Runtime().CleanInstance()
-			} else {
+				localErr = vmhost.ErrExecutionPanicked
+				if ctx.Err() == nil {
+					host.Runtime().CleanInstance()
+				}
+			} else if ctx.Err() == nil {
 				host.Runtime().EndExecution()
 			}
 
@@ -420,27 +430,47 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		host.InitState()
-		vmOutput = host.doRunSmartContractCreate(input)
-		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DeploySmartContractString)
+		localOutput = host.doRunSmartContractCreate(input)
+		if ctx.Err() != nil {
+			return
+		}
+		host.CompleteLogEntriesWithCallType(localOutput, vmhost.DeploySmartContractString)
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
-			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
+			localOutput.Logs = append(localOutput.Logs, logsFromErrors)
+		}
+
+		vInput := host.createVerificationInputForCreate(input)
+		errVerify := host.outputVerifier.Verify(vInput, localOutput)
+		if errVerify != nil {
+			log.Error("exit boundary VM output verification failed", "error", errVerify)
+			localOutput = host.Output().CreateVMOutputInCaseOfError(errVerify)
+			localErr = errVerify
 		}
 
 		log.Trace("RunSmartContractCreate end",
-			"returnCode", vmOutput.ReturnCode,
-			"returnMessage", vmOutput.ReturnMessage,
-			"gasRemaining", vmOutput.GasRemaining)
+			"returnCode", localOutput.ReturnCode,
+			"returnMessage", localOutput.ReturnMessage,
+			"gasRemaining", localOutput.GasRemaining)
 		host.logFromGasTracer("init")
 	}()
 
 	select {
 	case <-done:
-		return
+		return localOutput, localErr
 	case <-ctx.Done():
+		host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
+		select {
+		case <-done:
+			host.Runtime().CleanInstance()
+		case <-time.After(timeoutGracePeriod):
+			log.Warn("VM create execution timed out and failed to stop within grace period; abandoning instance",
+				"caller", input.CallerAddr)
+			host.Runtime().AbandonInstance()
+		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
-		<-done
+		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
 		err = vmhost.ErrExecutionFailedWithTimeout
 	}
 
@@ -471,14 +501,18 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
+	var localOutput *vmcommon.VMOutput
+	var localErr error
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				err = vmhost.ErrExecutionPanicked
-				host.Runtime().CleanInstance()
-			} else {
+				localErr = vmhost.ErrExecutionPanicked
+				if ctx.Err() == nil {
+					host.Runtime().CleanInstance()
+				}
+			} else if ctx.Err() == nil {
 				host.Runtime().EndExecution()
 			}
 
@@ -488,38 +522,61 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		host.InitState()
 		switch input.Function {
 		case vmhost.UpgradeFunctionName:
-			vmOutput = host.doRunSmartContractUpgrade(input)
+			localOutput = host.doRunSmartContractUpgrade(input)
 		case vmhost.DeleteFunctionName:
-			vmOutput = host.doRunSmartContractDelete(input)
+			localOutput = host.doRunSmartContractDelete(input)
 		default:
-			vmOutput = host.doRunSmartContractCall(input)
+			localOutput = host.doRunSmartContractCall(input)
+		}
+		if ctx.Err() != nil {
+			return
 		}
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.RecipientAddr, input.Function)
 		if logsFromErrors != nil {
-			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
+			localOutput.Logs = append(localOutput.Logs, logsFromErrors)
+		}
+
+		vInput := host.createVerificationInputForCall(input)
+		errVerify := host.outputVerifier.Verify(vInput, localOutput)
+		if errVerify != nil {
+			log.Error("exit boundary VM output verification failed", "error", errVerify)
+			localOutput = host.Output().CreateVMOutputInCaseOfError(errVerify)
+			localErr = errVerify
 		}
 
 		log.Trace("RunSmartContractCall end",
 			"function", input.Function,
-			"returnCode", vmOutput.ReturnCode,
-			"returnMessage", vmOutput.ReturnMessage,
-			"gasRemaining", vmOutput.GasRemaining)
+			"returnCode", localOutput.ReturnCode,
+			"returnMessage", localOutput.ReturnMessage,
+			"gasRemaining", localOutput.GasRemaining)
 		host.logFromGasTracer(input.Function)
 	}()
 
 	select {
 	case <-done:
 		// Normal termination.
-		return
+		return localOutput, localErr
 	case <-ctx.Done():
 		// Terminated due to timeout. The VM sets the `ExecutionFailed` breakpoint
 		// in Wasmer. Also, the VM must wait for Wasmer to reach the end of a WASM
 		// basic block in order to close the WASM instance cleanly. This is done by
-		// reading the `done` channel once more, awaiting the call to `close(done)`
-		// from above.
+		// reading the `done` channel with a grace period, awaiting the call to `close(done)`
+		// from above. If the execution does not stop within the grace period, the instance
+		// is abandoned without destroying C memory to prevent crashes.
+		host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
+		select {
+		case <-done:
+			host.Runtime().CleanInstance()
+		case <-time.After(timeoutGracePeriod):
+			log.Warn("VM call execution timed out and failed to stop within grace period; abandoning instance",
+				"caller", input.CallerAddr,
+				"recipient", input.RecipientAddr,
+				"function", input.Function)
+			host.Runtime().AbandonInstance()
+		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
-		<-done
+		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
 		err = vmhost.ErrExecutionFailedWithTimeout
 	}
 
@@ -635,8 +692,35 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
 	for _, logEntry := range vmOutput.Logs {
 		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]
-		if containsId && len(logEntry.Data[0]) == 0 {
+		if !containsId {
+			continue
+		}
+		if len(logEntry.Data) == 0 {
+			logEntry.Data = [][]byte{[]byte(callType)}
+		} else if len(logEntry.Data[0]) == 0 {
 			logEntry.Data[0] = []byte(callType)
 		}
 	}
+}
+
+// SetOutputVerifier sets the exit boundary verifier for the host
+func (host *vmHost) SetOutputVerifier(v verifier.OutputVerifier) {
+	host.outputVerifier = v
+}
+
+func (host *vmHost) createVerificationInputForCall(input *vmcommon.ContractCallInput) *verifier.VerificationInput {
+	isReadOnly := host.Runtime().ReadOnly()
+	vInput := verifier.NewVerificationInputFromCall(input, isReadOnly)
+	if len(input.CallerAddr) != verifier.AddressLen || len(input.RecipientAddr) != verifier.AddressLen {
+		vInput.AllowCustomAddressLength = true
+	}
+	return vInput
+}
+
+func (host *vmHost) createVerificationInputForCreate(input *vmcommon.ContractCreateInput) *verifier.VerificationInput {
+	vInput := verifier.NewVerificationInputFromCreate(input)
+	if len(input.CallerAddr) != verifier.AddressLen {
+		vInput.AllowCustomAddressLength = true
+	}
+	return vInput
 }

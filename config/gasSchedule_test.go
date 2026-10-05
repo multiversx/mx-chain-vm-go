@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/mitchellh/mapstructure"
@@ -170,5 +171,78 @@ func Test_isDynamicGasComputationFuncCorrectlyDefined(t *testing.T) {
 
 		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
 		assert.True(t, ok)
+	})
+
+	t.Run("linear parameter is negative", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  5,
+			Linear:     -1,
+			Constant:   1,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.False(t, ok)
+	})
+}
+
+func TestConvertFromUnsignedToSigned_Overflow(t *testing.T) {
+	t.Parallel()
+
+	t.Run("coefficient exceeds max int64 should error", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := convertFromUnsignedToSigned(&DynamicStorageLoadUnsigned{
+			QuadraticCoefficient: uint64(math.MaxInt64) + 1,
+			SignOfQuadratic:      0,
+			LinearCoefficient:    1,
+			ConstantCoefficient:  1,
+			MinimumGasCost:       1,
+		})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeds max int64")
+
+		_, err = convertFromUnsignedToSigned(&DynamicStorageLoadUnsigned{
+			QuadraticCoefficient: 1,
+			SignOfQuadratic:      0,
+			LinearCoefficient:    uint64(math.MaxInt64) + 5,
+			SignOfLinear:         1,
+			ConstantCoefficient:  1,
+			MinimumGasCost:       1,
+		})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeds max int64")
+
+		_, err = convertFromUnsignedToSigned(&DynamicStorageLoadUnsigned{
+			QuadraticCoefficient: 1,
+			SignOfQuadratic:      0,
+			LinearCoefficient:    1,
+			ConstantCoefficient:  uint64(1) << 63,
+			SignOfConstant:       1,
+			MinimumGasCost:       1,
+		})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "exceeds max int64")
+	})
+
+	t.Run("valid coefficients should succeed", func(t *testing.T) {
+		t.Parallel()
+
+		res, err := convertFromUnsignedToSigned(&DynamicStorageLoadUnsigned{
+			QuadraticCoefficient: 688,
+			SignOfQuadratic:      0,
+			LinearCoefficient:    31858,
+			SignOfLinear:         0,
+			ConstantCoefficient:  15287,
+			SignOfConstant:       0,
+			MinimumGasCost:       10,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, int64(688), res.Quadratic)
+		assert.Equal(t, int64(31858), res.Linear)
+		assert.Equal(t, int64(15287), res.Constant)
+		assert.Equal(t, uint64(10), res.MinGasCost)
 	})
 }

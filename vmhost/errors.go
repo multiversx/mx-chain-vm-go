@@ -200,6 +200,9 @@ var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not i
 // is not equal to the input gas
 var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not match")
 
+// ErrGasUsedUnderflow is raised when gas used calculation underflows due to gas transferred or used by others exceeding contract spend
+var ErrGasUsedUnderflow = errors.New("gas used calculation underflow")
+
 // ErrTransferValueOnESDTCall signals that balance transfer was given in esdt call
 var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
 

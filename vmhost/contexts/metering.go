@@ -163,8 +163,11 @@ func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64
 // UpdateGasStateOnSuccess performs final gas accounting after a successful execution.
 func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error {
 	logMetering.Trace("UpdateGasStateOnSuccess")
-	context.updateSCGasUsed()
-	err := context.setGasUsedToOutputAccounts(vmOutput)
+	err := context.updateSCGasUsed()
+	if err != nil {
+		return err
+	}
+	err = context.setGasUsedToOutputAccounts(vmOutput)
 	if err != nil {
 		return err
 	}
@@ -192,7 +195,7 @@ func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 	logMetering.Trace("UpdateGasStateOnFailure", "instance gas left", context.GasLeft())
 }
 
-func (context *meteringContext) updateSCGasUsed() {
+func (context *meteringContext) updateSCGasUsed() error {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
 
@@ -203,11 +206,27 @@ func (context *meteringContext) updateSCGasUsed() {
 	gasTransferredByCurrentAccount := context.getGasTransferredByAccount(currentContractAccount)
 	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
 
-	gasUsed := context.GasSpentByContract()
-	gasUsed = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
+	gasSpent := context.GasSpentByContract()
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		if gasTransferredByCurrentAccount > gasSpent {
+			return fmt.Errorf("%w: gas transferred by current account (%d) exceeds gas spent (%d)",
+				vmhost.ErrGasUsedUnderflow, gasTransferredByCurrentAccount, gasSpent)
+		}
+		gasSpentAfterTransfers := gasSpent - gasTransferredByCurrentAccount
+		if gasUsedByOthers > gasSpentAfterTransfers {
+			return fmt.Errorf("%w: gas used by others (%d) exceeds remaining gas spent (%d)",
+				vmhost.ErrGasUsedUnderflow, gasUsedByOthers, gasSpentAfterTransfers)
+		}
+		context.gasUsedByAccounts[string(currentAccountAddress)] = gasSpentAfterTransfers - gasUsedByOthers
+		return nil
+	}
+
+	gasUsed := math.SubUint64(gasSpent, gasTransferredByCurrentAccount)
 	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
 
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
+	return nil
 }
 
 // TrackGasUsedByOutOfVMFunction computes the gas used by a builtin function
@@ -264,12 +283,18 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
 	gasUsedAndTransferred := uint64(0)
 	currentAccountAddress := string(context.host.Runtime().GetContextAddress())
+	isFixEnabled := context.host.Runtime().FixCorrectSmallIntAndGasLimits()
+
 	for address, account := range outputAccounts {
 		gasTransferred := context.getGasTransferredByAccount(account)
 
 		gasUsed := uint64(0)
 		if address != currentAccountAddress {
 			gasUsed = context.gasUsedByAccounts[address]
+		}
+
+		if isFixEnabled && address == currentAccountAddress {
+			continue
 		}
 
 		gasUsedAndTransferred = math.AddUint64(gasUsedAndTransferred, gasUsed)
@@ -280,6 +305,10 @@ func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[
 }
 
 func (context *meteringContext) getGasTransferredByAccount(account *vmcommon.OutputAccount) uint64 {
+	if account == nil {
+		return 0
+	}
+
 	gasUsed := uint64(0)
 	for _, outputTransfer := range account.OutputTransfers {
 		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
@@ -526,6 +555,12 @@ func (context *meteringContext) DeductInitialGasForDirectDeployment(input vmhost
 
 // DeductInitialGasForIndirectDeployment deducts gas for the deployment of a contract initiated by another SmartContract
 func (context *meteringContext) DeductInitialGasForIndirectDeployment(input vmhost.CodeDeployInput) error {
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		codeLength := uint64(len(input.ContractCode))
+		compileCost := math.MulUint64(codeLength, context.gasSchedule.BaseOperationCost.CompilePerByte)
+		return context.UseGasBounded(compileCost)
+	}
+
 	return context.deductInitialGas(
 		input.ContractCode,
 		0,

@@ -125,11 +125,6 @@ type OpcodeCost struct {
 	ReturnCall                    uint32
 	ReturnCallIndirect            uint32
 	Select                        uint32
-	TableGet                      uint32
-	TableGrow                     uint32
-	TableInit                     uint32
-	TableSet                      uint32
-	TableSize                     uint32
 	Throw                         uint32
 	Try                           uint32
 	TypedSelect                   uint32

@@ -33,5 +33,8 @@ const (
 	// AttributeExtraGasUsageFlag defines the flag that activates the extra gas usage for extra attributes
 	AttributeExtraGasUsageFlag core.EnableEpochFlag = "AttributeExtraGasUsageFlag"
 
+	// FixCorrectSmallIntAndGasLimitsFlag defines the flag that activates the fix for signed small int encoding and gas loopholes
+	FixCorrectSmallIntAndGasLimitsFlag core.EnableEpochFlag = "FixCorrectSmallIntAndGasLimitsFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

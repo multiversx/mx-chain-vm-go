@@ -10,36 +10,40 @@ var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
-	Err                      error
-	VMInput                  *vmcommon.ContractCallInput
-	OriginalCallerAddr       []byte
-	SCAddress                []byte
-	SCCode                   []byte
-	SCCodeSize               uint64
-	CallFunction             string
-	VMType                   []byte
-	ReadOnlyFlag             bool
-	VerifyCode               bool
-	CurrentBreakpointValue   vmhost.BreakpointValue
-	PointsUsed               uint64
-	InstanceCtxID            int
-	MemLoadResult            []byte
-	MemLoadMultipleResult    [][]byte
-	FailCryptoAPI            bool
-	FailBaseOpsAPI           bool
-	FailSyncExecAPI          bool
-	FailBigIntAPI            bool
-	FailBigFloatAPI          bool
-	FailManagedBuffersAPI    bool
-	FailManagedMapAPI        bool
-	AsyncCallInfo            *vmhost.AsyncCallInfo
-	InstanceStackSize        uint64
-	CurrentTxHash            []byte
-	OriginalTxHash           []byte
-	TraceGasEnabled          bool
-	GasTrace                 map[string]map[string][]uint64
-	SameContractOnStackCount uint64
-	HasFunctionResult        bool
+	Err                                error
+	VMInput                            *vmcommon.ContractCallInput
+	OriginalCallerAddr                 []byte
+	SCAddress                          []byte
+	SCCode                             []byte
+	SCCodeSize                         uint64
+	CallFunction                       string
+	VMType                             []byte
+	ReadOnlyFlag                       bool
+	VerifyCode                         bool
+	CurrentBreakpointValue             vmhost.BreakpointValue
+	PointsUsed                         uint64
+	InstanceCtxID                      int
+	MemLoadResult                      []byte
+	MemLoadMultipleResult              [][]byte
+	FailCryptoAPI                      bool
+	FailBaseOpsAPI                     bool
+	FailSyncExecAPI                    bool
+	FailBigIntAPI                      bool
+	FailBigFloatAPI                    bool
+	FailManagedBuffersAPI              bool
+	FailManagedMapAPI                  bool
+	AsyncCallInfo                      *vmhost.AsyncCallInfo
+	FixCorrectSmallIntAndGasLimitsFunc func() bool
+	ComputeCodeHashFunc                func(code []byte) []byte
+	InstanceStackSize                  uint64
+	CurrentTxHash                      []byte
+	OriginalTxHash                     []byte
+	TraceGasEnabled                    bool
+	GasTrace                           map[string]map[string][]uint64
+	SameContractOnStackCount           uint64
+	HasFunctionResult                  bool
+	UnsetInstanceFunc                  func()
+	Instance                           executor.Instance
 }
 
 // InitState mocked method
@@ -255,7 +259,7 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 
 // GetInstance mocked method()
 func (r *RuntimeContextMock) GetInstance() executor.Instance {
-	return nil
+	return r.Instance
 }
 
 // GetWarmInstance mocked method
@@ -325,6 +329,22 @@ func (r *RuntimeContextMock) AttributeExtraGasUsage() bool {
 	return true
 }
 
+// FixCorrectSmallIntAndGasLimits mocked method
+func (r *RuntimeContextMock) FixCorrectSmallIntAndGasLimits() bool {
+	if r.FixCorrectSmallIntAndGasLimitsFunc != nil {
+		return r.FixCorrectSmallIntAndGasLimitsFunc()
+	}
+	return true
+}
+
+// ComputeCodeHash mocked method
+func (r *RuntimeContextMock) ComputeCodeHash(code []byte) []byte {
+	if r.ComputeCodeHashFunc != nil {
+		return r.ComputeCodeHashFunc(code)
+	}
+	return code
+}
+
 // FailExecution mocked method
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
@@ -388,4 +408,15 @@ func (r *RuntimeContextMock) NumRunningInstances() (int, int) {
 
 // CleanInstance mocked method
 func (r *RuntimeContextMock) CleanInstance() {
+}
+
+// UnsetInstance mocked method
+func (r *RuntimeContextMock) UnsetInstance() {
+	if r.UnsetInstanceFunc != nil {
+		r.UnsetInstanceFunc()
+	}
+}
+
+// AbandonInstance mocked method
+func (r *RuntimeContextMock) AbandonInstance() {
 }

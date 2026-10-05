@@ -68,12 +68,17 @@ type backTransfers struct {
 }
 
 type managedTypesState struct {
-	bigIntValues   bigIntMap
-	bigFloatValues bigFloatMap
-	ecValues       ellipticCurveMap
-	mBufferValues  managedBufferMap
-	mMapValues     managedMapMap
-	backTransfers  backTransfers
+	bigIntValues       bigIntMap
+	bigFloatValues     bigFloatMap
+	ecValues           ellipticCurveMap
+	mBufferValues      managedBufferMap
+	mMapValues         managedMapMap
+	backTransfers      backTransfers
+	nextBigIntHandle   int32
+	nextBigFloatHandle int32
+	nextEcHandle       int32
+	nextMBufferHandle  int32
+	nextMMapHandle     int32
 }
 
 // NewManagedTypesContext creates a new managedTypesContext
@@ -143,12 +148,17 @@ func (context *managedTypesContext) PushState() {
 	newBigIntState, newBigFloatState, newEcState, newmBufferState, newmMapState := context.clone()
 	newTransfers := cloneBackTransfers(context.managedTypesValues.backTransfers)
 	context.managedTypesStack = append(context.managedTypesStack, managedTypesState{
-		bigIntValues:   newBigIntState,
-		bigFloatValues: newBigFloatState,
-		ecValues:       newEcState,
-		mBufferValues:  newmBufferState,
-		mMapValues:     newmMapState,
-		backTransfers:  newTransfers,
+		bigIntValues:       newBigIntState,
+		bigFloatValues:     newBigFloatState,
+		ecValues:           newEcState,
+		mBufferValues:      newmBufferState,
+		mMapValues:         newmMapState,
+		backTransfers:      newTransfers,
+		nextBigIntHandle:   context.managedTypesValues.nextBigIntHandle,
+		nextBigFloatHandle: context.managedTypesValues.nextBigFloatHandle,
+		nextEcHandle:       context.managedTypesValues.nextEcHandle,
+		nextMBufferHandle:  context.managedTypesValues.nextMBufferHandle,
+		nextMMapHandle:     context.managedTypesValues.nextMMapHandle,
 	})
 }
 
@@ -188,6 +198,11 @@ func (context *managedTypesContext) PopSetActiveState() {
 	context.managedTypesValues.mBufferValues = prevmBufferValues
 	context.managedTypesValues.mMapValues = prevmMapValues
 	context.managedTypesValues.backTransfers = prevBackTransfers
+	context.managedTypesValues.nextBigIntHandle = prevState.nextBigIntHandle
+	context.managedTypesValues.nextBigFloatHandle = prevState.nextBigFloatHandle
+	context.managedTypesValues.nextEcHandle = prevState.nextEcHandle
+	context.managedTypesValues.nextMBufferHandle = prevState.nextMBufferHandle
+	context.managedTypesValues.nextMMapHandle = prevState.nextMMapHandle
 
 	context.managedTypesStack = context.managedTypesStack[:managedTypesStackLen-1]
 }
@@ -213,11 +228,22 @@ func (context *managedTypesContext) clone() (bigIntMap, bigFloatMap, ellipticCur
 	newEcState := make(ellipticCurveMap, len(context.managedTypesValues.ecValues))
 	newmBufferState := make(managedBufferMap, len(context.managedTypesValues.mBufferValues))
 	newmMapState := make(managedMapMap, len(context.managedTypesValues.mMapValues))
+
+	useShallowCopy := context.host.Runtime().FixCorrectSmallIntAndGasLimits()
+
 	for bigIntHandle, bigInt := range context.managedTypesValues.bigIntValues {
-		newBigIntState[bigIntHandle] = big.NewInt(0).Set(bigInt)
+		if useShallowCopy {
+			newBigIntState[bigIntHandle] = bigInt
+		} else {
+			newBigIntState[bigIntHandle] = big.NewInt(0).Set(bigInt)
+		}
 	}
 	for bigFloatHandle, bigFloat := range context.managedTypesValues.bigFloatValues {
-		newBigFloatState[bigFloatHandle] = big.NewFloat(0).Set(bigFloat)
+		if useShallowCopy {
+			newBigFloatState[bigFloatHandle] = bigFloat
+		} else {
+			newBigFloatState[bigFloatHandle] = big.NewFloat(0).Set(bigFloat)
+		}
 	}
 	for ecHandle, ec := range context.managedTypesValues.ecValues {
 		newEcState[ecHandle] = ec
@@ -338,14 +364,38 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	return value1, value2, nil
 }
 
-func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
-	newHandle := int32(len(context.managedTypesValues.bigIntValues))
+func nextAvailableHandle[V any](values map[int32]V, nextHandle *int32, useOptimizedAllocator bool) int32 {
+	if useOptimizedAllocator {
+		handle := *nextHandle
+		for {
+			if handle < 0 {
+				handle = 0
+			}
+			if _, ok := values[handle]; !ok {
+				break
+			}
+			handle++
+		}
+		*nextHandle = handle + 1
+		return handle
+	}
+
+	handle := int32(len(values))
 	for {
-		if _, ok := context.managedTypesValues.bigIntValues[newHandle]; !ok {
+		if _, ok := values[handle]; !ok {
 			break
 		}
-		newHandle++
+		handle++
 	}
+	return handle
+}
+
+func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
+	newHandle := nextAvailableHandle(
+		context.managedTypesValues.bigIntValues,
+		&context.managedTypesValues.nextBigIntHandle,
+		context.host.Runtime().FixCorrectSmallIntAndGasLimits(),
+	)
 	context.managedTypesValues.bigIntValues[newHandle] = value
 	return newHandle
 }
@@ -367,8 +417,20 @@ func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []
 	length := len(encodedBigFloat)
 	if length < minEncodedBigFloatLength {
 		return true
-	} else if length == minEncodedBigFloatLength && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
-		return true
+	}
+	if length == minEncodedBigFloatLength {
+		if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+			return !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:])
+		}
+		if !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
+			return true
+		}
+	}
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		if length > encodedBigFloatMaxByteLen {
+			return true
+		}
 	}
 
 	return !bytes.Equal(encodedBigFloat[:minEncodedBigFloatLength], positiveEncodedBigFloatPrefix[:]) &&
@@ -446,14 +508,11 @@ func (context *managedTypesContext) PutBigFloat(value *big.Float) (int32, error)
 	if exponent > 65025 || exponent < -65025 {
 		return 0, vmhost.ErrExponentTooBigOrTooSmall
 	}
-	newHandle := int32(len(context.managedTypesValues.bigFloatValues))
-	for {
-		if _, ok := context.managedTypesValues.bigFloatValues[newHandle]; !ok {
-			break
-		}
-		newHandle++
-	}
-
+	newHandle := nextAvailableHandle(
+		context.managedTypesValues.bigFloatValues,
+		&context.managedTypesValues.nextBigFloatHandle,
+		context.host.Runtime().FixCorrectSmallIntAndGasLimits(),
+	)
 	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)
 	return newHandle, nil
 }
@@ -481,13 +540,11 @@ func (context *managedTypesContext) GetEllipticCurve(handle int32) (*elliptic.Cu
 
 // PutEllipticCurve adds the given elliptic curve to the current ecValues map and returns the handle
 func (context *managedTypesContext) PutEllipticCurve(curve *elliptic.CurveParams) int32 {
-	newHandle := int32(len(context.managedTypesValues.ecValues))
-	for {
-		if _, ok := context.managedTypesValues.ecValues[newHandle]; !ok {
-			break
-		}
-		newHandle++
-	}
+	newHandle := nextAvailableHandle(
+		context.managedTypesValues.ecValues,
+		&context.managedTypesValues.nextEcHandle,
+		context.host.Runtime().FixCorrectSmallIntAndGasLimits(),
+	)
 	context.managedTypesValues.ecValues[newHandle] = &elliptic.CurveParams{P: curve.P, N: curve.N, B: curve.B, Gx: curve.Gx, Gy: curve.Gy, BitSize: curve.BitSize, Name: curve.Name}
 	return newHandle
 }
@@ -571,13 +628,11 @@ func (context *managedTypesContext) GetPrivateKeyByteLengthEC(ecHandle int32) in
 
 // NewManagedBuffer creates a new empty buffer in the managed buffers map and returns the handle
 func (context *managedTypesContext) NewManagedBuffer() int32 {
-	newHandle := int32(len(context.managedTypesValues.mBufferValues))
-	for {
-		if _, ok := context.managedTypesValues.mBufferValues[newHandle]; !ok {
-			break
-		}
-		newHandle++
-	}
+	newHandle := nextAvailableHandle(
+		context.managedTypesValues.mBufferValues,
+		&context.managedTypesValues.nextMBufferHandle,
+		context.host.Runtime().FixCorrectSmallIntAndGasLimits(),
+	)
 	newmBuffer := make([]byte, 0)
 	context.managedTypesValues.mBufferValues[newHandle] = newmBuffer
 	return newHandle
@@ -738,13 +793,11 @@ func (context *managedTypesContext) WriteManagedVecOfManagedBuffers(
 
 // NewManagedMap creates a new empty managed map in the managed buffers map and returns the handle
 func (context *managedTypesContext) NewManagedMap() int32 {
-	newHandle := int32(len(context.managedTypesValues.mMapValues))
-	for {
-		if _, ok := context.managedTypesValues.mMapValues[newHandle]; !ok {
-			break
-		}
-		newHandle++
-	}
+	newHandle := nextAvailableHandle(
+		context.managedTypesValues.mMapValues,
+		&context.managedTypesValues.nextMMapHandle,
+		context.host.Runtime().FixCorrectSmallIntAndGasLimits(),
+	)
 	newmMap := make(map[string][]byte, 0)
 	context.managedTypesValues.mMapValues[newHandle] = newmMap
 	return newHandle
@@ -772,6 +825,13 @@ func (context *managedTypesContext) ManagedMapPut(mMapHandle int32, keyHandle in
 	err = context.ConsumeGasForBytes(value)
 	if err != nil {
 		return err
+	}
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = context.ConsumeGasForBytes(key)
+		if err != nil {
+			return err
+		}
 	}
 
 	mMap[string(key)] = valueCopy

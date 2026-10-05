@@ -1,5 +1,7 @@
 package vmhooks
 
+import "github.com/multiversx/mx-chain-vm-go/vmhost"
+
 const esdtRoleLocalMint = "ESDTRoleLocalMint"
 const esdtRoleLocalBurn = "ESDTRoleLocalBurn"
 const esdtRoleNFTCreate = "ESDTRoleNFTCreate"
@@ -89,6 +91,9 @@ func getESDTRoles(dataBuffer []byte, cryptoOpcodesV2Enabled bool) int64 {
 	for currentIndex < valueLen {
 		// first character before each role is a \n, so we skip it
 		currentIndex += 1
+		if currentIndex >= valueLen {
+			break
+		}
 
 		// next is the length of the role as string
 		roleLen := int(dataBuffer[currentIndex])
@@ -96,6 +101,9 @@ func getESDTRoles(dataBuffer []byte, cryptoOpcodesV2Enabled bool) int64 {
 
 		// next is role's ASCII string representation
 		endIndex := currentIndex + roleLen
+		if endIndex > valueLen || endIndex < currentIndex {
+			break
+		}
 		roleName := dataBuffer[currentIndex:endIndex]
 		currentIndex = endIndex
 
@@ -165,4 +173,22 @@ func randomCharsAreValid(chars []byte) bool {
 	}
 
 	return true
+}
+
+func checkAddressLength(host vmhost.VMHost, address []byte) error {
+	if host.Runtime().FixCorrectSmallIntAndGasLimits() && len(address) != vmhost.AddressLen {
+		return vmhost.ErrLengthOfBufferNotCorrect
+	}
+	return nil
+}
+
+func loadAddressFromHandle(host vmhost.VMHost, managedType vmhost.ManagedTypesContext, handle int32) ([]byte, error) {
+	address, err := managedType.GetBytes(handle)
+	if err != nil {
+		return nil, err
+	}
+	if err = checkAddressLength(host, address); err != nil {
+		return nil, err
+	}
+	return address, nil
 }
