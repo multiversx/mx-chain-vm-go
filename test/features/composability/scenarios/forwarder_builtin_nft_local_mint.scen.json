@@ -9,7 +9,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FUNG-0001": {
+                        "str:FUNG-000386": {
                             "instances": [
                                 {
                                     "nonce": "0",
@@ -27,7 +27,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FUNG-0001": {
+                        "str:FUNG-000386": {
                             "instances": [
                                 {
                                     "nonce": "0",
@@ -48,7 +48,7 @@
                 "to": "sc:forwarder",
                 "function": "local_mint",
                 "arguments": [
-                    "str:FUNG-0001",
+                    "str:FUNG-000386",
                     "1200"
                 ],
                 "gasLimit": "50,000,000",
@@ -62,7 +62,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:ESDTLocalMint",
                         "topics": [
-                            "str:FUNG-0001",
+                            "str:FUNG-000386",
                             "0",
                             "1200"
                         ],
@@ -81,7 +81,7 @@
                 "to": "sc:forwarder2",
                 "function": "local_mint",
                 "arguments": [
-                    "str:FUNG-0001",
+                    "str:FUNG-000386",
                     "1200"
                 ],
                 "gasLimit": "50,000,000",
@@ -105,7 +105,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FUNG-0001": {
+                        "str:FUNG-000386": {
                             "instances": [
                                 {
                                     "nonce": "0",
@@ -124,7 +124,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FUNG-0001": {
+                        "str:FUNG-000386": {
                             "instances": [
                                 {
                                     "nonce": "0",

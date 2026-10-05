@@ -8,8 +8,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000",
-                        "str:TEST-TOKENB": "2000"
+                        "str:TEST-000390": "1000",
+                        "str:TEST-000391": "2000"
                     }
                 },
                 "address:a_user": {
@@ -31,11 +31,11 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "value": "1000"
                     },
                     {
-                        "tokenIdentifier": "str:TEST-TOKENB",
+                        "tokenIdentifier": "str:TEST-000391",
                         "value": "2000"
                     }
                 ],
@@ -65,8 +65,8 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000",
-                        "str:TEST-TOKENB": "2000"
+                        "str:TEST-000390": "1000",
+                        "str:TEST-000391": "2000"
                     },
                     "storage": {},
                     "code": ""

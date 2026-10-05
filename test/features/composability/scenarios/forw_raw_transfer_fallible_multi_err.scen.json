@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": {
+                        "str:FWD-000389": {
                             "instances": [
                                 {
                                     "nonce": "0",
@@ -39,10 +39,10 @@
                 "function": "transfer_fallible",
                 "arguments": [
                     "sc:vault",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "100",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "200"
                 ],
@@ -71,7 +71,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": {
+                        "str:FWD-000389": {
                             "instances": [
                                 {
                                     "nonce": "0",

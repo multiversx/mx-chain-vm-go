@@ -18,7 +18,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:REC-TOKEN": "1000"
+                        "str:REC-00038c": "1000"
                     },
                     "code": "mxsc:../recursive-caller/output/recursive-caller.mxsc.json"
                 }
@@ -33,7 +33,7 @@
                 "function": "recursive_send_funds",
                 "arguments": [
                     "sc:vault",
-                    "str:REC-TOKEN",
+                    "str:REC-00038c",
                     "1",
                     "1"
                 ],
@@ -50,7 +50,7 @@
                         "topics": [
                             "str:recursive_send_funds",
                             "sc:vault",
-                            "str:REC-TOKEN",
+                            "str:REC-00038c",
                             "1"
                         ],
                         "data": [
@@ -61,7 +61,7 @@
                         "address": "sc:recursive-caller",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:REC-TOKEN",
+                            "str:REC-00038c",
                             "",
                             "1",
                             "sc:vault"
@@ -69,7 +69,7 @@
                         "data": [
                             "str:AsyncCall",
                             "str:ESDTTransfer",
-                            "str:REC-TOKEN",
+                            "str:REC-00038c",
                             "1",
                             "str:accept_funds"
                         ]
@@ -79,7 +79,7 @@
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:REC-TOKEN",
+                            "str:REC-00038c",
                             "0",
                             "1"
                         ],
@@ -106,7 +106,7 @@
                         "topics": [
                             "str:recursive_send_funds_callback",
                             "sc:vault",
-                            "str:REC-TOKEN",
+                            "str:REC-00038c",
                             "1"
                         ],
                         "data": [
@@ -131,7 +131,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:REC-TOKEN": "1"
+                        "str:REC-00038c": "1"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "1"
@@ -142,7 +142,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:REC-TOKEN": "999"
+                        "str:REC-00038c": "999"
                     },
                     "storage": {},
                     "code": "mxsc:../recursive-caller/output/recursive-caller.mxsc.json"

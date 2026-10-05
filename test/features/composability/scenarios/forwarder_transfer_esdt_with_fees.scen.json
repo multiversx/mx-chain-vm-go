@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000"
+                        "str:FWD-000389": "1000"
                     }
                 },
                 "address:other_user": {
@@ -35,7 +35,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "100"
                     }
                 ],
@@ -62,7 +62,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "900"
+                        "str:FWD-000389": "900"
                     },
                     "storage": {},
                     "code": ""
@@ -71,7 +71,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "90"
+                        "str:FWD-000389": "90"
                     },
                     "storage": {},
                     "code": ""
@@ -86,7 +86,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "10"
+                        "str:FWD-000389": "10"
                     },
                     "storage": {},
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"
@@ -101,7 +101,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "100"
                     }
                 ],
@@ -128,7 +128,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "800"
+                        "str:FWD-000389": "800"
                     },
                     "storage": {},
                     "code": ""
@@ -137,7 +137,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "90"
+                        "str:FWD-000389": "90"
                     },
                     "storage": {},
                     "code": ""
@@ -146,7 +146,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "90"
+                        "str:FWD-000389": "90"
                     },
                     "storage": {
                         "+": ""
@@ -157,7 +157,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "20"
+                        "str:FWD-000389": "20"
                     },
                     "storage": {},
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"
@@ -172,7 +172,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "100"
                     }
                 ],
@@ -199,7 +199,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "700"
+                        "str:FWD-000389": "700"
                     },
                     "storage": {},
                     "code": ""
@@ -208,7 +208,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "90"
+                        "str:FWD-000389": "90"
                     },
                     "storage": {},
                     "code": ""
@@ -217,7 +217,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "180"
+                        "str:FWD-000389": "180"
                     },
                     "storage": {
                         "+": ""
@@ -228,7 +228,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "30"
+                        "str:FWD-000389": "30"
                     },
                     "storage": {},
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"
@@ -243,7 +243,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "100"
                     }
                 ],
@@ -270,7 +270,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "600"
+                        "str:FWD-000389": "600"
                     },
                     "storage": {},
                     "code": ""
@@ -279,7 +279,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "90"
+                        "str:FWD-000389": "90"
                     },
                     "storage": {},
                     "code": ""
@@ -288,7 +288,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "270"
+                        "str:FWD-000389": "270"
                     },
                     "storage": {
                         "+": ""
@@ -299,7 +299,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "40"
+                        "str:FWD-000389": "40"
                     },
                     "storage": {},
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"

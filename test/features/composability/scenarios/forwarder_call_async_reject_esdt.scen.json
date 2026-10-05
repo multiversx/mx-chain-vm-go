@@ -7,7 +7,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000"
+                        "str:FWD-000389": "1000"
                     }
                 },
                 "sc:forwarder": {
@@ -30,7 +30,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "1000"
                     }
                 ],
@@ -106,7 +106,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000"
+                        "str:FWD-000389": "1000"
                     },
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"
                 }
