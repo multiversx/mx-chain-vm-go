@@ -45,4 +45,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-go-ghsa-w84w-h39x-g6cq v1.7.3-0.20261005105317-f79d506a3054
+replace github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-go-ghsa-w84w-h39x-g6cq v1.7.3-0.20261005121139-52c7ecd2792d
