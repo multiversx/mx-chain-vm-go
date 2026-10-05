@@ -172,9 +172,9 @@ func (v *vmOutputVerifier) verifyReturnCodeStateIsolation(output *vmcommon.VMOut
 			ErrDeletedAccountOnFailedExecution, output.ReturnCode, len(output.DeletedAccounts))
 	}
 
-	if output.GasRefund != nil && output.GasRefund.Sign() > 0 {
+	if output.GasRefund != nil && output.GasRefund.Sign() < 0 {
 		return fmt.Errorf("%w: returnCode=%s gasRefund=%s",
-			ErrGasRefundOnFailedExecution, output.ReturnCode, output.GasRefund.String())
+			ErrGasRefundNegative, output.ReturnCode, output.GasRefund.String())
 	}
 
 	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {

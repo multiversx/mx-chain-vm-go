@@ -150,7 +150,7 @@ func TestVerifier_ReturnCodeStateIsolation(t *testing.T) {
 		require.ErrorIs(t, err, verifier.ErrDeletedAccountOnFailedExecution)
 	})
 
-	t.Run("Non-Ok with positive gas refund fails", func(t *testing.T) {
+	t.Run("Non-Ok with positive gas refund succeeds", func(t *testing.T) {
 		acc := createValidAccount(addr)
 		output := createBaseVMOutput(acc)
 		output.ReturnCode = vmcommon.ExecutionFailed
@@ -158,7 +158,18 @@ func TestVerifier_ReturnCodeStateIsolation(t *testing.T) {
 
 		input := createBaseInput()
 		err := v.Verify(input, output)
-		require.ErrorIs(t, err, verifier.ErrGasRefundOnFailedExecution)
+		require.NoError(t, err)
+	})
+
+	t.Run("Non-Ok with negative gas refund fails", func(t *testing.T) {
+		acc := createValidAccount(addr)
+		output := createBaseVMOutput(acc)
+		output.ReturnCode = vmcommon.ExecutionFailed
+		output.GasRefund = big.NewInt(-500)
+
+		input := createBaseInput()
+		err := v.Verify(input, output)
+		require.Error(t, err)
 	})
 }
 
