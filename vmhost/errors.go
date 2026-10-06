@@ -13,6 +13,9 @@ var ErrNilVMType = errors.New("nil VMType")
 // ErrNilVMHost signals that the provided VMHost is nil
 var ErrNilVMHost = errors.New("nil VMHost")
 
+// ErrNilInstance signals that the instance is nil or closed
+var ErrNilInstance = errors.New("nil instance")
+
 // ErrNilExecutor signals that the provided Executor is nil
 var ErrNilExecutor = errors.New("nil Executor")
 

@@ -37,7 +37,7 @@ var _ scenexec.VMInterface = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
-const timeoutGracePeriod = 200 * time.Millisecond
+const timeoutGracePeriod = 1 * time.Second
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
