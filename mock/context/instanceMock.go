@@ -60,7 +60,10 @@ func (instance *InstanceMock) AddMockMethodWithError(name string, method mockMet
 }
 
 // CallFunction mocked method
-func (instance *InstanceMock) CallFunction(funcName string) error {
+//
+// Mirrors the legacy backend rather than the new one: it leaves the reason in the breakpoint
+// slot and reports a plain failure, which is what the VM's existing readers expect.
+func (instance *InstanceMock) CallFunction(funcName string) executor.InstanceCallResult {
 	err := instance.DefaultErrors[funcName]
 	method := instance.Methods[funcName]
 	newInstance := method()
@@ -73,7 +76,10 @@ func (instance *InstanceMock) CallFunction(funcName string) error {
 		}
 		err = errors.New(errMsg)
 	}
-	return err
+	if err != nil {
+		return executor.CallResultError(err)
+	}
+	return executor.CallResultOk()
 }
 
 // GetPointsUsed mocked method
@@ -147,11 +153,6 @@ func (instance *InstanceMock) ValidateFunctionArities() error {
 	return nil
 }
 
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
-}
-
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (instance *InstanceMock) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
 	return executor.MemLoadFromMemory(instance.Memory, memPtr, length)
@@ -170,11 +171,6 @@ func (instance *InstanceMock) MemLength() uint32 {
 // MemGrow allocates more pages to the current memory. Only called directly in tests.
 func (instance *InstanceMock) MemGrow(pages uint32) error {
 	return instance.Memory.Grow(pages)
-}
-
-// MemDump yields the entire contents of the memory. Only used in tests.
-func (instance *InstanceMock) MemDump() []byte {
-	return instance.Memory.Data()
 }
 
 // IsFunctionImported mocked method
@@ -197,13 +193,4 @@ func (instance *InstanceMock) ID() string {
 // IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
-}
-
-// SetVMHooksPtr mocked method
-func (instance *InstanceMock) SetVMHooksPtr(_ uintptr) {
-}
-
-// GetVMHooksPtr mocked method
-func (instance *InstanceMock) GetVMHooksPtr() uintptr {
-	return 0
 }

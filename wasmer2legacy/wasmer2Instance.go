@@ -123,7 +123,12 @@ func (instance *Wasmer2Instance) IsFunctionImported(name string) bool {
 }
 
 // CallFunction executes given function from loaded contract.
-func (instance *Wasmer2Instance) CallFunction(functionName string) error {
+//
+// The legacy C API reports only success or failure, so this can never return CallBreakpoint
+// or CallEarlyExit: both arrive as a plain failure, and the reason is left in the breakpoint
+// global for the VM to read afterwards. That asymmetry with the new executor is the subject of
+// PLAN-go-breakpoint-removal.md.
+func (instance *Wasmer2Instance) CallFunction(functionName string) executor.InstanceCallResult {
 	var wasmFunctionName = cCString(functionName)
 	defer cFree(unsafe.Pointer(wasmFunctionName))
 
@@ -134,10 +139,10 @@ func (instance *Wasmer2Instance) CallFunction(functionName string) error {
 
 	if callResult != cWasmerOk {
 		err := fmt.Errorf("failed to call the `%s` exported function", functionName)
-		return newWrappedError(err)
+		return executor.CallResultError(newWrappedError(err))
 	}
 
-	return nil
+	return executor.CallResultOk()
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
@@ -192,11 +197,6 @@ func (instance *Wasmer2Instance) ValidateFunctionArities() error {
 	return nil
 }
 
-// HasMemory checks whether the instance has at least one exported memory.
-func (instance *Wasmer2Instance) HasMemory() bool {
-	return true
-}
-
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (instance *Wasmer2Instance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
 	return executor.MemLoadFromMemory(&instance.memory, memPtr, length)
@@ -215,11 +215,6 @@ func (instance *Wasmer2Instance) MemLength() uint32 {
 // MemGrow allocates more pages to the current memory. Only called directly in tests.
 func (instance *Wasmer2Instance) MemGrow(pages uint32) error {
 	return instance.memory.Grow(pages)
-}
-
-// MemDump yields the entire contents of the memory. Only used in tests.
-func (instance *Wasmer2Instance) MemDump() []byte {
-	return instance.memory.Data()
 }
 
 // Id returns an identifier for the instance, unique at runtime
@@ -244,13 +239,4 @@ func (instance *Wasmer2Instance) Reset() bool {
 // IsInterfaceNil returns true if underlying object is nil
 func (instance *Wasmer2Instance) IsInterfaceNil() bool {
 	return instance == nil
-}
-
-// SetVMHooksPtr sets the VM hooks pointer
-func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
-}
-
-// GetVMHooksPtr returns the VM hooks pointer
-func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
-	return uintptr(0)
 }

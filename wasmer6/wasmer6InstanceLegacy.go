@@ -117,22 +117,6 @@ func (instance *Wasmer6Instance) MemGrow(pages uint32) error {
 	return err
 }
 
-// MemDump yields the entire contents of the memory. Used only by tests.
-func (instance *Wasmer6Instance) MemDump() []byte {
-	length := instance.MemLength()
-	if length == 0 {
-		return nil
-	}
-
-	data, err := instance.MemLoad(0, executor.MemLength(length))
-	if err != nil {
-		logWasmer6.Error("MemDump failed", "err", err)
-		return nil
-	}
-
-	return data
-}
-
 // SetPointsUsed overwrites the gas consumed so far.
 //
 // Reachable only from inside a host call: the new C API offers gas writes through the hook
@@ -173,33 +157,38 @@ func (instance *Wasmer6Instance) SetGasLimit(gasLimit uint64) {
 
 // --- The call, and the breakpoint the call result replaces -------------------
 
-// CallFunction invokes an exported function and translates the outcome into the legacy pair of
-// an error plus a breakpoint value to be read back afterwards.
+// CallFunction invokes an exported function and reports why it stopped.
 //
-// The translation is the Go side of what PLAN-go-breakpoint-removal.md describes: the reason a
-// call stopped now arrives *with* the result, and is written into the breakpoint slot below
-// only so that the VM's existing readers still find it. An early exit needs no translation at
-// all, because the Go hook already recorded its own breakpoint before returning.
-func (instance *Wasmer6Instance) CallFunction(functionName string) error {
+// Unlike the legacy backend, this one knows: the reason arrives with the result instead of
+// being left in a wasm global for the VM to poll afterwards. Recording it where the VM's
+// existing readers look is the VM's job, not this one's — see runtimeContext.CallSCFunction.
+func (instance *Wasmer6Instance) CallFunction(functionName string) executor.InstanceCallResult {
 	result, err := instance.Call(functionName, instance.gasLimit)
 	if err != nil {
-		return err
+		return executor.CallResultError(err)
 	}
 
 	switch result.Kind {
 	case CallOk:
-		return nil
+		return executor.CallResultOk()
 	case CallFunctionNotFound:
-		return executor.ErrFuncNotFound
+		return executor.CallResultError(executor.ErrFuncNotFound)
 	case CallEarlyExit:
-		return fmt.Errorf("execution stopped by VM hook, code %d", result.EarlyExitCode)
+		return executor.InstanceCallResult{
+			Kind:          executor.CallEarlyExit,
+			Err:           fmt.Errorf("execution stopped by VM hook, code %d", result.EarlyExitCode),
+			EarlyExitCode: result.EarlyExitCode,
+		}
 	case CallBreakpoint:
 		// The values are the same on both sides on purpose: 4 is out of gas, 5 is the memory
 		// limit, in executor.BreakpointValue and in the Rust BreakpointValue alike.
-		instance.breakpoint = result.Breakpoint
-		return fmt.Errorf("execution stopped by breakpoint %d", result.Breakpoint)
+		return executor.InstanceCallResult{
+			Kind:       executor.CallBreakpoint,
+			Err:        fmt.Errorf("execution stopped by breakpoint %d", result.Breakpoint),
+			Breakpoint: result.Breakpoint,
+		}
 	default:
-		return fmt.Errorf("instance call error: %s", result.Message)
+		return executor.CallResultError(fmt.Errorf("instance call error: %s", result.Message))
 	}
 }
 
@@ -252,12 +241,6 @@ func (instance *Wasmer6Instance) IsInterfaceNil() bool {
 
 // --- Not supported by this executor -----------------------------------------
 
-// HasMemory reports whether the contract declares a memory. Always true here: the executor
-// rejects a module without exactly one memory at instantiation, so a live instance has one.
-func (instance *Wasmer6Instance) HasMemory() bool {
-	return true
-}
-
 // Reset is not supported yet; see PLAN-go-ffi.md, Phase 6. Returning false makes the instance
 // tracker treat the instance as unusable for warm reuse, which is the correct outcome.
 func (instance *Wasmer6Instance) Reset() bool {
@@ -267,14 +250,4 @@ func (instance *Wasmer6Instance) Reset() bool {
 // Cache is not supported yet; see PLAN-go-ffi.md, Phase 6.
 func (instance *Wasmer6Instance) Cache() ([]byte, error) {
 	return nil, ErrCacheUnsupported
-}
-
-// SetVMHooksPtr is a no-op. The legacy C API had no per-instance hooks pointer and the VM
-// never called this; the new one carries a per-instance handle from creation instead.
-func (instance *Wasmer6Instance) SetVMHooksPtr(_ uintptr) {
-}
-
-// GetVMHooksPtr is a no-op. See SetVMHooksPtr.
-func (instance *Wasmer6Instance) GetVMHooksPtr() uintptr {
-	return 0
 }

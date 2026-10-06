@@ -44,14 +44,6 @@ func newWASMValidator(
 	}
 }
 
-func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instance) error {
-	if !instance.HasMemory() {
-		return vmhost.ErrMemoryDeclarationMissing
-	}
-
-	return nil
-}
-
 func (validator *wasmValidator) verifyFunctions(instance executor.Instance) error {
 	for _, functionName := range instance.GetFunctionNames() {
 		err := validator.verifyValidFunctionName(functionName)

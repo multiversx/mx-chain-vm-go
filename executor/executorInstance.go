@@ -1,6 +1,11 @@
 package executor
 
-// Instance defines the functionality of a Wasmer instance
+// Instance is the view of a running contract from *outside* a host call: calling it, gas
+// accounting, module introspection and lifecycle.
+//
+// What a VM hook needs while a call is running is not here — that is InstanceState, reached
+// through the hook's own context. Keeping the two apart is what lets a backend whose instance
+// state is only reachable for the duration of a call implement this interface honestly.
 type Instance interface {
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
@@ -9,21 +14,17 @@ type Instance interface {
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
 	Clean() bool
-	CallFunction(functionName string) error
+	CallFunction(functionName string) InstanceCallResult
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
 	ValidateFunctionArities() error
-	HasMemory() bool
 	MemLoad(memPtr MemPtr, length MemLength) ([]byte, error)
 	MemStore(memPtr MemPtr, data []byte) error
 	MemLength() uint32
 	MemGrow(pages uint32) error
-	MemDump() []byte
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 	Reset() bool
-	SetVMHooksPtr(vmHooksPtr uintptr)
-	GetVMHooksPtr() uintptr
 	ID() string
 	IsAlreadyCleaned() bool
 }

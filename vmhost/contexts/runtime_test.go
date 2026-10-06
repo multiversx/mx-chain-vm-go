@@ -590,8 +590,10 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	require.Nil(t, err)
 
 	totalPages := 2
-	memoryContents := runtimeCtx.iTracker.instance.MemDump()
-	require.Equal(t, runtimeCtx.iTracker.instance.MemLength(), uint32(len(memoryContents)))
+	memoryLength := runtimeCtx.iTracker.instance.MemLength()
+	memoryContents, err := runtimeCtx.iTracker.instance.MemLoad(0, executor.MemLength(memoryLength))
+	require.Nil(t, err)
+	require.Equal(t, memoryLength, uint32(len(memoryContents)))
 	require.Equal(t, totalPages*int(vmhost.WASMPageSize), len(memoryContents))
 
 	for i, value := range memoryContents {

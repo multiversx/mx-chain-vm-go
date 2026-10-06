@@ -317,57 +317,10 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 		verify.Ok()
 	}
 
-	var vmHooksPtr = make(map[uintptr]bool)
-	for _, instance := range executorFactory.LastCreatedExecutor.GetContractInstances(code) {
-		vmHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-	require.False(t, len(vmHooksPtr) > 1)
-}
-
-func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
-	t.Skip()
-	code := test.GetTestSCCode("counter", "../../")
-
-	input := test.DefaultTestContractCallInput()
-	input.GasProvided = 1000000
-	input.Function = get
-
-	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2legacy.ExecutorFactory())
-	host1 := test.NewTestHostBuilder(t).
-		WithExecutorFactory(executorFactory1).
-		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Build()
-	defer func() {
-		host1.Reset()
-	}()
-	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
-	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
-	host1.SetRuntimeContext(runtimeContextMock)
-
-	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2legacy.ExecutorFactory())
-	host2 := test.NewTestHostBuilder(t).
-		WithExecutorFactory(executorFactory2).
-		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Build()
-	defer func() {
-		host2.Reset()
-	}()
-	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
-	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	host2.SetRuntimeContext(runtimeContextMock)
-
-	runNContractsForHostAndVerify(t, host2, input, 5)
-	runNContractsForHostAndVerify(t, host1, input, 5)
-	runNContractsForHostAndVerify(t, host2, input, maxUint8AsInt+1)
-
-	var host1VMHooksPtr = make(map[uintptr]bool)
-	for _, instance := range executorFactory1.LastCreatedExecutor.GetContractInstances(code) {
-		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-	for _, instance := range executorFactory2.LastCreatedExecutor.GetContractInstances(code) {
-		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
-		require.False(t, found)
-	}
+	// The assertion that used to stand here compared per-instance VM hooks pointers. There is
+	// no such pointer any more: the hooks belong to the executor, so every instance it creates
+	// shares them by construction. It was vacuous even before that — every Instance
+	// implementation answered GetVMHooksPtr() with zero.
 }
 
 func TestExecution_MultipleVMs_CleanInstanceWhileOthersAreRunning(t *testing.T) {
