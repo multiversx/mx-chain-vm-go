@@ -841,13 +841,22 @@ func (context *managedTypesContext) ManagedMapPut(mMapHandle int32, keyHandle in
 
 // ManagedMapGet gets the bytes stored as the key handle in an output value handle
 func (context *managedTypesContext) ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) error {
-	_, _, value, _, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
+	_, key, value, _, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
 	if err != nil {
 		return err
 	}
 
 	context.SetBytes(outValueHandle, value)
-	return context.ConsumeGasForBytes(value)
+	err = context.ConsumeGasForBytes(value)
+	if err != nil {
+		return err
+	}
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		return context.ConsumeGasForBytes(key)
+	}
+
+	return nil
 }
 
 // ManagedMapRemove removes the bytes stored as the key handle and returns it in an output value handle
@@ -863,15 +872,29 @@ func (context *managedTypesContext) ManagedMapRemove(mMapHandle int32, keyHandle
 		return err
 	}
 
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = context.ConsumeGasForBytes(key)
+		if err != nil {
+			return err
+		}
+	}
+
 	delete(mMap, string(key))
 	return nil
 }
 
 // ManagedMapContains checks if the managed map contains the given key
 func (context *managedTypesContext) ManagedMapContains(mMapHandle int32, keyHandle int32) (bool, error) {
-	_, _, value, foundValue, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
+	_, key, value, foundValue, err := context.getKeyValueFromManagedMap(mMapHandle, keyHandle)
 	if err != nil {
 		return false, err
+	}
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = context.ConsumeGasForBytes(key)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	return foundValue && len(value) > 0, nil

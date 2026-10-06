@@ -781,6 +781,156 @@ func TestManagedTypesContext_ManagedMapPut_KeyGas(t *testing.T) {
 	}
 }
 
+func TestManagedTypesContext_ManagedMapGet_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+			_ = managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+
+			outValHandle := managedTypesCtx.NewManagedBuffer()
+			gasLeftBefore := meteringMock.GasLeft()
+			err := managedTypesCtx.ManagedMapGet(mapHandle, keyHandle, outValHandle)
+			require.Nil(t, err)
+
+			gasConsumedInGet := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// both key (6) and value (10) consumed
+				require.Equal(t, uint64(16), gasConsumedInGet)
+			} else {
+				// only value (10) consumed
+				require.Equal(t, uint64(10), gasConsumedInGet)
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_ManagedMapRemove_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+			_ = managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+
+			outValHandle := managedTypesCtx.NewManagedBuffer()
+			gasLeftBefore := meteringMock.GasLeft()
+			err := managedTypesCtx.ManagedMapRemove(mapHandle, keyHandle, outValHandle)
+			require.Nil(t, err)
+
+			gasConsumedInRemove := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// both key (6) and value (10) consumed
+				require.Equal(t, uint64(16), gasConsumedInRemove)
+			} else {
+				// only value (10) consumed
+				require.Equal(t, uint64(10), gasConsumedInRemove)
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_ManagedMapContains_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+			_ = managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+
+			gasLeftBefore := meteringMock.GasLeft()
+			contains, err := managedTypesCtx.ManagedMapContains(mapHandle, keyHandle)
+			require.Nil(t, err)
+			require.True(t, contains)
+
+			gasConsumedInContains := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// key (6) consumed
+				require.Equal(t, uint64(6), gasConsumedInContains)
+			} else {
+				// 0 key bytes consumed
+				require.Equal(t, uint64(0), gasConsumedInContains)
+			}
+		})
+	}
+}
+
 func TestManagedTypesContext_EncodedBigFloatIsNotValid_MaxLen(t *testing.T) {
 	t.Parallel()
 

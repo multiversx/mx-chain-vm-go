@@ -124,6 +124,10 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 
 	_, err := host.RunSmartContractCall(input)
 	require.Equal(t, err, vmhost.ErrExecutionFailedWithTimeout)
+
+	// Quarantine check: host was abandoned due to timeout and must reject further execution
+	_, err = host.RunSmartContractCall(input)
+	require.Equal(t, err, vmhost.ErrVMIsClosing)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {

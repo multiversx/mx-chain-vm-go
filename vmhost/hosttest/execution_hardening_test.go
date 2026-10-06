@@ -1937,3 +1937,130 @@ func TestHost_BigFloatPow_NegativeExponent(t *testing.T) {
 		})
 	}
 }
+
+func TestHost_IsReservedFunctionName_ExtraGasUsage(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			_, err := test.BuildMockInstanceCallTest(t).
+				WithContracts(
+					test.CreateMockContract(test.ParentAddress).
+						WithBalance(100000).
+						WithMethods(func(instanceMock *contextmock.InstanceMock, config interface{}) {
+							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
+								host := instanceMock.Host
+								managedTypes := host.ManagedTypes()
+								hooks := vmhooks.NewVMHooksImpl(host)
+
+								// 200 bytes name (> safeAttributeLength 100)
+								longName := bytes.Repeat([]byte("a"), 200)
+								nameHandle := managedTypes.NewManagedBufferFromBytes(longName)
+
+								baseCost := host.Metering().GasSchedule().BaseOpsAPICost.IsReservedFunctionName
+								dataCopyPerByte := host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte
+								expectedExtraGas := uint64(len(longName)) * dataCopyPerByte
+
+								gasBefore := host.Metering().GasLeft()
+								res := hooks.IsReservedFunctionName(nameHandle)
+								require.Equal(t, int32(0), res)
+								gasUsed := gasBefore - host.Metering().GasLeft()
+
+								if flagEnabled {
+									require.Equal(t, baseCost+expectedExtraGas, gasUsed)
+								} else {
+									require.Equal(t, baseCost, gasUsed)
+								}
+
+								return contextmock.GetMockInstance(host)
+							})
+						})).
+				WithInput(test.CreateTestContractCallInputBuilder().
+					WithRecipientAddr(test.ParentAddress).
+					WithGasProvided(1000000).
+					WithFunction("test").
+					Build()).
+				WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+					enableEpochsHandler := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+					enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+						if flag == vmhost.AttributeExtraGasUsageFlag {
+							return false
+						}
+						if flag == vmhost.FixCorrectSmallIntAndGasLimitsFlag {
+							return flagEnabled
+						}
+						return true
+					}
+				}).
+				AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+					verify.Ok()
+				})
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestHost_ManagedIsESDTLimitedTransfer_ExtraGasUsage(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			_, err := test.BuildMockInstanceCallTest(t).
+				WithContracts(
+					test.CreateMockContract(test.ParentAddress).
+						WithBalance(100000).
+						WithMethods(func(instanceMock *contextmock.InstanceMock, config interface{}) {
+							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
+								host := instanceMock.Host
+								managedTypes := host.ManagedTypes()
+								hooks := vmhooks.NewVMHooksImpl(host)
+
+								// 200 bytes token ID (> safeAttributeLength 100)
+								longTokenID := bytes.Repeat([]byte("T"), 200)
+								tokenIDHandle := managedTypes.NewManagedBufferFromBytes(longTokenID)
+
+								baseCost := host.Metering().GasSchedule().BaseOpsAPICost.GetExternalBalance
+								dataCopyPerByte := host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte
+								expectedExtraGas := uint64(len(longTokenID)) * dataCopyPerByte
+
+								gasBefore := host.Metering().GasLeft()
+								res := hooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
+								require.Equal(t, int32(0), res)
+								gasUsed := gasBefore - host.Metering().GasLeft()
+
+								if flagEnabled {
+									require.Equal(t, baseCost+expectedExtraGas, gasUsed)
+								} else {
+									require.Equal(t, baseCost, gasUsed)
+								}
+
+								return contextmock.GetMockInstance(host)
+							})
+						})).
+				WithInput(test.CreateTestContractCallInputBuilder().
+					WithRecipientAddr(test.ParentAddress).
+					WithGasProvided(1000000).
+					WithFunction("test").
+					Build()).
+				WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+					enableEpochsHandler := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+					enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
+						if flag == vmhost.AttributeExtraGasUsageFlag {
+							return false
+						}
+						if flag == vmhost.FixCorrectSmallIntAndGasLimitsFlag {
+							return flagEnabled
+						}
+						return true
+					}
+				}).
+				AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+					verify.Ok()
+				})
+			require.Nil(t, err)
+		})
+	}
+}
+

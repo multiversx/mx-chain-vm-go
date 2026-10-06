@@ -468,6 +468,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			log.Warn("VM create execution timed out and failed to stop within grace period; abandoning instance",
 				"caller", input.CallerAddr)
 			host.Runtime().AbandonInstance()
+			host.closingInstance = true
 		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
 		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
@@ -574,6 +575,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				"recipient", input.RecipientAddr,
 				"function", input.Function)
 			host.Runtime().AbandonInstance()
+			host.closingInstance = true
 		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
 		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)

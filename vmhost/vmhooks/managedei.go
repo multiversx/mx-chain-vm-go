@@ -1514,6 +1514,12 @@ func ManagedIsESDTLimitedTransferWithHost(host vmhost.VMHost, tokenIDHandle int3
 		return -1
 	}
 
+	err = chargeGasForExtraLength(len(tokenID), host)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
 	if blockchain.IsLimitedTransfer(tokenID) {
 		return 1
 	}
