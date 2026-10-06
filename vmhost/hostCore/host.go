@@ -465,10 +465,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		case <-done:
 			host.Runtime().CleanInstance()
 		case <-time.After(timeoutGracePeriod):
-			log.Warn("VM create execution timed out and failed to stop within grace period; abandoning instance",
+			log.Warn("VM create execution timed out and failed to stop within grace period; waiting for instance to finish",
 				"caller", input.CallerAddr)
-			host.Runtime().AbandonInstance()
-			host.closingInstance = true
+			<-done
+			host.Runtime().CleanInstance()
 		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
 		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
@@ -570,12 +570,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		case <-done:
 			host.Runtime().CleanInstance()
 		case <-time.After(timeoutGracePeriod):
-			log.Warn("VM call execution timed out and failed to stop within grace period; abandoning instance",
+			log.Warn("VM call execution timed out and failed to stop within grace period; waiting for instance to finish",
 				"caller", input.CallerAddr,
 				"recipient", input.RecipientAddr,
 				"function", input.Function)
-			host.Runtime().AbandonInstance()
-			host.closingInstance = true
+			<-done
+			host.Runtime().CleanInstance()
 		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
 		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
