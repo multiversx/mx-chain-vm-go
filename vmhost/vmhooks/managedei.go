@@ -1376,7 +1376,8 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 	metering := host.Metering()
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteByUser)
 
-	if !host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
+	if !host.EnableEpochsHandler().IsFlagEnabled(vmhost.MultiESDTNFTTransferAndExecuteByUserFlag) ||
+		!host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
 		FailExecution(host, vmhost.ErrOpcodeIsNotAllowed)
 		return -1
 	}

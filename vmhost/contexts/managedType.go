@@ -113,7 +113,7 @@ func (context *managedTypesContext) initRandomizer() {
 	currentRandomSeed := blockchainContext.CurrentRandomSeed()
 	txHash := context.host.Runtime().GetCurrentTxHash()
 
-	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
+	blocksRandomSeed := append(bytes.Clone(previousRandomSeed), currentRandomSeed...)
 	randomSeed := append(blocksRandomSeed, txHash...)
 
 	randomizer := math.NewSeedRandReader(randomSeed)
