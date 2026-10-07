@@ -146,6 +146,7 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
+	context.outputState.DeletedAccounts = make([][]byte, 0)
 
 	isFixEnabled := context.host.Runtime().FixCorrectSmallIntAndGasLimits()
 
@@ -773,7 +774,20 @@ func mergeVMOutputsConditionally(leftOutput *vmcommon.VMOutput, rightOutput *vmc
 	leftOutput.ReturnCode = rightOutput.ReturnCode
 	leftOutput.ReturnMessage = rightOutput.ReturnMessage
 
-	leftOutput.DeletedAccounts = append(leftOutput.DeletedAccounts, rightOutput.DeletedAccounts...)
+	for _, rightDeleted := range rightOutput.DeletedAccounts {
+		if !containsAddress(leftOutput.DeletedAccounts, rightDeleted) {
+			leftOutput.DeletedAccounts = append(leftOutput.DeletedAccounts, rightDeleted)
+		}
+	}
+}
+
+func containsAddress(addresses [][]byte, target []byte) bool {
+	for _, addr := range addresses {
+		if bytes.Equal(addr, target) {
+			return true
+		}
+	}
+	return false
 }
 
 func mergeOutputAccounts(

@@ -731,3 +731,44 @@ func TestOutputContext_RemoveNonUpdatedStorage_KeyBasedDeletion(t *testing.T) {
 	require.True(t, acc.StorageUpdates["map_key_2"].Written)
 	require.Nil(t, acc.StorageUpdates["map_key_1"])
 }
+
+func TestOutputContext_CensorVMOutput_DeletedAccounts(t *testing.T) {
+	t.Parallel()
+
+	host := &contextmock.VMHostStub{}
+	host.RuntimeCalled = func() vmhost.RuntimeContext {
+		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
+	}
+	outputCtx, _ := NewOutputContext(host)
+
+	// Simulate deleted accounts in active state
+	outputCtx.outputState.DeletedAccounts = [][]byte{[]byte("addr_to_delete")}
+	require.Equal(t, 1, len(outputCtx.outputState.DeletedAccounts))
+
+	outputCtx.CensorVMOutput()
+
+	// Verify DeletedAccounts was cleared
+	require.Equal(t, 0, len(outputCtx.outputState.DeletedAccounts))
+}
+
+func TestOutputContext_MergeVMOutputsConditionally_DeduplicatesDeletedAccounts(t *testing.T) {
+	t.Parallel()
+
+	addr1 := []byte("address_1")
+	addr2 := []byte("address_2")
+
+	left := &vmcommon.VMOutput{
+		DeletedAccounts: [][]byte{addr1},
+	}
+	right := &vmcommon.VMOutput{
+		DeletedAccounts: [][]byte{addr1, addr2},
+	}
+
+	mergeVMOutputsConditionally(left, right, false)
+
+	// Must deduplicate addr1 and append addr2
+	require.Equal(t, 2, len(left.DeletedAccounts))
+	require.Equal(t, addr1, left.DeletedAccounts[0])
+	require.Equal(t, addr2, left.DeletedAccounts[1])
+}
+
