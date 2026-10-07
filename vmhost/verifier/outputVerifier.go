@@ -14,15 +14,20 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 )
 
+var bigZero = big.NewInt(0)
+
 func getSortedAccountKeys(m map[string]*vmcommon.OutputAccount) []string {
-	if len(m) == 0 {
+	n := len(m)
+	if n == 0 {
 		return nil
 	}
-	keys := make([]string, 0, len(m))
+	keys := make([]string, 0, n)
 	for k := range m {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
+	if n > 1 {
+		sort.Strings(keys)
+	}
 	return keys
 }
 
@@ -122,37 +127,39 @@ func (v *vmOutputVerifier) Verify(input *VerificationInput, output *vmcommon.VMO
 		return ErrNilVerificationInput
 	}
 
-	err := v.verifyReturnCodeStateIsolation(output)
+	sortedAccountKeys := getSortedAccountKeys(output.OutputAccounts)
+
+	err := v.verifyReturnCodeStateIsolation(output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyIdentityAndAddressIntegrity(input, output)
+	err = v.verifyIdentityAndAddressIntegrity(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyReadOnlyPurity(input, output)
+	err = v.verifyReadOnlyPurity(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyNativeEGLDConservation(input, output)
+	err = v.verifyNativeEGLDConservation(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyNonNegativeBalances(input, output)
+	err = v.verifyNonNegativeBalances(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyTokenConservation(input, output)
+	err = v.verifyTokenConservation(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyGasBounds(input, output)
+	err = v.verifyGasBounds(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
@@ -162,7 +169,7 @@ func (v *vmOutputVerifier) Verify(input *VerificationInput, output *vmcommon.VMO
 
 // 1. ReturnCode State Isolation: If ReturnCode != Ok, no storage updates,
 // balance deltas, code deployments, or output transfers are allowed.
-func (v *vmOutputVerifier) verifyReturnCodeStateIsolation(output *vmcommon.VMOutput) error {
+func (v *vmOutputVerifier) verifyReturnCodeStateIsolation(output *vmcommon.VMOutput, sortedAccountKeys []string) error {
 	if output.ReturnCode == vmcommon.Ok {
 		return nil
 	}
@@ -177,7 +184,7 @@ func (v *vmOutputVerifier) verifyReturnCodeStateIsolation(output *vmcommon.VMOut
 			ErrGasRefundNegative, output.ReturnCode, output.GasRefund.String())
 	}
 
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
@@ -216,25 +223,28 @@ func (v *vmOutputVerifier) verifyReturnCodeStateIsolation(output *vmcommon.VMOut
 
 // 2. Identity & Address Integrity: UF-208 defense (output account map key == acc.Address,
 // length == 32 bytes, disjoint or non-mutating deleted accounts).
-func (v *vmOutputVerifier) verifyIdentityAndAddressIntegrity(input *VerificationInput, output *vmcommon.VMOutput) error {
-	deletedSet := make(map[string]struct{}, len(output.DeletedAccounts))
-	for _, delAddr := range output.DeletedAccounts {
-		if len(delAddr) == 0 {
-			return fmt.Errorf("%w: deleted account address is empty", ErrInvalidAccountAddress)
+func (v *vmOutputVerifier) verifyIdentityAndAddressIntegrity(input *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
+	var deletedSet map[string]struct{}
+	if len(output.DeletedAccounts) > 0 {
+		deletedSet = make(map[string]struct{}, len(output.DeletedAccounts))
+		for _, delAddr := range output.DeletedAccounts {
+			if len(delAddr) == 0 {
+				return fmt.Errorf("%w: deleted account address is empty", ErrInvalidAccountAddress)
+			}
+			if !input.AllowCustomAddressLength && len(delAddr) != AddressLen {
+				return fmt.Errorf("%w: deleted account address length %d != %d",
+					ErrInvalidAccountAddress, len(delAddr), AddressLen)
+			}
+			delKey := string(delAddr)
+			if _, duplicate := deletedSet[delKey]; duplicate {
+				return fmt.Errorf("%w: address %x duplicated in deleted accounts",
+					ErrDuplicateDeletedAccount, delAddr)
+			}
+			deletedSet[delKey] = struct{}{}
 		}
-		if !input.AllowCustomAddressLength && len(delAddr) != AddressLen {
-			return fmt.Errorf("%w: deleted account address length %d != %d",
-				ErrInvalidAccountAddress, len(delAddr), AddressLen)
-		}
-		delKey := string(delAddr)
-		if _, duplicate := deletedSet[delKey]; duplicate {
-			return fmt.Errorf("%w: address %x duplicated in deleted accounts",
-				ErrDuplicateDeletedAccount, delAddr)
-		}
-		deletedSet[delKey] = struct{}{}
 	}
 
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			return fmt.Errorf("%w: nil output account for key %x", ErrInvalidAccountAddress, []byte(addrKey))
@@ -250,22 +260,24 @@ func (v *vmOutputVerifier) verifyIdentityAndAddressIntegrity(input *Verification
 			return fmt.Errorf("%w: map key %x != acc.Address %x",
 				ErrAddressKeyMismatch, []byte(addrKey), acc.Address)
 		}
-		if _, inDeleted := deletedSet[addrKey]; inDeleted {
-			if input.DisjointDeletedAccounts {
-				return fmt.Errorf("%w: account %x is both in OutputAccounts and DeletedAccounts",
-					ErrDeletedAccountInOutputAccounts, acc.Address)
-			}
-			if len(acc.StorageUpdates) > 0 {
-				return fmt.Errorf("%w: deleted account %x has storage updates",
-					ErrDeletedAccountInOutputAccounts, acc.Address)
-			}
-			if len(acc.Code) > 0 || len(acc.CodeMetadata) > 0 || acc.CodeDeployerAddress != nil {
-				return fmt.Errorf("%w: deleted account %x has code deployment",
-					ErrDeletedAccountInOutputAccounts, acc.Address)
-			}
-			if len(acc.OutputTransfers) > 0 {
-				return fmt.Errorf("%w: deleted account %x has output transfers",
-					ErrDeletedAccountInOutputAccounts, acc.Address)
+		if len(deletedSet) > 0 {
+			if _, inDeleted := deletedSet[addrKey]; inDeleted {
+				if input.DisjointDeletedAccounts {
+					return fmt.Errorf("%w: account %x is both in OutputAccounts and DeletedAccounts",
+						ErrDeletedAccountInOutputAccounts, acc.Address)
+				}
+				if len(acc.StorageUpdates) > 0 {
+					return fmt.Errorf("%w: deleted account %x has storage updates",
+						ErrDeletedAccountInOutputAccounts, acc.Address)
+				}
+				if len(acc.Code) > 0 || len(acc.CodeMetadata) > 0 || acc.CodeDeployerAddress != nil {
+					return fmt.Errorf("%w: deleted account %x has code deployment",
+						ErrDeletedAccountInOutputAccounts, acc.Address)
+				}
+				if len(acc.OutputTransfers) > 0 {
+					return fmt.Errorf("%w: deleted account %x has output transfers",
+						ErrDeletedAccountInOutputAccounts, acc.Address)
+				}
 			}
 		}
 
@@ -282,16 +294,16 @@ func (v *vmOutputVerifier) verifyIdentityAndAddressIntegrity(input *Verification
 
 // 3. Native EGLD Conservation: Net sum of BalanceDelta across touched accounts
 // matches deposit (input.CallValue), and no negative or unbounded output transfer values.
-func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput, output *vmcommon.VMOutput) error {
-	deposit := big.NewInt(0)
-	if input.CallValue != nil {
-		deposit.Set(input.CallValue)
+func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
+	deposit := input.CallValue
+	if deposit == nil {
+		deposit = bigZero
 	}
 	if deposit.Sign() < 0 {
 		return fmt.Errorf("%w: %s", ErrNegativeDeposit, deposit.String())
 	}
 
-	claimedRewards := big.NewInt(0)
+	var claimedRewards *big.Int
 	for _, logEntry := range output.Logs {
 		if logEntry == nil {
 			continue
@@ -299,19 +311,33 @@ func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput
 		if string(logEntry.Identifier) == core.BuiltInFunctionClaimDeveloperRewards {
 			if len(logEntry.Topics) > 0 && len(logEntry.Topics[0]) > 0 {
 				claimedAmount := big.NewInt(0).SetBytes(logEntry.Topics[0])
-				claimedRewards.Add(claimedRewards, claimedAmount)
+				if claimedRewards == nil {
+					claimedRewards = claimedAmount
+				} else {
+					claimedRewards.Add(claimedRewards, claimedAmount)
+				}
 			}
 		}
 	}
 
-	netSum := big.NewInt(0)
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+	var netSum *big.Int
+	multiDeltas := false
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
 		}
-		if acc.BalanceDelta != nil {
-			netSum.Add(netSum, acc.BalanceDelta)
+		if acc.BalanceDelta != nil && acc.BalanceDelta.Sign() != 0 {
+			if netSum == nil {
+				netSum = acc.BalanceDelta
+			} else {
+				if !multiDeltas {
+					netSum = new(big.Int).Add(netSum, acc.BalanceDelta)
+					multiDeltas = true
+				} else {
+					netSum.Add(netSum, acc.BalanceDelta)
+				}
+			}
 		}
 
 		for _, outTransfer := range acc.OutputTransfers {
@@ -320,6 +346,9 @@ func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput
 					ErrNegativeOutputTransferValue, acc.Address, outTransfer.Value.String())
 			}
 		}
+	}
+	if netSum == nil {
+		netSum = bigZero
 	}
 
 	if output.ReturnCode != vmcommon.Ok {
@@ -331,25 +360,28 @@ func (v *vmOutputVerifier) verifyNativeEGLDConservation(input *VerificationInput
 		return nil
 	}
 
-	depositWithRewards := new(big.Int).Add(deposit, claimedRewards)
-	if netSum.Cmp(deposit) != 0 && (claimedRewards.Sign() == 0 || netSum.Cmp(depositWithRewards) != 0) {
-		return fmt.Errorf("%w: deposit=%s netSumDelta=%s",
-			ErrNativeTokenConservationViolated, deposit.String(), netSum.String())
+	if claimedRewards == nil {
+		if netSum.Cmp(deposit) != 0 {
+			return fmt.Errorf("%w: deposit=%s netSumDelta=%s",
+				ErrNativeTokenConservationViolated, deposit.String(), netSum.String())
+		}
+	} else {
+		depositWithRewards := new(big.Int).Add(deposit, claimedRewards)
+		if netSum.Cmp(deposit) != 0 && (claimedRewards.Sign() == 0 || netSum.Cmp(depositWithRewards) != 0) {
+			return fmt.Errorf("%w: deposit=%s netSumDelta=%s",
+				ErrNativeTokenConservationViolated, deposit.String(), netSum.String())
+		}
 	}
 
 	return nil
 }
 
 // 4. Non-Negative Balance Check: Ensures no account balance is overdrawn below zero.
-func (v *vmOutputVerifier) verifyNonNegativeBalances(_ *VerificationInput, output *vmcommon.VMOutput) error {
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+func (v *vmOutputVerifier) verifyNonNegativeBalances(_ *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
-		}
-		delta := acc.BalanceDelta
-		if delta == nil {
-			delta = big.NewInt(0)
 		}
 
 		if acc.Balance != nil {
@@ -357,10 +389,12 @@ func (v *vmOutputVerifier) verifyNonNegativeBalances(_ *VerificationInput, outpu
 				return fmt.Errorf("%w: initial balance %s < 0 for account %x",
 					ErrNegativeBalanceInOutput, acc.Balance.String(), acc.Address)
 			}
-			finalBalance := big.NewInt(0).Add(acc.Balance, delta)
-			if finalBalance.Sign() < 0 {
-				return fmt.Errorf("%w: account %x final balance %s < 0 (initial %s + delta %s)",
-					ErrAccountOverdrawn, acc.Address, finalBalance.String(), acc.Balance.String(), delta.String())
+			if acc.BalanceDelta != nil && acc.BalanceDelta.Sign() < 0 {
+				finalBalance := new(big.Int).Add(acc.Balance, acc.BalanceDelta)
+				if finalBalance.Sign() < 0 {
+					return fmt.Errorf("%w: account %x final balance %s < 0 (initial %s + delta %s)",
+						ErrAccountOverdrawn, acc.Address, finalBalance.String(), acc.Balance.String(), acc.BalanceDelta.String())
+				}
 			}
 		}
 	}
@@ -375,7 +409,7 @@ func (v *vmOutputVerifier) verifyNonNegativeBalances(_ *VerificationInput, outpu
 // exit-boundary structural validator: it guarantees that no unlogged output transfers are created,
 // no transfer logs are spoofed, all amounts are non-negative, and intra-shard execution boundaries
 // are respected.
-func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, output *vmcommon.VMOutput) error {
+func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
 	// 5.1 Validate Inflows from input.ESDTTransfers
 	for _, transfer := range input.ESDTTransfers {
 		if transfer == nil || transfer.ESDTValue == nil {
@@ -413,10 +447,10 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 	}
 
 	// 5.3 Extract Outflows from OutputTransfers
-	outflowTransfers := make([]transferRecord, 0)
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+	var outflowTransfers []transferRecord
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
-		if acc == nil {
+		if acc == nil || len(acc.OutputTransfers) == 0 {
 			continue
 		}
 		if isExecutedContract(input, output, acc.Address) {
@@ -442,7 +476,7 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 	}
 
 	// 5.4 Extract Transfer Logs from output.Logs
-	transferLogs := make([]transferRecord, 0)
+	var transferLogs []transferRecord
 	for _, logEntry := range output.Logs {
 		if logEntry == nil {
 			continue
@@ -500,6 +534,11 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 				})
 			}
 		}
+	}
+
+	// Short-circuit if neither output transfers nor transfer logs exist
+	if len(outflowTransfers) == 0 && len(transferLogs) == 0 {
+		return nil
 	}
 
 	// 5.5 Verify 1-to-1 Matching Between OutputTransfers and Transfer Logs
@@ -636,7 +675,11 @@ func parseNonce(topic []byte) (uint64, error) {
 	if len(topic) > 8 {
 		return 0, fmt.Errorf("%w: topic length %d > 8", ErrInvalidTokenNonce, len(topic))
 	}
-	return big.NewInt(0).SetBytes(topic).Uint64(), nil
+	var nonce uint64
+	for _, b := range topic {
+		nonce = (nonce << 8) | uint64(b)
+	}
+	return nonce, nil
 }
 
 func parseValue(topic []byte) *big.Int {
@@ -648,14 +691,14 @@ func parseValue(topic []byte) *big.Int {
 
 // 6. Gas Bounds & 50% Refund Cap: GasRemaining <= GasProvided,
 // GasRefund >= 0 && GasRefund <= (GasProvided - GasRemaining)/2.
-func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmcommon.VMOutput) error {
+func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
 	if output.GasRemaining > input.GasProvided {
 		return fmt.Errorf("%w: gasRemaining %d > gasProvided %d",
 			ErrGasRemainingExceedsProvided, output.GasRemaining, input.GasProvided)
 	}
 
 	sumGasUsed := uint64(0)
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue
@@ -687,10 +730,9 @@ func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmc
 
 	gasSpent := input.GasProvided - output.GasRemaining
 	maxRefund := gasSpent / 2
-	maxRefundBig := big.NewInt(0).SetUint64(maxRefund)
 
-	if output.GasRefund.Cmp(maxRefundBig) > 0 {
-		output.GasRefund.Set(maxRefundBig)
+	if !output.GasRefund.IsUint64() || output.GasRefund.Uint64() > maxRefund {
+		output.GasRefund.SetUint64(maxRefund)
 	}
 
 	return nil
@@ -698,7 +740,7 @@ func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmc
 
 // 7. ReadOnly Purity: ReadOnly executions cannot delete accounts, deploy code,
 // transfer value, or write storage.
-func (v *vmOutputVerifier) verifyReadOnlyPurity(input *VerificationInput, output *vmcommon.VMOutput) error {
+func (v *vmOutputVerifier) verifyReadOnlyPurity(input *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
 	if !input.IsReadOnly {
 		return nil
 	}
@@ -712,7 +754,7 @@ func (v *vmOutputVerifier) verifyReadOnlyPurity(input *VerificationInput, output
 		return fmt.Errorf("%w: gas refund > 0 in read-only mode", ErrReadOnlyStateChange)
 	}
 
-	for _, addrKey := range getSortedAccountKeys(output.OutputAccounts) {
+	for _, addrKey := range sortedAccountKeys {
 		acc := output.OutputAccounts[addrKey]
 		if acc == nil {
 			continue

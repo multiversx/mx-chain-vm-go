@@ -2245,3 +2245,42 @@ func TestVerifier_RealWorld_EGLD_ESDT_Integration(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func BenchmarkOutputVerifier_Verify_OkCall(b *testing.B) {
+	v := verifier.NewVMOutputVerifier()
+	addr := createValidAddress(10)
+	acc := createValidAccount(addr)
+	acc.BalanceDelta = big.NewInt(100)
+	acc.StorageUpdates["k1"] = &vmcommon.StorageUpdate{Offset: []byte("k1"), Data: []byte("v1")}
+
+	output := createBaseVMOutput(acc)
+	input := createBaseInput()
+	input.CallValue = big.NewInt(100)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = v.Verify(input, output)
+	}
+}
+
+func BenchmarkOutputVerifier_Verify_MultiAccount(b *testing.B) {
+	v := verifier.NewVMOutputVerifier()
+	acc1 := createValidAccount(createValidAddress(10))
+	acc1.BalanceDelta = big.NewInt(50)
+	acc2 := createValidAccount(createValidAddress(20))
+	acc2.BalanceDelta = big.NewInt(50)
+	acc3 := createValidAccount(createValidAddress(30))
+	acc3.BalanceDelta = big.NewInt(0)
+
+	output := createBaseVMOutput(acc1, acc2, acc3)
+	input := createBaseInput()
+	input.CallValue = big.NewInt(100)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = v.Verify(input, output)
+	}
+}
+
