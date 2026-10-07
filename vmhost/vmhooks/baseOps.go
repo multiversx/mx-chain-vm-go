@@ -2615,7 +2615,7 @@ func (context *VMHooksImpl) IsReservedFunctionName(nameHandle int32) int32 {
 		return -1
 	}
 
-	err = chargeGasForExtraLength(len(name), host)
+	err = chargeGasForExtraLengthUnderFlag(len(name), host)
 	if err != nil {
 		context.FailExecution(err)
 		return -1

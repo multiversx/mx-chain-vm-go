@@ -1515,7 +1515,7 @@ func ManagedIsESDTLimitedTransferWithHost(host vmhost.VMHost, tokenIDHandle int3
 		return -1
 	}
 
-	err = chargeGasForExtraLength(len(tokenID), host)
+	err = chargeGasForExtraLengthUnderFlag(len(tokenID), host)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -1730,7 +1730,17 @@ func ManagedIsBuiltinFunctionWithHost(host vmhost.VMHost, functionNameHandle int
 }
 
 func chargeGasForExtraLength(lenAttribute int, host vmhost.VMHost) error {
-	if (!host.Runtime().AttributeExtraGasUsage() && !host.Runtime().FixCorrectSmallIntAndGasLimits()) || lenAttribute < safeAttributeLength {
+	if !host.Runtime().AttributeExtraGasUsage() || lenAttribute < safeAttributeLength {
+		return nil
+	}
+
+	metering := host.Metering()
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(lenAttribute))
+	return metering.UseGasBounded(gasToUse)
+}
+
+func chargeGasForExtraLengthUnderFlag(lenAttribute int, host vmhost.VMHost) error {
+	if !host.Runtime().FixCorrectSmallIntAndGasLimits() || lenAttribute < safeAttributeLength {
 		return nil
 	}
 
