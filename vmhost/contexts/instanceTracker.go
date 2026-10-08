@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-storage-go/lrucache"
@@ -46,6 +48,7 @@ type instanceTracker struct {
 	instanceStack       []executor.Instance
 	codeHashStack       [][]byte
 	codeSizeStack       []uint64
+	enableEpochsHandler core.EnableEpochsHandler
 
 	instances map[string]executor.Instance
 }
@@ -315,23 +318,52 @@ func (tracker *instanceTracker) GetCodeSize() uint64 {
 	return tracker.codeSize
 }
 
+// SetEnableEpochsHandler sets the enable epochs handler for flag gating
+func (tracker *instanceTracker) SetEnableEpochsHandler(handler core.EnableEpochsHandler) {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+	tracker.enableEpochsHandler = handler
+}
+
+func (tracker *instanceTracker) isAttributeExtraGasUsageEnabled() bool {
+	tracker.mut.RLock()
+	defer tracker.mut.RUnlock()
+	if check.IfNil(tracker.enableEpochsHandler) {
+		return true
+	}
+	return tracker.enableEpochsHandler.IsFlagEnabled(vmhost.AttributeExtraGasUsageFlag)
+}
+
+func (tracker *instanceTracker) getInstanceKey(instance executor.Instance) string {
+	instanceKey := instance.ID()
+	if !tracker.isAttributeExtraGasUsageEnabled() {
+		if idx := strings.Index(instanceKey, "-"); idx != -1 {
+			instanceKey = instanceKey[:idx]
+		}
+	}
+	return instanceKey
+}
+
 // SetNewInstance sets the given instance as active and tracks its creation
 func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) error {
 	if check.IfNil(instance) {
 		return errNilInstance
 	}
 
-	_, exists := tracker.instances[instance.ID()]
+	instanceKey := tracker.getInstanceKey(instance)
+	_, exists := tracker.instances[instanceKey]
 	newCount := len(tracker.instances)
 	if !exists {
 		newCount++
 	}
 
-	if newCount >= warmCacheSize-1 {
-		if cacheLevel != Warm {
-			_ = instance.Clean()
+	if tracker.isAttributeExtraGasUsageEnabled() {
+		if newCount >= warmCacheSize-1 {
+			if cacheLevel != Warm {
+				_ = instance.Clean()
+			}
+			return errTooManyInstances
 		}
-		return errTooManyInstances
 	}
 
 	tracker.ReplaceInstance(instance)
@@ -339,7 +371,13 @@ func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cache
 	if cacheLevel != Warm {
 		tracker.updateNumRunningInstances(+1)
 	}
-	tracker.instances[instance.ID()] = instance
+	tracker.instances[instanceKey] = instance
+
+	if !tracker.isAttributeExtraGasUsageEnabled() {
+		if len(tracker.instances) >= warmCacheSize-1 {
+			return errTooManyInstances
+		}
+	}
 
 	return nil
 }
@@ -420,7 +458,7 @@ func (tracker *instanceTracker) CheckInstances() error {
 		if !ok {
 			return fmt.Errorf("degenerate cache")
 		}
-		warmInstanceCacheByID[instance.ID()] = instance
+		warmInstanceCacheByID[tracker.getInstanceKey(instance)] = instance
 	}
 
 	for id, instance := range tracker.instances {

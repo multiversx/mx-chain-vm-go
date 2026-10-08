@@ -111,6 +111,7 @@ func NewRuntimeContext(
 	if err != nil {
 		return nil, err
 	}
+	iTracker.SetEnableEpochsHandler(enableEpochsHandler)
 	context.iTracker = iTracker
 
 	context.vmExecutor = vmExecutor

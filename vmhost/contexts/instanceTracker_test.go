@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
@@ -442,3 +443,67 @@ func TestInstanceTracker_AbandonInstance_Ok(t *testing.T) {
 	require.Equal(t, 0, warm)
 	require.Equal(t, 0, cold)
 }
+
+type mockEpochsHandler struct {
+	mock.DefaultEnableEpochsHandlerStub
+	isFlagEnabled bool
+}
+
+func (m *mockEpochsHandler) IsFlagEnabled(_ core.EnableEpochFlag) bool {
+	return m.isFlagEnabled
+}
+
+type mockTrackedInstance struct {
+	*mock.InstanceMock
+	id string
+}
+
+func (m *mockTrackedInstance) ID() string {
+	return m.id
+}
+
+func TestInstanceTracker_AttributeExtraGasUsageFlag_Gating(t *testing.T) {
+	t.Parallel()
+
+	// 1. When AttributeExtraGasUsageFlag is disabled: ID prefix (%p) reuses slot,
+	// allowing 150 deployments with the same pointer without hitting errTooManyInstances.
+	iTrackerDisabled, err := NewInstanceTracker()
+	require.Nil(t, err)
+	iTrackerDisabled.SetEnableEpochsHandler(&mockEpochsHandler{isFlagEnabled: false})
+
+	baseMock := mock.NewInstanceMock(nil)
+	for i := 0; i < 150; i++ {
+		// Mock ID format "%p-%d" like Wasmer2Instance
+		inst := &mockTrackedInstance{
+			InstanceMock: baseMock,
+			id:           fmt.Sprintf("0x7fa000000000-%d", i),
+		}
+		err = iTrackerDisabled.SetNewInstance(inst, Bytecode)
+		require.Nil(t, err)
+	}
+	require.Equal(t, 1, len(iTrackerDisabled.instances), "Pointer prefix must be reused when flag is disabled")
+
+	// 2. When AttributeExtraGasUsageFlag is enabled: strictly bounds total instances.
+	iTrackerEnabled, err := NewInstanceTracker()
+	require.Nil(t, err)
+	iTrackerEnabled.SetEnableEpochsHandler(&mockEpochsHandler{isFlagEnabled: true})
+
+	for i := 0; i < warmCacheSize-2; i++ {
+		inst := &mockTrackedInstance{
+			InstanceMock: baseMock,
+			id:           fmt.Sprintf("0x7fa000000000-%d", i),
+		}
+		err = iTrackerEnabled.SetNewInstance(inst, Bytecode)
+		require.Nil(t, err)
+	}
+	require.Equal(t, warmCacheSize-2, len(iTrackerEnabled.instances))
+
+	// Next instance exceeds warmCacheSize-1
+	rejectedInst := &mockTrackedInstance{
+		InstanceMock: baseMock,
+		id:           "0x7fa000000000-rejected",
+	}
+	err = iTrackerEnabled.SetNewInstance(rejectedInst, Bytecode)
+	require.Equal(t, errTooManyInstances, err)
+}
+

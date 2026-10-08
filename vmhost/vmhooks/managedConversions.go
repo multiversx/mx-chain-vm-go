@@ -43,7 +43,7 @@ func readESDTTransfer(
 		return nil, err
 	}
 
-	if value.Sign() <= 0 {
+	if runtime.FixCorrectSmallIntAndGasLimits() && value.Sign() < 0 {
 		return nil, vmhost.ErrTransferNegativeValue
 	}
 
