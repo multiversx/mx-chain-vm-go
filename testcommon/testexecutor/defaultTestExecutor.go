@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 	"github.com/multiversx/mx-chain-vm-go/wasmer6"
 )
@@ -19,10 +20,15 @@ var EnvVMEXECUTOR = "VMEXECUTOR"
 // production runs today.
 var ExecWasmer2Legacy = "wasmer2legacy"
 
-// ExecWasmer2 is reserved for Wasmer 2.2 through the *new* C API and interfaces, which does
-// not exist yet. Named now so that the two Wasmer 2.2 integrations are never confused: they
-// will be kept side by side until the migration is shown to be correct, which is what the
-// hook-sequence differential in integrationTests/json is for.
+// ExecWasmer2 is the value of the EnvVMEXECUTOR variable which selects Wasmer 2.2 through the
+// *new* C API and interfaces.
+//
+// The same runtime as ExecWasmer2Legacy, reached through the new boundary, which is what
+// makes the pair worth running against each other: a difference between them is attributable
+// to the migration, with no runtime change to confound it. Comparing against ExecWasmer6
+// cannot say that, because it moves both at once. The two are kept side by side until the
+// migration is shown to be correct — see the hook-sequence differential in
+// integrationTests/json.
 var ExecWasmer2 = "wasmer2"
 
 // ExecWasmer6 is the value of the EnvVMEXECUTOR variable which selects Wasmer 6, through the
@@ -38,6 +44,10 @@ func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorAbstractFacto
 
 	if execStr == ExecWasmer2Legacy {
 		return wasmer2legacy.ExecutorFactory()
+	}
+
+	if execStr == ExecWasmer2 {
+		return wasmer2.ExecutorFactory()
 	}
 
 	if execStr == ExecWasmer6 {

@@ -241,6 +241,14 @@ typedef struct vm_exec_compilation_options_t {
  *
  * The opcode cost table is referenced rather than inlined, because it is large and the
  * caller already holds one. It is read during the call and not retained.
+ *
+ * On the Rust side the opcode config has moved off the executor and into
+ * `CompilationOptions`, where it belongs: it is execution logic, and it is half of what
+ * determines a compiled module. This struct survives because moving it across the ABI is a
+ * coordinated change with the Go VM, gated on the same step that makes the runtime handle
+ * per-executor. Until then the executor holds the config it is given and merges it into the
+ * options of every instance it creates, which is behaviour-identical — the Go VM already
+ * rebuilds the executor rather than mutating it when the gas schedule changes.
  */
 typedef struct vm_exec_executor_config_t {
   /**

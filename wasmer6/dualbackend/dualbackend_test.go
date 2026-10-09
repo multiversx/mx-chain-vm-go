@@ -140,7 +140,7 @@ func newWasmer6Instance(t *testing.T) *wasmer6.Wasmer6Instance {
 // chaining, the traps below take down the process instead of coming back as results.
 func TestWasmer6TrapsWithWasmer2First(t *testing.T) {
 	legacy := newWasmer2Instance(t)
-	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend is alive")
+	require.Equal(t, executor.CallOk, legacy.CallFunction("noTrap").Kind, "legacy backend is alive")
 
 	instance := newWasmer6Instance(t)
 
@@ -164,7 +164,7 @@ func TestWasmer6TrapsWithWasmer2First(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend survived its traps")
 
-	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend survived them too")
+	require.Equal(t, executor.CallOk, legacy.CallFunction("noTrap").Kind, "legacy backend survived them too")
 }
 
 // TestWasmer2TrapsWithWasmer6First is the mirror: wasmer 6 installs first, and the legacy
@@ -177,17 +177,18 @@ func TestWasmer2TrapsWithWasmer6First(t *testing.T) {
 	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend is alive")
 
 	legacy := newWasmer2Instance(t)
-	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend is alive")
+	require.Equal(t, executor.CallOk, legacy.CallFunction("noTrap").Kind, "legacy backend is alive")
 
 	for _, funcName := range []string{"trapUnreachable", "trapMemory"} {
 		t.Run(funcName, func(t *testing.T) {
-			err := legacy.CallFunction(funcName)
-			require.NotNil(t, err, "the trap was caught and reported")
-			t.Logf("%s reported: %s", funcName, err)
+			result := legacy.CallFunction(funcName)
+			require.Equal(t, executor.CallRuntimeError, result.Kind,
+				"the trap was caught and reported")
+			t.Logf("%s reported: %v", funcName, result.Err)
 		})
 	}
 
-	require.Nil(t, legacy.CallFunction("noTrap"), "legacy backend survived its traps")
+	require.Equal(t, executor.CallOk, legacy.CallFunction("noTrap").Kind, "legacy backend survived its traps")
 
 	result, err = instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)

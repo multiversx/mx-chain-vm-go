@@ -11,24 +11,42 @@ const (
 )
 
 type cgo3Writer struct {
-	goPackage string
-	cgoPrefix string
+	goPackage  string
+	cgoPrefix  string
+	headerFile string
 }
 
 func (writer *cgo3Writer) cgoFuncName(funcMetadata *EIFunction) string {
 	return writer.cgoPrefix + lowerInitial(funcMetadata.Name)
 }
 
-// WriteWasmer6Cgo writes the cgo shims for the new C API.
+// WriteWasmer6Cgo writes the cgo shims for the new C API over Wasmer 6.
 //
-// Unlike the wasmer2 shims, these return a result struct rather than a bare value, so a hook
-// can report an early exit instead of signalling it out of band through a breakpoint global.
-// The hook's own error is converted on the Go side, where the message belongs.
+// Unlike the wasmer2legacy shims, these return a result struct rather than a bare value, so a
+// hook can report an early exit instead of signalling it out of band through a breakpoint
+// global. The hook's own error is converted on the Go side, where the message belongs.
 func WriteWasmer6Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
-	writer := &cgo3Writer{
-		goPackage: "wasmer6",
-		cgoPrefix: "w6_",
-	}
+	writeCapiCgo(out, eiMetadata, &cgo3Writer{
+		goPackage:  "wasmer6",
+		cgoPrefix:  "w6_",
+		headerFile: "libvmexeccapi_w6.h",
+	})
+}
+
+// WriteWasmer2Cgo writes the same shims for the new C API over Wasmer 2.2.
+//
+// A second copy, not a second shape: the two packages are identical apart from the prefix.
+// They cannot share one, because a cgo //export name is a C symbol and two packages exporting
+// the same name would collide at link time — which is also why the prefix exists at all.
+func WriteWasmer2NewCgo(out *eiGenWriter, eiMetadata *EIMetadata) {
+	writeCapiCgo(out, eiMetadata, &cgo3Writer{
+		goPackage:  "wasmer2",
+		cgoPrefix:  "w2_",
+		headerFile: "libvmexeccapi_w2.h",
+	})
+}
+
+func writeCapiCgo(out *eiGenWriter, eiMetadata *EIMetadata, writer *cgo3Writer) {
 	writer.writeHeader(out, eiMetadata)
 	writer.writeSignatureCheck(out, eiMetadata)
 	writer.writePopulateFuncPointers(out, eiMetadata)
@@ -40,13 +58,13 @@ func (writer *cgo3Writer) writeHeader(out *eiGenWriter, eiMetadata *EIMetadata) 
 
 	// The header is included rather than the types re-declared, because the shims traffic in
 	// two structs whose layout has to match the Rust side exactly.
-	out.WriteString(`
+	out.WriteString(fmt.Sprintf(`
 // // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
 //
 // #include <stdlib.h>
-// #include "./libvmexeccapi_w6.h"
+// #include "./%s"
 //
-`)
+`, writer.headerFile))
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("// extern %s %s(%s ctx",
@@ -72,8 +90,9 @@ func (writer *cgo3Writer) writeHeader(out *eiGenWriter, eiMetadata *EIMetadata) 
 // or result drifted from the field it is installed into fails the build here rather than
 // corrupting the stack at the first call.
 func (writer *cgo3Writer) writeSignatureCheck(out *eiGenWriter, eiMetadata *EIMetadata) {
-	out.WriteString(`//
-// static const vm_exec_vm_hook_c_func_pointers w6_signature_check __attribute__((unused)) = {`)
+	out.WriteString(fmt.Sprintf(`//
+// static const vm_exec_vm_hook_c_func_pointers %ssignature_check __attribute__((unused)) = {`,
+		writer.cgoPrefix))
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("\n//     .%s = %s,",
