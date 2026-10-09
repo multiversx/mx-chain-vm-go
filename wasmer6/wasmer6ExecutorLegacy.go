@@ -8,6 +8,7 @@ import (
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
 
 var _ = (executor.Executor)((*Wasmer6Executor)(nil))
@@ -35,7 +36,7 @@ func (wef *Wasmer6ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 		opcodeCosts = &executor.WASMOpcodeCost{}
 	}
 
-	wasmerExecutor, err := NewExecutor(ExecutorConfig{
+	wasmerExecutor, err := NewExecutor(wasmercommon.ExecutorConfig{
 		OpcodeVersion:  args.OpcodeVersion,
 		WASMOpcodeCost: opcodeCosts,
 	})
@@ -63,7 +64,7 @@ func (wasmerExecutor *Wasmer6Executor) SetOpcodeConfig(
 	opcodeVersion executor.OpcodeVersion,
 	wasmOps *executor.WASMOpcodeCost,
 ) {
-	rebuilt, err := NewExecutor(ExecutorConfig{
+	rebuilt, err := NewExecutor(wasmercommon.ExecutorConfig{
 		OpcodeVersion:  opcodeVersion,
 		WASMOpcodeCost: wasmOps,
 	})
@@ -92,7 +93,7 @@ func (wasmerExecutor *Wasmer6Executor) NewInstanceWithOptions(
 ) (executor.Instance, error) {
 	instance, err := wasmerExecutor.NewInstance(
 		contractCode,
-		toCompilationOptions(options),
+		wasmercommon.ToCompilationOptions(options),
 		wasmerExecutor.provider,
 	)
 	if err != nil {
@@ -112,22 +113,10 @@ func (wasmerExecutor *Wasmer6Executor) NewInstanceFromCompiledCodeWithOptions(
 	_ []byte,
 	_ executor.CompilationOptions,
 ) (executor.Instance, error) {
-	return nil, ErrCacheUnsupported
+	return nil, wasmercommon.ErrCacheUnsupported
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.
 func (wasmerExecutor *Wasmer6Executor) IsInterfaceNil() bool {
 	return wasmerExecutor == nil
-}
-
-// toCompilationOptions keeps the four options this executor has and drops the three it does
-// not, rather than reinterpreting the struct: GasLimit moved to the call, and metering and
-// runtime breakpoints are no longer optional.
-func toCompilationOptions(options executor.CompilationOptions) CompilationOptions {
-	return CompilationOptions{
-		UnmeteredLocals:    options.UnmeteredLocals,
-		MaxMemoryGrow:      options.MaxMemoryGrow,
-		MaxMemoryGrowDelta: options.MaxMemoryGrowDelta,
-		OpcodeTrace:        options.OpcodeTrace,
-	}
 }

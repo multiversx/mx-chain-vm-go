@@ -12,11 +12,17 @@ import "C"
 
 import (
 	"unsafe"
+
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
+
+// This file is the only one in the package that calls the library, and therefore the only one
+// that deals in its C status type: every function here converts to wasmercommon.Status on the
+// way out, so everything above the bridge is written against the shared vocabulary and could
+// not accidentally be written against one backend's.
 
 type cExecutorT = C.struct_vm_exec_w2_executor_t
 type cInstanceT = C.struct_vm_exec_w2_instance_t
-type cStatusT = C.vm_exec_status_t
 type cHookContextT = C.vm_exec_hook_context_t
 type cOpcodeCostT = C.struct_vm_exec_opcode_cost_t
 type cVMHookPointers = C.vm_exec_vm_hook_c_func_pointers
@@ -28,8 +34,8 @@ func cNewExecutor(
 	config *C.struct_vm_exec_executor_config_t,
 	hookTable *cVMHookPointers,
 	buf errBuf,
-) cStatusT {
-	return C.vm_exec_w2_new_executor(executorOut, config, hookTable, buf.ptr(), errBufLen)
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_new_executor(executorOut, config, hookTable, bufPtr(buf), errBufLen))
 }
 
 func cExecutorDestroy(executor *cExecutorT) {
@@ -45,17 +51,17 @@ func cNewInstance(
 	options *C.struct_vm_exec_compilation_options_t,
 	goVMHooks uintptr,
 	buf errBuf,
-) cStatusT {
-	return C.vm_exec_w2_new_instance(
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_new_instance(
 		executor,
 		instanceOut,
 		(*C.uint8_t)(unsafe.Pointer(&wasmBytes[0])),
 		C.uint32_t(len(wasmBytes)),
 		options,
 		C.uintptr_t(goVMHooks),
-		buf.ptr(),
+		bufPtr(buf),
 		errBufLen,
-	)
+	))
 }
 
 func cInstanceDestroy(instance *cInstanceT) {
@@ -70,85 +76,89 @@ func cInstanceCall(
 	pointsLimit uint64,
 	resultOut *C.struct_vm_exec_call_result_t,
 	buf errBuf,
-) cStatusT {
+) wasmercommon.Status {
 	cFuncName := C.CString(funcName)
 	defer C.free(unsafe.Pointer(cFuncName))
 
-	return C.vm_exec_w2_instance_call(
+	return toStatus(C.vm_exec_w2_instance_call(
 		instance,
 		cFuncName,
 		C.uint64_t(pointsLimit),
 		resultOut,
-		buf.ptr(),
+		bufPtr(buf),
 		errBufLen,
-	)
+	))
 }
 
-func cInstanceGetPointsUsed(instance *cInstanceT, pointsOut *C.uint64_t, buf errBuf) cStatusT {
-	return C.vm_exec_w2_instance_get_points_used(instance, pointsOut, buf.ptr(), errBufLen)
+func cInstanceGetPointsUsed(
+	instance *cInstanceT,
+	pointsOut *C.uint64_t,
+	buf errBuf,
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_instance_get_points_used(instance, pointsOut, bufPtr(buf), errBufLen))
 }
 
-func cInstanceCheckSignatures(instance *cInstanceT) C.int {
-	return C.vm_exec_w2_instance_check_signatures(instance)
+func cInstanceCheckSignatures(instance *cInstanceT) int32 {
+	return int32(C.vm_exec_w2_instance_check_signatures(instance))
 }
 
-func cInstanceHasFunction(instance *cInstanceT, funcName string) C.int {
+func cInstanceHasFunction(instance *cInstanceT, funcName string) int32 {
 	cFuncName := C.CString(funcName)
 	defer C.free(unsafe.Pointer(cFuncName))
 
-	return C.vm_exec_w2_instance_has_function(instance, cFuncName)
+	return int32(C.vm_exec_w2_instance_has_function(instance, cFuncName))
 }
 
-func cInstanceExportedFunctionNamesLength(instance *cInstanceT) C.int {
-	return C.vm_exec_w2_instance_exported_function_names_length(instance)
+func cInstanceExportedFunctionNamesLength(instance *cInstanceT) int32 {
+	return int32(C.vm_exec_w2_instance_exported_function_names_length(instance))
 }
 
-func cInstanceExportedFunctionNames(instance *cInstanceT, dest []byte) C.int {
-	return C.vm_exec_w2_instance_exported_function_names(
+func cInstanceExportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
+	return int32(C.vm_exec_w2_instance_exported_function_names(
 		instance,
 		(*C.char)(unsafe.Pointer(&dest[0])),
 		C.int(len(dest)),
-	)
+	))
 }
 
-func cInstanceImportedFunctionNamesLength(instance *cInstanceT) C.int {
-	return C.vm_exec_w2_instance_imported_function_names_length(instance)
+func cInstanceImportedFunctionNamesLength(instance *cInstanceT) int32 {
+	return int32(C.vm_exec_w2_instance_imported_function_names_length(instance))
 }
 
-func cInstanceImportedFunctionNames(instance *cInstanceT, dest []byte) C.int {
-	return C.vm_exec_w2_instance_imported_function_names(
+func cInstanceImportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
+	return int32(C.vm_exec_w2_instance_imported_function_names(
 		instance,
 		(*C.char)(unsafe.Pointer(&dest[0])),
 		C.int(len(dest)),
-	)
+	))
 }
 
 // --- Instance state operations, reachable only from inside a hook ------------
 
-func cStateMemLoad(ctx *cHookContextT, memPtr int32, dest []byte, buf errBuf) C.int64_t {
-	return C.vm_exec_w2_state_mem_load(
+func cStateMemLoad(ctx *cHookContextT, memPtr int32, dest []byte, buf errBuf) int64 {
+	return int64(C.vm_exec_w2_state_mem_load(
 		ctx,
 		C.int32_t(memPtr),
 		(*C.uint8_t)(unsafe.Pointer(&dest[0])),
 		C.int32_t(len(dest)),
-		buf.ptr(),
+		bufPtr(buf),
 		errBufLen,
-	)
+	))
 }
 
-func cStateMemStore(ctx *cHookContextT, memPtr int32, src []byte, buf errBuf) cStatusT {
-	return C.vm_exec_w2_state_mem_store(
+func cStateMemStore(ctx *cHookContextT, memPtr int32, src []byte, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_state_mem_store(
 		ctx,
 		C.int32_t(memPtr),
 		(*C.uint8_t)(unsafe.Pointer(&src[0])),
 		C.int32_t(len(src)),
-		buf.ptr(),
+		bufPtr(buf),
 		errBufLen,
-	)
+	))
 }
 
-func cStateMemLength(ctx *cHookContextT, lengthOut *C.uint64_t, buf errBuf) cStatusT {
-	return C.vm_exec_w2_state_mem_length(ctx, lengthOut, buf.ptr(), errBufLen)
+func cStateMemLength(ctx *cHookContextT, lengthOut *C.uint64_t, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_state_mem_length(ctx, lengthOut, bufPtr(buf), errBufLen))
 }
 
 func cStateMemGrow(
@@ -156,14 +166,20 @@ func cStateMemGrow(
 	byNumPages uint32,
 	prevPagesOut *C.uint32_t,
 	buf errBuf,
-) cStatusT {
-	return C.vm_exec_w2_state_mem_grow(ctx, C.uint32_t(byNumPages), prevPagesOut, buf.ptr(), errBufLen)
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_state_mem_grow(
+		ctx,
+		C.uint32_t(byNumPages),
+		prevPagesOut,
+		bufPtr(buf),
+		errBufLen,
+	))
 }
 
-func cStateGetPointsUsed(ctx *cHookContextT, pointsOut *C.uint64_t, buf errBuf) cStatusT {
-	return C.vm_exec_w2_state_get_points_used(ctx, pointsOut, buf.ptr(), errBufLen)
+func cStateGetPointsUsed(ctx *cHookContextT, pointsOut *C.uint64_t, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_state_get_points_used(ctx, pointsOut, bufPtr(buf), errBufLen))
 }
 
-func cStateSetPointsUsed(ctx *cHookContextT, points uint64, buf errBuf) cStatusT {
-	return C.vm_exec_w2_state_set_points_used(ctx, C.uint64_t(points), buf.ptr(), errBufLen)
+func cStateSetPointsUsed(ctx *cHookContextT, points uint64, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_state_set_points_used(ctx, C.uint64_t(points), bufPtr(buf), errBufLen))
 }

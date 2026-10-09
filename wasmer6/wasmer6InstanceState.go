@@ -52,7 +52,7 @@ func (state *InstanceState) MemLoad(
 	dest := make([]byte, length)
 	loaded := cStateMemLoad(state.ctx, int32(memPtr), dest, state.owner.stateErrBuf)
 	if loaded < 0 {
-		return nil, state.owner.stateErrBuf.asErrorFromCode(int64(loaded), "memory load failed")
+		return nil, state.owner.stateErrBuf.AsErrorFromCode(int64(loaded), "memory load failed")
 	}
 
 	return dest[:loaded], nil
@@ -68,7 +68,7 @@ func (state *InstanceState) MemStore(memPtr executor.MemPtr, data []byte) error 
 
 	status := cStateMemStore(state.ctx, int32(memPtr), data, state.owner.stateErrBuf)
 
-	return state.owner.stateErrBuf.asError(status, "memory store failed")
+	return state.owner.stateErrBuf.AsError(status, "memory store failed")
 }
 
 // MemLength returns the size of the instance memory in bytes.
@@ -76,7 +76,7 @@ func (state *InstanceState) MemLength() (uint64, error) {
 	var length C.uint64_t
 
 	status := cStateMemLength(state.ctx, &length, state.owner.stateErrBuf)
-	if err := state.owner.stateErrBuf.asError(status, "could not read memory length"); err != nil {
+	if err := state.owner.stateErrBuf.AsError(status, "could not read memory length"); err != nil {
 		return 0, err
 	}
 
@@ -89,7 +89,7 @@ func (state *InstanceState) MemGrow(pages uint32) (uint32, error) {
 	var prevPages C.uint32_t
 
 	status := cStateMemGrow(state.ctx, pages, &prevPages, state.owner.stateErrBuf)
-	if err := state.owner.stateErrBuf.asError(status, "could not grow memory"); err != nil {
+	if err := state.owner.stateErrBuf.AsError(status, "could not grow memory"); err != nil {
 		return 0, err
 	}
 
@@ -101,7 +101,7 @@ func (state *InstanceState) GetPointsUsed() (uint64, error) {
 	var points C.uint64_t
 
 	status := cStateGetPointsUsed(state.ctx, &points, state.owner.stateErrBuf)
-	if err := state.owner.stateErrBuf.asError(status, "could not read points used"); err != nil {
+	if err := state.owner.stateErrBuf.AsError(status, "could not read points used"); err != nil {
 		return 0, err
 	}
 
@@ -113,5 +113,5 @@ func (state *InstanceState) GetPointsUsed() (uint64, error) {
 func (state *InstanceState) SetPointsUsed(points uint64) error {
 	status := cStateSetPointsUsed(state.ctx, points, state.owner.stateErrBuf)
 
-	return state.owner.stateErrBuf.asError(status, "could not set points used")
+	return state.owner.stateErrBuf.AsError(status, "could not set points used")
 }

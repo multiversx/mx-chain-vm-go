@@ -17,6 +17,7 @@ import (
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -267,7 +268,7 @@ func uniformOpcodeCost(cost uint32) *executor.WASMOpcodeCost {
 }
 
 func newTestExecutor(t *testing.T) *Wasmer6Executor {
-	wasmerExecutor, err := NewExecutor(ExecutorConfig{
+	wasmerExecutor, err := NewExecutor(wasmercommon.ExecutorConfig{
 		OpcodeVersion:  executor.OpcodeVersionV2,
 		WASMOpcodeCost: uniformOpcodeCost(1),
 	})
@@ -281,7 +282,7 @@ func newTestInstance(t *testing.T, code []byte) (*Wasmer6Instance, *hookLog) {
 	log := &hookLog{}
 	instance, err := newTestExecutor(t).NewInstance(
 		code,
-		CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
+		wasmercommon.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
 		&testHooksProvider{log: log},
 	)
 	require.Nil(t, err)
@@ -304,7 +305,7 @@ func newHooksInstance(t *testing.T) (*Wasmer6Instance, *hookLog) {
 func callOk(t *testing.T, instance *Wasmer6Instance, funcName string) {
 	result, err := instance.Call(funcName, 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, CallOk, result.Kind, "call %s: %+v", funcName, result)
+	require.Equal(t, wasmercommon.CallOk, result.Kind, "call %s: %+v", funcName, result)
 }
 
 // --- Executor and instance lifecycle -----------------------------------------
@@ -315,14 +316,14 @@ func TestNewExecutor(t *testing.T) {
 }
 
 func TestNewInstanceRejectsEmptyCode(t *testing.T) {
-	_, err := newTestExecutor(t).NewInstance([]byte{}, CompilationOptions{}, &testHooksProvider{})
-	require.ErrorIs(t, err, ErrInvalidBytecode)
+	_, err := newTestExecutor(t).NewInstance([]byte{}, wasmercommon.CompilationOptions{}, &testHooksProvider{})
+	require.ErrorIs(t, err, wasmercommon.ErrInvalidBytecode)
 }
 
 func TestNewInstanceReportsCompilationError(t *testing.T) {
 	_, err := newTestExecutor(t).NewInstance(
 		[]byte("(module (func (export \"broken\") (i32.const 1)))"),
-		CompilationOptions{},
+		wasmercommon.CompilationOptions{},
 		&testHooksProvider{},
 	)
 	require.NotNil(t, err)
@@ -398,7 +399,7 @@ func TestFunctionNotFound(t *testing.T) {
 
 	result, err := instance.Call("noSuchFunction", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, CallFunctionNotFound, result.Kind)
+	require.Equal(t, wasmercommon.CallFunctionNotFound, result.Kind)
 }
 
 // --- State operations from inside a hook -------------------------------------
@@ -435,7 +436,7 @@ func TestEarlyExitStopsExecution(t *testing.T) {
 	result, err := instance.Call("earlyExitStops", 10_000_000)
 	require.Nil(t, err)
 
-	require.Equal(t, CallEarlyExit, result.Kind)
+	require.Equal(t, wasmercommon.CallEarlyExit, result.Kind)
 	require.Equal(t, uint64(vmcommon.UserError), result.EarlyExitCode)
 
 	// The message was recorded inside the hook, which is the whole reason it does not have
@@ -459,7 +460,7 @@ func TestRuntimeError(t *testing.T) {
 
 	result, err := instance.Call("unreachableTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, CallRuntimeError, result.Kind)
+	require.Equal(t, wasmercommon.CallRuntimeError, result.Kind)
 	require.NotEmpty(t, result.Message)
 }
 
@@ -468,7 +469,7 @@ func TestOutOfGasBreakpoint(t *testing.T) {
 
 	result, err := instance.Call("burnGas", 1000)
 	require.Nil(t, err)
-	require.Equal(t, CallBreakpoint, result.Kind)
+	require.Equal(t, wasmercommon.CallBreakpoint, result.Kind)
 	require.Equal(t, uint64(4), result.Breakpoint, "4 is out of gas")
 }
 
@@ -498,22 +499,22 @@ func TestStaleContextIsRejected(t *testing.T) {
 	require.NotNil(t, log.stateEscaped, "the hook was supposed to let its state escape")
 
 	_, err := log.stateEscaped.MemLoad(0, 4)
-	require.ErrorIs(t, err, ErrStaleContext)
+	require.ErrorIs(t, err, wasmercommon.ErrStaleContext)
 
 	err = log.stateEscaped.MemStore(0, []byte{1, 2, 3})
-	require.ErrorIs(t, err, ErrStaleContext)
+	require.ErrorIs(t, err, wasmercommon.ErrStaleContext)
 
 	_, err = log.stateEscaped.MemLength()
-	require.ErrorIs(t, err, ErrStaleContext)
+	require.ErrorIs(t, err, wasmercommon.ErrStaleContext)
 
 	_, err = log.stateEscaped.GetPointsUsed()
-	require.ErrorIs(t, err, ErrStaleContext)
+	require.ErrorIs(t, err, wasmercommon.ErrStaleContext)
 
 	err = log.stateEscaped.SetPointsUsed(1)
-	require.ErrorIs(t, err, ErrStaleContext)
+	require.ErrorIs(t, err, wasmercommon.ErrStaleContext)
 
 	_, err = log.stateEscaped.MemGrow(1)
-	require.ErrorIs(t, err, ErrStaleContext)
+	require.ErrorIs(t, err, wasmercommon.ErrStaleContext)
 }
 
 // --- A real contract binary --------------------------------------------------
@@ -540,8 +541,8 @@ func TestRealContractCompiles(t *testing.T) {
 }
 
 func TestNewExecutorRejectsMissingOpcodeCost(t *testing.T) {
-	_, err := NewExecutor(ExecutorConfig{OpcodeVersion: executor.OpcodeVersionV2})
-	require.ErrorIs(t, err, ErrMissingOpcodeCost)
+	_, err := NewExecutor(wasmercommon.ExecutorConfig{OpcodeVersion: executor.OpcodeVersionV2})
+	require.ErrorIs(t, err, wasmercommon.ErrMissingOpcodeCost)
 }
 
 // --- Nesting -----------------------------------------------------------------
@@ -580,7 +581,7 @@ func (hooks *nestingVMHooks) GetSCAddress(resultOffset executor.MemPtr) error {
 	if callErr != nil {
 		return callErr
 	}
-	if result.Kind != CallOk {
+	if result.Kind != wasmercommon.CallOk {
 		return fmt.Errorf("inner call did not succeed: %+v", result)
 	}
 
@@ -620,7 +621,7 @@ func TestHookReentersTheExecutor(t *testing.T) {
 	innerLog := &hookLog{}
 	inner, err := newTestExecutor(t).NewInstance(
 		[]byte(hooksContract),
-		CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
+		wasmercommon.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
 		&testHooksProvider{log: innerLog},
 	)
 	require.Nil(t, err)
@@ -629,7 +630,7 @@ func TestHookReentersTheExecutor(t *testing.T) {
 	outerLog := &hookLog{}
 	outer, err := newTestExecutor(t).NewInstance(
 		[]byte(hooksContract),
-		CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
+		wasmercommon.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
 		&nestingHooksProvider{log: outerLog, inner: inner},
 	)
 	require.Nil(t, err)
@@ -688,7 +689,7 @@ func TestSameInstanceReentryIsRejected(t *testing.T) {
 	var instance *Wasmer6Instance
 	instance, err := newTestExecutor(t).NewInstance(
 		[]byte(hooksContract),
-		CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
+		wasmercommon.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
 		&reentrantHooksProvider{log: log, self: func() *Wasmer6Instance { return instance }},
 	)
 	require.Nil(t, err)
@@ -696,10 +697,10 @@ func TestSameInstanceReentryIsRejected(t *testing.T) {
 
 	result, err := instance.Call("checkHookMemStore", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, CallEarlyExit, result.Kind)
+	require.Equal(t, wasmercommon.CallEarlyExit, result.Kind)
 
 	require.Len(t, log.handledErrors, 1)
-	require.ErrorIs(t, log.handledErrors[0], ErrInstanceReentered)
+	require.ErrorIs(t, log.handledErrors[0], wasmercommon.ErrInstanceReentered)
 
 	// Usable again afterwards, so the guard releases on the way out.
 	callOk(t, instance, "doNothing")

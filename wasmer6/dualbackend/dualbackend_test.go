@@ -32,6 +32,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 	"github.com/multiversx/mx-chain-vm-go/wasmer6"
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -113,7 +114,7 @@ func newWasmer2Instance(t *testing.T) executor.Instance {
 // newWasmer6Instance builds a new-FFI executor, which is what makes wasmer 6 install its
 // own handlers.
 func newWasmer6Instance(t *testing.T) *wasmer6.Wasmer6Instance {
-	wasmerExecutor, err := wasmer6.NewExecutor(wasmer6.ExecutorConfig{
+	wasmerExecutor, err := wasmer6.NewExecutor(wasmercommon.ExecutorConfig{
 		OpcodeVersion:  executor.OpcodeVersionV2,
 		WASMOpcodeCost: uniformOpcodeCost(1),
 	})
@@ -122,7 +123,7 @@ func newWasmer6Instance(t *testing.T) *wasmer6.Wasmer6Instance {
 
 	instance, err := wasmerExecutor.NewInstance(
 		trapContract(t),
-		wasmer6.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
+		wasmercommon.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
 		stubVMHooks{},
 	)
 	require.Nil(t, err)
@@ -146,13 +147,13 @@ func TestWasmer6TrapsWithWasmer2First(t *testing.T) {
 
 	result, err := instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend is alive")
+	require.Equal(t, wasmercommon.CallOk, result.Kind, "new backend is alive")
 
 	for _, funcName := range []string{"trapUnreachable", "trapMemory"} {
 		t.Run(funcName, func(t *testing.T) {
 			result, err := instance.Call(funcName, 10_000_000)
 			require.Nil(t, err)
-			require.Equal(t, wasmer6.CallRuntimeError, result.Kind,
+			require.Equal(t, wasmercommon.CallRuntimeError, result.Kind,
 				"the trap was caught and reported: %+v", result)
 			t.Logf("%s reported: %s", funcName, result.Message)
 		})
@@ -162,7 +163,7 @@ func TestWasmer6TrapsWithWasmer2First(t *testing.T) {
 	// handler that merely did not crash.
 	result, err = instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend survived its traps")
+	require.Equal(t, wasmercommon.CallOk, result.Kind, "new backend survived its traps")
 
 	require.Equal(t, executor.CallOk, legacy.CallFunction("noTrap").Kind, "legacy backend survived them too")
 }
@@ -174,7 +175,7 @@ func TestWasmer2TrapsWithWasmer6First(t *testing.T) {
 
 	result, err := instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend is alive")
+	require.Equal(t, wasmercommon.CallOk, result.Kind, "new backend is alive")
 
 	legacy := newWasmer2Instance(t)
 	require.Equal(t, executor.CallOk, legacy.CallFunction("noTrap").Kind, "legacy backend is alive")
@@ -192,5 +193,5 @@ func TestWasmer2TrapsWithWasmer6First(t *testing.T) {
 
 	result, err = instance.Call("noTrap", 10_000_000)
 	require.Nil(t, err)
-	require.Equal(t, wasmer6.CallOk, result.Kind, "new backend survived them too")
+	require.Equal(t, wasmercommon.CallOk, result.Kind, "new backend survived them too")
 }

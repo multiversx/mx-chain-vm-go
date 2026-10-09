@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
 
 var _ = (executor.Instance)((*Wasmer2Instance)(nil))
@@ -138,7 +139,7 @@ func (instance *Wasmer2Instance) SetPointsUsed(points uint64) {
 // stateInActiveCall returns the state of the hook currently running on this instance.
 func (instance *Wasmer2Instance) stateInActiveCall() (*InstanceState, error) {
 	if instance.hooks == nil || instance.hooks.activeState == nil {
-		return nil, fmt.Errorf("%w: no host call is running on this instance", ErrStaleContext)
+		return nil, fmt.Errorf("%w: no host call is running on this instance", wasmercommon.ErrStaleContext)
 	}
 
 	return instance.hooks.activeState, nil
@@ -169,17 +170,17 @@ func (instance *Wasmer2Instance) CallFunction(functionName string) executor.Inst
 	}
 
 	switch result.Kind {
-	case CallOk:
+	case wasmercommon.CallOk:
 		return executor.CallResultOk()
-	case CallFunctionNotFound:
+	case wasmercommon.CallFunctionNotFound:
 		return executor.CallResultError(executor.ErrFuncNotFound)
-	case CallEarlyExit:
+	case wasmercommon.CallEarlyExit:
 		return executor.InstanceCallResult{
 			Kind:          executor.CallEarlyExit,
 			Err:           fmt.Errorf("execution stopped by VM hook, code %d", result.EarlyExitCode),
 			EarlyExitCode: result.EarlyExitCode,
 		}
-	case CallBreakpoint:
+	case wasmercommon.CallBreakpoint:
 		// The values are the same on both sides on purpose: 4 is out of gas, 5 is the memory
 		// limit, in executor.BreakpointValue and in the Rust BreakpointValue alike.
 		return executor.InstanceCallResult{
@@ -249,5 +250,5 @@ func (instance *Wasmer2Instance) Reset() bool {
 
 // Cache is not supported yet; see PLAN-go-ffi.md, Phase 6.
 func (instance *Wasmer2Instance) Cache() ([]byte, error) {
-	return nil, ErrCacheUnsupported
+	return nil, wasmercommon.ErrCacheUnsupported
 }

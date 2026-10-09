@@ -10,33 +10,8 @@ import (
 	"unsafe"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
-
-// ExecutorConfig is everything the executor is configured with, in one struct.
-//
-// The legacy API configured an executor by a sequence of setters after construction
-// (SetOpcodeConfig, SetRkyvSerializationEnabled, SetSIGSEGVPassthrough). This one takes its
-// configuration once, which is both why there is nothing to mutate afterwards and why there
-// is no window in which an executor exists but is not yet usable.
-type ExecutorConfig struct {
-	OpcodeVersion  executor.OpcodeVersion
-	WASMOpcodeCost *executor.WASMOpcodeCost
-}
-
-// CompilationOptions is the per-instance half of the configuration.
-//
-// Four fields against the legacy seven. GasLimit moved to the call, where it belongs — it
-// changes on every invocation while the compiled module does not — and metering and runtime
-// breakpoints are no longer optional, so there is nothing to switch off.
-//
-// How this is reached from executor.CompilationOptions is a question for the interface
-// convergence, not for the boundary; see PLAN-go-ffi.md, Phase 4b.
-type CompilationOptions struct {
-	UnmeteredLocals    uint64
-	MaxMemoryGrow      uint64
-	MaxMemoryGrowDelta uint64
-	OpcodeTrace        bool
-}
 
 // Wasmer2Executor creates instances of the Wasmer 2.2 backend.
 type Wasmer2Executor struct {
@@ -45,15 +20,15 @@ type Wasmer2Executor struct {
 	// Kept so that the legacy Executor interface, whose NewInstanceWithOptions takes neither,
 	// can still create instances; and so that SetOpcodeConfig can rebuild the C executor
 	// rather than mutate a configuration this API deliberately makes immutable.
-	config   ExecutorConfig
+	config   wasmercommon.ExecutorConfig
 	provider executor.VMHooksProvider
 }
 
 // NewExecutor creates an executor from one configuration struct and the generated hook
 // table.
-func NewExecutor(config ExecutorConfig) (*Wasmer2Executor, error) {
+func NewExecutor(config wasmercommon.ExecutorConfig) (*Wasmer2Executor, error) {
 	if config.WASMOpcodeCost == nil {
-		return nil, ErrMissingOpcodeCost
+		return nil, wasmercommon.ErrMissingOpcodeCost
 	}
 
 	buf := newErrBuf()
@@ -74,7 +49,7 @@ func NewExecutor(config ExecutorConfig) (*Wasmer2Executor, error) {
 
 	var cExecutor *cExecutorT
 	status := cNewExecutor(&cExecutor, cConfig, populateCgoFunctionPointers(), buf)
-	if err := buf.asError(status, "could not create executor"); err != nil {
+	if err := buf.AsError(status, "could not create executor"); err != nil {
 		return nil, err
 	}
 
@@ -89,11 +64,11 @@ func NewExecutor(config ExecutorConfig) (*Wasmer2Executor, error) {
 // the instance makes, and must stay usable until the instance is closed.
 func (wasmerExecutor *Wasmer2Executor) NewInstance(
 	contractCode []byte,
-	options CompilationOptions,
+	options wasmercommon.CompilationOptions,
 	hooks executor.VMHooksProvider,
 ) (*Wasmer2Instance, error) {
 	if len(contractCode) == 0 {
-		return nil, ErrInvalidBytecode
+		return nil, wasmercommon.ErrInvalidBytecode
 	}
 
 	cOptions := C.struct_vm_exec_compilation_options_t{
@@ -123,7 +98,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstance(
 		uintptr(handle),
 		buf,
 	)
-	if err := buf.asError(status, "could not create instance"); err != nil {
+	if err := buf.AsError(status, "could not create instance"); err != nil {
 		handle.Delete()
 		return nil, err
 	}

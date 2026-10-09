@@ -9,10 +9,7 @@
 //
 // Apart from the backend it selects, this package is a copy of wasmer6 with a different
 // symbol prefix — it has to be, because a cgo //export name is a C symbol and two packages
-// cannot export the same one. Folding the shared half into a wasmercommon package is a
-// follow-up, deliberately taken after the differential is green rather than before: the whole
-// value of this package is as a reference, and refactoring it while it is still being brought
-// up would make a failure ambiguous.
+// cannot export the same one. What does not depend on the prefix is in wasmercommon.
 //
 // The two halves of the boundary:
 //
