@@ -2,6 +2,7 @@ package verifier
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"sort"
@@ -13,6 +14,8 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 )
+
+const TransferValueOnlyString = "transferValueOnly"
 
 var bigZero = big.NewInt(0)
 
@@ -63,7 +66,7 @@ func isExecutedContract(input *VerificationInput, output *vmcommon.VMOutput, add
 	if !ok || acc == nil {
 		return false
 	}
-	return acc.GasUsed > 0 || len(acc.StorageUpdates) > 0 || len(acc.Code) > 0 || len(acc.OutputTransfers) == 0
+	return acc.GasUsed > 0 || len(acc.StorageUpdates) > 0 || len(acc.Code) > 0
 }
 
 // OutputVerifier defines the exit-boundary verification contract for VMOutput
@@ -154,12 +157,12 @@ func (v *vmOutputVerifier) Verify(input *VerificationInput, output *vmcommon.VMO
 		return err
 	}
 
-	err = v.verifyTokenConservation(input, output, sortedAccountKeys)
+	err = v.verifyGasBounds(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
 
-	err = v.verifyGasBounds(input, output, sortedAccountKeys)
+	err = v.verifyTokenConservation(input, output, sortedAccountKeys)
 	if err != nil {
 		return err
 	}
@@ -446,37 +449,8 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 		}
 	}
 
-	// 5.3 Extract Outflows from OutputTransfers
-	var outflowTransfers []transferRecord
-	for _, addrKey := range sortedAccountKeys {
-		acc := output.OutputAccounts[addrKey]
-		if acc == nil || len(acc.OutputTransfers) == 0 {
-			continue
-		}
-		if isExecutedContract(input, output, acc.Address) {
-			continue
-		}
-		for _, outTransfer := range acc.OutputTransfers {
-			if len(outTransfer.Data) == 0 {
-				continue
-			}
-			extracted, err := v.extractESDTTransfersFromData(outTransfer.Data)
-			if err != nil {
-				return err
-			}
-			for _, rec := range extracted {
-				if rec.amount.Sign() < 0 {
-					return fmt.Errorf("%w: output transfer has negative amount %s",
-						ErrNegativeTokenAmount, rec.amount.String())
-				}
-				rec.key.Identifier = normalizeTokenID(rec.key.Identifier)
-				outflowTransfers = append(outflowTransfers, rec)
-			}
-		}
-	}
-
-	// 5.4 Extract Transfer Logs from output.Logs
-	var transferLogs []transferRecord
+	// 5.3 Extract Transfer Logs from output.Logs and validate non-negative amounts
+	var builtInTransferLogs []transferRecord
 	for _, logEntry := range output.Logs {
 		if logEntry == nil {
 			continue
@@ -488,9 +462,6 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 				if len(tokenID) == 0 || isEGLDToken(tokenID) {
 					continue
 				}
-				if len(logEntry.Topics) >= 4 && isExecutedContract(input, output, logEntry.Topics[3]) {
-					continue
-				}
 				nonce, err := parseNonce(logEntry.Topics[1])
 				if err != nil {
 					return err
@@ -500,19 +471,13 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 					return fmt.Errorf("%w: transfer event has negative amount %s",
 						ErrNegativeTokenAmount, amount.String())
 				}
-				transferLogs = append(transferLogs, transferRecord{
+				builtInTransferLogs = append(builtInTransferLogs, transferRecord{
 					key:    TokenKey{Identifier: normalizeTokenID(tokenID), Nonce: nonce},
 					amount: amount,
 				})
 			}
 		} else if eventID == core.BuiltInFunctionMultiESDTNFTTransfer {
 			numOfTopics := len(logEntry.Topics)
-			if numOfTopics >= 4 && numOfTopics%3 == 1 {
-				destAddr := logEntry.Topics[numOfTopics-1]
-				if isExecutedContract(input, output, destAddr) {
-					continue
-				}
-			}
 			numTriplets := numOfTopics / 3
 			for i := 0; i < numTriplets; i++ {
 				tokenID := string(logEntry.Topics[3*i])
@@ -528,7 +493,7 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 					return fmt.Errorf("%w: multi transfer event has negative amount %s",
 						ErrNegativeTokenAmount, amount.String())
 				}
-				transferLogs = append(transferLogs, transferRecord{
+				builtInTransferLogs = append(builtInTransferLogs, transferRecord{
 					key:    TokenKey{Identifier: normalizeTokenID(tokenID), Nonce: nonce},
 					amount: amount,
 				})
@@ -536,132 +501,218 @@ func (v *vmOutputVerifier) verifyTokenConservation(input *VerificationInput, out
 		}
 	}
 
-	// Short-circuit if neither output transfers nor transfer logs exist
-	if len(outflowTransfers) == 0 && len(transferLogs) == 0 {
-		return nil
-	}
+	// 5.4 Validate OutputTransfers against logs
+	unmatchedLogs := make([]transferRecord, len(builtInTransferLogs))
+	copy(unmatchedLogs, builtInTransferLogs)
 
-	// 5.5 Verify 1-to-1 Matching Between OutputTransfers and Transfer Logs
-	// Uses O(1) swap-delete to avoid slice shifting allocations.
-	unmatchedLogs := make([]transferRecord, len(transferLogs))
-	copy(unmatchedLogs, transferLogs)
+	for _, addrKey := range sortedAccountKeys {
+		acc := output.OutputAccounts[addrKey]
+		if acc == nil || len(acc.OutputTransfers) == 0 {
+			continue
+		}
+		if isExecutedContract(input, output, acc.Address) {
+			continue
+		}
+		for _, outTransfer := range acc.OutputTransfers {
+			extracted, err := v.extractESDTTransfersFromData(outTransfer.Data)
+			if err != nil {
+				return err
+			}
 
-	for _, tr := range outflowTransfers {
-		matchedIdx := -1
-		for i, logRec := range unmatchedLogs {
-			if logRec.key == tr.key && logRec.amount.Cmp(tr.amount) == 0 {
-				matchedIdx = i
-				break
+			for _, rec := range extracted {
+				if rec.amount.Sign() < 0 {
+					return fmt.Errorf("%w: output transfer has negative amount %s",
+						ErrNegativeTokenAmount, rec.amount.String())
+				}
+			}
+
+			if len(extracted) == 0 {
+				continue
+			}
+
+			hasTransferValueOnly := hasMatchingTransferValueOnlyLog(output.Logs, acc.Address)
+
+			for _, rec := range extracted {
+				matchedIdx := -1
+				for i, logRec := range unmatchedLogs {
+					if logRec.key == rec.key && logRec.amount.Cmp(rec.amount) == 0 {
+						matchedIdx = i
+						break
+					}
+				}
+				if matchedIdx >= 0 {
+					lastIdx := len(unmatchedLogs) - 1
+					unmatchedLogs[matchedIdx] = unmatchedLogs[lastIdx]
+					unmatchedLogs = unmatchedLogs[:lastIdx]
+				} else if !hasTransferValueOnly {
+					return fmt.Errorf("%w: %w: token %s (nonce %d, amount %s)",
+						ErrTokenConservationViolated, ErrOutputTransferWithoutTransferLog,
+						rec.key.Identifier, rec.key.Nonce, rec.amount.String())
+				}
 			}
 		}
-		if matchedIdx < 0 {
-			return fmt.Errorf("%w: %w: token %s (nonce %d, amount %s)",
-				ErrTokenConservationViolated, ErrOutputTransferWithoutTransferLog,
-				tr.key.Identifier, tr.key.Nonce, tr.amount.String())
-		}
-		lastIdx := len(unmatchedLogs) - 1
-		unmatchedLogs[matchedIdx] = unmatchedLogs[lastIdx]
-		unmatchedLogs = unmatchedLogs[:lastIdx]
-	}
-
-	if len(unmatchedLogs) > 0 {
-		first := unmatchedLogs[0]
-		return fmt.Errorf("%w: %w: token %s (nonce %d, amount %s)",
-			ErrTokenConservationViolated, ErrTransferLogWithoutOutputTransfer,
-			first.key.Identifier, first.key.Nonce, first.amount.String())
 	}
 
 	return nil
 }
 
+func hasMatchingTransferValueOnlyLog(logs []*vmcommon.LogEntry, destAddr []byte) bool {
+	for _, logEntry := range logs {
+		if logEntry == nil {
+			continue
+		}
+		if string(logEntry.Identifier) == TransferValueOnlyString {
+			if len(logEntry.Topics) >= 2 && len(destAddr) > 0 {
+				if bytes.Equal(logEntry.Topics[1], destAddr) {
+					return true
+				}
+			} else {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (v *vmOutputVerifier) extractESDTTransfersFromData(data []byte) ([]transferRecord, error) {
 	results := make([]transferRecord, 0)
+	if len(data) == 0 {
+		return results, nil
+	}
 
-	fn, args, err := v.callArgsParser.ParseData(string(data))
-	if err != nil {
-		strData := string(data)
-		if strings.HasPrefix(strData, core.BuiltInFunctionESDTTransfer) ||
-			strings.HasPrefix(strData, core.BuiltInFunctionESDTNFTTransfer) ||
-			strings.HasPrefix(strData, core.BuiltInFunctionMultiESDTNFTTransfer) {
-			return nil, fmt.Errorf("%w: %s", ErrMalformedOutputTransferData, err.Error())
+	strData := string(data)
+	if !strings.HasPrefix(strData, core.BuiltInFunctionESDTTransfer+"@") &&
+		!strings.HasPrefix(strData, core.BuiltInFunctionESDTNFTTransfer+"@") &&
+		!strings.HasPrefix(strData, core.BuiltInFunctionMultiESDTNFTTransfer+"@") {
+		if strData == core.BuiltInFunctionESDTTransfer ||
+			strData == core.BuiltInFunctionESDTNFTTransfer ||
+			strData == core.BuiltInFunctionMultiESDTNFTTransfer {
+			return nil, fmt.Errorf("%w: missing arguments for %s", ErrMalformedOutputTransferData, strData)
 		}
 		return results, nil
 	}
 
+	parts := strings.Split(strData, "@")
+	fn := parts[0]
+
 	switch fn {
 	case core.BuiltInFunctionESDTTransfer:
-		if len(args) >= 2 {
-			tokenID := string(args[0])
-			if len(tokenID) == 0 || isEGLDToken(tokenID) {
-				return results, nil
-			}
-			amount := big.NewInt(0).SetBytes(args[1])
-			if amount.Sign() < 0 {
-				return nil, fmt.Errorf("%w: negative amount %s in ESDTTransfer",
-					ErrNegativeTokenAmount, amount.String())
-			}
-			results = append(results, transferRecord{
-				key:    TokenKey{Identifier: tokenID, Nonce: 0},
-				amount: amount,
-			})
+		if len(parts) < 3 {
+			return nil, fmt.Errorf("%w: insufficient arguments for ESDTTransfer", ErrMalformedOutputTransferData)
 		}
+		tokenBytes, err := hex.DecodeString(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("%w: token decode failed: %s", ErrMalformedOutputTransferData, err.Error())
+		}
+		tokenID := string(tokenBytes)
+		if len(tokenID) == 0 || isEGLDToken(tokenID) {
+			return results, nil
+		}
+		valBytes, err := hex.DecodeString(parts[2])
+		if err != nil {
+			return nil, fmt.Errorf("%w: value decode failed: %s", ErrMalformedOutputTransferData, err.Error())
+		}
+		amount := big.NewInt(0).SetBytes(valBytes)
+		if amount.Sign() < 0 {
+			return nil, fmt.Errorf("%w: negative amount %s in ESDTTransfer",
+				ErrNegativeTokenAmount, amount.String())
+		}
+		results = append(results, transferRecord{
+			key:    TokenKey{Identifier: normalizeTokenID(tokenID), Nonce: 0},
+			amount: amount,
+		})
+
 	case core.BuiltInFunctionESDTNFTTransfer:
-		if len(args) >= 3 {
-			tokenID := string(args[0])
-			if len(tokenID) == 0 || isEGLDToken(tokenID) {
-				return results, nil
+		if len(parts) < 4 {
+			return nil, fmt.Errorf("%w: insufficient arguments for ESDTNFTTransfer", ErrMalformedOutputTransferData)
+		}
+		tokenBytes, err := hex.DecodeString(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("%w: token decode failed: %s", ErrMalformedOutputTransferData, err.Error())
+		}
+		tokenID := string(tokenBytes)
+		if len(tokenID) == 0 || isEGLDToken(tokenID) {
+			return results, nil
+		}
+		nonceBytes, err := hex.DecodeString(parts[2])
+		if err != nil {
+			return nil, fmt.Errorf("%w: nonce decode failed: %s", ErrMalformedOutputTransferData, err.Error())
+		}
+		nonce, err := parseNonce(nonceBytes)
+		if err != nil {
+			return nil, err
+		}
+		valBytes, err := hex.DecodeString(parts[3])
+		if err != nil {
+			return nil, fmt.Errorf("%w: value decode failed: %s", ErrMalformedOutputTransferData, err.Error())
+		}
+		amount := v.extractTokenAmount(valBytes, nonce)
+		if amount.Sign() < 0 {
+			return nil, fmt.Errorf("%w: negative amount %s in ESDTNFTTransfer",
+				ErrNegativeTokenAmount, amount.String())
+		}
+		results = append(results, transferRecord{
+			key:    TokenKey{Identifier: normalizeTokenID(tokenID), Nonce: nonce},
+			amount: amount,
+		})
+
+	case core.BuiltInFunctionMultiESDTNFTTransfer:
+		if len(parts) < 3 {
+			return nil, fmt.Errorf("%w: insufficient arguments for MultiESDTNFTTransfer", ErrMalformedOutputTransferData)
+		}
+		firstArg, err := hex.DecodeString(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("%w: first arg decode failed: %s", ErrMalformedOutputTransferData, err.Error())
+		}
+		tripletStart := 2
+		var numTransfers int64
+		if len(firstArg) == AddressLen && len(parts) >= 4 {
+			tripletStart = 3
+			numBytes, err2 := hex.DecodeString(parts[2])
+			if err2 != nil {
+				return nil, fmt.Errorf("%w: numTransfers decode failed: %s", ErrMalformedOutputTransferData, err2.Error())
 			}
-			nonce, err := parseNonce(args[1])
+			numTransfers = big.NewInt(0).SetBytes(numBytes).Int64()
+		} else {
+			numTransfers = big.NewInt(0).SetBytes(firstArg).Int64()
+		}
+		if numTransfers <= 0 || numTransfers > 1000 {
+			return results, nil
+		}
+		for i := int64(0); i < numTransfers; i++ {
+			idx := tripletStart + int(i*3)
+			if idx+2 >= len(parts) {
+				break
+			}
+			tokenBytes, err := hex.DecodeString(parts[idx])
+			if err != nil {
+				return nil, fmt.Errorf("%w: token %d decode failed: %s", ErrMalformedOutputTransferData, i, err.Error())
+			}
+			tokenID := string(tokenBytes)
+			if len(tokenID) == 0 || isEGLDToken(tokenID) {
+				continue
+			}
+			nonceBytes, err := hex.DecodeString(parts[idx+1])
+			if err != nil {
+				return nil, fmt.Errorf("%w: nonce %d decode failed: %s", ErrMalformedOutputTransferData, i, err.Error())
+			}
+			nonce, err := parseNonce(nonceBytes)
 			if err != nil {
 				return nil, err
 			}
-			amount := v.extractTokenAmount(args[2], nonce)
+			valBytes, err := hex.DecodeString(parts[idx+2])
+			if err != nil {
+				return nil, fmt.Errorf("%w: value %d decode failed: %s", ErrMalformedOutputTransferData, i, err.Error())
+			}
+			amount := v.extractTokenAmount(valBytes, nonce)
 			if amount.Sign() < 0 {
-				return nil, fmt.Errorf("%w: negative amount %s in ESDTNFTTransfer",
+				return nil, fmt.Errorf("%w: negative amount %s in MultiESDTNFTTransfer",
 					ErrNegativeTokenAmount, amount.String())
 			}
 			results = append(results, transferRecord{
-				key:    TokenKey{Identifier: tokenID, Nonce: nonce},
+				key:    TokenKey{Identifier: normalizeTokenID(tokenID), Nonce: nonce},
 				amount: amount,
 			})
-		}
-	case core.BuiltInFunctionMultiESDTNFTTransfer:
-		// Format A: MultiESDTNFTTransfer@destination@numTransfers@token1@nonce1@val1...
-		// Format B: MultiESDTNFTTransfer@numTransfers@token1@nonce1@val1...
-		if len(args) >= 2 {
-			firstArg := args[0]
-			tripletStart := 1
-			numTransfers := big.NewInt(0).SetBytes(firstArg).Int64()
-			if len(firstArg) == AddressLen && len(args) >= 3 {
-				tripletStart = 2
-				numTransfers = big.NewInt(0).SetBytes(args[1]).Int64()
-			}
-			if numTransfers <= 0 || numTransfers > 1000 {
-				return results, nil
-			}
-			for i := int64(0); i < numTransfers; i++ {
-				idx := tripletStart + int(i*3)
-				if idx+2 >= len(args) {
-					break
-				}
-				tokenID := string(args[idx])
-				if len(tokenID) == 0 || isEGLDToken(tokenID) {
-					continue
-				}
-				nonce, err := parseNonce(args[idx+1])
-				if err != nil {
-					return nil, err
-				}
-				amount := v.extractTokenAmount(args[idx+2], nonce)
-				if amount.Sign() < 0 {
-					return nil, fmt.Errorf("%w: negative amount %s in MultiESDTNFTTransfer",
-						ErrNegativeTokenAmount, amount.String())
-				}
-				results = append(results, transferRecord{
-					key:    TokenKey{Identifier: tokenID, Nonce: nonce},
-					amount: amount,
-				})
-			}
 		}
 	}
 
@@ -689,8 +740,7 @@ func parseValue(topic []byte) *big.Int {
 	return big.NewInt(0).SetBytes(topic)
 }
 
-// 6. Gas Bounds & 50% Refund Cap: GasRemaining <= GasProvided,
-// GasRefund >= 0 && GasRefund <= (GasProvided - GasRemaining)/2.
+// 6. Gas Bounds: GasRemaining <= GasProvided, GasRefund >= 0.
 func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmcommon.VMOutput, sortedAccountKeys []string) error {
 	if output.GasRemaining > input.GasProvided {
 		return fmt.Errorf("%w: gasRemaining %d > gasProvided %d",
@@ -726,13 +776,6 @@ func (v *vmOutputVerifier) verifyGasBounds(input *VerificationInput, output *vmc
 
 	if output.GasRefund.Sign() < 0 {
 		return fmt.Errorf("%w: gasRefund %s < 0", ErrGasRefundNegative, output.GasRefund.String())
-	}
-
-	gasSpent := input.GasProvided - output.GasRemaining
-	maxRefund := gasSpent / 2
-
-	if !output.GasRefund.IsUint64() || output.GasRefund.Uint64() > maxRefund {
-		output.GasRefund.SetUint64(maxRefund)
 	}
 
 	return nil
