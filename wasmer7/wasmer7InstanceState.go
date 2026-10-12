@@ -1,7 +1,7 @@
-package wasmer6
+package wasmer7
 
 // #include <stdlib.h>
-// #include "./libvmexeccapi_w6.h"
+// #include "./libvmexeccapi_w7.h"
 import "C"
 
 import (
@@ -11,7 +11,7 @@ import (
 // InstanceState is the inside view of an instance: what a VM hook can reach while it runs.
 //
 // It is the Go counterpart of the Rust InstanceState trait, and the reason the trait exists.
-// Under Wasmer 6 an instance's memory and globals are only addressable through the store
+// Under Wasmer 7 an instance's memory and globals are only addressable through the store
 // borrow inside the host call frame, so they are reachable from a hook and from nowhere
 // else. In Rust the borrow checker enforces that; here the enforcement is the hook context's
 // call token, checked on every operation below, which turns a handle kept past its call into

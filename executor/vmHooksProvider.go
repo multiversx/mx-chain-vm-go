@@ -5,7 +5,7 @@ package executor
 // There are two methods rather than one because the backends differ in where the instance
 // state comes from, and that difference cannot be hidden:
 //
-//   - Wasmer 6 hands each host call a context from which the state is reachable, and only for
+//   - Wasmer 7 hands each host call a context from which the state is reachable, and only for
 //     the duration of that call. Its hooks are therefore built per call, around that state.
 //   - Wasmer 2.2 goes through a C API whose hooks pointer is per *executor*, not per instance,
 //     so a hook has no way to say which instance called it. Its state is instance-lifetime

@@ -35,7 +35,7 @@ The operators allowed by each `OpcodeVersion`. The names must match the variants
 Each version is a standalone list rather than a delta over the previous one, because an
 older version has to keep metering already deployed contracts exactly as it did before. A
 name the target no longer understands is filtered out while writing: `Unwind` is dropped
-from the whitelist entirely, and commented out in the Wasmer 6 middleware.
+from the whitelist entirely, and commented out in the Wasmer 7 middleware.
 
 `v2` additionally drops 15 operators that `v1` still allows: legacy exception handling
 (`Catch`, `CatchAll`, `Delegate`, `Rethrow`, `Throw`, `Try`), reference types (`RefFunc`,

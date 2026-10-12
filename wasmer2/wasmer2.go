@@ -4,10 +4,10 @@
 // The same wasm runtime as package wasmer2legacy, reached through the new boundary instead of
 // the old one. That pairing is the point: with the runtime held constant, any behavioural
 // difference between the two is attributable to the migration itself, which is what the
-// hook-sequence differential in integrationTests/json measures. A wasmer6-against-wasmer2legacy
+// hook-sequence differential in integrationTests/json measures. A wasmer7-against-wasmer2legacy
 // comparison cannot make that claim, because it moves the runtime and the boundary at once.
 //
-// Apart from the backend it selects, this package is a copy of wasmer6 with a different
+// Apart from the backend it selects, this package is a copy of wasmer7 with a different
 // symbol prefix — it has to be, because a cgo //export name is a C symbol and two packages
 // cannot export the same one. What does not depend on the prefix is in wasmercommon.
 //

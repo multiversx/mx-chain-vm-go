@@ -23,7 +23,7 @@ use crate::{
 /// life, while a runtime lends hooks per call. This is the join: it holds the runtime and the
 /// state of one instance, and on every hook call asks the runtime for hooks around that
 /// state. So the execution a hook serves is resolved when the hook runs, exactly as on
-/// Wasmer 6, and not captured when the instance was created.
+/// Wasmer 7, and not captured when the instance was created.
 ///
 /// The state is cloned per call because the legacy hooks are reached through a shared
 /// reference. Backends make it a handle to the instance, so the clone is cheap.

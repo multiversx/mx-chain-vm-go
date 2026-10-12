@@ -1,4 +1,4 @@
-package wasmer6
+package wasmer7
 
 import "github.com/multiversx/mx-chain-vm-go/executor"
 

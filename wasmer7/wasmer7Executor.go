@@ -1,7 +1,7 @@
-package wasmer6
+package wasmer7
 
 // #include <stdlib.h>
-// #include "./libvmexeccapi_w6.h"
+// #include "./libvmexeccapi_w7.h"
 import "C"
 
 import (
@@ -13,8 +13,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
 
-// Wasmer6Executor creates instances of the Wasmer 6 backend.
-type Wasmer6Executor struct {
+// Wasmer7Executor creates instances of the Wasmer 7 backend.
+type Wasmer7Executor struct {
 	cExecutor *cExecutorT
 
 	// Kept so that the legacy Executor interface, whose NewInstanceWithOptions takes neither,
@@ -26,7 +26,7 @@ type Wasmer6Executor struct {
 
 // NewExecutor creates an executor from one configuration struct and the generated hook
 // table.
-func NewExecutor(config wasmercommon.ExecutorConfig) (*Wasmer6Executor, error) {
+func NewExecutor(config wasmercommon.ExecutorConfig) (*Wasmer7Executor, error) {
 	if config.WASMOpcodeCost == nil {
 		return nil, wasmercommon.ErrMissingOpcodeCost
 	}
@@ -53,20 +53,20 @@ func NewExecutor(config wasmercommon.ExecutorConfig) (*Wasmer6Executor, error) {
 		return nil, err
 	}
 
-	logWasmer6.Trace("wasmer6 executor created")
+	logWasmer7.Trace("wasmer7 executor created")
 
-	return &Wasmer6Executor{cExecutor: cExecutor, config: config}, nil
+	return &Wasmer7Executor{cExecutor: cExecutor, config: config}, nil
 }
 
 // NewInstance compiles and instantiates a contract.
 //
 // hooks is the VM hooks provider for this one instance. It is reached from every hook call
 // the instance makes, and must stay usable until the instance is closed.
-func (wasmerExecutor *Wasmer6Executor) NewInstance(
+func (wasmerExecutor *Wasmer7Executor) NewInstance(
 	contractCode []byte,
 	options wasmercommon.CompilationOptions,
 	hooks executor.VMHooksProvider,
-) (*Wasmer6Instance, error) {
+) (*Wasmer7Instance, error) {
 	if len(contractCode) == 0 {
 		return nil, wasmercommon.ErrInvalidBytecode
 	}
@@ -103,7 +103,7 @@ func (wasmerExecutor *Wasmer6Executor) NewInstance(
 		return nil, err
 	}
 
-	instance := &Wasmer6Instance{
+	instance := &Wasmer7Instance{
 		cInstance:   cInstance,
 		hooksHandle: handle,
 		hooks:       bridge,
@@ -127,7 +127,7 @@ func (wasmerExecutor *Wasmer6Executor) NewInstance(
 //
 // Instances outlive it safely: the hook table is copied into each one at creation, and
 // nothing else is shared, so the two can be closed in either order.
-func (wasmerExecutor *Wasmer6Executor) Close() {
+func (wasmerExecutor *Wasmer7Executor) Close() {
 	if wasmerExecutor.cExecutor == nil {
 		return
 	}
@@ -138,5 +138,5 @@ func (wasmerExecutor *Wasmer6Executor) Close() {
 
 // Tripwire for an opcode added to one side of the cost table and not the other.
 // executor.OpcodeCost is shared by every backend and vm_exec_opcode_cost_t is per-library, so
-// each backend has to assert the match against its own header; this is wasmer6's.
+// each backend has to assert the match against its own header; this is wasmer7's.
 var _ [unsafe.Sizeof(cOpcodeCostT{})]byte = [unsafe.Sizeof(executor.OpcodeCost{})]byte{}

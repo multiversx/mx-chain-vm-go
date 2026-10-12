@@ -262,7 +262,7 @@ typedef struct vm_exec_executor_config_t {
 } vm_exec_executor_config_t;
 
 /**
- * The out-struct of `vm_exec_w6_instance_call`.
+ * The out-struct of `vm_exec_w7_instance_call`.
  */
 typedef struct vm_exec_call_result_t {
   enum vm_exec_call_result_kind_t kind;

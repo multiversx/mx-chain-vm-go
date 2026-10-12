@@ -11,7 +11,7 @@ import (
 // InstanceState is the inside view of an instance: what a VM hook can reach while it runs.
 //
 // It is the Go counterpart of the Rust InstanceState trait, and the reason the trait exists.
-// The trait exists because Wasmer 6 can only reach an instance's memory and globals through
+// The trait exists because Wasmer 7 can only reach an instance's memory and globals through
 // the store borrow inside the host call frame. Wasmer 2.2 is not under that constraint, but it
 // is held to the same shape anyway: the C API is the same for both backends, so one Go caller
 // serves either, and a difference between them is never a difference in what the boundary

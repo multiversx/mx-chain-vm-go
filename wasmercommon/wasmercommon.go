@@ -1,12 +1,12 @@
 // Package wasmercommon is the Go side of the executor crate `c-api-common`: everything the
 // new executor C APIs share, independent of which wasm runtime is underneath.
 //
-// There is one Go package per backend — wasmer2 and wasmer6 — because a cgo //export name is
+// There is one Go package per backend — wasmer2 and wasmer7 — because a cgo //export name is
 // a C symbol and two packages cannot export the same one. They are otherwise identical, and
 // what can be shared is shared here.
 //
 // What cannot: anything whose signature mentions a C type. cgo types are package-local, so
-// `C.vm_exec_status_t` in package wasmer6 is a different Go type from the identically-named
+// `C.vm_exec_status_t` in package wasmer7 is a different Go type from the identically-named
 // one in wasmer2, and a function taking either could not serve both. That is why this package
 // has no cgo at all and deals in plain Go types, with each backend converting at its own
 // boundary — in its bridge file, which is where the conversion belongs anyway.

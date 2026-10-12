@@ -1,7 +1,7 @@
-package wasmer6
+package wasmer7
 
 // Transitional: executor.Executor as it is today, plus the factory that lets a test select
-// this backend. See the note at the top of wasmer6InstanceLegacy.go.
+// this backend. See the note at the top of wasmer7InstanceLegacy.go.
 
 import (
 	"os/signal"
@@ -11,19 +11,19 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
 
-var _ = (executor.Executor)((*Wasmer6Executor)(nil))
-var _ = (executor.ExecutorAbstractFactory)((*Wasmer6ExecutorFactory)(nil))
+var _ = (executor.Executor)((*Wasmer7Executor)(nil))
+var _ = (executor.ExecutorAbstractFactory)((*Wasmer7ExecutorFactory)(nil))
 
-// Wasmer6ExecutorFactory builds Wasmer 6 executors.
-type Wasmer6ExecutorFactory struct{}
+// Wasmer7ExecutorFactory builds Wasmer 7 executors.
+type Wasmer7ExecutorFactory struct{}
 
-// ExecutorFactory returns the Wasmer 6 executor factory.
-func ExecutorFactory() *Wasmer6ExecutorFactory {
-	return &Wasmer6ExecutorFactory{}
+// ExecutorFactory returns the Wasmer 7 executor factory.
+func ExecutorFactory() *Wasmer7ExecutorFactory {
+	return &Wasmer7ExecutorFactory{}
 }
 
 // CreateExecutor creates a new executor.
-func (wef *Wasmer6ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+func (wef *Wasmer7ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
 	// Same as the legacy factory does, and for the same reason: the runtime installs its own
 	// trap handlers, and Go's must not be left in front of them.
 	signal.Reset()
@@ -50,7 +50,7 @@ func (wef *Wasmer6ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.
-func (wef *Wasmer6ExecutorFactory) IsInterfaceNil() bool {
+func (wef *Wasmer7ExecutorFactory) IsInterfaceNil() bool {
 	return wef == nil
 }
 
@@ -60,7 +60,7 @@ func (wef *Wasmer6ExecutorFactory) IsInterfaceNil() bool {
 // to change it is to build another one. That is behaviour-preserving for the single caller,
 // GasScheduleChange, which already clears the warm instance cache: no instance survives the
 // change, so nothing observes the swap. See PLAN-go-ffi.md, gate G4.
-func (wasmerExecutor *Wasmer6Executor) SetOpcodeConfig(
+func (wasmerExecutor *Wasmer7Executor) SetOpcodeConfig(
 	opcodeVersion executor.OpcodeVersion,
 	wasmOps *executor.WASMOpcodeCost,
 ) {
@@ -69,7 +69,7 @@ func (wasmerExecutor *Wasmer6Executor) SetOpcodeConfig(
 		WASMOpcodeCost: wasmOps,
 	})
 	if err != nil {
-		logWasmer6.Error("could not apply new opcode config", "err", err)
+		logWasmer7.Error("could not apply new opcode config", "err", err)
 		return
 	}
 
@@ -82,12 +82,12 @@ func (wasmerExecutor *Wasmer6Executor) SetOpcodeConfig(
 }
 
 // FunctionNames returns the low-level function names provided to contracts.
-func (wasmerExecutor *Wasmer6Executor) FunctionNames() vmcommon.FunctionNames {
+func (wasmerExecutor *Wasmer7Executor) FunctionNames() vmcommon.FunctionNames {
 	return executor.VMHookNames
 }
 
 // NewInstanceWithOptions creates a new instance from WASM bytecode.
-func (wasmerExecutor *Wasmer6Executor) NewInstanceWithOptions(
+func (wasmerExecutor *Wasmer7Executor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
@@ -109,7 +109,7 @@ func (wasmerExecutor *Wasmer6Executor) NewInstanceWithOptions(
 }
 
 // NewInstanceFromCompiledCodeWithOptions is not supported yet; see PLAN-go-ffi.md, Phase 6.
-func (wasmerExecutor *Wasmer6Executor) NewInstanceFromCompiledCodeWithOptions(
+func (wasmerExecutor *Wasmer7Executor) NewInstanceFromCompiledCodeWithOptions(
 	_ []byte,
 	_ executor.CompilationOptions,
 ) (executor.Instance, error) {
@@ -117,6 +117,6 @@ func (wasmerExecutor *Wasmer6Executor) NewInstanceFromCompiledCodeWithOptions(
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.
-func (wasmerExecutor *Wasmer6Executor) IsInterfaceNil() bool {
+func (wasmerExecutor *Wasmer7Executor) IsInterfaceNil() bool {
 	return wasmerExecutor == nil
 }

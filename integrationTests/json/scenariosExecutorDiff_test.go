@@ -8,7 +8,7 @@ import (
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
-	"github.com/multiversx/mx-chain-vm-go/wasmer6"
+	"github.com/multiversx/mx-chain-vm-go/wasmer7"
 )
 
 // hookSequenceUnder runs a scenario folder under one executor and returns the recorded sequence
@@ -35,7 +35,7 @@ func hookSequenceUnder(t *testing.T, folder string, factory executor.ExecutorAbs
 // where the migration is going.
 //
 // This is the harness that was used to migrate from Wasmer 1 to Wasmer 2, pointed at the
-// Wasmer 2 to Wasmer 6 migration. It is the acceptance criterion of PLAN-go-ffi.md Phase 5,
+// Wasmer 2 to Wasmer 7 migration. It is the acceptance criterion of PLAN-go-ffi.md Phase 5,
 // at the granularity of individual hook calls rather than of a VMOutput.
 //
 // It moves two things at once — the boundary and the wasm runtime — so a difference it reports
@@ -52,7 +52,7 @@ func TestExecutorsAgreeOnHookSequence(t *testing.T) {
 
 	compareHookSequences(t,
 		"wasmer2legacy", wasmer2legacy.ExecutorFactory(),
-		"wasmer6", wasmer6.ExecutorFactory())
+		"wasmer7", wasmer7.ExecutorFactory())
 }
 
 // TestMigrationPreservesHookSequence holds the wasm runtime constant and varies only the

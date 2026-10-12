@@ -20,16 +20,16 @@ func (writer *cgo3Writer) cgoFuncName(funcMetadata *EIFunction) string {
 	return writer.cgoPrefix + lowerInitial(funcMetadata.Name)
 }
 
-// WriteWasmer6Cgo writes the cgo shims for the new C API over Wasmer 6.
+// WriteWasmer7Cgo writes the cgo shims for the new C API over Wasmer 7.
 //
 // Unlike the wasmer2legacy shims, these return a result struct rather than a bare value, so a
 // hook can report an early exit instead of signalling it out of band through a breakpoint
 // global. The hook's own error is converted on the Go side, where the message belongs.
-func WriteWasmer6Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
+func WriteWasmer7Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
 	writeCapiCgo(out, eiMetadata, &cgo3Writer{
-		goPackage:  "wasmer6",
-		cgoPrefix:  "w6_",
-		headerFile: "libvmexeccapi_w6.h",
+		goPackage:  "wasmer7",
+		cgoPrefix:  "w7_",
+		headerFile: "libvmexeccapi_w7.h",
 	})
 }
 

@@ -8,16 +8,16 @@
 /**
  * Opaque handle to an executor.
  */
-typedef struct vm_exec_w6_executor_t {
+typedef struct vm_exec_w7_executor_t {
 
-} vm_exec_w6_executor_t;
+} vm_exec_w7_executor_t;
 
 /**
  * Opaque handle to an instance.
  */
-typedef struct vm_exec_w6_instance_t {
+typedef struct vm_exec_w7_instance_t {
 
-} vm_exec_w6_instance_t;
+} vm_exec_w7_instance_t;
 
 /**
  * Creates an executor from one configuration struct and one hook table.
@@ -26,13 +26,13 @@ typedef struct vm_exec_w6_instance_t {
  * entry must be populated; see `CapiVMHookTable::copy_from`.
  *
  * On success writes the executor to `executor_out` and returns `VM_EXEC_OK`. The caller
- * owns the result and must release it with `vm_exec_w6_executor_destroy`.
+ * owns the result and must release it with `vm_exec_w7_executor_destroy`.
  *
  * # Safety
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_new_executor(struct vm_exec_w6_executor_t **executor_out, const vm_exec_executor_config_t *config, const vm_exec_vm_hook_c_func_pointers *hook_table, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_new_executor(struct vm_exec_w7_executor_t **executor_out, const vm_exec_executor_config_t *config, const vm_exec_vm_hook_c_func_pointers *hook_table, char *err_buf, int err_buf_len);
 
 /**
  * Destroys an executor. Does nothing if `executor` is null.
@@ -44,7 +44,7 @@ vm_exec_status_t vm_exec_w6_new_executor(struct vm_exec_w6_executor_t **executor
  *
  * C API function, works with raw object pointers.
  */
-void vm_exec_w6_executor_destroy(struct vm_exec_w6_executor_t *executor);
+void vm_exec_w7_executor_destroy(struct vm_exec_w7_executor_t *executor);
 
 /**
  * Creates an instance.
@@ -58,7 +58,7 @@ void vm_exec_w6_executor_destroy(struct vm_exec_w6_executor_t *executor);
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_new_instance(struct vm_exec_w6_executor_t *executor, struct vm_exec_w6_instance_t **instance_out, const uint8_t *wasm_bytes, uint32_t wasm_bytes_len, const vm_exec_compilation_options_t *options, uintptr_t go_vm_hooks, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_new_instance(struct vm_exec_w7_executor_t *executor, struct vm_exec_w7_instance_t **instance_out, const uint8_t *wasm_bytes, uint32_t wasm_bytes_len, const vm_exec_compilation_options_t *options, uintptr_t go_vm_hooks, char *err_buf, int err_buf_len);
 
 /**
  * Destroys an instance. Does nothing if `instance` is null.
@@ -67,7 +67,7 @@ vm_exec_status_t vm_exec_w6_new_instance(struct vm_exec_w6_executor_t *executor,
  *
  * C API function, works with raw object pointers.
  */
-void vm_exec_w6_instance_destroy(struct vm_exec_w6_instance_t *instance);
+void vm_exec_w7_instance_destroy(struct vm_exec_w7_instance_t *instance);
 
 /**
  * Calls an exported function, with a gas limit for this call.
@@ -80,7 +80,7 @@ void vm_exec_w6_instance_destroy(struct vm_exec_w6_instance_t *instance);
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_instance_call(struct vm_exec_w6_instance_t *instance, const char *func_name, uint64_t points_limit, vm_exec_call_result_t *result_out, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_instance_call(struct vm_exec_w7_instance_t *instance, const char *func_name, uint64_t points_limit, vm_exec_call_result_t *result_out, char *err_buf, int err_buf_len);
 
 /**
  * Returns the number of points (gas) used so far.
@@ -89,7 +89,7 @@ vm_exec_status_t vm_exec_w6_instance_call(struct vm_exec_w6_instance_t *instance
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_instance_get_points_used(struct vm_exec_w6_instance_t *instance, uint64_t *points_out, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_instance_get_points_used(struct vm_exec_w7_instance_t *instance, uint64_t *points_out, char *err_buf, int err_buf_len);
 
 /**
  * Checks that every exported function takes no arguments and returns nothing.
@@ -100,7 +100,7 @@ vm_exec_status_t vm_exec_w6_instance_get_points_used(struct vm_exec_w6_instance_
  *
  * C API function, works with raw object pointers.
  */
-int vm_exec_w6_instance_check_signatures(const struct vm_exec_w6_instance_t *instance);
+int vm_exec_w7_instance_check_signatures(const struct vm_exec_w7_instance_t *instance);
 
 /**
  * Checks whether the contract exports a function with the given name.
@@ -111,16 +111,16 @@ int vm_exec_w6_instance_check_signatures(const struct vm_exec_w6_instance_t *ins
  *
  * C API function, works with raw object pointers.
  */
-int vm_exec_w6_instance_has_function(const struct vm_exec_w6_instance_t *instance, const char *func_name);
+int vm_exec_w7_instance_has_function(const struct vm_exec_w7_instance_t *instance, const char *func_name);
 
 /**
- * Buffer length needed by `vm_exec_w6_instance_exported_function_names`.
+ * Buffer length needed by `vm_exec_w7_instance_exported_function_names`.
  *
  * # Safety
  *
  * C API function, works with raw object pointers.
  */
-int vm_exec_w6_instance_exported_function_names_length(const struct vm_exec_w6_instance_t *instance);
+int vm_exec_w7_instance_exported_function_names_length(const struct vm_exec_w7_instance_t *instance);
 
 /**
  * Writes the exported function names, pipe-separated, e.g. `"init|endpoint1|endpoint2"`.
@@ -132,16 +132,16 @@ int vm_exec_w6_instance_exported_function_names_length(const struct vm_exec_w6_i
  *
  * C API function, works with raw object pointers.
  */
-int vm_exec_w6_instance_exported_function_names(const struct vm_exec_w6_instance_t *instance, char *dest, int dest_len);
+int vm_exec_w7_instance_exported_function_names(const struct vm_exec_w7_instance_t *instance, char *dest, int dest_len);
 
 /**
- * Buffer length needed by `vm_exec_w6_instance_imported_function_names`.
+ * Buffer length needed by `vm_exec_w7_instance_imported_function_names`.
  *
  * # Safety
  *
  * C API function, works with raw object pointers.
  */
-int vm_exec_w6_instance_imported_function_names_length(const struct vm_exec_w6_instance_t *instance);
+int vm_exec_w7_instance_imported_function_names_length(const struct vm_exec_w7_instance_t *instance);
 
 /**
  * Writes the names of the VM hooks the contract imports, pipe-separated.
@@ -153,7 +153,7 @@ int vm_exec_w6_instance_imported_function_names_length(const struct vm_exec_w6_i
  *
  * C API function, works with raw object pointers.
  */
-int vm_exec_w6_instance_imported_function_names(const struct vm_exec_w6_instance_t *instance, char *dest, int dest_len);
+int vm_exec_w7_instance_imported_function_names(const struct vm_exec_w7_instance_t *instance, char *dest, int dest_len);
 
 /**
  * Loads from instance memory into a caller-provided buffer, **truncating** at the end of
@@ -172,7 +172,7 @@ int vm_exec_w6_instance_imported_function_names(const struct vm_exec_w6_instance
  *
  * C API function, works with raw object pointers.
  */
-int64_t vm_exec_w6_state_mem_load(vm_exec_hook_context_t *ctx, int32_t mem_ptr, uint8_t *dest, int32_t dest_len, char *err_buf, int err_buf_len);
+int64_t vm_exec_w7_state_mem_load(vm_exec_hook_context_t *ctx, int32_t mem_ptr, uint8_t *dest, int32_t dest_len, char *err_buf, int err_buf_len);
 
 /**
  * Writes to instance memory. The range must fit entirely inside the memory.
@@ -181,7 +181,7 @@ int64_t vm_exec_w6_state_mem_load(vm_exec_hook_context_t *ctx, int32_t mem_ptr, 
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_state_mem_store(vm_exec_hook_context_t *ctx, int32_t mem_ptr, const uint8_t *src, int32_t src_len, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_state_mem_store(vm_exec_hook_context_t *ctx, int32_t mem_ptr, const uint8_t *src, int32_t src_len, char *err_buf, int err_buf_len);
 
 /**
  * Returns the size in bytes of the instance memory.
@@ -190,7 +190,7 @@ vm_exec_status_t vm_exec_w6_state_mem_store(vm_exec_hook_context_t *ctx, int32_t
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_state_mem_length(vm_exec_hook_context_t *ctx, uint64_t *length_out, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_state_mem_length(vm_exec_hook_context_t *ctx, uint64_t *length_out, char *err_buf, int err_buf_len);
 
 /**
  * Grows the instance memory by `by_num_pages` pages of 64Kb each.
@@ -201,7 +201,7 @@ vm_exec_status_t vm_exec_w6_state_mem_length(vm_exec_hook_context_t *ctx, uint64
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_state_mem_grow(vm_exec_hook_context_t *ctx, uint32_t by_num_pages, uint32_t *prev_pages_out, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_state_mem_grow(vm_exec_hook_context_t *ctx, uint32_t by_num_pages, uint32_t *prev_pages_out, char *err_buf, int err_buf_len);
 
 /**
  * Returns the number of points (gas) used by the instance so far.
@@ -210,7 +210,7 @@ vm_exec_status_t vm_exec_w6_state_mem_grow(vm_exec_hook_context_t *ctx, uint32_t
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_state_get_points_used(vm_exec_hook_context_t *ctx, uint64_t *points_out, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_state_get_points_used(vm_exec_hook_context_t *ctx, uint64_t *points_out, char *err_buf, int err_buf_len);
 
 /**
  * Sets the number of points (gas) used by the instance.
@@ -219,4 +219,4 @@ vm_exec_status_t vm_exec_w6_state_get_points_used(vm_exec_hook_context_t *ctx, u
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_status_t vm_exec_w6_state_set_points_used(vm_exec_hook_context_t *ctx, uint64_t points, char *err_buf, int err_buf_len);
+vm_exec_status_t vm_exec_w7_state_set_points_used(vm_exec_hook_context_t *ctx, uint64_t points, char *err_buf, int err_buf_len);

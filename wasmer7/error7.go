@@ -1,7 +1,7 @@
-package wasmer6
+package wasmer7
 
 // #include <stdlib.h>
-// #include "./libvmexeccapi_w6.h"
+// #include "./libvmexeccapi_w7.h"
 import "C"
 
 import (

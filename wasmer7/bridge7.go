@@ -1,12 +1,12 @@
-package wasmer6
+package wasmer7
 
 // #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR}
-// #cgo linux,amd64 LDFLAGS:-lvmexeccapi_w6
-// #cgo linux,arm64 LDFLAGS:-lvmexeccapi_w6_arm
-// #cgo darwin,amd64 LDFLAGS:-lvmexeccapi_w6
-// #cgo darwin,arm64 LDFLAGS:-lvmexeccapi_w6_arm
+// #cgo linux,amd64 LDFLAGS:-lvmexeccapi_w7
+// #cgo linux,arm64 LDFLAGS:-lvmexeccapi_w7_arm
+// #cgo darwin,amd64 LDFLAGS:-lvmexeccapi_w7
+// #cgo darwin,arm64 LDFLAGS:-lvmexeccapi_w7_arm
 // #include <stdlib.h>
-// #include "./libvmexeccapi_w6.h"
+// #include "./libvmexeccapi_w7.h"
 //
 import "C"
 
@@ -21,8 +21,8 @@ import (
 // way out, so everything above the bridge is written against the shared vocabulary and could
 // not accidentally be written against one backend's.
 
-type cExecutorT = C.struct_vm_exec_w6_executor_t
-type cInstanceT = C.struct_vm_exec_w6_instance_t
+type cExecutorT = C.struct_vm_exec_w7_executor_t
+type cInstanceT = C.struct_vm_exec_w7_instance_t
 type cHookContextT = C.vm_exec_hook_context_t
 type cOpcodeCostT = C.struct_vm_exec_opcode_cost_t
 type cVMHookPointers = C.vm_exec_vm_hook_c_func_pointers
@@ -35,11 +35,11 @@ func cNewExecutor(
 	hookTable *cVMHookPointers,
 	buf errBuf,
 ) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_new_executor(executorOut, config, hookTable, bufPtr(buf), errBufLen))
+	return toStatus(C.vm_exec_w7_new_executor(executorOut, config, hookTable, bufPtr(buf), errBufLen))
 }
 
 func cExecutorDestroy(executor *cExecutorT) {
-	C.vm_exec_w6_executor_destroy(executor)
+	C.vm_exec_w7_executor_destroy(executor)
 }
 
 // --- Instance lifecycle ------------------------------------------------------
@@ -52,7 +52,7 @@ func cNewInstance(
 	goVMHooks uintptr,
 	buf errBuf,
 ) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_new_instance(
+	return toStatus(C.vm_exec_w7_new_instance(
 		executor,
 		instanceOut,
 		(*C.uint8_t)(unsafe.Pointer(&wasmBytes[0])),
@@ -65,7 +65,7 @@ func cNewInstance(
 }
 
 func cInstanceDestroy(instance *cInstanceT) {
-	C.vm_exec_w6_instance_destroy(instance)
+	C.vm_exec_w7_instance_destroy(instance)
 }
 
 // --- Outer instance operations -----------------------------------------------
@@ -80,7 +80,7 @@ func cInstanceCall(
 	cFuncName := C.CString(funcName)
 	defer C.free(unsafe.Pointer(cFuncName))
 
-	return toStatus(C.vm_exec_w6_instance_call(
+	return toStatus(C.vm_exec_w7_instance_call(
 		instance,
 		cFuncName,
 		C.uint64_t(pointsLimit),
@@ -95,26 +95,26 @@ func cInstanceGetPointsUsed(
 	pointsOut *C.uint64_t,
 	buf errBuf,
 ) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_instance_get_points_used(instance, pointsOut, bufPtr(buf), errBufLen))
+	return toStatus(C.vm_exec_w7_instance_get_points_used(instance, pointsOut, bufPtr(buf), errBufLen))
 }
 
 func cInstanceCheckSignatures(instance *cInstanceT) int32 {
-	return int32(C.vm_exec_w6_instance_check_signatures(instance))
+	return int32(C.vm_exec_w7_instance_check_signatures(instance))
 }
 
 func cInstanceHasFunction(instance *cInstanceT, funcName string) int32 {
 	cFuncName := C.CString(funcName)
 	defer C.free(unsafe.Pointer(cFuncName))
 
-	return int32(C.vm_exec_w6_instance_has_function(instance, cFuncName))
+	return int32(C.vm_exec_w7_instance_has_function(instance, cFuncName))
 }
 
 func cInstanceExportedFunctionNamesLength(instance *cInstanceT) int32 {
-	return int32(C.vm_exec_w6_instance_exported_function_names_length(instance))
+	return int32(C.vm_exec_w7_instance_exported_function_names_length(instance))
 }
 
 func cInstanceExportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
-	return int32(C.vm_exec_w6_instance_exported_function_names(
+	return int32(C.vm_exec_w7_instance_exported_function_names(
 		instance,
 		(*C.char)(unsafe.Pointer(&dest[0])),
 		C.int(len(dest)),
@@ -122,11 +122,11 @@ func cInstanceExportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
 }
 
 func cInstanceImportedFunctionNamesLength(instance *cInstanceT) int32 {
-	return int32(C.vm_exec_w6_instance_imported_function_names_length(instance))
+	return int32(C.vm_exec_w7_instance_imported_function_names_length(instance))
 }
 
 func cInstanceImportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
-	return int32(C.vm_exec_w6_instance_imported_function_names(
+	return int32(C.vm_exec_w7_instance_imported_function_names(
 		instance,
 		(*C.char)(unsafe.Pointer(&dest[0])),
 		C.int(len(dest)),
@@ -136,7 +136,7 @@ func cInstanceImportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
 // --- Instance state operations, reachable only from inside a hook ------------
 
 func cStateMemLoad(ctx *cHookContextT, memPtr int32, dest []byte, buf errBuf) int64 {
-	return int64(C.vm_exec_w6_state_mem_load(
+	return int64(C.vm_exec_w7_state_mem_load(
 		ctx,
 		C.int32_t(memPtr),
 		(*C.uint8_t)(unsafe.Pointer(&dest[0])),
@@ -147,7 +147,7 @@ func cStateMemLoad(ctx *cHookContextT, memPtr int32, dest []byte, buf errBuf) in
 }
 
 func cStateMemStore(ctx *cHookContextT, memPtr int32, src []byte, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_state_mem_store(
+	return toStatus(C.vm_exec_w7_state_mem_store(
 		ctx,
 		C.int32_t(memPtr),
 		(*C.uint8_t)(unsafe.Pointer(&src[0])),
@@ -158,7 +158,7 @@ func cStateMemStore(ctx *cHookContextT, memPtr int32, src []byte, buf errBuf) wa
 }
 
 func cStateMemLength(ctx *cHookContextT, lengthOut *C.uint64_t, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_state_mem_length(ctx, lengthOut, bufPtr(buf), errBufLen))
+	return toStatus(C.vm_exec_w7_state_mem_length(ctx, lengthOut, bufPtr(buf), errBufLen))
 }
 
 func cStateMemGrow(
@@ -167,7 +167,7 @@ func cStateMemGrow(
 	prevPagesOut *C.uint32_t,
 	buf errBuf,
 ) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_state_mem_grow(
+	return toStatus(C.vm_exec_w7_state_mem_grow(
 		ctx,
 		C.uint32_t(byNumPages),
 		prevPagesOut,
@@ -177,9 +177,9 @@ func cStateMemGrow(
 }
 
 func cStateGetPointsUsed(ctx *cHookContextT, pointsOut *C.uint64_t, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_state_get_points_used(ctx, pointsOut, bufPtr(buf), errBufLen))
+	return toStatus(C.vm_exec_w7_state_get_points_used(ctx, pointsOut, bufPtr(buf), errBufLen))
 }
 
 func cStateSetPointsUsed(ctx *cHookContextT, points uint64, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w6_state_set_points_used(ctx, C.uint64_t(points), bufPtr(buf), errBufLen))
+	return toStatus(C.vm_exec_w7_state_set_points_used(ctx, C.uint64_t(points), bufPtr(buf), errBufLen))
 }

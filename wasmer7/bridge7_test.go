@@ -1,4 +1,4 @@
-package wasmer6
+package wasmer7
 
 // Phase 4a of PLAN-go-ffi.md: prove the boundary, with the VM kept out of it.
 //
@@ -236,7 +236,7 @@ func (provider *testHooksProvider) VMHooksForCall(state executor.InstanceState) 
 }
 
 func (provider *testHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
-	panic("this backend has no instance-lifetime state; see wasmer6/vmHooksProvider.go")
+	panic("this backend has no instance-lifetime state; see wasmer7/vmHooksProvider.go")
 }
 
 // callScopedState recovers the concrete state the hook context produced.
@@ -267,7 +267,7 @@ func uniformOpcodeCost(cost uint32) *executor.WASMOpcodeCost {
 	return opcodeCost
 }
 
-func newTestExecutor(t *testing.T) *Wasmer6Executor {
+func newTestExecutor(t *testing.T) *Wasmer7Executor {
 	wasmerExecutor, err := NewExecutor(wasmercommon.ExecutorConfig{
 		OpcodeVersion:  executor.OpcodeVersionV2,
 		WASMOpcodeCost: uniformOpcodeCost(1),
@@ -278,7 +278,7 @@ func newTestExecutor(t *testing.T) *Wasmer6Executor {
 	return wasmerExecutor
 }
 
-func newTestInstance(t *testing.T, code []byte) (*Wasmer6Instance, *hookLog) {
+func newTestInstance(t *testing.T, code []byte) (*Wasmer7Instance, *hookLog) {
 	log := &hookLog{}
 	instance, err := newTestExecutor(t).NewInstance(
 		code,
@@ -296,13 +296,13 @@ func newTestInstance(t *testing.T, code []byte) (*Wasmer6Instance, *hookLog) {
 // The contract is handed over as WAT text, which the executor compiles just as it does a
 // wasm binary. That keeps the fixture readable in place of a committed blob; a real contract
 // binary goes through the same path in TestRealContractCompiles.
-func newHooksInstance(t *testing.T) (*Wasmer6Instance, *hookLog) {
+func newHooksInstance(t *testing.T) (*Wasmer7Instance, *hookLog) {
 	return newTestInstance(t, []byte(hooksContract))
 }
 
 // callOk calls funcName and requires that it returned normally, which for this contract also
 // means its own in-wasm assertions passed.
-func callOk(t *testing.T, instance *Wasmer6Instance, funcName string) {
+func callOk(t *testing.T, instance *Wasmer7Instance, funcName string) {
 	result, err := instance.Call(funcName, 10_000_000)
 	require.Nil(t, err)
 	require.Equal(t, wasmercommon.CallOk, result.Kind, "call %s: %+v", funcName, result)
@@ -559,7 +559,7 @@ type nestingVMHooks struct {
 
 	state *InstanceState
 	log   *hookLog
-	inner *Wasmer6Instance
+	inner *Wasmer7Instance
 }
 
 func (hooks *nestingVMHooks) HandleHookError(err error) {
@@ -604,7 +604,7 @@ func (hooks *nestingVMHooks) GetSCAddress(resultOffset executor.MemPtr) error {
 
 type nestingHooksProvider struct {
 	log   *hookLog
-	inner *Wasmer6Instance
+	inner *Wasmer7Instance
 }
 
 func (provider *nestingHooksProvider) VMHooksForCall(state executor.InstanceState) executor.VMHooks {
@@ -612,7 +612,7 @@ func (provider *nestingHooksProvider) VMHooksForCall(state executor.InstanceStat
 }
 
 func (provider *nestingHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
-	panic("this backend has no instance-lifetime state; see wasmer6/vmHooksProvider.go")
+	panic("this backend has no instance-lifetime state; see wasmer7/vmHooksProvider.go")
 }
 
 func TestHookReentersTheExecutor(t *testing.T) {
@@ -651,7 +651,7 @@ type reentrantVMHooks struct {
 	executor.VMHooks
 
 	log  *hookLog
-	self func() *Wasmer6Instance
+	self func() *Wasmer7Instance
 }
 
 func (hooks *reentrantVMHooks) HandleHookError(err error) {
@@ -666,7 +666,7 @@ func (hooks *reentrantVMHooks) GetSCAddress(_ executor.MemPtr) error {
 
 type reentrantHooksProvider struct {
 	log  *hookLog
-	self func() *Wasmer6Instance
+	self func() *Wasmer7Instance
 }
 
 func (provider *reentrantHooksProvider) VMHooksForCall(_ executor.InstanceState) executor.VMHooks {
@@ -674,7 +674,7 @@ func (provider *reentrantHooksProvider) VMHooksForCall(_ executor.InstanceState)
 }
 
 func (provider *reentrantHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
-	panic("this backend has no instance-lifetime state; see wasmer6/vmHooksProvider.go")
+	panic("this backend has no instance-lifetime state; see wasmer7/vmHooksProvider.go")
 }
 
 // TestSameInstanceReentryIsRejected pins down the invariant the guard exists for.
@@ -686,11 +686,11 @@ func (provider *reentrantHooksProvider) VMHooksForInstanceLifetime() executor.VM
 func TestSameInstanceReentryIsRejected(t *testing.T) {
 	log := &hookLog{}
 
-	var instance *Wasmer6Instance
+	var instance *Wasmer7Instance
 	instance, err := newTestExecutor(t).NewInstance(
 		[]byte(hooksContract),
 		wasmercommon.CompilationOptions{MaxMemoryGrow: 10, MaxMemoryGrowDelta: 10},
-		&reentrantHooksProvider{log: log, self: func() *Wasmer6Instance { return instance }},
+		&reentrantHooksProvider{log: log, self: func() *Wasmer7Instance { return instance }},
 	)
 	require.Nil(t, err)
 	t.Cleanup(instance.Close)
