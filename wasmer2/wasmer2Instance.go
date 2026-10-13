@@ -132,6 +132,54 @@ func (instance *Wasmer2Instance) ImportedFunctionNames() ([]string, error) {
 	)
 }
 
+// ResetInstance returns the instance to the state it had immediately after creation, so it
+// can serve another execution.
+//
+// Memory contents and length, the contract's own mutable globals, and the metering and
+// breakpoint globals are all restored. The handle stays valid: the instance is rebuilt behind
+// it rather than replaced, so the caller keeps using the same object.
+func (instance *Wasmer2Instance) ResetInstance() error {
+	buf := newErrBuf()
+
+	status := cInstanceReset(instance.cInstance, buf)
+	if err := buf.AsError(status, "could not reset instance"); err != nil {
+		return err
+	}
+
+	// The wasm globals are fresh, so the Go-side stand-in for the breakpoint has to be too —
+	// it is not a wasm global on this backend, so nothing in the library cleared it.
+	instance.breakpoint = 0
+
+	return nil
+}
+
+// CacheArtifact serializes the compiled module, for NewInstanceFromCache to load back.
+//
+// Two calls, as for the name readers, but the first does the work rather than measuring it:
+// the artifact is a few hundred KB, so the library serializes once and holds the result for
+// the copy. That is why these are not wrapped in wasmercommon.ReadNames — the length call is
+// not idempotent here, and the pair must stay adjacent.
+func (instance *Wasmer2Instance) CacheArtifact() ([]byte, error) {
+	buf := newErrBuf()
+
+	var length C.uint32_t
+	status := cInstanceCacheLength(instance.cInstance, &length, buf)
+	if err := buf.AsError(status, "could not serialize compiled module"); err != nil {
+		return nil, err
+	}
+	if length == 0 {
+		return nil, wasmercommon.ErrEmptyCacheArtifact
+	}
+
+	artifact := make([]byte, int(length))
+	status = cInstanceCache(instance.cInstance, artifact, buf)
+	if err := buf.AsError(status, "could not read serialized compiled module"); err != nil {
+		return nil, err
+	}
+
+	return artifact, nil
+}
+
 // IsFunctionImported reports whether the contract imports a VM hook by that name.
 //
 // Answered from the set captured at creation, not from the executor, so it costs nothing to

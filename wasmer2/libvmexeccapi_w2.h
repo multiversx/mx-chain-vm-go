@@ -61,6 +61,22 @@ void vm_exec_w2_executor_destroy(struct vm_exec_w2_executor_t *executor);
 vm_exec_status_t vm_exec_w2_new_instance(struct vm_exec_w2_executor_t *executor, struct vm_exec_w2_instance_t **instance_out, const uint8_t *wasm_bytes, uint32_t wasm_bytes_len, const vm_exec_compilation_options_t *options, uintptr_t go_vm_hooks, char *err_buf, int err_buf_len);
 
 /**
+ * Creates an instance from a cached artifact, skipping compilation.
+ *
+ * `cache_bytes` is what `vm_exec_w2_instance_cache` produced, from this same library. It is
+ * **executable code that is mapped, not validated** — an artifact from an untrusted source
+ * must not be passed here; compile the wasm instead. An artifact from a different Wasmer
+ * version is refused, because its header carries an ABI version.
+ *
+ * `go_vm_hooks` is as in `vm_exec_w2_new_instance`.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_status_t vm_exec_w2_new_instance_from_cache(struct vm_exec_w2_executor_t *executor, struct vm_exec_w2_instance_t **instance_out, const uint8_t *cache_bytes, uint32_t cache_bytes_len, const vm_exec_compilation_options_t *options, uintptr_t go_vm_hooks, char *err_buf, int err_buf_len);
+
+/**
  * Destroys an instance. Does nothing if `instance` is null.
  *
  * # Safety
@@ -154,6 +170,48 @@ int vm_exec_w2_instance_imported_function_names_length(const struct vm_exec_w2_i
  * C API function, works with raw object pointers.
  */
 int vm_exec_w2_instance_imported_function_names(const struct vm_exec_w2_instance_t *instance, char *dest, int dest_len);
+
+/**
+ * Serializes the instance's module and reports how many bytes `vm_exec_w2_instance_cache`
+ * will write.
+ *
+ * The artifact is produced by this call and held until the copy call reads it, so the pair
+ * serializes once rather than twice. Call this first; see the copy call.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_status_t vm_exec_w2_instance_cache_length(struct vm_exec_w2_instance_t *instance, uint32_t *length_out, char *err_buf, int err_buf_len);
+
+/**
+ * Copies the artifact produced by the preceding `vm_exec_w2_instance_cache_length` call.
+ *
+ * `dest_len` must be at least the length that call reported. A short buffer is refused
+ * rather than filled partially, because a truncated artifact is indistinguishable from a
+ * whole one until it fails to deserialize.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_status_t vm_exec_w2_instance_cache(struct vm_exec_w2_instance_t *instance, uint8_t *dest, uint32_t dest_len, char *err_buf, int err_buf_len);
+
+/**
+ * Returns the instance to the state it was in immediately after creation, so it can serve
+ * another execution.
+ *
+ * Memory contents and length, every mutable global, and the metering and breakpoint globals
+ * are all restored. The handle stays valid — the instance is rebuilt behind it, not replaced.
+ *
+ * On failure the caller must destroy the instance rather than reuse it: an instance whose
+ * reset failed still carries the previous execution's state.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_status_t vm_exec_w2_instance_reset(struct vm_exec_w2_instance_t *instance, char *err_buf, int err_buf_len);
 
 /**
  * Loads from instance memory into a caller-provided buffer, **truncating** at the end of

@@ -240,15 +240,34 @@ func (instance *Wasmer2Instance) IsInterfaceNil() bool {
 	return instance == nil
 }
 
-// --- Not supported by this executor -----------------------------------------
-
-// Reset is not supported yet; see PLAN-go-ffi.md, Phase 6. Returning false makes the instance
-// tracker treat the instance as unusable for warm reuse, which is the correct outcome.
-func (instance *Wasmer2Instance) Reset() bool {
-	return false
-}
-
-// Cache is not supported yet; see PLAN-go-ffi.md, Phase 6.
+// Cache returns the serialized compiled module, which the VM stores under the code hash and
+// hands back to NewInstanceFromCompiledCodeWithOptions on a later execution.
 func (instance *Wasmer2Instance) Cache() ([]byte, error) {
-	return nil, wasmercommon.ErrCacheUnsupported
+	return instance.CacheArtifact()
 }
+
+// Reset returns the instance to its post-creation state so the instance tracker can reuse it
+// as a warm instance.
+//
+// This backend resets in place, through the Wasmer 2.2 fork's own Instance::reset: globals go
+// back to their declared initializers and memory is zeroed, shrunk and re-initialized from the
+// data segments. That is cheaper than the wasmer7 path, which has no such operation available
+// and re-instantiates the module instead.
+//
+// One gap is worth knowing: the fork's reset restores passive elements, globals and memories,
+// but not tables. Under OpcodeVersionV1, table.set/grow/init are legal, so a contract that
+// mutates its own table would observe that across a reset. OpcodeVersionV2 removes all five
+// table opcodes, which closes it. See PLAN-reset-via-middlewares.md.
+//
+// A failure here is reported as false rather than as an error, because that is what the
+// tracker needs to know: it evicts the instance and builds a new one, which is always safe.
+func (instance *Wasmer2Instance) Reset() bool {
+	err := instance.ResetInstance()
+	if err != nil {
+		logWasmer2.Trace("instance reset failed", "err", err)
+		return false
+	}
+
+	return true
+}
+

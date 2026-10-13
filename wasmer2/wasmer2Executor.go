@@ -71,6 +71,38 @@ func (wasmerExecutor *Wasmer2Executor) NewInstance(
 		return nil, wasmercommon.ErrInvalidBytecode
 	}
 
+	return wasmerExecutor.newInstance(contractCode, options, hooks, cNewInstance)
+}
+
+// NewInstanceFromCache instantiates a contract from a previously cached artifact, skipping
+// compilation.
+//
+// cacheBytes is what Cache returned, for this same contract and this same library. It is
+// mapped as executable code rather than validated, so it must come from the VM's own
+// compiled-code store and never from an untrusted peer; the C API carries the same note.
+// An artifact produced by a different Wasmer version is rejected rather than misread.
+func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCache(
+	cacheBytes []byte,
+	options wasmercommon.CompilationOptions,
+	hooks executor.VMHooksProvider,
+) (*Wasmer2Instance, error) {
+	if len(cacheBytes) == 0 {
+		return nil, wasmercommon.ErrEmptyCacheArtifact
+	}
+
+	return wasmerExecutor.newInstance(cacheBytes, options, hooks, cNewInstanceFromCache)
+}
+
+// The half the two creation paths share. They differ only in which C entry point turns the
+// input bytes into an instance — everything else, including the hooks handle and the imported
+// function scan, is the same, and has to stay the same: an instance restored from cache is
+// validated exactly like a freshly compiled one.
+func (wasmerExecutor *Wasmer2Executor) newInstance(
+	bytes []byte,
+	options wasmercommon.CompilationOptions,
+	hooks executor.VMHooksProvider,
+	create func(*cExecutorT, **cInstanceT, []byte, *C.struct_vm_exec_compilation_options_t, uintptr, errBuf) wasmercommon.Status,
+) (*Wasmer2Instance, error) {
 	cOptions := C.struct_vm_exec_compilation_options_t{
 		unmetered_locals:      C.uint64_t(options.UnmeteredLocals),
 		max_memory_grow:       C.uint64_t(options.MaxMemoryGrow),
@@ -90,10 +122,10 @@ func (wasmerExecutor *Wasmer2Executor) NewInstance(
 
 	buf := newErrBuf()
 	var cInstance *cInstanceT
-	status := cNewInstance(
+	status := create(
 		wasmerExecutor.cExecutor,
 		&cInstance,
-		contractCode,
+		bytes,
 		&cOptions,
 		uintptr(handle),
 		buf,

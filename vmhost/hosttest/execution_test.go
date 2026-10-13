@@ -714,6 +714,119 @@ func TestExecution_CachingCompiledCode(t *testing.T) {
 	}
 }
 
+// TestExecution_CachingCompiledCode_SavesAnArtifact pins the half of the compiled-code cache
+// that the test above does not: that anything is cached at all.
+//
+// TestExecution_CachingCompiledCode calls the contract four times and checks four successes,
+// which is also what happens when caching is unsupported and every call compiles from
+// bytecode — it passed throughout the period when the new executors returned
+// "instance caching is not supported by this executor" from Cache(). So the assertion has to
+// be about the store, not about the return code.
+func TestExecution_CachingCompiledCode_SavesAnArtifact(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	scAddress := test.MakeTestSCAddress("counter")
+	code := test.GetTestSCCode("counter", "../../")
+	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(100000).
+		WithFunction(increment).
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+
+	require.Len(t, world.CompiledCode, 1, "exactly one contract ran, so exactly one artifact")
+	for codeHash, artifact := range world.CompiledCode {
+		require.NotEmpty(t, artifact, "an empty artifact is a cache miss on every later run")
+		require.NotEqual(t, code, artifact,
+			"the artifact must be the compiled module, not a copy of the bytecode")
+		require.NotEmpty(t, codeHash)
+	}
+}
+
+// TestExecution_CachingCompiledCode_UsesTheArtifact shows the cached artifact is actually
+// loaded, rather than saved and then ignored.
+//
+// Proving a cache *hit* from the outside needs the cached entry to be distinguishable from
+// the bytecode it stands in for, so this swaps in a valid artifact belonging to a different
+// contract — one with no "increment" endpoint. If the precompiled path is taken the call
+// cannot find the function; if it is skipped in favour of compiling the bytecode, the call
+// succeeds. The two outcomes are far apart, which is what makes this decisive.
+func TestExecution_CachingCompiledCode_UsesTheArtifact(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	counterAddress := test.MakeTestSCAddress("counter")
+	counterCode := test.GetTestSCCode("counter", "../../")
+	counterAccount := world.AcctMap.CreateSmartContractAccount(
+		test.ParentAddress, counterAddress, counterCode, world)
+
+	answerAddress := test.MakeTestSCAddress("answer")
+	answerCode := test.GetTestSCCode("answer", "../../")
+	answerAccount := world.AcctMap.CreateSmartContractAccount(
+		test.ParentAddress, answerAddress, answerCode, world)
+
+	counterInput := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(counterAddress).
+		WithGasProvided(100000).
+		WithFunction(increment).
+		Build()
+
+	answerInput := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(answerAddress).
+		WithGasProvided(100000).
+		WithFunction("answer").
+		Build()
+
+	// Run both, so the store holds an artifact for each.
+	vmOutput, err := host.RunSmartContractCall(counterInput)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+
+	vmOutput, err = host.RunSmartContractCall(answerInput)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+
+	require.Len(t, world.CompiledCode, 2)
+
+	counterHash := counterAccount.GetCodeHash()
+	answerHash := answerAccount.GetCodeHash()
+	require.NotEqual(t, counterHash, answerHash)
+
+	answerArtifact := world.CompiledCode[string(answerHash)]
+	require.NotEmpty(t, answerArtifact)
+
+	// Point the counter's code hash at the answer contract's compiled module.
+	world.CompiledCode[string(counterHash)] = answerArtifact
+
+	// Warm instances would serve the next call from memory and never consult the store, so
+	// they have to go. (They are already disabled on the new backends, whose Reset returns
+	// false, but this test has to mean the same thing under wasmer2legacy.)
+	host.Runtime().ClearWarmInstanceCache()
+
+	vmOutput, err = host.RunSmartContractCall(counterInput)
+	require.Nil(t, err)
+	require.Equal(t, vmcommon.FunctionNotFound, vmOutput.ReturnCode,
+		"the swapped-in artifact was not used, so the compiled-code cache is not being read")
+}
+
 func TestExecution_ManagedBuffers(t *testing.T) {
 	var functionNumber = 0
 	var mBuffer = [...]string{"mBufferMethod", "mBufferNewTest", "mBufferNewFromBytesTest", "mBufferSetRandomTest",

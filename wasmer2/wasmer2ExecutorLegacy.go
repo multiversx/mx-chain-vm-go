@@ -108,12 +108,35 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	return instance, nil
 }
 
-// NewInstanceFromCompiledCodeWithOptions is not supported yet; see PLAN-go-ffi.md, Phase 6.
+// NewInstanceFromCompiledCodeWithOptions creates an instance from a previously cached
+// compiled module, skipping compilation.
+//
+// compiledCode comes from the VM's own compiled-code store, where Instance.Cache put it. It
+// is loaded as executable code rather than validated, so this must not be reached with bytes
+// from anywhere else; the caller is runtimeContext.makeInstanceFromCompiledCode, which reads
+// them back by code hash.
+//
+// A caller that gets an error here is expected to fall back to compiling the bytecode, which
+// is what makes an artifact from an older Wasmer version — rejected on its ABI version — a
+// recoverable miss rather than a failed execution.
 func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
-	_ []byte,
-	_ executor.CompilationOptions,
+	compiledCode []byte,
+	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	return nil, wasmercommon.ErrCacheUnsupported
+	instance, err := wasmerExecutor.NewInstanceFromCache(
+		compiledCode,
+		wasmercommon.ToCompilationOptions(options),
+		wasmerExecutor.provider,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// As in NewInstanceWithOptions: the gas limit is a compilation option in the legacy
+	// interface and a call argument in this one.
+	instance.SetGasLimit(options.GasLimit)
+
+	return instance, nil
 }
 
 // IsInterfaceNil returns true if there is no value under the interface.

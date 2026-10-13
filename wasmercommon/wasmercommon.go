@@ -76,9 +76,10 @@ var (
 	// contract running for free.
 	ErrMissingOpcodeCost = errors.New("executor config has no opcode cost table")
 
-	// ErrCacheUnsupported is reported for the instance cache path, which these C APIs do not
-	// expose. See PLAN-go-ffi.md, Phase 6.
-	ErrCacheUnsupported = errors.New("instance caching is not supported by this executor")
+	// ErrEmptyCacheArtifact is reported when the compiled-code path is handed nothing. Caught
+	// here rather than at the boundary so that an empty cache entry reads as a cache miss the
+	// caller can recover from, rather than as a deserialization failure deep in the library.
+	ErrEmptyCacheArtifact = errors.New("cache artifact is empty")
 
 	// ErrInstanceReentered is reported when a hook calls back into the instance it is
 	// running in. Nesting into another instance is supported; nesting into the same one is

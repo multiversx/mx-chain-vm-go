@@ -64,11 +64,49 @@ func cNewInstance(
 	))
 }
 
+func cNewInstanceFromCache(
+	executor *cExecutorT,
+	instanceOut **cInstanceT,
+	cacheBytes []byte,
+	options *C.struct_vm_exec_compilation_options_t,
+	goVMHooks uintptr,
+	buf errBuf,
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_new_instance_from_cache(
+		executor,
+		instanceOut,
+		(*C.uint8_t)(unsafe.Pointer(&cacheBytes[0])),
+		C.uint32_t(len(cacheBytes)),
+		options,
+		C.uintptr_t(goVMHooks),
+		bufPtr(buf),
+		errBufLen,
+	))
+}
+
 func cInstanceDestroy(instance *cInstanceT) {
 	C.vm_exec_w2_instance_destroy(instance)
 }
 
+func cInstanceReset(instance *cInstanceT, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_instance_reset(instance, bufPtr(buf), errBufLen))
+}
+
 // --- Outer instance operations -----------------------------------------------
+
+func cInstanceCacheLength(instance *cInstanceT, lengthOut *C.uint32_t, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_instance_cache_length(instance, lengthOut, bufPtr(buf), errBufLen))
+}
+
+func cInstanceCache(instance *cInstanceT, dest []byte, buf errBuf) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_instance_cache(
+		instance,
+		(*C.uint8_t)(unsafe.Pointer(&dest[0])),
+		C.uint32_t(len(dest)),
+		bufPtr(buf),
+		errBufLen,
+	))
+}
 
 func cInstanceCall(
 	instance *cInstanceT,

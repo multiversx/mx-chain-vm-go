@@ -240,15 +240,30 @@ func (instance *Wasmer7Instance) IsInterfaceNil() bool {
 	return instance == nil
 }
 
-// --- Not supported by this executor -----------------------------------------
-
-// Reset is not supported yet; see PLAN-go-ffi.md, Phase 6. Returning false makes the instance
-// tracker treat the instance as unusable for warm reuse, which is the correct outcome.
-func (instance *Wasmer7Instance) Reset() bool {
-	return false
-}
-
-// Cache is not supported yet; see PLAN-go-ffi.md, Phase 6.
+// Cache returns the serialized compiled module, which the VM stores under the code hash and
+// hands back to NewInstanceFromCompiledCodeWithOptions on a later execution.
 func (instance *Wasmer7Instance) Cache() ([]byte, error) {
-	return nil, wasmercommon.ErrCacheUnsupported
+	return instance.CacheArtifact()
 }
+
+// Reset returns the instance to its post-creation state so the instance tracker can reuse it
+// as a warm instance.
+//
+// Wasmer 7 has no instance reset of its own — unlike the Wasmer 2.2 fork, which rewinds
+// globals and memories in place — so the executor re-instantiates the module into a fresh
+// store instead. The module stays compiled, so this costs an instantiation (~30-50 microseconds)
+// rather than a compilation (~6 milliseconds), but it is slower than the 2.2 path.
+//
+// A failure here is reported as false rather than as an error, because that is what the
+// tracker needs to know: it evicts the instance and builds a new one, which is always safe.
+// See PLAN-reset-via-middlewares.md for the faster in-place design and why it was not built.
+func (instance *Wasmer7Instance) Reset() bool {
+	err := instance.ResetInstance()
+	if err != nil {
+		logWasmer7.Trace("instance reset failed", "err", err)
+		return false
+	}
+
+	return true
+}
+
