@@ -1170,9 +1170,6 @@ func TestHost_BigIntSqrt_BoundsCheckUnderFlag(t *testing.T) {
 					enableEpochsHandler := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
 					enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
 						if flag == vmhost.AttributeExtraGasUsageFlag {
-							return false // Ensure AttributeExtraGasUsageFlag is false to test FixCorrectSmallIntAndGasLimits
-						}
-						if flag == vmhost.FixCorrectSmallIntAndGasLimitsFlag {
 							return flagEnabled
 						}
 						return true

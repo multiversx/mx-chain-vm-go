@@ -823,7 +823,7 @@ func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 		return
 	}
 
-	if (context.GetRuntimeContext().AttributeExtraGasUsage() || context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits()) && a.BitLen() > maxSqrtLen {
+	if context.GetRuntimeContext().AttributeExtraGasUsage() && a.BitLen() > maxSqrtLen {
 		context.FailExecution(vmhost.ErrBadUpperBounds)
 		return
 	}
