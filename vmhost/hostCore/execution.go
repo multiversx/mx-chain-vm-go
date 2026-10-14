@@ -300,8 +300,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain := host.Blockchain()
 	output := host.Output()
 	// Output state rollback is gated to preserve historical execution compatibility
-	// with pre-v1.5.50 blocks during importdb (e.g. epochs 1819, 2060).
-	isOutputRollbackEnabled := host.Runtime().AttributeExtraGasUsage()
+	// with pre-v1.5.50 blocks during importdb (e.g. epochs 1819, 2060, 2207).
+	isOutputRollbackEnabled := host.Runtime().OutputRollbackOnDestContext()
 
 	blockchain.PushState()
 	if isOutputRollbackEnabled {

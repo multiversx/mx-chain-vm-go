@@ -157,6 +157,7 @@ type RuntimeContext interface {
 	UseGasBoundedShouldFailExecution() bool
 	AttributeExtraGasUsage() bool
 	FixCorrectSmallIntAndGasLimits() bool
+	OutputRollbackOnDestContext() bool
 	ComputeCodeHash(code []byte) []byte
 	CleanInstance()
 	UnsetInstance()

@@ -34,6 +34,7 @@ type RuntimeContextMock struct {
 	FailManagedMapAPI                  bool
 	AsyncCallInfo                      *vmhost.AsyncCallInfo
 	FixCorrectSmallIntAndGasLimitsFunc func() bool
+	OutputRollbackOnDestContextFunc    func() bool
 	ComputeCodeHashFunc                func(code []byte) []byte
 	InstanceStackSize                  uint64
 	CurrentTxHash                      []byte
@@ -333,6 +334,14 @@ func (r *RuntimeContextMock) AttributeExtraGasUsage() bool {
 func (r *RuntimeContextMock) FixCorrectSmallIntAndGasLimits() bool {
 	if r.FixCorrectSmallIntAndGasLimitsFunc != nil {
 		return r.FixCorrectSmallIntAndGasLimitsFunc()
+	}
+	return true
+}
+
+// OutputRollbackOnDestContext mocked method
+func (r *RuntimeContextMock) OutputRollbackOnDestContext() bool {
+	if r.OutputRollbackOnDestContextFunc != nil {
+		return r.OutputRollbackOnDestContextFunc()
 	}
 	return true
 }

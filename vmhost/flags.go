@@ -36,5 +36,8 @@ const (
 	// FixCorrectSmallIntAndGasLimitsFlag defines the flag that activates the fix for signed small int encoding and gas loopholes
 	FixCorrectSmallIntAndGasLimitsFlag core.EnableEpochFlag = "FixCorrectSmallIntAndGasLimitsFlag"
 
+	// OutputRollbackOnDestContextFlag defines the flag that activates output state rollback on failed destination context calls
+	OutputRollbackOnDestContextFlag core.EnableEpochFlag = "OutputRollbackOnDestContextFlag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

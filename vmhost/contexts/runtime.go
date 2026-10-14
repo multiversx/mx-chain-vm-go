@@ -760,6 +760,11 @@ func (context *runtimeContext) FixCorrectSmallIntAndGasLimits() bool {
 	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.FixCorrectSmallIntAndGasLimitsFlag)
 }
 
+// OutputRollbackOnDestContext returns true when flag is activated
+func (context *runtimeContext) OutputRollbackOnDestContext() bool {
+	return context.host.EnableEpochsHandler().IsFlagEnabled(vmhost.OutputRollbackOnDestContextFlag)
+}
+
 // ComputeCodeHash computes the code hash for given contract code
 func (context *runtimeContext) ComputeCodeHash(code []byte) []byte {
 	return context.hasher.Compute(string(code))

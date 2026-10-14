@@ -499,6 +499,12 @@ func (contextWrapper *RuntimeContextWrapper) FixCorrectSmallIntAndGasLimits() bo
 	return contextWrapper.runtimeContext.FixCorrectSmallIntAndGasLimits()
 }
 
+// OutputRollbackOnDestContext calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) OutputRollbackOnDestContext() bool {
+	return contextWrapper.runtimeContext.OutputRollbackOnDestContext()
+}
+
+
 // ComputeCodeHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ComputeCodeHash(code []byte) []byte {
 	return contextWrapper.runtimeContext.ComputeCodeHash(code)

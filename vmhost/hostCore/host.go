@@ -50,6 +50,7 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.FixGetBalanceFlag,
 	vmhost.AttributeExtraGasUsageFlag,
 	vmhost.FixCorrectSmallIntAndGasLimitsFlag,
+	vmhost.OutputRollbackOnDestContextFlag,
 }
 
 // vmHost implements HostContext interface.
