@@ -24,7 +24,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -141,7 +141,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
-	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer2legacy.ExecutorFactory())
 }
 
 func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
@@ -317,57 +317,10 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 		verify.Ok()
 	}
 
-	var vmHooksPtr = make(map[uintptr]bool)
-	for _, instance := range executorFactory.LastCreatedExecutor.GetContractInstances(code) {
-		vmHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-	require.False(t, len(vmHooksPtr) > 1)
-}
-
-func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
-	t.Skip()
-	code := test.GetTestSCCode("counter", "../../")
-
-	input := test.DefaultTestContractCallInput()
-	input.GasProvided = 1000000
-	input.Function = get
-
-	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
-	host1 := test.NewTestHostBuilder(t).
-		WithExecutorFactory(executorFactory1).
-		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Build()
-	defer func() {
-		host1.Reset()
-	}()
-	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
-	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
-	host1.SetRuntimeContext(runtimeContextMock)
-
-	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
-	host2 := test.NewTestHostBuilder(t).
-		WithExecutorFactory(executorFactory2).
-		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Build()
-	defer func() {
-		host2.Reset()
-	}()
-	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
-	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	host2.SetRuntimeContext(runtimeContextMock)
-
-	runNContractsForHostAndVerify(t, host2, input, 5)
-	runNContractsForHostAndVerify(t, host1, input, 5)
-	runNContractsForHostAndVerify(t, host2, input, maxUint8AsInt+1)
-
-	var host1VMHooksPtr = make(map[uintptr]bool)
-	for _, instance := range executorFactory1.LastCreatedExecutor.GetContractInstances(code) {
-		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-	for _, instance := range executorFactory2.LastCreatedExecutor.GetContractInstances(code) {
-		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
-		require.False(t, found)
-	}
+	// The assertion that used to stand here compared per-instance VM hooks pointers. There is
+	// no such pointer any more: the hooks belong to the executor, so every instance it creates
+	// shares them by construction. It was vacuous even before that — every Instance
+	// implementation answered GetVMHooksPtr() with zero.
 }
 
 func TestExecution_MultipleVMs_CleanInstanceWhileOthersAreRunning(t *testing.T) {
@@ -759,6 +712,119 @@ func TestExecution_CachingCompiledCode(t *testing.T) {
 		require.Zero(t, vmOutput.ReturnCode)
 		require.NotEqual(t, vmOutput.GasRemaining, 100000)
 	}
+}
+
+// TestExecution_CachingCompiledCode_SavesAnArtifact pins the half of the compiled-code cache
+// that the test above does not: that anything is cached at all.
+//
+// TestExecution_CachingCompiledCode calls the contract four times and checks four successes,
+// which is also what happens when caching is unsupported and every call compiles from
+// bytecode — it passed throughout the period when the new executors returned
+// "instance caching is not supported by this executor" from Cache(). So the assertion has to
+// be about the store, not about the return code.
+func TestExecution_CachingCompiledCode_SavesAnArtifact(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	scAddress := test.MakeTestSCAddress("counter")
+	code := test.GetTestSCCode("counter", "../../")
+	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(100000).
+		WithFunction(increment).
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+
+	require.Len(t, world.CompiledCode, 1, "exactly one contract ran, so exactly one artifact")
+	for codeHash, artifact := range world.CompiledCode {
+		require.NotEmpty(t, artifact, "an empty artifact is a cache miss on every later run")
+		require.NotEqual(t, code, artifact,
+			"the artifact must be the compiled module, not a copy of the bytecode")
+		require.NotEmpty(t, codeHash)
+	}
+}
+
+// TestExecution_CachingCompiledCode_UsesTheArtifact shows the cached artifact is actually
+// loaded, rather than saved and then ignored.
+//
+// Proving a cache *hit* from the outside needs the cached entry to be distinguishable from
+// the bytecode it stands in for, so this swaps in a valid artifact belonging to a different
+// contract — one with no "increment" endpoint. If the precompiled path is taken the call
+// cannot find the function; if it is skipped in favour of compiling the bytecode, the call
+// succeeds. The two outcomes are far apart, which is what makes this decisive.
+func TestExecution_CachingCompiledCode_UsesTheArtifact(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	counterAddress := test.MakeTestSCAddress("counter")
+	counterCode := test.GetTestSCCode("counter", "../../")
+	counterAccount := world.AcctMap.CreateSmartContractAccount(
+		test.ParentAddress, counterAddress, counterCode, world)
+
+	answerAddress := test.MakeTestSCAddress("answer")
+	answerCode := test.GetTestSCCode("answer", "../../")
+	answerAccount := world.AcctMap.CreateSmartContractAccount(
+		test.ParentAddress, answerAddress, answerCode, world)
+
+	counterInput := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(counterAddress).
+		WithGasProvided(100000).
+		WithFunction(increment).
+		Build()
+
+	answerInput := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(answerAddress).
+		WithGasProvided(100000).
+		WithFunction("answer").
+		Build()
+
+	// Run both, so the store holds an artifact for each.
+	vmOutput, err := host.RunSmartContractCall(counterInput)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+
+	vmOutput, err = host.RunSmartContractCall(answerInput)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+
+	require.Len(t, world.CompiledCode, 2)
+
+	counterHash := counterAccount.GetCodeHash()
+	answerHash := answerAccount.GetCodeHash()
+	require.NotEqual(t, counterHash, answerHash)
+
+	answerArtifact := world.CompiledCode[string(answerHash)]
+	require.NotEmpty(t, answerArtifact)
+
+	// Point the counter's code hash at the answer contract's compiled module.
+	world.CompiledCode[string(counterHash)] = answerArtifact
+
+	// Warm instances would serve the next call from memory and never consult the store, so
+	// they have to go. (They are already disabled on the new backends, whose Reset returns
+	// false, but this test has to mean the same thing under wasmer2legacy.)
+	host.Runtime().ClearWarmInstanceCache()
+
+	vmOutput, err = host.RunSmartContractCall(counterInput)
+	require.Nil(t, err)
+	require.Equal(t, vmcommon.FunctionNotFound, vmOutput.ReturnCode,
+		"the swapped-in artifact was not used, so the compiled-code cache is not being read")
 }
 
 func TestExecution_ManagedBuffers(t *testing.T) {
@@ -1859,7 +1925,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testin
 
 						bufHandle := host.ManagedTypes().NewManagedBuffer()
 
-						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						returnVal, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							int64(testConfig.GasProvidedToChild),
 							big.NewInt(0),
@@ -1869,6 +1935,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testin
 							bufHandle,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(0), returnVal)
 
 						results, _, err := host.ManagedTypes().ReadManagedVecOfManagedBuffers(bufHandle)
@@ -1920,7 +1987,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						returnVal, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							int64(testConfig.GasProvidedToChild),
 							big.NewInt(0),
@@ -1930,6 +1997,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 							0,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(1), returnVal)
 
 						return parentInstance
@@ -1977,7 +2045,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *test
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+						returnVal, err := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{
@@ -1994,6 +2062,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *test
 							false,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(0), returnVal)
 
 						return parentInstance
@@ -2042,7 +2111,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+						returnVal, err := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{},
@@ -2052,6 +2121,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T
 							false,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(1), returnVal)
 
 						return parentInstance
@@ -3465,46 +3535,61 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						assert.Equal(t, int32(0), returnValue)
 
 						instance.BreakpointValue = 0
-						returnData := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						returnData, err := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, zero, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, one, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
-						vmhooks.DeleteFromReturnDataWithHost(host, 0)
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						assert.Nil(t, err)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, one, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
-						vmhooks.DeleteFromReturnDataWithHost(host, 0)
-						vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						assert.Nil(t, err)
+						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						assert.Nil(t, err)
 						remainingReturnData := host.Output().ReturnData()
 						assert.Equal(t, remainingReturnData, [][]byte{})
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 
 						instance.BreakpointValue = 0
-						vmhooks.CleanReturnDataWithHost(host)
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						err = vmhooks.CleanReturnDataWithHost(host)
+						assert.Nil(t, err)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
 						assert.Nil(t, returnData)
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						assert.Equal(t, vmhost.BreakpointOutOfGas, instance.BreakpointValue)
 						assert.Nil(t, returnData)
 
@@ -3755,7 +3840,10 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
 						_ = host.Metering().UseGasBounded(500)
-						vmhooks.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
+						_, err := vmhooks.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						return parentInstance
 					})
 				}),
@@ -3766,7 +3854,10 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
 						_ = host.Metering().UseGasBounded(100)
-						vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2), true)
+						_, err := vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2), true)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						return childInstance
 					})
 				}),

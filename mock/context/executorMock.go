@@ -7,7 +7,7 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 )
 
 // ExecutorMockFactory is the factory for the ExecutorRecorderMock.
@@ -42,12 +42,12 @@ func (emf *ExecutorMockFactory) IsInterfaceNil() bool {
 type ExecutorMock struct {
 	InstanceMap    map[string]InstanceMock
 	World          *worldmock.MockWorld
-	WasmerExecutor *wasmer2.Wasmer2Executor
+	WasmerExecutor *wasmer2legacy.Wasmer2Executor
 }
 
 // NewExecutorMock constructs a new InstanceBuilderMock
 func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
-	exec, _ := wasmer2.CreateExecutor()
+	exec, _ := wasmer2legacy.CreateExecutor()
 	return &ExecutorMock{
 		InstanceMap:    make(map[string]InstanceMock),
 		World:          world,
@@ -61,7 +61,7 @@ func (executorMock *ExecutorMock) SetOpcodeConfig(_ executor.OpcodeVersion, _ *e
 
 // FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
-	return functionNames
+	return executor.VMHookNames
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a

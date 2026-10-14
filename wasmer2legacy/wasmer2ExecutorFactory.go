@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2legacy
 
 import (
 	"os/signal"
@@ -24,7 +24,10 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 	if err != nil {
 		return nil, err
 	}
-	executor.initVMHooks(args.VMHooks)
+	// The instance-lifetime variant, because this backend's hooks pointer is set once per
+	// executor: a hook has no way to say which instance called it, so the provider resolves
+	// that through the host's instance stack.
+	executor.initVMHooks(args.VMHooksProvider.VMHooksForInstanceLifetime())
 	if args.OpcodeCosts != nil {
 		// opcode costs are sometimes not initialized at this point in certain tests
 		executor.SetOpcodeConfig(args.OpcodeVersion, args.OpcodeCosts)

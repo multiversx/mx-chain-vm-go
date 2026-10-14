@@ -10,20 +10,57 @@ import (
 
 // VMHooksImpl is the VM structure that implements VMHooks,
 // with all the hooks (callbacks) from the executor.
+//
+// Every hook that touches wasm memory does so through the state below, which is the one place
+// the two backends' differing lifetimes meet. See executor.InstanceState.
 type VMHooksImpl struct {
+	host  vmhost.VMHost
+	state executor.InstanceState
+}
+
+// NewVMHooksImpl creates hooks that reach the instance through the host's instance stack.
+//
+// This is the shape the legacy executor needs, because its hooks pointer is per executor and a
+// hook cannot be told which instance called it. It is also what a test wants, since the host
+// it is given already has an instance running.
+func NewVMHooksImpl(host vmhost.VMHost) *VMHooksImpl {
+	return &VMHooksImpl{
+		host:  host,
+		state: hostInstanceState{host: host},
+	}
+}
+
+// NewVMHooksImplForCall creates hooks bound to the instance state of one host call.
+//
+// The state is taken as a parameter rather than kept in a mutable slot, which is what makes
+// nesting safe by construction: a hook that re-enters the VM gets its own hooks object around
+// its own state, and cannot clobber its caller's.
+func NewVMHooksImplForCall(host vmhost.VMHost, state executor.InstanceState) *VMHooksImpl {
+	return &VMHooksImpl{
+		host:  host,
+		state: state,
+	}
+}
+
+// hostInstanceState answers "which instance" dynamically, from the host's instance stack.
+//
+// Sound only for a backend whose state stays valid for the instance's lifetime, which is the
+// case for Wasmer 2.2. A call-scoped backend must supply its own state instead.
+type hostInstanceState struct {
 	host vmhost.VMHost
 }
 
-// NewVMHooksImpl creates a new VMHooksImpl instance.
-func NewVMHooksImpl(host vmhost.VMHost) *VMHooksImpl {
-	return &VMHooksImpl{
-		host: host,
-	}
+func (state hostInstanceState) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return state.host.Runtime().GetInstance().MemLoad(memPtr, length)
+}
+
+func (state hostInstanceState) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return state.host.Runtime().GetInstance().MemStore(memPtr, data)
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (context *VMHooksImpl) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
-	return context.host.Runtime().GetInstance().MemLoad(memPtr, length)
+	return context.state.MemLoad(memPtr, length)
 }
 
 // MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
@@ -49,7 +86,7 @@ func (context *VMHooksImpl) MemLoadMultiple(memPtr executor.MemPtr, lengths []in
 
 // MemStore stores the given data in the WASM memory at the given offset.
 func (context *VMHooksImpl) MemStore(memPtr executor.MemPtr, data []byte) error {
-	return context.host.Runtime().GetInstance().MemStore(memPtr, data)
+	return context.state.MemStore(memPtr, data)
 }
 
 // GetVMHost returns the vm Context from the vm context map
@@ -90,11 +127,6 @@ func (context *VMHooksImpl) GetMeteringContext() vmhost.MeteringContext {
 // GetStorageContext returns the storage context
 func (context *VMHooksImpl) GetStorageContext() vmhost.StorageContext {
 	return context.host.Storage()
-}
-
-// FailExecution fails the execution with the provided error
-func (context *VMHooksImpl) FailExecution(err error) {
-	FailExecution(context.host, err)
 }
 
 // GetEnableEpochsHandler returns the enable epochs handler

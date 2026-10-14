@@ -331,7 +331,19 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 	return context.iTracker.GetCodeSize()
 }
 
+// saveCompiledCode persists the compiled module and keeps the instance warm.
+//
+// The two are independent and are kept that way: an executor that cannot serialise a module
+// can still have its instance reused, and one that fails to persist should not silently lose
+// the warm instance as well. They used to share an early return, so a failure to serialise
+// skipped the warm save too — invisible with the legacy executor, where serialising does not
+// fail, and the single cause of every instance-tracker failure under the new one.
 func (context *runtimeContext) saveCompiledCode() {
+	context.saveCompiledCodeToStorage()
+	context.saveWarmInstance()
+}
+
+func (context *runtimeContext) saveCompiledCodeToStorage() {
 	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
@@ -347,8 +359,6 @@ func (context *runtimeContext) saveCompiledCode() {
 	if !found {
 		logRuntime.Trace("save compiled code silent fail, code hash not found")
 	}
-
-	context.saveWarmInstance()
 }
 
 func (context *runtimeContext) saveWarmInstance() {
@@ -652,13 +662,11 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	context.verifyCode = false
 
-	err := context.validator.verifyMemoryDeclaration(context.iTracker.Instance())
-	if err != nil {
-		logRuntime.Trace("verify contract code", "error", err)
-		return err
-	}
-
-	err = context.validator.verifyFunctions(context.iTracker.Instance())
+	// The memory declaration is no longer checked here: every executor rejects a contract
+	// without exactly one memory when it instantiates it, which happens before this runs.
+	// The check that used to live here could not fire — every Instance implementation
+	// answered HasMemory() with an unconditional true.
+	err := context.validator.verifyFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
@@ -811,7 +819,18 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 
 // CallSCFunction will execute the function with given name from the loaded contract.
 func (context *runtimeContext) CallSCFunction(functionName string) error {
-	return context.iTracker.Instance().CallFunction(functionName)
+	result := context.iTracker.Instance().CallFunction(functionName)
+
+	// A backend that knows why execution stopped reports it in the result. The VM's existing
+	// readers still expect to find it in the breakpoint slot, so it is recorded here, once,
+	// rather than by each backend. The legacy backend never reports CallBreakpoint — its C API
+	// cannot tell a trap from a breakpoint, and its middlewares set the global themselves — so
+	// this branch does not fire for it. See PLAN-go-breakpoint-removal.md.
+	if result.Kind == executor.CallBreakpoint {
+		context.SetRuntimeBreakpointValue(vmhost.BreakpointValue(result.Breakpoint))
+	}
+
+	return result.Err
 }
 
 // IsFunctionImported returns true if the WASM module imports the specified function.

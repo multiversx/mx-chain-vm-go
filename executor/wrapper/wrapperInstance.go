@@ -68,7 +68,7 @@ func (inst *WrapperInstance) IsAlreadyCleaned() bool {
 }
 
 // CallFunction wraps the call to the underlying instance.
-func (inst *WrapperInstance) CallFunction(functionName string) error {
+func (inst *WrapperInstance) CallFunction(functionName string) executor.InstanceCallResult {
 	inst.logger.LogExecutorEvent(fmt.Sprintf("CallFunction(%s):", functionName))
 	return inst.wrappedInstance.CallFunction(functionName)
 }
@@ -95,11 +95,6 @@ func (inst *WrapperInstance) ValidateFunctionArities() error {
 	return err
 }
 
-// HasMemory wraps the call to the underlying instance.
-func (inst *WrapperInstance) HasMemory() bool {
-	return inst.wrappedInstance.HasMemory()
-}
-
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (inst *WrapperInstance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
 	return inst.wrappedInstance.MemLoad(memPtr, length)
@@ -120,11 +115,6 @@ func (inst *WrapperInstance) MemGrow(pages uint32) error {
 	return inst.wrappedInstance.MemGrow(pages)
 }
 
-// MemDump yields the entire contents of the memory. Only used in tests.
-func (inst *WrapperInstance) MemDump() []byte {
-	return inst.wrappedInstance.MemDump()
-}
-
 // IsFunctionImported wraps the call to the underlying instance.
 func (inst *WrapperInstance) IsFunctionImported(name string) bool {
 	result := inst.wrappedInstance.IsFunctionImported(name)
@@ -141,16 +131,6 @@ func (inst *WrapperInstance) Reset() bool {
 	result := inst.wrappedInstance.Reset()
 	inst.logger.LogExecutorEvent(fmt.Sprintf("Reset: %t", result))
 	return result
-}
-
-// SetVMHooksPtr wraps the call to the underlying instance.
-func (inst *WrapperInstance) SetVMHooksPtr(vmHooksPtr uintptr) {
-	inst.wrappedInstance.SetVMHooksPtr(vmHooksPtr)
-}
-
-// GetVMHooksPtr wraps the call to the underlying instance.
-func (inst *WrapperInstance) GetVMHooksPtr() uintptr {
-	return inst.wrappedInstance.GetVMHooksPtr()
 }
 
 // ID wraps the call to the underlying instance.

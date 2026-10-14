@@ -118,7 +118,7 @@ func BackTransfer_ChildCallback(instanceMock *mock.InstanceMock, config interfac
 			ESDTTokenNonce: 0,
 		}
 
-		ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+		ret, _ := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
 			testConfig.ParentAddress,
 			[]*vmcommon.ESDTTransfer{transfer},

@@ -1,256 +1,206 @@
 package wasmer2
 
 // #include <stdlib.h>
+// #include "./libvmexeccapi_w2.h"
 import "C"
-import (
-	"errors"
-	"fmt"
-	"strings"
-	"unsafe"
 
-	"github.com/multiversx/mx-chain-vm-go/executor"
+import (
+	"runtime/cgo"
+
+	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 )
 
-var _ executor.Instance = (*Wasmer2Instance)(nil)
-
-// Wasmer2Instance represents a WebAssembly instance.
+// Wasmer2Instance is one instantiated contract.
+//
+// The methods here are the outside view — what the VM can do to an instance between calls.
+// Everything a *hook* needs is on InstanceState instead, reached through the hook context,
+// because this C API makes memory and gas reachable only from inside a host call.
 type Wasmer2Instance struct {
-	// The underlying WebAssembly instance.
-	cgoInstance *cWasmerInstanceT
+	cInstance   *cInstanceT
+	hooksHandle cgo.Handle
 
-	// The exported memory of a WebAssembly instance.
-	memory Wasmer2Memory
+	// importedFunctions is read once at creation, because the question the VM asks of it is
+	// "is this name imported?" for each entry of a 21-name blocklist, on every contract it
+	// validates. The legacy C API could only answer one name at a time, so that cost 21 cgo
+	// calls; this one hands over the whole list in a pair of calls, so it costs two and the
+	// rest is a map lookup.
+	importedFunctions map[string]struct{}
 
-	AlreadyClean bool
+	// inCall guards against re-entering this same instance, which the Rust side cannot
+	// survive: WasmerProdInstance::call takes &mut self, so a second call while the first
+	// is in flight aliases a mutable borrow. Nesting into a *different* instance is fine and
+	// is what the VM does for executeOnDestContext.
+	//
+	// A plain bool, not a mutex, on purpose. An instance is not safe for concurrent use at
+	// all, and a lock would imply otherwise; what this catches is the single-goroutine
+	// re-entry a hook could perform, which is the mistake that is actually available to make.
+	inCall bool
+
+	// hooks is this instance's side of the hook bridge, kept so that the legacy interface can
+	// reach the state of a running hook. See wasmer2InstanceLegacy.go.
+	hooks *instanceHooks
+
+	// gasLimit is the limit for the next call, which the legacy interface sets beforehand.
+	gasLimit uint64
+
+	// breakpoint stands in for the wasm global this executor no longer has.
+	breakpoint uint64
+
+	cleaned bool
+
+	// id is stable for the instance's whole life, including after it is closed. See ID().
+	id string
 }
 
-func emptyInstance() *Wasmer2Instance {
-	return &Wasmer2Instance{cgoInstance: nil}
-}
+// Call invokes an exported function with a gas limit for this call.
+//
+// The returned error reports a failure of the boundary itself. A failure of the *contract*
+// is not an error: it comes back as the CallResult kind, which is the point of the enum.
+func (instance *Wasmer2Instance) Call(funcName string, pointsLimit uint64) (wasmercommon.CallResult, error) {
+	if instance.inCall {
+		return wasmercommon.CallResult{}, wasmercommon.ErrInstanceReentered
+	}
+	instance.inCall = true
+	defer func() { instance.inCall = false }()
 
-func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
-	return &Wasmer2Instance{
-		cgoInstance: c_instance,
-		memory: Wasmer2Memory{
-			cgoInstance: c_instance,
-		},
-	}, nil
-}
+	buf := newErrBuf()
+	var cResult C.struct_vm_exec_call_result_t
 
-// Clean cleans instance
-func (instance *Wasmer2Instance) Clean() bool {
-	logWasmer2.Trace("cleaning instance", "id", instance.ID())
-	if instance.AlreadyClean {
-		logWasmer2.Trace("clean: already cleaned instance", "id", instance.ID())
-		return false
+	status := cInstanceCall(instance.cInstance, funcName, pointsLimit, &cResult, buf)
+	if status != C.VM_EXEC_OK {
+		return wasmercommon.CallResult{}, buf.AsError(status, "instance call failed")
 	}
 
-	if instance.cgoInstance != nil {
-		cWasmerInstanceDestroy(instance.cgoInstance)
-
-		instance.AlreadyClean = true
-		logWasmer2.Trace("cleaned instance", "id", instance.ID())
-
-		return true
+	result := wasmercommon.CallResult{
+		Kind:          wasmercommon.CallResultKind(cResult.kind),
+		EarlyExitCode: uint64(cResult.early_exit_code),
+		Breakpoint:    uint64(cResult.breakpoint),
 	}
 
-	return false
+	// The error buffer doubles as the message channel for the two outcomes that have one.
+	// For the rest it holds whatever the previous call left behind, so it is not read.
+	if result.Kind == wasmercommon.CallRuntimeError || result.Kind == wasmercommon.CallEarlyExit {
+		result.Message = buf.Message()
+	}
+
+	return result, nil
 }
 
-// IsAlreadyCleaned returns the internal field AlreadyClean
-func (instance *Wasmer2Instance) IsAlreadyCleaned() bool {
-	return instance.AlreadyClean
+// PointsUsed returns the gas consumed so far.
+//
+// Named apart from the legacy GetPointsUsed, which has nowhere to report a failure; see
+// wasmer2InstanceLegacy.go.
+func (instance *Wasmer2Instance) PointsUsed() (uint64, error) {
+	buf := newErrBuf()
+	var points C.uint64_t
+
+	status := cInstanceGetPointsUsed(instance.cInstance, &points, buf)
+	if err := buf.AsError(status, "could not read points used"); err != nil {
+		return 0, err
+	}
+
+	return uint64(points), nil
 }
 
-// SetGasLimit sets the gas limit for the instance
-func (instance *Wasmer2Instance) SetGasLimit(gasLimit uint64) {
-	cWasmerInstanceSetGasLimit(instance.cgoInstance, gasLimit)
+// CheckSignatures reports whether every exported function takes no arguments and returns no
+// results, which is what the contract ABI requires.
+func (instance *Wasmer2Instance) CheckSignatures() bool {
+	return cInstanceCheckSignatures(instance.cInstance) == 1
 }
 
-// SetPointsUsed sets the internal instance gas counter
-func (instance *Wasmer2Instance) SetPointsUsed(points uint64) {
-	cWasmerInstanceSetPointsUsed(instance.cgoInstance, points)
+// HasFunction reports whether the contract exports a function by that name.
+func (instance *Wasmer2Instance) HasFunction(funcName string) bool {
+	return cInstanceHasFunction(instance.cInstance, funcName) == 1
 }
 
-// GetPointsUsed returns the internal instance gas counter
-func (instance *Wasmer2Instance) GetPointsUsed() uint64 {
-	return cWasmerInstanceGetPointsUsed(instance.cgoInstance)
-}
-
-// SetBreakpointValue sets the breakpoint value for the instance
-func (instance *Wasmer2Instance) SetBreakpointValue(value uint64) {
-	cWasmerInstanceSetBreakpointValue(instance.cgoInstance, value)
-}
-
-// GetBreakpointValue returns the breakpoint value
-func (instance *Wasmer2Instance) GetBreakpointValue() uint64 {
-	return cWasmerInstanceGetBreakpointValue(instance.cgoInstance)
-}
-
-// Cache caches the instance
-func (instance *Wasmer2Instance) Cache() ([]byte, error) {
-	var cacheBytes *cUchar
-	var cacheLen cUint32T
-
-	var cacheResult = cWasmerInstanceCache(
-		instance.cgoInstance,
-		&cacheBytes,
-		&cacheLen,
+// ExportedFunctionNames returns the names of the contract's endpoints.
+func (instance *Wasmer2Instance) ExportedFunctionNames() ([]string, error) {
+	return wasmercommon.ReadNames(
+		func() int32 { return cInstanceExportedFunctionNamesLength(instance.cInstance) },
+		func(dest []byte) int32 { return cInstanceExportedFunctionNames(instance.cInstance, dest) },
 	)
-
-	if cacheResult != cWasmerOk {
-		return nil, ErrCachingFailed
-	}
-
-	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
-
-	C.free(unsafe.Pointer(cacheBytes))
-	cacheBytes = nil
-	return goBytes, nil
 }
 
-// IsFunctionImported returns true if the instance imports the specified function
+// ImportedFunctionNames returns the names of the VM hooks the contract imports.
+//
+// This is what the contract validator needs, and it is new: the legacy API could only answer
+// "is this particular name imported?", one name at a time against a hardcoded list.
+func (instance *Wasmer2Instance) ImportedFunctionNames() ([]string, error) {
+	return wasmercommon.ReadNames(
+		func() int32 { return cInstanceImportedFunctionNamesLength(instance.cInstance) },
+		func(dest []byte) int32 { return cInstanceImportedFunctionNames(instance.cInstance, dest) },
+	)
+}
+
+// ResetInstance returns the instance to the state it had immediately after creation, so it
+// can serve another execution.
+//
+// Memory contents and length, the contract's own mutable globals, and the metering and
+// breakpoint globals are all restored. The handle stays valid: the instance is rebuilt behind
+// it rather than replaced, so the caller keeps using the same object.
+func (instance *Wasmer2Instance) ResetInstance() error {
+	buf := newErrBuf()
+
+	status := cInstanceReset(instance.cInstance, buf)
+	if err := buf.AsError(status, "could not reset instance"); err != nil {
+		return err
+	}
+
+	// The wasm globals are fresh, so the Go-side stand-in for the breakpoint has to be too —
+	// it is not a wasm global on this backend, so nothing in the library cleared it.
+	instance.breakpoint = 0
+
+	return nil
+}
+
+// CacheArtifact serializes the compiled module, for NewInstanceFromCache to load back.
+//
+// Two calls, as for the name readers, but the first does the work rather than measuring it:
+// the artifact is a few hundred KB, so the library serializes once and holds the result for
+// the copy. That is why these are not wrapped in wasmercommon.ReadNames — the length call is
+// not idempotent here, and the pair must stay adjacent.
+func (instance *Wasmer2Instance) CacheArtifact() ([]byte, error) {
+	buf := newErrBuf()
+
+	var length C.uint32_t
+	status := cInstanceCacheLength(instance.cInstance, &length, buf)
+	if err := buf.AsError(status, "could not serialize compiled module"); err != nil {
+		return nil, err
+	}
+	if length == 0 {
+		return nil, wasmercommon.ErrEmptyCacheArtifact
+	}
+
+	artifact := make([]byte, int(length))
+	status = cInstanceCache(instance.cInstance, artifact, buf)
+	if err := buf.AsError(status, "could not read serialized compiled module"); err != nil {
+		return nil, err
+	}
+
+	return artifact, nil
+}
+
+// IsFunctionImported reports whether the contract imports a VM hook by that name.
+//
+// Answered from the set captured at creation, not from the executor, so it costs nothing to
+// ask repeatedly. That matters because the contract validator asks it once per name of a
+// blocklist for every contract it checks.
 func (instance *Wasmer2Instance) IsFunctionImported(name string) bool {
-	var cImportName = cCString(name)
-	defer cFree(unsafe.Pointer(cImportName))
+	_, imported := instance.importedFunctions[name]
 
-	result := cWasmerInstanceHasImportedFunction(
-		instance.cgoInstance,
-		cImportName,
-	)
-
-	return result == 1
+	return imported
 }
 
-// CallFunction executes given function from loaded contract.
-func (instance *Wasmer2Instance) CallFunction(functionName string) error {
-	var wasmFunctionName = cCString(functionName)
-	defer cFree(unsafe.Pointer(wasmFunctionName))
-
-	var callResult = cWasmerInstanceCall(
-		instance.cgoInstance,
-		wasmFunctionName,
-	)
-
-	if callResult != cWasmerOk {
-		err := fmt.Errorf("failed to call the `%s` exported function", functionName)
-		return newWrappedError(err)
+// Close releases the instance and the hooks handle that reaches back into Go.
+//
+// In that order: once the instance is gone no hook can run, so the handle is safe to drop.
+// Dropping it first would leave a window in which a hook could resolve a deleted handle.
+func (instance *Wasmer2Instance) Close() {
+	if instance.cInstance == nil {
+		return
 	}
 
-	return nil
-}
-
-// HasFunction checks if loaded contract has a function (endpoint) with given name.
-func (instance *Wasmer2Instance) HasFunction(functionName string) bool {
-	var wasmFunctionName = cCString(functionName)
-	defer cFree(unsafe.Pointer(wasmFunctionName))
-
-	result := cWasmerInstanceHasFunction(
-		instance.cgoInstance,
-		wasmFunctionName,
-	)
-
-	return result == 1
-}
-
-// GetLastError returns the last error message if any, otherwise returns an error.
-func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
-	var bufferLength = cWasmerInstanceExportedFunctionNamesLength(instance.cgoInstance)
-
-	if bufferLength == 0 {
-		return "", nil
-	}
-
-	var buffer = make([]cChar, bufferLength)
-	var bufferPointer = (*cChar)(unsafe.Pointer(&buffer[0]))
-
-	var result = cWasmerInstanceExportedFunctionNames(instance.cgoInstance, bufferPointer, bufferLength)
-
-	if result == -1 {
-		return "", errors.New("cannot read function names")
-	}
-
-	return cGoString(bufferPointer), nil
-}
-
-// GetFunctionNames returns a list of the function names exported by the contract.
-func (instance *Wasmer2Instance) GetFunctionNames() []string {
-	buffer, err := instance.getFunctionNamesConcat()
-	if err != nil {
-		return nil
-	}
-	return strings.Split(buffer, "|")
-}
-
-// ValidateFunctionArities checks that no function (endpoint) of the given contract has any parameters or returns any result.
-// All arguments and results should be transferred via the import functions.
-func (instance *Wasmer2Instance) ValidateFunctionArities() error {
-	var result = cWasmerCheckSignatures(instance.cgoInstance)
-	if result != cWasmerOk {
-		return executor.ErrFunctionNonvoidSignature
-	}
-	return nil
-}
-
-// HasMemory checks whether the instance has at least one exported memory.
-func (instance *Wasmer2Instance) HasMemory() bool {
-	return true
-}
-
-// MemLoad returns the contents from the given offset of the WASM memory.
-func (instance *Wasmer2Instance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
-	return executor.MemLoadFromMemory(&instance.memory, memPtr, length)
-}
-
-// MemStore stores the given data in the WASM memory at the given offset.
-func (instance *Wasmer2Instance) MemStore(memPtr executor.MemPtr, data []byte) error {
-	return executor.MemStoreToMemory(&instance.memory, memPtr, data)
-}
-
-// MemLength returns the length of the allocated memory. Only called directly in tests.
-func (instance *Wasmer2Instance) MemLength() uint32 {
-	return instance.memory.Length()
-}
-
-// MemGrow allocates more pages to the current memory. Only called directly in tests.
-func (instance *Wasmer2Instance) MemGrow(pages uint32) error {
-	return instance.memory.Grow(pages)
-}
-
-// MemDump yields the entire contents of the memory. Only used in tests.
-func (instance *Wasmer2Instance) MemDump() []byte {
-	return instance.memory.Data()
-}
-
-// Id returns an identifier for the instance, unique at runtime
-func (instance *Wasmer2Instance) ID() string {
-	return fmt.Sprintf("%p", instance.cgoInstance)
-}
-
-// Reset resets the instance memories and globals
-func (instance *Wasmer2Instance) Reset() bool {
-	if instance.AlreadyClean {
-		logWasmer2.Trace("reset: already cleaned instance", "id", instance.ID())
-		return false
-	}
-
-	result := cWasmerInstanceReset(instance.cgoInstance)
-	ok := result == cWasmerOk
-
-	logWasmer2.Trace("reset: warm instance", "id", instance.ID(), "ok", ok)
-	return ok
-}
-
-// IsInterfaceNil returns true if underlying object is nil
-func (instance *Wasmer2Instance) IsInterfaceNil() bool {
-	return instance == nil
-}
-
-// SetVMHooksPtr sets the VM hooks pointer
-func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
-}
-
-// GetVMHooksPtr returns the VM hooks pointer
-func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
-	return uintptr(0)
+	cInstanceDestroy(instance.cInstance)
+	instance.cInstance = nil
+	instance.hooksHandle.Delete()
 }

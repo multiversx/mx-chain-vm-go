@@ -1,4 +1,4 @@
-.PHONY: test test-short build vmserver clean
+.PHONY: test test-w2l test-w2 test-w7 test-short build vmserver clean
 
 VM_VERSION := $(shell git describe --tags --long --dirty --always)
 
@@ -15,12 +15,28 @@ endif
 	go build -o ./cmd/vmserver/vmserver ./cmd/vmserver
 	cp ./cmd/vmserver/vmserver ${VMSERVER_PATH}
 
+# The default executor is wasmer2legacy, which is what production runs; `test` leaves
+# VMEXECUTOR unset so that it tracks the default rather than pinning a name here.
 test:
 	go clean -cache -testcache
-	VMEXECUTOR="wasmer2" go test ./...
+	go test ./...
 
+# One target per executor, named after the value VMEXECUTOR takes. The three differ in two
+# independent ways — which wasm runtime, and which boundary — so running all three is what
+# attributes a failure to one of them; see PLAN-go-ffi.md, Phase 4c.
+
+# Wasmer 2.2 through the legacy C API and executor interfaces. Production today.
+test-w2l: clean
+	VMEXECUTOR="wasmer2legacy" go test ./...
+
+# Wasmer 2.2 through the new C API and interfaces. Same runtime as test-w2l, different
+# boundary, so a difference between the two is the migration's doing.
 test-w2: clean
 	VMEXECUTOR="wasmer2" go test ./...
+
+# Wasmer 7 through the new C API and interfaces.
+test-w7: clean
+	VMEXECUTOR="wasmer7" go test ./...
 
 test-v: clean
 	go test ./... -v

@@ -88,9 +88,6 @@ var ErrContractInvalid = fmt.Errorf("invalid contract code")
 // ErrContractNotFound signals that the contract was not found
 var ErrContractNotFound = fmt.Errorf("%w (not found)", ErrContractInvalid)
 
-// ErrMemoryDeclarationMissing signals that a memory declaration is missing
-var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", ErrContractInvalid)
-
 // ErrMaxInstancesReached signals that the max number of Wasmer instances has been reached.
 var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)
 

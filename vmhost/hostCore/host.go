@@ -21,7 +21,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 )
 
 var log = logger.GetOrCreate("vm/host")
@@ -207,7 +207,7 @@ func NewVMHost(
 
 // Creates a new executor instance. Should only be called once per VM host instantiation.
 func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.Executor, error) {
-	vmHooks := vmhooks.NewVMHooksImpl(host)
+	vmHooksProvider := vmhooks.NewVMHooksProvider(host)
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
 		return nil, err
@@ -218,11 +218,11 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	if hostParameters.OverrideVMExecutor != nil {
 		vmExecutorFactory = hostParameters.OverrideVMExecutor
 	} else {
-		vmExecutorFactory = wasmer2.ExecutorFactory()
+		vmExecutorFactory = wasmer2legacy.ExecutorFactory()
 	}
 
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
-		VMHooks:                  vmHooks,
+		VMHooksProvider:          vmHooksProvider,
 		OpcodeVersion:            host.getOpcodeVersionForCurrentEpoch(),
 		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
 		RkyvSerializationEnabled: true,

@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/marshal"
@@ -59,7 +59,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
-	wasmerExecutor, _ := wasmer2.CreateExecutor()
+	wasmerExecutor, _ := wasmer2legacy.CreateExecutor()
 	wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{
@@ -77,8 +77,8 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(tb)
 	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks:     vmhooks.NewVMHooksImpl(host),
-		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
+		VMHooksProvider: vmhooks.NewVMHooksProvider(host),
+		OpcodeCosts:     gasCostConfig.WASMOpcodeCost,
 	})
 	require.Nil(tb, err)
 	runtimeCtx, err := NewRuntimeContext(
