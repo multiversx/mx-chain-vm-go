@@ -601,61 +601,44 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 func TestHost_GetCodeHash_UpgradedInTransaction_Overlay(t *testing.T) {
 	t.Parallel()
 
-	for _, flagEnabled := range []bool{false, true} {
-		flagEnabled := flagEnabled
-		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
-			_, err := test.BuildMockInstanceCallTest(t).
-				WithContracts(
-					test.CreateMockContract(test.ParentAddress).
-						WithBalance(100000).
-						WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
-							parentInstance.AddMockMethod("testGetCodeHash", func() *contextmock.InstanceMock {
-								host := parentInstance.Host
-								targetSC := test.ChildAddress
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(100000).
+				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testGetCodeHash", func() *contextmock.InstanceMock {
+						host := parentInstance.Host
+						targetSC := test.ChildAddress
 
-								// Simulate an in-transaction code deployment/upgrade for targetSC
-								newCode := []byte("new-upgraded-contract-code-bytes-12345")
-								host.Output().DeployCode(vmhost.CodeDeployInput{
-									ContractAddress:     targetSC,
-									ContractCode:        newCode,
-									CodeDeployerAddress: test.ParentAddress,
-								})
+						// Simulate an in-transaction code deployment/upgrade for targetSC
+						newCode := []byte("new-upgraded-contract-code-bytes-12345")
+						host.Output().DeployCode(vmhost.CodeDeployInput{
+							ContractAddress:     targetSC,
+							ContractCode:        newCode,
+							CodeDeployerAddress: test.ParentAddress,
+						})
 
-								codeHash := host.Blockchain().GetCodeHash(targetSC)
-								expectedNewHash := host.Runtime().ComputeCodeHash(newCode)
+						codeHash := host.Blockchain().GetCodeHash(targetSC)
+						expectedNewHash := host.Runtime().ComputeCodeHash(newCode)
 
-								if flagEnabled {
-									require.Equal(t, expectedNewHash, codeHash, "under flag, GetCodeHash must return hash of upgraded code from overlay")
-								} else {
-									require.NotEqual(t, expectedNewHash, codeHash, "without flag, GetCodeHash returns committed state")
-								}
+						require.Equal(t, expectedNewHash, codeHash, "GetCodeHash must return hash of upgraded code from overlay")
 
-								return parentInstance
-							})
-						}),
-					test.CreateMockContract(test.ChildAddress).
-						WithBalance(100000).
-						WithMethods(),
-				).
-				WithInput(test.CreateTestContractCallInputBuilder().
-					WithRecipientAddr(test.ParentAddress).
-					WithGasProvided(100000000).
-					WithFunction("testGetCodeHash").
-					Build()).
-				WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
-					enableEpochsHandler := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
-					enableEpochsHandler.IsFlagEnabledCalled = func(flag core.EnableEpochFlag) bool {
-						if flag == vmhost.FixCorrectSmallIntAndGasLimitsFlag {
-							return flagEnabled
-						}
-						return true
-					}
-				}).
-				AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {})
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(100000).
+				WithMethods(),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(100000000).
+			WithFunction("testGetCodeHash").
+			Build()).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {})
 
-			assert.Nil(t, err)
-		})
-	}
+	assert.Nil(t, err)
 }
 
 func TestHost_MBufferNewFromBytes_MaxBufferCap_FlagGated(t *testing.T) {

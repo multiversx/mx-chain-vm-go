@@ -147,12 +147,10 @@ func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, n
 
 // GetCodeHash retrieves the hash of the code stored under the given address.
 func (context *blockchainContext) GetCodeHash(address []byte) []byte {
-	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
-		if context.host.Output().HasCodeUpdate(address) {
-			outputAccount, isNew := context.host.Output().GetOutputAccount(address)
-			if !isNew && len(outputAccount.Code) > 0 {
-				return context.host.Runtime().ComputeCodeHash(outputAccount.Code)
-			}
+	if context.host.Output().HasCodeUpdate(address) {
+		outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+		if !isNew && len(outputAccount.Code) > 0 {
+			return context.host.Runtime().ComputeCodeHash(outputAccount.Code)
 		}
 	}
 
