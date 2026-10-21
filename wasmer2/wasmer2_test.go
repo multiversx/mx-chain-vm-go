@@ -11,7 +11,8 @@ import (
 func TestCompilationOptions_FFILayout(t *testing.T) {
 	t.Parallel()
 
-	opts := executor.CompilationOptions{}
+	var opts executor.CompilationOptions
+	_ = opts
 
 	// CompilationOptions is cast to (*cWasmerCompilationOptions)(unsafe.Pointer(&options))
 	// and passed across Cgo to the C/Rust FFI layer (vm_exec_compilation_options_t).
