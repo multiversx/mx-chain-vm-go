@@ -2,8 +2,6 @@ module github.com/multiversx/mx-chain-vm-go
 
 go 1.26
 
-toolchain go1.26.2
-
 require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd/btcec/v2 v2.5.0
@@ -15,7 +13,7 @@ require (
 	github.com/multiversx/mx-chain-logger-go v1.2.0
 	github.com/multiversx/mx-chain-scenario-go v1.8.0
 	github.com/multiversx/mx-chain-storage-go v1.2.0
-	github.com/multiversx/mx-chain-vm-common-go v1.7.1
+	github.com/multiversx/mx-chain-vm-common-go v1.7.3
 	github.com/multiversx/mx-components-big-int v1.2.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/stretchr/testify v1.11.1
@@ -44,5 +42,3 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/multiversx/mx-chain-vm-common-go => github.com/multiversx/mx-chain-vm-common-go-ghsa-w84w-h39x-g6cq v1.7.3-0.20261009071257-28206342f66f
