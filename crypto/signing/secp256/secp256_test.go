@@ -84,10 +84,14 @@ func TestSecp256_VerifySecp256r1(t *testing.T) {
 
 	sk, _ := GenPrivateKeyR1()
 
-	key := elliptic.MarshalCompressed(elliptic.P256(), sk.PublicKey.X, sk.PublicKey.Y)
+	pubBytes, err := sk.PublicKey.Bytes()
+	require.NoError(t, err)
+	key := make([]byte, 33)
+	key[0] = 0x02 | (pubBytes[64] & 1)
+	copy(key[1:], pubBytes[1:33])
 	sig, _ := SignMessage(msg, sk)
 
-	err := verifier.VerifySecp256r1(nil, nil, nil)
+	err = verifier.VerifySecp256r1(nil, nil, nil)
 	assert.NotNil(t, err)
 
 	err = verifier.VerifySecp256r1(key, nil, nil)
