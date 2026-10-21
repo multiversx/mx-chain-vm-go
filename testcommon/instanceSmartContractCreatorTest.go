@@ -127,6 +127,9 @@ func (template *InstanceCreatorTestTemplate) createBlockchainStub() *contextmock
 		}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+		if len(template.address) == 0 {
+			return ChildAddress, nil
+		}
 		return template.address, nil
 	}
 	return stubBlockchainHook

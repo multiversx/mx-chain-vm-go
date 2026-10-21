@@ -96,21 +96,27 @@ func (werr *wrappableError) GetAllErrorsAndOtherInfo() ([]error, []string) {
 }
 
 func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLevels int, otherInfo ...string) *wrappableError {
-	newErrs := make([]errorWithLocation, len(werr.errsWithLocation))
-	copy(newErrs, werr.errsWithLocation)
 	if err == nil {
+		newErrs := make([]errorWithLocation, len(werr.errsWithLocation))
+		copy(newErrs, werr.errsWithLocation)
 		return &wrappableError{
 			errsWithLocation: newErrs,
 		}
 	}
 
-	var errsWithLocation []errorWithLocation
 	inputWrappableError, ok := err.(*wrappableError)
 	if !ok {
-		errsWithLocation = append(newErrs, createErrorWithLocation(err, skipStackLevels, otherInfo...))
-	} else {
-		errsWithLocation = append(newErrs, inputWrappableError.errsWithLocation...)
+		errsWithLocation := make([]errorWithLocation, len(werr.errsWithLocation)+1)
+		copy(errsWithLocation, werr.errsWithLocation)
+		errsWithLocation[len(werr.errsWithLocation)] = createErrorWithLocation(err, skipStackLevels, otherInfo...)
+		return &wrappableError{
+			errsWithLocation: errsWithLocation,
+		}
 	}
+
+	errsWithLocation := make([]errorWithLocation, len(werr.errsWithLocation)+len(inputWrappableError.errsWithLocation))
+	copy(errsWithLocation, werr.errsWithLocation)
+	copy(errsWithLocation[len(werr.errsWithLocation):], inputWrappableError.errsWithLocation)
 	return &wrappableError{
 		errsWithLocation: errsWithLocation,
 	}
@@ -129,31 +135,44 @@ func createErrorWithLocation(err error, skipStackLevels int, otherInfo ...string
 
 // Error - standard error function implementation for wrappable errors
 func (werr *wrappableError) Error() string {
-	strErr := ""
+	var builder strings.Builder
 	errs := werr.errsWithLocation
 	for idxErr := range errs {
 		errWithLocation := errs[len(errs)-1-idxErr]
 		errMsg := errWithLocation.err.Error()
-		suffix := ""
+		builder.WriteString("\n\t")
+		builder.WriteString(errWithLocation.location)
 		if errMsg != "" {
-			suffix = " [" + errMsg + "]"
+			builder.WriteString(" [")
+			builder.WriteString(errMsg)
+			builder.WriteByte(']')
 		}
 		if errWithLocation.otherInfo != nil {
-			suffix += " [" + strings.Join(errWithLocation.otherInfo, ",") + "]"
+			builder.WriteString(" [")
+			builder.WriteString(strings.Join(errWithLocation.otherInfo, ","))
+			builder.WriteByte(']')
 		}
-		strErr += "\n\t" + errWithLocation.location + suffix
 	}
-	return strErr
+	return builder.String()
 }
 
 // Unwrap - standard error function implementation for wrappable errors
 func (werr *wrappableError) Unwrap() error {
+	if werr == nil || len(werr.errsWithLocation) == 0 {
+		return nil
+	}
+	if len(werr.errsWithLocation) == 1 {
+		return werr.errsWithLocation[0].err
+	}
+
 	wrappingErr := werr.unwrapWrapping()
+	if wrappingErr == nil {
+		return nil
+	}
 	if len(wrappingErr.errsWithLocation) == 1 {
 		return wrappingErr.errsWithLocation[0].err
-	} else {
-		return wrappingErr
 	}
+	return wrappingErr
 }
 
 func (werr *wrappableError) unwrapWrapping() *wrappableError {

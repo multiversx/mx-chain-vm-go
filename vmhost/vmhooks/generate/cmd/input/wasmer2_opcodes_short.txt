@@ -116,11 +116,6 @@ Return
 ReturnCall
 ReturnCallIndirect
 Select
-TableGet
-TableGrow
-TableInit
-TableSet
-TableSize
 Throw
 Try
 TypedSelect

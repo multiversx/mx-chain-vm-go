@@ -129,11 +129,31 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 
 // GetESDTToken returns the unmarshalled esdt token for the given address and nonce for NFTs
 func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
-	return context.blockChainHook.GetESDTToken(address, tokenID, nonce)
+	token, err := context.blockChainHook.GetESDTToken(address, tokenID, nonce)
+	if err != nil {
+		return nil, err
+	}
+	if token == nil || token.Value == nil {
+		return &esdt.ESDigitalToken{
+			Value:         big.NewInt(0),
+			TokenMetaData: &esdt.MetaData{},
+		}, nil
+	}
+	if token.TokenMetaData == nil {
+		token.TokenMetaData = &esdt.MetaData{}
+	}
+	return token, nil
 }
 
 // GetCodeHash retrieves the hash of the code stored under the given address.
 func (context *blockchainContext) GetCodeHash(address []byte) []byte {
+	if context.host.Output().HasCodeUpdate(address) {
+		outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+		if !isNew && len(outputAccount.Code) > 0 {
+			return context.host.Runtime().ComputeCodeHash(outputAccount.Code)
+		}
+	}
+
 	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil {
 		return nil
@@ -348,6 +368,8 @@ func (context *blockchainContext) PopSetActiveState() {
 	}
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
+
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
 	if err != nil {
 		vmhooks.FailExecution(context.host, err)
@@ -355,8 +377,6 @@ func (context *blockchainContext) PopSetActiveState() {
 		logBlockchain.Error("PopSetActiveState RevertToSnapshot", "error", err)
 		return
 	}
-
-	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 // PopDiscard removes the latest entry from the state stack

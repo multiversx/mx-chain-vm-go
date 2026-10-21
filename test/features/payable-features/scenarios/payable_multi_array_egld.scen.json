@@ -17,7 +17,7 @@
                         "str:TOK-000001": "1000",
                         "str:TOK-000002": "500",
                         "str:TOK-000003": "500",
-                        "str:SFT-123": {
+                        "str:SFT-00038e": {
                             "instances": [
                                 {
                                     "nonce": "5",
@@ -49,7 +49,7 @@
                         "value": "400"
                     },
                     {
-                        "tokenIdentifier": "str:SFT-123",
+                        "tokenIdentifier": "str:SFT-00038e",
                         "nonce": "5",
                         "value": "10"
                     },
@@ -85,7 +85,7 @@
                         "value": "100"
                     },
                     {
-                        "tokenIdentifier": "str:SFT-123",
+                        "tokenIdentifier": "str:SFT-00038e",
                         "nonce": "5",
                         "value": "10"
                     }
@@ -120,7 +120,7 @@
                         "value": "400"
                     },
                     {
-                        "tokenIdentifier": "str:SFT-123",
+                        "tokenIdentifier": "str:SFT-00038e",
                         "nonce": "5",
                         "value": "10"
                     }
@@ -134,7 +134,7 @@
                 "out": [
                     "nested:str:TOK-000001|u64:0|biguint:100",
                     "nested:str:EGLD|u64:0|biguint:400",
-                    "nested:str:SFT-123|u64:5|biguint:10"
+                    "nested:str:SFT-00038e|u64:5|biguint:10"
                 ],
                 "status": "",
                 "logs": "*",

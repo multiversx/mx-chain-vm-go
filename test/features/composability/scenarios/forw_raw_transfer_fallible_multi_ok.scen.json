@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000"
+                        "str:FWD-000389": "1000"
                     },
                     "code": "mxsc:../forwarder-barnard/output/forwarder-barnard.mxsc.json"
                 },
@@ -31,10 +31,10 @@
                 "function": "transfer_fallible",
                 "arguments": [
                     "sc:vault",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "100",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "200"
                 ],
@@ -52,10 +52,10 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "200",
                             "sc:vault"
@@ -65,10 +65,10 @@
                             "str:MultiESDTNFTTransfer",
                             "sc:vault",
                             "2",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "200"
                         ]
@@ -89,7 +89,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "300"
+                        "str:FWD-000389": "300"
                     },
                     "storage": {},
                     "code": "mxsc:../vault/output/vault.mxsc.json"
@@ -98,7 +98,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "700"
+                        "str:FWD-000389": "700"
                     },
                     "storage": {},
                     "code": "*"

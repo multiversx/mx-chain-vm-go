@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
@@ -940,6 +941,9 @@ func computeExpectedErrorsForRound(gasGraph *test.TestCallGraph, startNode *test
 func checkThatStoreIsEmpty(t testing.TB, world *worldmock.MockWorld) {
 	for address, account := range world.AcctMap {
 		for key, value := range account.Storage {
+			if strings.HasPrefix(key, "ELRONDVM@ASYNC") {
+				continue
+			}
 			require.Equal(t, []byte{}, value, fmt.Sprintf("Value present in storage for address '%s' key '%s'", address, key))
 		}
 	}

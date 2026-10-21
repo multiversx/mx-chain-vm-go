@@ -39,6 +39,13 @@ func (handler *overflowHandler) MulInt64(a, b int64) int64 {
 		return builtinMath.MaxInt64
 	}
 
+	if (a == builtinMath.MinInt64 && b == -1) || (b == builtinMath.MinInt64 && a == -1) {
+		if handler.err == nil {
+			handler.err = fmt.Errorf("%w when multiplying %d with %d", ErrMultiplicationOverflow, a, b)
+		}
+		return builtinMath.MaxInt64
+	}
+
 	res := a * b
 	if a == 0 || b == 0 || a == res/b {
 		return res

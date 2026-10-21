@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-storage-go/lrucache"
@@ -17,6 +20,7 @@ var _ vmhost.InstanceTracker = (*instanceTracker)(nil)
 type instanceCacheLevel int
 
 var errTooManyInstances = errors.New("too many instances")
+var errNilInstance = errors.New("nil instance")
 
 const (
 	// Warm indicates that the instance to track is a warm instance
@@ -34,6 +38,7 @@ var _ vmhost.StateStack = (*instanceTracker)(nil)
 var logTracker = logger.GetOrCreate("vm/tracker")
 
 type instanceTracker struct {
+	mut                 sync.RWMutex
 	codeHash            []byte
 	codeSize            uint64
 	numRunningInstances int
@@ -43,6 +48,7 @@ type instanceTracker struct {
 	instanceStack       []executor.Instance
 	codeHashStack       [][]byte
 	codeSizeStack       []uint64
+	enableEpochsHandler core.EnableEpochsHandler
 
 	instances map[string]executor.Instance
 }
@@ -69,6 +75,9 @@ func NewInstanceTracker() (*instanceTracker, error) {
 
 // InitState initializes the internal instanceTracker state
 func (tracker *instanceTracker) InitState() {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 	tracker.instances = make(map[string]executor.Instance)
@@ -138,6 +147,8 @@ func (tracker *instanceTracker) StackSize() uint64 {
 
 // Instance returns the active instance
 func (tracker *instanceTracker) Instance() executor.Instance {
+	tracker.mut.RLock()
+	defer tracker.mut.RUnlock()
 	return tracker.instance
 }
 
@@ -228,6 +239,32 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 	}
 }
 
+// AbandonInstance evicts the active instance from the warm instance cache and unsets it
+// without calling Clean() / destroying its CGO memory, preventing SIGSEGV crashes if the
+// instance is still executing on an unresponsive CGO thread.
+func (tracker *instanceTracker) AbandonInstance() {
+	tracker.mut.Lock()
+	instance := tracker.instance
+	codeHash := tracker.codeHash
+	tracker.instance = nil
+	tracker.codeHash = nil
+	tracker.mut.Unlock()
+
+	if check.IfNil(instance) {
+		logTracker.Trace("cannot abandon, instance already nil")
+		return
+	}
+
+	instance.Abandon()
+
+	if codeHash != nil {
+		tracker.warmInstanceCache.Remove(codeHash)
+	}
+	tracker.updateNumRunningInstances(-1)
+	numWarmInstances, numColdInstances := tracker.NumRunningInstances()
+	logTracker.Trace("instance abandoned; num instances", "warm", numWarmInstances, "cold", numColdInstances)
+}
+
 // SaveAsWarmInstance saves the active instance into the internal warm instance cache
 func (tracker *instanceTracker) SaveAsWarmInstance() {
 	lenCacheBeforeSaving := tracker.warmInstanceCache.Len()
@@ -281,23 +318,75 @@ func (tracker *instanceTracker) GetCodeSize() uint64 {
 	return tracker.codeSize
 }
 
+// SetEnableEpochsHandler sets the enable epochs handler for flag gating
+func (tracker *instanceTracker) SetEnableEpochsHandler(handler core.EnableEpochsHandler) {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+	tracker.enableEpochsHandler = handler
+}
+
+func (tracker *instanceTracker) isAttributeExtraGasUsageEnabled() bool {
+	tracker.mut.RLock()
+	defer tracker.mut.RUnlock()
+	if check.IfNil(tracker.enableEpochsHandler) {
+		return true
+	}
+	return tracker.enableEpochsHandler.IsFlagEnabled(vmhost.AttributeExtraGasUsageFlag)
+}
+
+func (tracker *instanceTracker) getInstanceKey(instance executor.Instance) string {
+	instanceKey := instance.ID()
+	if !tracker.isAttributeExtraGasUsageEnabled() {
+		if idx := strings.Index(instanceKey, "-"); idx != -1 {
+			instanceKey = instanceKey[:idx]
+		}
+	}
+	return instanceKey
+}
+
 // SetNewInstance sets the given instance as active and tracks its creation
 func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) error {
+	if check.IfNil(instance) {
+		return errNilInstance
+	}
+
+	instanceKey := tracker.getInstanceKey(instance)
+	_, exists := tracker.instances[instanceKey]
+	newCount := len(tracker.instances)
+	if !exists {
+		newCount++
+	}
+
+	if tracker.isAttributeExtraGasUsageEnabled() {
+		if newCount >= warmCacheSize-1 {
+			if cacheLevel != Warm {
+				_ = instance.Clean()
+			}
+			return errTooManyInstances
+		}
+	}
+
 	tracker.ReplaceInstance(instance)
 	tracker.cacheLevel = cacheLevel
 	if cacheLevel != Warm {
 		tracker.updateNumRunningInstances(+1)
 	}
-	tracker.instances[instance.ID()] = instance
+	tracker.instances[instanceKey] = instance
 
-	if len(tracker.instances) >= warmCacheSize-1 {
-		return errTooManyInstances
+	if !tracker.isAttributeExtraGasUsageEnabled() {
+		if len(tracker.instances) >= warmCacheSize-1 {
+			return errTooManyInstances
+		}
 	}
+
 	return nil
 }
 
 // ReplaceInstance replaces the currently active instance with the given one
 func (tracker *instanceTracker) ReplaceInstance(instance executor.Instance) {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+
 	var previousInstanceID string
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("ReplaceInstance: previous instance was nil")
@@ -314,6 +403,9 @@ func (tracker *instanceTracker) ReplaceInstance(instance executor.Instance) {
 
 // UnsetInstance replaces the currently active instance with nil
 func (tracker *instanceTracker) UnsetInstance() {
+	tracker.mut.Lock()
+	defer tracker.mut.Unlock()
+
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("UnsetInstance: current instance is already nil")
 		return
@@ -366,7 +458,7 @@ func (tracker *instanceTracker) CheckInstances() error {
 		if !ok {
 			return fmt.Errorf("degenerate cache")
 		}
-		warmInstanceCacheByID[instance.ID()] = instance
+		warmInstanceCacheByID[tracker.getInstanceKey(instance)] = instance
 	}
 
 	for id, instance := range tracker.instances {

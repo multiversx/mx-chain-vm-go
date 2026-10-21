@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEthereumSig(t *testing.T) {
@@ -101,6 +102,22 @@ func TestSecp256_VerifySecp256r1(t *testing.T) {
 	msg[0] += 1
 	err = verifier.VerifySecp256r1(key, msg, sig)
 	assert.NotNil(t, err)
+}
+
+func TestSecp256_VerifySecp256r1_MalformedCoordinates(t *testing.T) {
+	t.Parallel()
+
+	verifier, _ := NewSecp256()
+	malformedKey := make([]byte, 33) // 33 bytes, but first byte 0x00 is invalid prefix
+	msg := []byte("hello")
+	sig := make([]byte, 64)
+	sig[31] = 1 // R = 1
+	sig[63] = 1 // S = 1
+
+	require.NotPanics(t, func() {
+		err := verifier.VerifySecp256r1(malformedKey, msg, sig)
+		assert.Equal(t, errInvalidPublicKey, err)
+	})
 }
 
 func GenPrivateKeyR1() (*ecdsa.PrivateKey, error) {

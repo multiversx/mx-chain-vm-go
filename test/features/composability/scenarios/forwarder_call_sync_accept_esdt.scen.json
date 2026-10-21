@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     }
                 },
                 "sc:vault": {
@@ -31,11 +31,11 @@
                 "to": "sc:vault",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "value": "500"
                     },
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "value": "500"
                     }
                 ],
@@ -61,7 +61,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "value": "1000"
                     }
                 ],
@@ -80,7 +80,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000",
                             "sc:vault"
@@ -88,7 +88,7 @@
                         "data": [
                             "str:ExecuteOnDestContext",
                             "str:ESDTTransfer",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "1000",
                             "str:accept_funds_echo_payment"
                         ]
@@ -98,7 +98,7 @@
                         "endpoint": "str:accept_funds_echo_payment",
                         "topics": [
                             "str:accept_funds",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ],
@@ -111,7 +111,7 @@
                         "endpoint": "str:forward_sync_accept_funds",
                         "topics": [
                             "str:accept_funds_sync_result",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ],
@@ -131,7 +131,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "0"
+                        "str:TEST-000390": "0"
                     },
                     "storage": {},
                     "code": ""
@@ -140,7 +140,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds_echo_payment": "1"

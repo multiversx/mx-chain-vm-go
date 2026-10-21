@@ -7,7 +7,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-COLLEC": {
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -37,7 +37,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:NFT-COLLEC",
+                        "tokenIdentifier": "str:NFT-00038a",
                         "nonce": "1",
                         "value": "5"
                     }
@@ -65,7 +65,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-COLLEC": {
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -79,7 +79,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-COLLEC": {
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",

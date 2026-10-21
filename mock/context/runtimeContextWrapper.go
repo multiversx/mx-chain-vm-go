@@ -118,7 +118,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ClearStateStackFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	CleanInstanceFunc func()
+	CleanInstanceFunc   func()
+	UnsetInstanceFunc   func()
+	AbandonInstanceFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceTrackerFunc func() vmhost.InstanceTracker
 }
@@ -290,6 +292,14 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 
 	runtimeWrapper.CleanInstanceFunc = func() {
 		runtimeWrapper.runtimeContext.CleanInstance()
+	}
+
+	runtimeWrapper.UnsetInstanceFunc = func() {
+		runtimeWrapper.runtimeContext.UnsetInstance()
+	}
+
+	runtimeWrapper.AbandonInstanceFunc = func() {
+		runtimeWrapper.runtimeContext.AbandonInstance()
 	}
 
 	runtimeWrapper.GetInstanceTrackerFunc = func() vmhost.InstanceTracker {
@@ -484,6 +494,22 @@ func (contextWrapper *RuntimeContextWrapper) AttributeExtraGasUsage() bool {
 	return contextWrapper.runtimeContext.AttributeExtraGasUsage()
 }
 
+// FixCorrectSmallIntAndGasLimits calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) FixCorrectSmallIntAndGasLimits() bool {
+	return contextWrapper.runtimeContext.FixCorrectSmallIntAndGasLimits()
+}
+
+// OutputRollbackOnDestContext calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) OutputRollbackOnDestContext() bool {
+	return contextWrapper.runtimeContext.OutputRollbackOnDestContext()
+}
+
+
+// ComputeCodeHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ComputeCodeHash(code []byte) []byte {
+	return contextWrapper.runtimeContext.ComputeCodeHash(code)
+}
+
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()
@@ -551,6 +577,16 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
+}
+
+// UnsetInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) UnsetInstance() {
+	contextWrapper.UnsetInstanceFunc()
+}
+
+// AbandonInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) AbandonInstance() {
+	contextWrapper.AbandonInstanceFunc()
 }
 
 // EndExecution -

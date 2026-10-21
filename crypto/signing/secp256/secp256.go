@@ -47,6 +47,7 @@ var errInvalidSigLength = errors.New("invalid signature length")
 var errSignatureNotNormalized = errors.New("signature not normalized")
 var errSignatureVerificationFailed = errors.New("signature verification failed")
 var errPublicKeyLengthMissmatch = errors.New("invalid public key length")
+var errInvalidPublicKey = errors.New("invalid public key")
 
 // signatureR1 holds the r and s values of an ECDSA signature.
 type signatureR1 struct {
@@ -169,6 +170,9 @@ func (sec *secp256) unmarshalPubKey(key []byte) (*cryptoEcsda.PublicKey, error) 
 	}
 	cpk := &cryptoEcsda.PublicKey{Curve: sec.secp256r1}
 	cpk.X, cpk.Y = elliptic.UnmarshalCompressed(sec.secp256r1, key)
+	if cpk.X == nil || cpk.Y == nil {
+		return nil, errInvalidPublicKey
+	}
 	return cpk, nil
 }
 

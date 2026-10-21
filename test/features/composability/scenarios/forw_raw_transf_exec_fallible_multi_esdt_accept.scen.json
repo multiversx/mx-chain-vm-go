@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000"
+                        "str:FWD-000389": "1000"
                     },
                     "code": "mxsc:../forwarder-barnard/output/forwarder-barnard.mxsc.json"
                 },
@@ -32,10 +32,10 @@
                 "arguments": [
                     "sc:vault",
                     "str:accept_funds",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "100",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "200"
                 ],
@@ -53,10 +53,10 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "200",
                             "sc:vault"
@@ -66,10 +66,10 @@
                             "str:MultiESDTNFTTransfer",
                             "sc:vault",
                             "2",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "200",
                             "str:accept_funds"
@@ -80,10 +80,10 @@
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "200"
                         ],
@@ -107,7 +107,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "300"
+                        "str:FWD-000389": "300"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "1"
@@ -118,7 +118,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "700"
+                        "str:FWD-000389": "700"
                     },
                     "storage": {},
                     "code": "*"

@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
@@ -183,7 +184,11 @@ func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 	t.Parallel()
 
-	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockRuntime := &contextmock.RuntimeContextMock{
+		FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+			return false
+		},
+	}
 	gasProvided := uint64(10000)
 	contractCode := []byte("contractCode")
 	input := &vmcommon.ContractCreateInput{
@@ -212,6 +217,52 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 	mockRuntime.SetPointsUsed(0)
 	err = meteringCtx.DeductInitialGasForDirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
 	require.Equal(t, vmhost.ErrNotEnoughGas, err)
+}
+
+func TestDeductInitialGasForIndirectDeployment_WithFixFlag(t *testing.T) {
+	t.Parallel()
+
+	mockRuntime := &contextmock.RuntimeContextMock{
+		FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+			return true
+		},
+	}
+	gasProvided := uint64(100000)
+	initialCost := uint64(20000)
+	contractCode := []byte("contractCodeChild")
+
+	input := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			GasProvided: gasProvided,
+		},
+	}
+	mockRuntime.SetVMInput(input)
+
+	host := &contextmock.VMHostMock{
+		RuntimeContext: mockRuntime,
+	}
+
+	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringCtx.InitStateFromContractCallInput(&input.VMInput)
+
+	// Simulate parent having already had initial cost and some points used
+	meteringCtx.initialCost = initialCost
+	meteringCtx.gasForExecution = gasProvided - initialCost
+	mockRuntime.SetPointsUsed(5000)
+
+	gasBefore := meteringCtx.GasLeft()
+	require.Equal(t, gasProvided-initialCost-5000, gasBefore)
+
+	compileCost := uint64(len(contractCode)) * meteringCtx.GasSchedule().BaseOperationCost.CompilePerByte
+	err := meteringCtx.DeductInitialGasForIndirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
+	require.Nil(t, err)
+
+	gasAfter := meteringCtx.GasLeft()
+	require.Equal(t, gasBefore-compileCost, gasAfter)
+
+	// Assert initialCost and gasForExecution were NOT overwritten
+	require.Equal(t, initialCost, meteringCtx.initialCost)
+	require.Equal(t, gasProvided-initialCost, meteringCtx.gasForExecution)
 }
 
 func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
@@ -568,4 +619,73 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 	gasTrace = meteringCtx.GetGasTrace()
 	require.Equal(t, 2, len(gasTrace))
 	require.Equal(t, gasUsed2, gasTrace["scAddress2"]["function2"][0])
+}
+
+func TestMeteringContext_UpdateSCGasUsed_UnderflowInvariant_Finding1(t *testing.T) {
+	t.Parallel()
+	const BlockGasLimit = uint64(1000000)
+
+	scAddr := []byte("scAddress1")
+	otherAddr := []byte("scAddress2")
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			mockRuntime := &contextmock.RuntimeContextMock{
+				SCAddress: scAddr,
+			}
+			mockOutput := &contextmock.OutputContextMock{
+				OutputAccounts: make(map[string]*vmcommon.OutputAccount),
+			}
+			host := &contextmock.VMHostMock{
+				RuntimeContext: mockRuntime,
+				OutputContext:  mockOutput,
+			}
+			mockRuntime.FixCorrectSmallIntAndGasLimitsFunc = func() bool {
+				return flagEnabled
+			}
+
+			meteringCtx, err := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+			require.Nil(t, err)
+			meteringCtx.InitState()
+
+			// Case A: gas transferred by current account exceeds total gas spent
+			// Gas spent = 1000, but current account transferred 5000 gas
+			_ = meteringCtx.UseGasBounded(1000)
+			acc := &vmcommon.OutputAccount{
+				Address: scAddr,
+				OutputTransfers: []vmcommon.OutputTransfer{
+					{GasLimit: 5000},
+				},
+			}
+			mockOutput.OutputAccounts[string(scAddr)] = acc
+			mockOutput.OutputAccountMock = acc
+
+			err = meteringCtx.updateSCGasUsed()
+			if flagEnabled {
+				require.ErrorIs(t, err, vmhost.ErrGasUsedUnderflow)
+			} else {
+				require.Nil(t, err)
+				require.Equal(t, uint64(0), meteringCtx.gasUsedByAccounts[string(scAddr)])
+			}
+
+			// Case B: gas used by others exceeds remaining gas spent
+			mockOutput.OutputAccounts[string(scAddr)].OutputTransfers = nil
+			mockOutput.OutputAccountMock = mockOutput.OutputAccounts[string(scAddr)]
+			mockOutput.OutputAccounts[string(otherAddr)] = &vmcommon.OutputAccount{
+				Address: otherAddr,
+				OutputTransfers: []vmcommon.OutputTransfer{
+					{GasLimit: 5000},
+				},
+			}
+
+			err = meteringCtx.updateSCGasUsed()
+			if flagEnabled {
+				require.ErrorIs(t, err, vmhost.ErrGasUsedUnderflow)
+			} else {
+				require.Nil(t, err)
+				require.Equal(t, uint64(0), meteringCtx.gasUsedByAccounts[string(scAddr)])
+			}
+		})
+	}
 }
