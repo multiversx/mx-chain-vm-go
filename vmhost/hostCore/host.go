@@ -68,6 +68,7 @@ type vmHost struct {
 	managedTypesContext vmhost.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
+	opcodeVersion        executor.OpcodeVersion
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       vmhost.CallArgsParser
@@ -221,9 +222,11 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
 
+	host.opcodeVersion = host.getOpcodeVersionForCurrentEpoch()
+
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
 		VMHooks:                  vmHooks,
-		OpcodeVersion:            host.getOpcodeVersionForCurrentEpoch(),
+		OpcodeVersion:            host.opcodeVersion,
 		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
@@ -358,24 +361,67 @@ func (host *vmHost) getOpcodeVersionForCurrentEpoch() executor.OpcodeVersion {
 	return executor.OpcodeVersionV1
 }
 
+// applyExecutionConfig pushes the given gas schedule and opcode version to the executor and
+// to the metering context.
+//
+// The opcode costs and the opcode version are equivalent as far as caching is concerned:
+// both are baked into compiled code, the costs by the metering injected at compile time and
+// the version by the opcode whitelist applied at compile time. Changing either one makes
+// every artifact compiled so far stale, so both of the caches holding such artifacts - the
+// warm instances and the precompiled code - are discarded here, before any subsequent
+// compilation can pick a stale one up. That is why the two are applied together, by this
+// single function, rather than by two paths that would have to be kept in agreement.
+//
+// Must be called under host.mutExecution.
+func (host *vmHost) applyExecutionConfig(
+	opcodeVersion executor.OpcodeVersion,
+	gasSchedule config.GasScheduleMap,
+) error {
+	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	if err != nil {
+		return err
+	}
+
+	host.gasSchedule = gasSchedule
+	host.opcodeVersion = opcodeVersion
+
+	host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
+	host.meteringContext.SetGasSchedule(gasSchedule)
+
+	host.runtimeContext.ClearWarmInstanceCache()
+	host.blockchainContext.ClearCompiledCodes()
+
+	return nil
+}
+
+// reconfigureExecutorOpcodeVersion re-applies the execution config whenever the opcode
+// version of the current epoch is no longer the one the executor was configured with. The
+// executor only samples the version when the host creates it, so a host that outlives the
+// activation epoch of a version flag would otherwise keep running the old version.
+func (host *vmHost) reconfigureExecutorOpcodeVersion() {
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
+
+	opcodeVersion := host.getOpcodeVersionForCurrentEpoch()
+	if opcodeVersion == host.opcodeVersion {
+		return
+	}
+
+	err := host.applyExecutionConfig(opcodeVersion, host.gasSchedule)
+	if err != nil {
+		log.Error("cannot apply new opcode version", "err", err)
+	}
+}
+
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
 
-	host.gasSchedule = newGasSchedule
-	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
+	err := host.applyExecutionConfig(host.getOpcodeVersionForCurrentEpoch(), newGasSchedule)
 	if err != nil {
 		log.Error("cannot apply new gas config", "err", err)
-		return
 	}
-
-	opcodeVersion := host.getOpcodeVersionForCurrentEpoch()
-
-	host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
-
-	host.meteringContext.SetGasSchedule(newGasSchedule)
-	host.runtimeContext.ClearWarmInstanceCache()
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
@@ -603,6 +649,10 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
+	// the executor samples the opcode version when the host creates it, so a host that
+	// outlives the activation epoch of OpcodeV2Flag must be told about the new version
+	host.reconfigureExecutorOpcodeVersion()
+
 	_, ok := host.activationEpochMap[epoch]
 	if ok {
 		host.Runtime().ClearWarmInstanceCache()
