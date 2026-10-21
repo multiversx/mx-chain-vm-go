@@ -60,7 +60,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost)
+	require.Nil(tb, wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost))
 
 	host := &contextmock.VMHostMock{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},

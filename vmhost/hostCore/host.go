@@ -385,7 +385,11 @@ func (host *vmHost) applyExecutionConfig(
 	host.gasSchedule = gasSchedule
 	host.opcodeVersion = opcodeVersion
 
-	host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
+	err = host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
+	if err != nil {
+		return err
+	}
+
 	host.meteringContext.SetGasSchedule(gasSchedule)
 
 	host.runtimeContext.ClearWarmInstanceCache()

@@ -56,7 +56,8 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 }
 
 // SetOpcodeConfig should set gas costs, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetOpcodeConfig(_ executor.OpcodeVersion, _ *executor.WASMOpcodeCost) {
+func (executorMock *ExecutorMock) SetOpcodeConfig(_ executor.OpcodeVersion, _ *executor.WASMOpcodeCost) error {
+	return nil
 }
 
 // FunctionNames mocked method

@@ -49,14 +49,19 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 }
 
 // SetOpcodeConfig sets the opcode version and opcode costs, based on the gas schedule.
-func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) {
+func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) error {
 	// extract only wasmer2 opcodes
 	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
-	cWasmerExecutorSetOpcodeConfig(
+	result := cWasmerExecutorSetOpcodeConfig(
 		wasmerExecutor.cgoExecutor,
 		(int32)(opcodeVersion),
 		(*cWasmerOpcodeCostT)(unsafe.Pointer(wasmerExecutor.opcodeCost)),
 	)
+	if result != cWasmerOk {
+		return newWrappedError(ErrFailedInstantiation)
+	}
+
+	return nil
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.
