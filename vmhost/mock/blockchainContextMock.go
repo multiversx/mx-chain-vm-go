@@ -241,3 +241,8 @@ func (b *BlockchainContextMock) ClearCompiledCodes() {
 func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return nil, nil
 }
+
+// GetAllState -
+func (b *BlockchainContextMock) GetAllState(_ []byte) (map[string][]byte, error) {
+	return nil, nil
+}
