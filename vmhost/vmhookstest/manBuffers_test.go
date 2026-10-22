@@ -351,14 +351,16 @@ func TestManBuffers_Ints_WithNoBarnardOpcodesFlag(t *testing.T) {
 						sourceBuffer := managedTypes.NewManagedBufferFromBytes([]byte{0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff})
 
 						bigIntDest := managedTypes.NewBigIntFromInt64(0)
-						result := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
+						result, err := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
+						assert.Nil(t, err)
 						assert.True(t, result == 0)
 
 						bigIntResult, err := managedTypes.GetBigInt(bigIntDest)
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						result = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
+						result, err = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
+						assert.Nil(t, err)
 						assert.True(t, result == 0)
 
 						bigIntResult, err = managedTypes.GetBigInt(bigIntDest)
@@ -405,24 +407,28 @@ func TestManBuffers_Ints_WithBarnardOpcodesFlag(t *testing.T) {
 						sourceBuffer := managedTypes.NewManagedBufferFromBytes([]byte{0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff})
 
 						bigIntDest := managedTypes.NewBigIntFromInt64(0)
-						result := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
+						result, err := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
+						assert.Nil(t, err)
 						assert.True(t, result == 0)
 
 						bigIntResult, err := managedTypes.GetBigInt(bigIntDest)
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						result = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
+						result, err = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
+						assert.Nil(t, err)
 						assert.True(t, result == 0)
 
 						bigIntResult, err = managedTypes.GetBigInt(bigIntDest)
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						smallInt := hooks.MBufferToSmallIntSigned(sourceBuffer)
+						smallInt, err := hooks.MBufferToSmallIntSigned(sourceBuffer)
+						assert.Nil(t, err)
 						assert.True(t, smallInt == 0x00_ff_00_ff_00_ff_00_ff)
 
-						smallInt = hooks.MBufferToSmallIntUnsigned(sourceBuffer)
+						smallInt, err = hooks.MBufferToSmallIntUnsigned(sourceBuffer)
+						assert.Nil(t, err)
 						assert.True(t, smallInt == 0x00_ff_00_ff_00_ff_00_ff)
 
 						return instance
