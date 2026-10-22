@@ -98,13 +98,13 @@ func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeWasmer2LegacyImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2legacy/wasmer2ImportsCgo.go")
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2ImportsCgo.go")
 	defer out.Close()
 	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
 func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2ImportsCgo.go")
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2new/wasmer2ImportsCgo.go")
 	defer out.Close()
 	eapigen.WriteWasmer2NewCgo(out, eiMetadata)
 }
@@ -116,7 +116,7 @@ func writeWasmer7ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 }
 
 // The hook names, shared by every executor. Previously generated once per executor, into
-// wasmer2/wasmer2Names.go and mock/context/executorMockFunc.go.
+// wasmer2new/wasmer2Names.go and mock/context/executorMockFunc.go.
 func writeExecutorVMHookNames(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHookNames.go")
 	defer out.Close()
@@ -215,7 +215,7 @@ func writeExecutorWASMOpcodeCosts() {
 }
 
 // The metered subset, shared by every backend. Previously generated once per backend, into
-// wasmer2/opcodeCost.go and wasmer7/opcodeCost.go.
+// wasmer2new/opcodeCost.go and wasmer7/opcodeCost.go.
 func writeExecutorOpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/opcodeCost.go")
 	defer out.Close()

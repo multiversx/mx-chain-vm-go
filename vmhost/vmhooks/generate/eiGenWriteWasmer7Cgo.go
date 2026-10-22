@@ -22,7 +22,7 @@ func (writer *cgo3Writer) cgoFuncName(funcMetadata *EIFunction) string {
 
 // WriteWasmer7Cgo writes the cgo shims for the new C API over Wasmer 7.
 //
-// Unlike the wasmer2legacy shims, these return a result struct rather than a bare value, so a
+// Unlike the wasmer2 shims, these return a result struct rather than a bare value, so a
 // hook can report an early exit instead of signalling it out of band through a breakpoint
 // global. The hook's own error is converted on the Go side, where the message belongs.
 func WriteWasmer7Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
@@ -40,7 +40,7 @@ func WriteWasmer7Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
 // the same name would collide at link time — which is also why the prefix exists at all.
 func WriteWasmer2NewCgo(out *eiGenWriter, eiMetadata *EIMetadata) {
 	writeCapiCgo(out, eiMetadata, &cgo3Writer{
-		goPackage:  "wasmer2",
+		goPackage:  "wasmer2new",
 		cgoPrefix:  "w2_",
 		headerFile: "libvmexeccapi_w2.h",
 	})

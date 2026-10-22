@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2new
 
 // #include <stdlib.h>
 // #include "./libvmexeccapi_w2.h"

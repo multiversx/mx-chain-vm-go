@@ -10,7 +10,7 @@ import (
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -262,7 +262,7 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 }
 
 func TestBadContractExtra_LongIntLoop_Wasmer2(t *testing.T) {
-	testBadContractExtraLongIntLoop(t, wasmer2legacy.ExecutorFactory())
+	testBadContractExtraLongIntLoop(t, wasmer2.ExecutorFactory())
 }
 
 func testBadContractExtraLongIntLoop(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
@@ -307,7 +307,7 @@ func TestBadContractExtra_NoPanic_BadRecursive(t *testing.T) {
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("bad-recursive", "../../")).
 				WithBalance(1000)).
-		WithExecutorFactory(wasmer2legacy.ExecutorFactory())
+		WithExecutorFactory(wasmer2.ExecutorFactory())
 
 	input := test.CreateTestContractCallInputBuilder().
 		WithRecipientAddr(test.ParentAddress).

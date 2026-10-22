@@ -15,7 +15,7 @@ endif
 	go build -o ./cmd/vmserver/vmserver ./cmd/vmserver
 	cp ./cmd/vmserver/vmserver ${VMSERVER_PATH}
 
-# The default executor is wasmer2legacy, which is what production runs; `test` leaves
+# The default executor is wasmer2, which is what production runs; `test` leaves
 # VMEXECUTOR unset so that it tracks the default rather than pinning a name here.
 test:
 	go clean -cache -testcache
@@ -27,12 +27,12 @@ test:
 
 # Wasmer 2.2 through the legacy C API and executor interfaces. Production today.
 test-w2l: clean
-	VMEXECUTOR="wasmer2legacy" go test ./...
+	VMEXECUTOR="wasmer2" go test ./...
 
 # Wasmer 2.2 through the new C API and interfaces. Same runtime as test-w2l, different
 # boundary, so a difference between the two is the migration's doing.
 test-w2: clean
-	VMEXECUTOR="wasmer2" go test ./...
+	VMEXECUTOR="wasmer2new" go test ./...
 
 # Wasmer 7 through the new C API and interfaces.
 test-w7: clean

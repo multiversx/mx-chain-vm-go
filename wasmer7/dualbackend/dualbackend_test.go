@@ -7,7 +7,7 @@
 // carrying both, chosen by a flag, so that the differential run is a flag rather than two
 // builds. The one thing that could rule it out is not size or symbols but **trap handling**.
 // Both runtimes install process-global signal handlers for the faults a wasm trap raises —
-// wasmer 2.2 forcibly, through vm_force_sighandler_reinstall, which wasmer2legacy.CreateExecutor
+// wasmer 2.2 forcibly, through vm_force_sighandler_reinstall, which wasmer2.CreateExecutor
 // calls on every executor it builds; wasmer 7 lazily, when it first builds a store. Whoever
 // installs last wins unless the handlers chain, and the failure mode is not a red test but a
 // mishandled fault, so it has to be observed rather than assumed.
@@ -30,7 +30,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/multiversx/mx-chain-vm-go/wasmer7"
 	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
 	"github.com/stretchr/testify/require"
@@ -91,7 +91,7 @@ func uniformOpcodeCost(cost uint32) *executor.WASMOpcodeCost {
 // newWasmer2Instance builds a legacy executor, which is what forcibly reinstalls the
 // wasmer 2.2 trap handlers.
 func newWasmer2Instance(t *testing.T) executor.Instance {
-	wasmerExecutor, err := wasmer2legacy.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	wasmerExecutor, err := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooksProvider: stubVMHooks{},
 		OpcodeVersion:   executor.OpcodeVersionV2,
 		OpcodeCosts:     uniformOpcodeCost(1),
@@ -136,7 +136,7 @@ func newWasmer7Instance(t *testing.T) *wasmer7.Wasmer7Instance {
 
 // TestWasmer7TrapsWithWasmer2First is the order that matters most.
 //
-// wasmer2legacy.CreateExecutor calls vm_force_sighandler_reinstall unconditionally, so it is the
+// wasmer2.CreateExecutor calls vm_force_sighandler_reinstall unconditionally, so it is the
 // one that can overwrite a handler wasmer 7 has already installed. If it does so without
 // chaining, the traps below take down the process instead of coming back as results.
 func TestWasmer7TrapsWithWasmer2First(t *testing.T) {

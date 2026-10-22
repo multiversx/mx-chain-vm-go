@@ -1,4 +1,4 @@
-package wasmer2legacy
+package wasmer2
 
 // SetLogLevel sets the log level for the Executor.
 func SetLogLevel(logLevel LogLevel) {

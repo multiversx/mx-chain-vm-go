@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2new
 
 // The compiled-code cache, from the Go side.
 //

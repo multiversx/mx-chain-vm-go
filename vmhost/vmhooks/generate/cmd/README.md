@@ -75,8 +75,8 @@ superset of it.
 the `*PerByte` costs, then the additional costs, skipping the names it has already seen.
 
 That list is the field layout of the `OpcodeCost` struct on both sides of the FFI boundary,
-`wasmer2/opcodeCost.go` here and `vm-executor/src/opcode_cost.rs` in the executor, and the
+`wasmer2new/opcodeCost.go` here and `vm-executor/src/opcode_cost.rs` in the executor, and the
 Go struct is cast straight to the C one. Reordering an input file, or inserting a name
 anywhere but at the end of one, therefore changes that layout silently. Whenever it does
-change, the executor has to be rebuilt and `wasmer2/libvmexeccapi.*` refreshed, or the VM
+change, the executor has to be rebuilt and `wasmer2new/libvmexeccapi.*` refreshed, or the VM
 will read every cost past the first moved field from the wrong place.

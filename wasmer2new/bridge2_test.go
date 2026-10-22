@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2new
 
 // Phase 4a of PLAN-go-ffi.md: prove the boundary, with the VM kept out of it.
 //
@@ -236,7 +236,7 @@ func (provider *testHooksProvider) VMHooksForCall(state executor.InstanceState) 
 }
 
 func (provider *testHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
-	panic("this backend has no instance-lifetime state; see wasmer2/vmHooksProvider.go")
+	panic("this backend has no instance-lifetime state; see wasmer2new/vmHooksProvider.go")
 }
 
 // callScopedState recovers the concrete state the hook context produced.
@@ -612,7 +612,7 @@ func (provider *nestingHooksProvider) VMHooksForCall(state executor.InstanceStat
 }
 
 func (provider *nestingHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
-	panic("this backend has no instance-lifetime state; see wasmer2/vmHooksProvider.go")
+	panic("this backend has no instance-lifetime state; see wasmer2new/vmHooksProvider.go")
 }
 
 func TestHookReentersTheExecutor(t *testing.T) {
@@ -674,7 +674,7 @@ func (provider *reentrantHooksProvider) VMHooksForCall(_ executor.InstanceState)
 }
 
 func (provider *reentrantHooksProvider) VMHooksForInstanceLifetime() executor.VMHooks {
-	panic("this backend has no instance-lifetime state; see wasmer2/vmHooksProvider.go")
+	panic("this backend has no instance-lifetime state; see wasmer2new/vmHooksProvider.go")
 }
 
 // TestSameInstanceReentryIsRejected pins down the invariant the guard exists for.

@@ -21,7 +21,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
 var log = logger.GetOrCreate("vm/host")
@@ -218,7 +218,7 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	if hostParameters.OverrideVMExecutor != nil {
 		vmExecutorFactory = hostParameters.OverrideVMExecutor
 	} else {
-		vmExecutorFactory = wasmer2legacy.ExecutorFactory()
+		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
 
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{

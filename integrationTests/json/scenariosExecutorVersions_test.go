@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/multiversx/mx-chain-vm-go/wasmer7"
 )
 
@@ -19,11 +19,11 @@ import (
 // trap handlers are installed, so this also exercises the coexistence that
 // wasmer7/dualbackend/ tests directly.
 func TestCErc20Executors(t *testing.T) {
-	testCERC20WithExecutorFactory(t, wasmer2legacy.ExecutorFactory())
-	testCERC20WithExecutorFactory(t, wasmer2legacy.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer7.ExecutorFactory())
 	testCERC20WithExecutorFactory(t, wasmer7.ExecutorFactory())
-	testCERC20WithExecutorFactory(t, wasmer2legacy.ExecutorFactory())
+	testCERC20WithExecutorFactory(t, wasmer2.ExecutorFactory())
 }
 
 func testCERC20WithExecutorFactory(t *testing.T, factory executor.ExecutorAbstractFactory) {

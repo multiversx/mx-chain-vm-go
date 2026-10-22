@@ -24,7 +24,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -141,7 +141,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
-	testExecutionDeployWASMWrongInit(t, wasmer2legacy.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
 }
 
 func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
@@ -818,7 +818,7 @@ func TestExecution_CachingCompiledCode_UsesTheArtifact(t *testing.T) {
 
 	// Warm instances would serve the next call from memory and never consult the store, so
 	// they have to go. (They are already disabled on the new backends, whose Reset returns
-	// false, but this test has to mean the same thing under wasmer2legacy.)
+	// false, but this test has to mean the same thing under wasmer2.)
 	host.Runtime().ClearWarmInstanceCache()
 
 	vmOutput, err = host.RunSmartContractCall(counterInput)

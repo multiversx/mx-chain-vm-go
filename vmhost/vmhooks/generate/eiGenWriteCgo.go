@@ -104,7 +104,7 @@ func (writer *cgoWriter) cgoFuncName(funcMetadata *EIFunction) string {
 // WriteWasmer2Cgo writes the metadata in the provided file
 func WriteWasmer2Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
 	writer := &cgoWriter{
-		goPackage: "wasmer2legacy",
+		goPackage: "wasmer2",
 		cgoPrefix: "w2l_",
 	}
 	writer.writeHeader(out, eiMetadata)

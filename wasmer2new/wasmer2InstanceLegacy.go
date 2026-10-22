@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2new
 
 // Transitional: executor.Instance as it is today, served by an instance whose own interface is
 // already the narrower one.

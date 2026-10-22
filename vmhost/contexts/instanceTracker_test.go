@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,7 +13,7 @@ func TestInstanceTracker_TrackInstance(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	newInstance := &wasmer2legacy.Wasmer2Instance{
+	newInstance := &wasmer2.Wasmer2Instance{
 		AlreadyClean: false}
 
 	_ = iTracker.SetNewInstance(newInstance, Bytecode)
@@ -337,7 +337,7 @@ func TestInstanceTracker_UnsetInstance_Ok(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	iTracker.instance = &wasmer2legacy.Wasmer2Instance{
+	iTracker.instance = &wasmer2.Wasmer2Instance{
 		AlreadyClean: true,
 	}
 	iTracker.UnsetInstance()

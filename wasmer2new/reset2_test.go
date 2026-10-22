@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2new
 
 // Instance reset, from the Go side.
 //

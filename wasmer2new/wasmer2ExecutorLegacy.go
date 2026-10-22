@@ -1,4 +1,4 @@
-package wasmer2
+package wasmer2new
 
 // Transitional: executor.Executor as it is today, plus the factory that lets a test select
 // this backend. See the note at the top of wasmer2InstanceLegacy.go.

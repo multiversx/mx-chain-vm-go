@@ -4,7 +4,7 @@ import (
 	scenclibase "github.com/multiversx/mx-chain-scenario-go/clibase"
 	scenio "github.com/multiversx/mx-chain-scenario-go/scenario/io"
 	vmscenario "github.com/multiversx/mx-chain-vm-go/scenario"
-	"github.com/multiversx/mx-chain-vm-go/wasmer2legacy"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	cli "github.com/urfave/cli/v2"
 )
 
@@ -28,8 +28,8 @@ func (*vm15Flags) GetFlags() []cli.Flag {
 			Usage: "use the wasmer1 executor`",
 		},
 		&cli.BoolFlag{
-			Name:  "wasmer2",
-			Usage: "use the wasmer2 executor`",
+			Name:  "wasmer2new",
+			Usage: "use the wasmer2new executor`",
 		},
 	}
 }
@@ -40,8 +40,8 @@ func (*vm15Flags) ParseFlags(cCtx *cli.Context) scenclibase.CLIRunOptions {
 	}
 
 	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
-	if cCtx.Bool("wasmer2") {
-		vmBuilder.OverrideVMExecutor = wasmer2legacy.ExecutorFactory()
+	if cCtx.Bool("wasmer2new") {
+		vmBuilder.OverrideVMExecutor = wasmer2.ExecutorFactory()
 	}
 
 	return scenclibase.CLIRunOptions{

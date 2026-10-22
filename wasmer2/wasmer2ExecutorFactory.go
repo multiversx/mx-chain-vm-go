@@ -1,4 +1,4 @@
-package wasmer2legacy
+package wasmer2
 
 import (
 	"os/signal"

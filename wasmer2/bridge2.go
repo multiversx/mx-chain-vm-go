@@ -1,223 +1,278 @@
 package wasmer2
 
 // #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR}
-// #cgo linux,amd64 LDFLAGS:-lvmexeccapi_w2
-// #cgo linux,arm64 LDFLAGS:-lvmexeccapi_w2_arm
-// #cgo darwin,amd64 LDFLAGS:-lvmexeccapi_w2
-// #cgo darwin,arm64 LDFLAGS:-lvmexeccapi_w2_arm
-// #include <stdlib.h>
-// #include "./libvmexeccapi_w2.h"
+// #cgo linux,amd64 LDFLAGS:-lvmexeccapi
+// #cgo linux,arm64 LDFLAGS:-lvmexeccapi_arm
+// #cgo darwin,amd64 LDFLAGS:-lvmexeccapi
+// #cgo darwin,arm64 LDFLAGS:-lvmexeccapi_arm
+// #include "./libvmexeccapi.h"
 //
 import "C"
-
 import (
 	"unsafe"
 
-	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-// This file is the only one in the package that calls the library, and therefore the only one
-// that deals in its C status type: every function here converts to wasmercommon.Status on the
-// way out, so everything above the bridge is written against the shared vocabulary and could
-// not accidentally be written against one backend's.
+type cBool C.bool
+type cChar C.char
+type cInt C.int
+type cUchar C.uchar
+type cUint C.uint
+type cUint32T C.uint32_t
+type cUint8T C.uint8_t
 
-type cExecutorT = C.struct_vm_exec_w2_executor_t
-type cInstanceT = C.struct_vm_exec_w2_instance_t
-type cHookContextT = C.vm_exec_hook_context_t
-type cOpcodeCostT = C.struct_vm_exec_opcode_cost_t
-type cVMHookPointers = C.vm_exec_vm_hook_c_func_pointers
+type cWasmerExecutorT C.vm_legacy_executor_t
+type cWasmerInstanceT C.vm_legacy_instance_t
+type cWasmerOpcodeCostT C.vm_legacy_opcode_cost_t
+type cWasmerResultT C.vm_legacy_result_t
+type cWasmerCompilationOptions C.vm_legacy_compilation_options_t
+type cWasmerVmHookPointers = C.vm_legacy_vm_hook_c_func_pointers
 
-// --- Executor lifecycle ------------------------------------------------------
+const cWasmerOk = C.VM_LEGACY_OK
 
-func cNewExecutor(
-	executorOut **cExecutorT,
-	config *C.struct_vm_exec_executor_config_t,
-	hookTable *cVMHookPointers,
-	buf errBuf,
-) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_new_executor(executorOut, config, hookTable, bufPtr(buf), errBufLen))
+// toCWasmerCompilationOptions converts field-by-field instead of reinterpreting
+// executor.CompilationOptions as cWasmerCompilationOptions via unsafe.Pointer, so a field
+// renamed, retyped, or removed on either side is caught by the compiler.
+func toCWasmerCompilationOptions(options executor.CompilationOptions) cWasmerCompilationOptions {
+	return cWasmerCompilationOptions{
+		gas_limit:             C.uint64_t(options.GasLimit),
+		unmetered_locals:      C.uint64_t(options.UnmeteredLocals),
+		max_memory_grow:       C.uint64_t(options.MaxMemoryGrow),
+		max_memory_grow_delta: C.uint64_t(options.MaxMemoryGrowDelta),
+		opcode_trace:          C.bool(options.OpcodeTrace),
+		metering:              C.bool(options.Metering),
+		runtime_breakpoints:   C.bool(options.RuntimeBreakpoints),
+	}
 }
 
-func cExecutorDestroy(executor *cExecutorT) {
-	C.vm_exec_w2_executor_destroy(executor)
-}
+// Tripwire for a field added to vm_legacy_compilation_options_t without a matching
+// field (and conversion above) added to executor.CompilationOptions: the two
+// composite literal lengths differ, so this fails to compile.
+var _ [unsafe.Sizeof(executor.CompilationOptions{})]byte = [unsafe.Sizeof(cWasmerCompilationOptions{})]byte{}
 
-// --- Instance lifecycle ------------------------------------------------------
-
-func cNewInstance(
-	executor *cExecutorT,
-	instanceOut **cInstanceT,
-	wasmBytes []byte,
-	options *C.struct_vm_exec_compilation_options_t,
-	goVMHooks uintptr,
-	buf errBuf,
-) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_new_instance(
-		executor,
-		instanceOut,
-		(*C.uint8_t)(unsafe.Pointer(&wasmBytes[0])),
-		C.uint32_t(len(wasmBytes)),
-		options,
-		C.uintptr_t(goVMHooks),
-		bufPtr(buf),
-		errBufLen,
+func cWasmerSetLogLevel(
+	value uint64,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_set_log_level(
+		(C.uint64_t)(value),
 	))
 }
 
-func cNewInstanceFromCache(
-	executor *cExecutorT,
-	instanceOut **cInstanceT,
-	cacheBytes []byte,
-	options *C.struct_vm_exec_compilation_options_t,
-	goVMHooks uintptr,
-	buf errBuf,
-) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_new_instance_from_cache(
-		executor,
-		instanceOut,
-		(*C.uint8_t)(unsafe.Pointer(&cacheBytes[0])),
-		C.uint32_t(len(cacheBytes)),
-		options,
-		C.uintptr_t(goVMHooks),
-		bufPtr(buf),
-		errBufLen,
+func cWasmerForceInstallSighandlers() {
+	C.vm_force_sighandler_reinstall()
+}
+
+func cWasmerExecutorSetOpcodeConfig(
+	executor *cWasmerExecutorT,
+	opcodeVersion int32,
+	opcodeCost *cWasmerOpcodeCostT,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_set_opcode_config(
+		(*C.vm_legacy_executor_t)(executor),
+		(C.int32_t)(opcodeVersion),
+		(*C.vm_legacy_opcode_cost_t)(opcodeCost),
 	))
 }
 
-func cInstanceDestroy(instance *cInstanceT) {
-	C.vm_exec_w2_instance_destroy(instance)
-}
-
-func cInstanceReset(instance *cInstanceT, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_instance_reset(instance, bufPtr(buf), errBufLen))
-}
-
-// --- Outer instance operations -----------------------------------------------
-
-func cInstanceCacheLength(instance *cInstanceT, lengthOut *C.uint32_t, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_instance_cache_length(instance, lengthOut, bufPtr(buf), errBufLen))
-}
-
-func cInstanceCache(instance *cInstanceT, dest []byte, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_instance_cache(
-		instance,
-		(*C.uint8_t)(unsafe.Pointer(&dest[0])),
-		C.uint32_t(len(dest)),
-		bufPtr(buf),
-		errBufLen,
+func cWasmerInstanceSetGasLimit(instance *cWasmerInstanceT, gasLimit uint64) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_set_points_limit(
+		(*C.vm_legacy_instance_t)(instance),
+		(C.uint64_t)(gasLimit),
 	))
 }
 
-func cInstanceCall(
-	instance *cInstanceT,
-	funcName string,
-	pointsLimit uint64,
-	resultOut *C.struct_vm_exec_call_result_t,
-	buf errBuf,
-) wasmercommon.Status {
-	cFuncName := C.CString(funcName)
-	defer C.free(unsafe.Pointer(cFuncName))
-
-	return toStatus(C.vm_exec_w2_instance_call(
-		instance,
-		cFuncName,
-		C.uint64_t(pointsLimit),
-		resultOut,
-		bufPtr(buf),
-		errBufLen,
+func cWasmerInstanceSetPointsUsed(instance *cWasmerInstanceT, points uint64) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_set_points_used(
+		(*C.vm_legacy_instance_t)(instance),
+		(C.uint64_t)(points),
 	))
 }
 
-func cInstanceGetPointsUsed(
-	instance *cInstanceT,
-	pointsOut *C.uint64_t,
-	buf errBuf,
-) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_instance_get_points_used(instance, pointsOut, bufPtr(buf), errBufLen))
-}
-
-func cInstanceCheckSignatures(instance *cInstanceT) int32 {
-	return int32(C.vm_exec_w2_instance_check_signatures(instance))
-}
-
-func cInstanceHasFunction(instance *cInstanceT, funcName string) int32 {
-	cFuncName := C.CString(funcName)
-	defer C.free(unsafe.Pointer(cFuncName))
-
-	return int32(C.vm_exec_w2_instance_has_function(instance, cFuncName))
-}
-
-func cInstanceExportedFunctionNamesLength(instance *cInstanceT) int32 {
-	return int32(C.vm_exec_w2_instance_exported_function_names_length(instance))
-}
-
-func cInstanceExportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
-	return int32(C.vm_exec_w2_instance_exported_function_names(
-		instance,
-		(*C.char)(unsafe.Pointer(&dest[0])),
-		C.int(len(dest)),
+func cWasmerInstanceGetPointsUsed(instance *cWasmerInstanceT) uint64 {
+	return uint64(C.vm_exec_instance_get_points_used(
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
-func cInstanceImportedFunctionNamesLength(instance *cInstanceT) int32 {
-	return int32(C.vm_exec_w2_instance_imported_function_names_length(instance))
-}
-
-func cInstanceImportedFunctionNames(instance *cInstanceT, dest []byte) int32 {
-	return int32(C.vm_exec_w2_instance_imported_function_names(
-		instance,
-		(*C.char)(unsafe.Pointer(&dest[0])),
-		C.int(len(dest)),
+func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_set_breakpoint_value(
+		(*C.vm_legacy_instance_t)(instance),
+		(C.uint64_t)(value),
 	))
 }
 
-// --- Instance state operations, reachable only from inside a hook ------------
-
-func cStateMemLoad(ctx *cHookContextT, memPtr int32, dest []byte, buf errBuf) int64 {
-	return int64(C.vm_exec_w2_state_mem_load(
-		ctx,
-		C.int32_t(memPtr),
-		(*C.uint8_t)(unsafe.Pointer(&dest[0])),
-		C.int32_t(len(dest)),
-		bufPtr(buf),
-		errBufLen,
+func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
+	return uint64(C.vm_exec_instance_get_breakpoint_value(
+		(*C.vm_legacy_instance_t)(instance),
 	))
 }
 
-func cStateMemStore(ctx *cHookContextT, memPtr int32, src []byte, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_state_mem_store(
-		ctx,
-		C.int32_t(memPtr),
-		(*C.uint8_t)(unsafe.Pointer(&src[0])),
-		C.int32_t(len(src)),
-		bufPtr(buf),
-		errBufLen,
+func cWasmerInstanceCache(
+	instance *cWasmerInstanceT,
+	cacheBytes **cUchar,
+	cacheLen *cUint32T,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_cache(
+		(*C.vm_legacy_instance_t)(instance),
+		(**C.uchar)(unsafe.Pointer(cacheBytes)),
+		(*C.uint32_t)(cacheLen),
 	))
 }
 
-func cStateMemLength(ctx *cHookContextT, lengthOut *C.uint64_t, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_state_mem_length(ctx, lengthOut, bufPtr(buf), errBufLen))
-}
-
-func cStateMemGrow(
-	ctx *cHookContextT,
-	byNumPages uint32,
-	prevPagesOut *C.uint32_t,
-	buf errBuf,
-) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_state_mem_grow(
-		ctx,
-		C.uint32_t(byNumPages),
-		prevPagesOut,
-		bufPtr(buf),
-		errBufLen,
+func cWasmerInstanceFromCache(
+	executor *cWasmerExecutorT,
+	instance **cWasmerInstanceT,
+	cacheBytes *cUchar,
+	cacheLen cUint32T,
+	options *cWasmerCompilationOptions,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_from_cache(
+		(*C.vm_legacy_executor_t)(executor),
+		(**C.vm_legacy_instance_t)(unsafe.Pointer(instance)),
+		(*C.uchar)(cacheBytes),
+		(C.uint32_t)(cacheLen),
+		(*C.vm_legacy_compilation_options_t)(options),
 	))
 }
 
-func cStateGetPointsUsed(ctx *cHookContextT, pointsOut *C.uint64_t, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_state_get_points_used(ctx, pointsOut, bufPtr(buf), errBufLen))
+func cWasmerNewExecutor(
+	executor **cWasmerExecutorT,
+	vmHookPointersPtrPtr unsafe.Pointer,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_new_executor(
+		(**C.vm_legacy_executor_t)(unsafe.Pointer(executor)),
+		(**C.vm_legacy_vm_hook_c_func_pointers)(vmHookPointersPtrPtr),
+	))
 }
 
-func cStateSetPointsUsed(ctx *cHookContextT, points uint64, buf errBuf) wasmercommon.Status {
-	return toStatus(C.vm_exec_w2_state_set_points_used(ctx, C.uint64_t(points), bufPtr(buf), errBufLen))
+func cWasmerInstantiateWithOptions(
+	executor *cWasmerExecutorT,
+	instance **cWasmerInstanceT,
+	wasmBytes *cUchar,
+	wasmBytesLength cUint,
+	options *cWasmerCompilationOptions,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_new_instance(
+		(*C.vm_legacy_executor_t)(executor),
+		(**C.vm_legacy_instance_t)(unsafe.Pointer(instance)),
+		(*C.uchar)(wasmBytes),
+		(C.uint)(wasmBytesLength),
+		(*C.vm_legacy_compilation_options_t)(options),
+	))
+}
+
+func cWasmerInstanceCall(
+	instance *cWasmerInstanceT,
+	name *cChar,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_call(
+		(*C.vm_legacy_instance_t)(instance),
+		(*C.char)(name),
+	))
+}
+
+func cWasmerInstanceHasFunction(
+	instance *cWasmerInstanceT,
+	name *cChar,
+) cInt {
+	return (cInt)(C.vm_exec_instance_has_function(
+		(*C.vm_legacy_instance_t)(instance),
+		(*C.char)(name),
+	))
+}
+
+func cWasmerInstanceHasImportedFunction(
+	instance *cWasmerInstanceT,
+	name *cChar,
+) cInt {
+	return (cInt)(C.vm_exec_instance_has_imported_function(
+		(*C.vm_legacy_instance_t)(instance),
+		(*C.char)(name),
+	))
+}
+
+func cWasmerInstanceExportedFunctionNamesLength(instance *cWasmerInstanceT) cInt {
+	return (cInt)(C.vm_exported_function_names_length(
+		(*C.vm_legacy_instance_t)(instance),
+	))
+}
+
+func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cChar, length cInt) cInt {
+	return (cInt)(C.vm_exported_function_names(
+		(*C.vm_legacy_instance_t)(instance),
+		(*C.char)(buffer),
+		(C.int)(length),
+	))
+}
+
+func cWasmerCheckSignatures(instance *cWasmerInstanceT) cInt {
+	return (cInt)(C.vm_check_signatures(
+		(*C.vm_legacy_instance_t)(instance),
+	))
+}
+
+func cWasmerExecutorContextDataSet(executor *cWasmerExecutorT, vmHooksPtr unsafe.Pointer) {
+	C.vm_exec_executor_set_vm_hooks_ptr(
+		(*C.vm_legacy_executor_t)(executor),
+		vmHooksPtr,
+	)
+}
+
+func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
+	C.vm_exec_instance_destroy(
+		(*C.vm_legacy_instance_t)(instance),
+	)
+}
+
+func cWasmerInstanceReset(instance *cWasmerInstanceT) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_reset(
+		(*C.vm_legacy_instance_t)(instance),
+	))
+}
+
+func cWasmerLastErrorLength() cInt {
+	return (cInt)(C.vm_exec_last_error_length())
+}
+
+func cWasmerLastErrorMessage(buffer *cChar, length cInt) cInt {
+	return (cInt)(C.vm_exec_last_error_message(
+		(*C.char)(buffer),
+		(C.int)(length),
+	))
+}
+
+func cWasmerMemoryDataLength(instance *cWasmerInstanceT) cUint32T {
+	return (cUint32T)(C.vm_exec_instance_memory_data_length(
+		(*C.vm_legacy_instance_t)(instance),
+	))
+}
+
+func cWasmerMemoryData(instance *cWasmerInstanceT) *cUint8T {
+	return (*cUint8T)(C.vm_exec_instance_memory_data(
+		(*C.vm_legacy_instance_t)(instance),
+	))
+}
+
+func cWasmerMemoryGrow(instance *cWasmerInstanceT, numberOfPages cUint32T) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_memory_grow(
+		(*C.vm_legacy_instance_t)(instance),
+		(C.uint32_t)(numberOfPages),
+	))
+}
+
+func cCString(string string) *cChar {
+	return (*cChar)(C.CString(string))
+}
+
+func cFree(pointer unsafe.Pointer) {
+	C.free(pointer)
+}
+
+func cGoString(string *cChar) string {
+	return C.GoString((*C.char)(string))
+}
+
+func cGoStringN(string *cChar, length cInt) string {
+	return C.GoStringN((*C.char)(string), (C.int)(length))
 }
