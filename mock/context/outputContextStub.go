@@ -42,6 +42,7 @@ type OutputContextStub struct {
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input vmhost.CodeDeployInput)
+	HasCodeUpdateCalled               func(address []byte) bool
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
@@ -293,6 +294,14 @@ func (o *OutputContextStub) DeployCode(input vmhost.CodeDeployInput) {
 	if o.DeployCodeCalled != nil {
 		o.DeployCodeCalled(input)
 	}
+}
+
+// HasCodeUpdate mocked method
+func (o *OutputContextStub) HasCodeUpdate(address []byte) bool {
+	if o.HasCodeUpdateCalled != nil {
+		return o.HasCodeUpdateCalled(address)
+	}
+	return false
 }
 
 // CreateVMOutputInCaseOfError mocked method

@@ -31,11 +31,21 @@ func AddUint64WithErr(a, b uint64) (uint64, error) {
 
 // SubUint64 performs subtraction on uint64, in case of underflow returns 0
 func SubUint64(a, b uint64) uint64 {
-	if a < b {
+	res, err := SubUint64WithErr(a, b)
+	if err != nil {
 		return 0
 	}
 
-	return a - b
+	return res
+}
+
+// SubUint64WithErr performs subtraction on uint64 and returns an error if the subtraction underflows
+func SubUint64WithErr(a, b uint64) (uint64, error) {
+	if a < b {
+		return 0, ErrSubtractionUnderflow
+	}
+
+	return a - b, nil
 }
 
 // MulUint64 performs multiplication on uint64 and logs an error if the multiplication overflows
@@ -109,4 +119,39 @@ func MulInt32WithErr(a, b int32) (int32, error) {
 		return builtinMath.MaxInt32, ErrMultiplicationOverflow
 	}
 	return int32(wide), nil
+}
+
+// SubInt32 performs subtraction on int32 and logs an error if the subtraction underflows
+func SubInt32(a, b int32) int32 {
+	res, err := SubInt32WithErr(a, b)
+	if err != nil {
+		log.Trace("SubInt32 underflow", "a", a, "b", b)
+	}
+
+	return res
+}
+
+// SubInt32WithErr performs subtraction on int32 and returns an error if the subtraction underflows or overflows
+func SubInt32WithErr(a, b int32) (int32, error) {
+	diff := int64(a) - int64(b)
+	if diff < builtinMath.MinInt32 {
+		return builtinMath.MinInt32, ErrSubtractionUnderflow
+	}
+	if diff > builtinMath.MaxInt32 {
+		return builtinMath.MaxInt32, ErrSubtractionUnderflow
+	}
+
+	return int32(diff), nil
+}
+
+// CheckBoundsInt32 validates that start and length are non-negative and int64(start)+int64(length) <= int64(maxLen)
+func CheckBoundsInt32(start, length int32, maxLen int) error {
+	if start < 0 || length < 0 {
+		return ErrOutOfBounds
+	}
+	if int64(start)+int64(length) > int64(maxLen) {
+		return ErrOutOfBounds
+	}
+
+	return nil
 }

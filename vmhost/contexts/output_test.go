@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
@@ -315,7 +316,7 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 	left := newVMOutput()
 	right := newVMOutput()
 	expected := newVMOutput()
-	mergeVMOutputs(left, right)
+	MergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
@@ -325,7 +326,7 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 	expected = newVMOutput()
 	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	expected.OutputAccounts["address"].Nonce = 84
-	mergeVMOutputs(left, right)
+	MergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
@@ -337,7 +338,7 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 	expected = newVMOutput()
 	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	expected.OutputAccounts["address"].Nonce = 92
-	mergeVMOutputs(left, right)
+	MergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
@@ -347,7 +348,7 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 	expected = newVMOutput()
 	expected.OutputAccounts["left address"] = NewVMOutputAccount([]byte("left address"))
 	expected.OutputAccounts["right address"] = NewVMOutputAccount([]byte("right address"))
-	mergeVMOutputs(left, right)
+	MergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
@@ -367,7 +368,7 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 	expected.GasRefund = big.NewInt(84)
 	expected.ReturnCode = vmcommon.ExecutionFailed
 	expected.ReturnMessage = "turtles all the way down"
-	mergeVMOutputs(left, right)
+	MergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 }
 
@@ -601,3 +602,173 @@ func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	require.Equal(t, 0, len(outputContext.stateStack))
 }
+
+func TestOutputContext_Transfer_ReadOnlyMode(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			sender := []byte("sender")
+			receiver := []byte("receiver")
+
+			mockWorld := worldmock.NewMockWorld()
+			mockWorld.AcctMap.PutAccount(&worldmock.Account{
+				Address: sender,
+				Balance: big.NewInt(100000),
+			})
+			mockWorld.AcctMap.PutAccount(&worldmock.Account{
+				Address: receiver,
+				Balance: big.NewInt(0),
+			})
+
+			host := &contextmock.VMHostMock{
+				EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
+				RuntimeContext: &contextmock.RuntimeContextMock{
+					VMInput:      &vmcommon.ContractCallInput{},
+					ReadOnlyFlag: true,
+					FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+						return flagEnabled
+					},
+				},
+			}
+
+			blockchainContext, _ := NewBlockchainContext(host, mockWorld)
+			outputContext, _ := NewOutputContext(host)
+			host.OutputContext = outputContext
+			host.BlockchainContext = blockchainContext
+
+			// 1. gasLimit > 0, value 0, input empty
+			err := outputContext.Transfer(receiver, sender, 50000, 0, big.NewInt(0), nil, nil, 0)
+			if flagEnabled {
+				require.Equal(t, vmhost.ErrInvalidCallOnReadOnlyMode, err)
+			} else {
+				require.Nil(t, err)
+			}
+
+			// 2. gasLimit 0, value 0, input with data
+			err = outputContext.Transfer(receiver, sender, 0, 0, big.NewInt(0), nil, []byte("someData"), 0)
+			if flagEnabled {
+				require.Equal(t, vmhost.ErrInvalidCallOnReadOnlyMode, err)
+			} else {
+				require.Nil(t, err)
+			}
+
+			// 3. gasLimit 0, value > 0, input empty -> always rejected in read only mode
+			err = outputContext.Transfer(receiver, sender, 0, 0, big.NewInt(100), nil, nil, 0)
+			require.Equal(t, vmhost.ErrInvalidCallOnReadOnlyMode, err)
+
+			// 4. gasLimit 0, value 0, input empty -> no-op transfer allowed
+			err = outputContext.Transfer(receiver, sender, 0, 0, big.NewInt(0), nil, nil, 0)
+			require.Nil(t, err)
+		})
+	}
+}
+
+func TestOutputContext_DeployCode_ReadOnlyMode(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			targetAddr := []byte("targetContractAddr")
+			host := &contextmock.VMHostMock{
+				RuntimeContext: &contextmock.RuntimeContextMock{
+					ReadOnlyFlag: true,
+					FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+						return flagEnabled
+					},
+				},
+			}
+
+			outputContext, _ := NewOutputContext(host)
+			deployInput := vmhost.CodeDeployInput{
+				ContractAddress:      targetAddr,
+				ContractCode:         []byte("wasmCode"),
+				ContractCodeMetadata: []byte{1, 0},
+				CodeDeployerAddress:  []byte("deployer"),
+			}
+
+			outputContext.DeployCode(deployInput)
+
+			if flagEnabled {
+				// in read-only mode with flag enabled, DeployCode is a no-op
+				require.Equal(t, 0, len(outputContext.codeUpdates))
+			} else {
+				// legacy behavior
+				require.Equal(t, 1, len(outputContext.codeUpdates))
+			}
+		})
+	}
+}
+
+func TestOutputContext_RemoveNonUpdatedStorage_KeyBasedDeletion(t *testing.T) {
+	t.Parallel()
+
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+
+	addr := []byte("contract_address_32_bytes_long!")
+	acc, _ := outputContext.GetOutputAccount(addr)
+
+	// Add a non-written update where Offset differs from key
+	acc.StorageUpdates["map_key_1"] = &vmcommon.StorageUpdate{
+		Offset:  []byte("different_offset"),
+		Data:    []byte("some_data"),
+		Written: false,
+	}
+	// Add a written update
+	acc.StorageUpdates["map_key_2"] = &vmcommon.StorageUpdate{
+		Offset:  []byte("map_key_2"),
+		Data:    []byte("written_data"),
+		Written: true,
+	}
+
+	outputContext.RemoveNonUpdatedStorage()
+
+	// Only written storage update should remain
+	require.Equal(t, 1, len(acc.StorageUpdates))
+	require.NotNil(t, acc.StorageUpdates["map_key_2"])
+	require.True(t, acc.StorageUpdates["map_key_2"].Written)
+	require.Nil(t, acc.StorageUpdates["map_key_1"])
+}
+
+func TestOutputContext_CensorVMOutput_DeletedAccounts(t *testing.T) {
+	t.Parallel()
+
+	host := &contextmock.VMHostStub{}
+	host.RuntimeCalled = func() vmhost.RuntimeContext {
+		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
+	}
+	outputCtx, _ := NewOutputContext(host)
+
+	// Simulate deleted accounts in active state
+	outputCtx.outputState.DeletedAccounts = [][]byte{[]byte("addr_to_delete")}
+	require.Equal(t, 1, len(outputCtx.outputState.DeletedAccounts))
+
+	outputCtx.CensorVMOutput()
+
+	// Verify DeletedAccounts was cleared
+	require.Equal(t, 0, len(outputCtx.outputState.DeletedAccounts))
+}
+
+func TestOutputContext_MergeVMOutputsConditionally_DeduplicatesDeletedAccounts(t *testing.T) {
+	t.Parallel()
+
+	addr1 := []byte("address_1")
+	addr2 := []byte("address_2")
+
+	left := &vmcommon.VMOutput{
+		DeletedAccounts: [][]byte{addr1},
+	}
+	right := &vmcommon.VMOutput{
+		DeletedAccounts: [][]byte{addr1, addr2},
+	}
+
+	mergeVMOutputsConditionally(left, right, false)
+
+	// Must deduplicate addr1 and append addr2
+	require.Equal(t, 2, len(left.DeletedAccounts))
+	require.Equal(t, addr1, left.DeletedAccounts[0])
+	require.Equal(t, addr2, left.DeletedAccounts[1])
+}
+

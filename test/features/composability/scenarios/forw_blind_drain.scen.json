@@ -12,8 +12,8 @@
                     "nonce": "0",
                     "balance": "1000",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000",
-                        "str:NFT-COLLEC": {
+                        "str:TEST-000390": "1000",
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -56,7 +56,7 @@
                 "to": "sc:forwarder",
                 "function": "drain",
                 "arguments": [
-                    "str:TEST-TOKENA",
+                    "str:TEST-000390",
                     "0"
                 ],
                 "gasLimit": "10,000,000",
@@ -77,7 +77,7 @@
                 "to": "sc:forwarder",
                 "function": "drain",
                 "arguments": [
-                    "str:NFT-COLLEC",
+                    "str:NFT-00038a",
                     "1"
                 ],
                 "gasLimit": "10,000,000",
@@ -97,8 +97,8 @@
                     "nonce": "*",
                     "balance": "1000",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000",
-                        "str:NFT-COLLEC": {
+                        "str:TEST-000390": "1000",
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -112,8 +112,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "0",
-                        "str:NFT-COLLEC": {
+                        "str:TEST-000390": "0",
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",

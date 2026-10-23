@@ -2373,3 +2373,35 @@ func Test_ManagedManagedGetAllTransfersCallValue_OnlyCallValue(t *testing.T) {
 		})
 	assert.Nil(t, err)
 }
+
+func Test_ManagedMultiTransferESDTNFTExecuteByUser_DisabledFlagFails(t *testing.T) {
+	testConfig := baseTestConfig
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						testHooks := vmhooks.NewVMHooksImpl(host)
+						ret := testHooks.ManagedMultiTransferESDTNFTExecuteByUser(0, 0, 0, 0, 0, 0)
+						assert.Equal(t, int32(-1), ret)
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed()
+			assert.Equal(t, verify.VmOutput.ReturnMessage, vmhost.ErrOpcodeIsNotAllowed.Error())
+		})
+	assert.Nil(t, err)
+}
+
+

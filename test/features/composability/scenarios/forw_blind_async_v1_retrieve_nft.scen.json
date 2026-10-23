@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-COLLEC": {
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -39,7 +39,7 @@
                 "arguments": [
                     "sc:vault",
                     "str:retrieve_funds",
-                    "str:NFT-COLLEC",
+                    "str:NFT-00038a",
                     "1",
                     "5"
                 ],
@@ -61,7 +61,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-COLLEC": {
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -75,7 +75,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-COLLEC": {
+                        "str:NFT-00038a": {
                             "instances": [
                                 {
                                     "nonce": "1",

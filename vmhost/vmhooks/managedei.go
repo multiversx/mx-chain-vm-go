@@ -326,6 +326,14 @@ func (context *VMHooksImpl) ManagedGetReturnData(resultID int32, resultHandle in
 		return
 	}
 
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBytes(returnData[resultID])
+		if err != nil {
+			context.FailExecution(err)
+			return
+		}
+	}
+
 	managedType.SetBytes(resultHandle, returnData[resultID])
 }
 
@@ -447,9 +455,9 @@ func (context *VMHooksImpl) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 		return
 	}
 
-	address, err := managedType.GetBytes(addressHandle)
+	address, err := loadAddressFromHandle(context.host, managedType, addressHandle)
 	if err != nil {
-		context.FailExecution(vmhost.ErrArgOutOfRange)
+		context.FailExecution(err)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
@@ -465,6 +473,10 @@ func (context *VMHooksImpl) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 	}
 
 	value := managedType.GetBigIntOrCreate(valueHandle)
+	if esdtToken == nil || esdtToken.Value == nil {
+		value.SetInt64(0)
+		return
+	}
 	value.Set(esdtToken.Value)
 }
 
@@ -503,9 +515,9 @@ func ManagedGetESDTTokenDataWithHost(
 		return
 	}
 
-	address, err := managedType.GetBytes(addressHandle)
+	address, err := loadAddressFromHandle(host, managedType, addressHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecution(host, err)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
@@ -519,44 +531,41 @@ func ManagedGetESDTTokenDataWithHost(
 		FailExecution(host, vmhost.ErrArgOutOfRange)
 		return
 	}
-
 	value := managedType.GetBigIntOrCreate(valueHandle)
 	value.Set(esdtToken.Value)
 
 	managedType.SetBytes(propertiesHandle, esdtToken.Properties)
-	if esdtToken.TokenMetaData != nil {
-		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
-		if err != nil {
-			FailExecution(host, err)
-			return
-		}
-		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
-		if err != nil {
-			FailExecution(host, err)
-			return
-		}
-		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
-		if err != nil {
-			FailExecution(host, err)
-			return
-		}
-		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
-		if err != nil {
-			FailExecution(host, err)
-			return
-		}
-		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
-		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
+	managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+	managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+	managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+	managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
+	if err != nil {
+		FailExecution(host, err)
+		return
+	}
+	royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
+	royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
 
-		err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
-		if err != nil {
-			FailExecution(host, err)
-			return
-		}
+	err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return
 	}
 
 }
@@ -596,9 +605,9 @@ func ManagedGetESDTTokenTypeWithHost(
 		return
 	}
 
-	address, err := managedType.GetBytes(addressHandle)
+	address, err := loadAddressFromHandle(host, managedType, addressHandle)
 	if err != nil {
-		FailExecution(host, vmhost.ErrArgOutOfRange)
+		FailExecution(host, err)
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
@@ -779,6 +788,14 @@ func GetCallbackClosureWithHost(
 		return
 	}
 
+	if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = managedTypes.ConsumeGasForBytes(callbackClosure)
+		if err != nil {
+			FailExecution(host, err)
+			return
+		}
+	}
+
 	managedTypes.SetBytes(callbackClosureHandle, callbackClosure)
 }
 
@@ -812,7 +829,7 @@ func (context *VMHooksImpl) ManagedUpgradeFromSourceContract(
 		return
 	}
 
-	sourceContractAddress, err := managedType.GetBytes(addressHandle)
+	sourceContractAddress, err := loadAddressFromHandle(host, managedType, addressHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return
@@ -933,7 +950,7 @@ func ManagedDeleteContractWithHost(
 		return
 	}
 
-	calledSCAddress, err := managedType.GetBytes(destHandle)
+	calledSCAddress, err := loadAddressFromHandle(host, managedType, destHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return
@@ -1359,7 +1376,8 @@ func (context *VMHooksImpl) ManagedMultiTransferESDTNFTExecuteByUser(
 	metering := host.Metering()
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteByUser)
 
-	if !host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
+	if !host.EnableEpochsHandler().IsFlagEnabled(vmhost.MultiESDTNFTTransferAndExecuteByUserFlag) ||
+		!host.IsAllowedToExecute(managedMultiTransferESDTNFTExecuteByUser) {
 		FailExecution(host, vmhost.ErrOpcodeIsNotAllowed)
 		return -1
 	}
@@ -1448,7 +1466,7 @@ func ManagedIsESDTFrozenWithHost(
 		return -1
 	}
 
-	address, err := managedType.GetBytes(addressHandle)
+	address, err := loadAddressFromHandle(host, managedType, addressHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -1492,6 +1510,12 @@ func ManagedIsESDTLimitedTransferWithHost(host vmhost.VMHost, tokenIDHandle int3
 	}
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
+	if err != nil {
+		FailExecution(host, err)
+		return -1
+	}
+
+	err = chargeGasForExtraLengthUnderFlag(len(tokenID), host)
 	if err != nil {
 		FailExecution(host, err)
 		return -1
@@ -1567,7 +1591,15 @@ func ManagedBufferToHexWithHost(host vmhost.VMHost, sourceHandle int32, destHand
 	}
 
 	encoded := hex.EncodeToString(mBuff)
-	managedType.SetBytes(destHandle, []byte(encoded))
+	encodedBytes := []byte(encoded)
+	if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBytes(encodedBytes)
+		if err != nil {
+			FailExecution(host, err)
+			return
+		}
+	}
+	managedType.SetBytes(destHandle, encodedBytes)
 }
 
 // ManagedGetCodeMetadata VMHooks implementation.
@@ -1595,15 +1627,21 @@ func ManagedGetCodeMetadataWithHost(host vmhost.VMHost, addressHandle int32, res
 		return
 	}
 
-	mBuffAddress, err := managedType.GetBytes(addressHandle)
+	mBuffAddress, err := loadAddressFromHandle(host, managedType, addressHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return
 	}
 
 	contract, err := host.Blockchain().GetUserAccount(mBuffAddress)
-	if err != nil || check.IfNil(contract) {
+	if err != nil {
 		FailExecution(host, err)
+		return
+	}
+	if check.IfNil(contract) {
+		if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+			FailExecution(host, vmhost.ErrNilContract)
+		}
 		return
 	}
 
@@ -1618,7 +1656,7 @@ func (context *VMHooksImpl) ManagedGetCodeHash(addressHandle int32, codeHashHand
 	host := context.GetVMHost()
 	managedType := host.ManagedTypes()
 
-	address, err := managedType.GetBytes(addressHandle)
+	address, err := loadAddressFromHandle(host, managedType, addressHandle)
 	if err != nil {
 		FailExecution(host, err)
 		return
@@ -1693,6 +1731,16 @@ func ManagedIsBuiltinFunctionWithHost(host vmhost.VMHost, functionNameHandle int
 
 func chargeGasForExtraLength(lenAttribute int, host vmhost.VMHost) error {
 	if !host.Runtime().AttributeExtraGasUsage() || lenAttribute < safeAttributeLength {
+		return nil
+	}
+
+	metering := host.Metering()
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(lenAttribute))
+	return metering.UseGasBounded(gasToUse)
+}
+
+func chargeGasForExtraLengthUnderFlag(lenAttribute int, host vmhost.VMHost) error {
+	if !host.Runtime().FixCorrectSmallIntAndGasLimits() || lenAttribute < safeAttributeLength {
 		return nil
 	}
 

@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "4000",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000",
+                        "str:FWD-000389": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -48,7 +48,7 @@
                 "function": "forward_sync_fallible_accept_funds_multi_transfer",
                 "arguments": [
                     "sc:vault",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "100",
                     "str:NFT-123456",
@@ -75,7 +75,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -94,7 +94,7 @@
                             "str:MultiESDTNFTTransfer",
                             "sc:vault",
                             "4",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -114,7 +114,7 @@
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -159,7 +159,7 @@
                     "nonce": "0",
                     "balance": "100",
                     "esdt": {
-                        "str:FWD-TOKEN": "100",
+                        "str:FWD-000389": "100",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -186,7 +186,7 @@
                     "nonce": "0",
                     "balance": "3900",
                     "esdt": {
-                        "str:FWD-TOKEN": "900",
+                        "str:FWD-000389": "900",
                         "str:SFT-456789": {
                             "instances": [
                                 {

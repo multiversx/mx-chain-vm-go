@@ -12,7 +12,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     },
                     "code": "mxsc:../vault/output/vault.mxsc.json"
                 },
@@ -32,7 +32,7 @@
                 "function": "forward_sync_retrieve_funds_bt_multi",
                 "arguments": [
                     "sc:vault",
-                    "str:TEST-TOKENA",
+                    "str:TEST-000390",
                     "0",
                     "1000"
                 ],
@@ -53,7 +53,7 @@
                         "data": [
                             "str:ExecuteOnDestContext",
                             "str:retrieve_funds_multi",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ]
@@ -63,7 +63,7 @@
                         "endpoint": "str:retrieve_funds_multi",
                         "topics": [
                             "str:retrieve_funds_multi",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ],
@@ -75,7 +75,7 @@
                         "address": "sc:vault",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000",
                             "sc:forwarder"
@@ -83,7 +83,7 @@
                         "data": [
                             "str:BackTransfer",
                             "str:ESDTTransfer",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "1000"
                         ]
                     },
@@ -92,7 +92,7 @@
                         "endpoint": "str:forward_sync_retrieve_funds_bt_multi",
                         "topics": [
                             "str:back_transfers_multi_event",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ],
@@ -105,7 +105,7 @@
                         "endpoint": "str:forward_sync_retrieve_funds_bt_multi",
                         "topics": [
                             "str:balances_after",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "",
                             "1000"
                         ],
@@ -137,7 +137,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     },
                     "storage": "*",
                     "code": "mxsc:../forwarder/output/forwarder.mxsc.json"

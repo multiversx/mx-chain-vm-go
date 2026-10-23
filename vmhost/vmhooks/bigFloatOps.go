@@ -483,6 +483,11 @@ func (context *VMHooksImpl) BigFloatPow(destinationHandle, opHandle, exponent in
 	metering.StartGasTracing(bigFloatPowName)
 	enableEpochsHandler := context.GetEnableEpochsHandler()
 
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() && exponent < 0 {
+		context.FailExecution(vmhost.ErrExponentTooBigOrTooSmall)
+		return
+	}
+
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatPow
 	if enableEpochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag) {
 		gasToUse += vmMath.MulUint64(metering.GasSchedule().BigFloatAPICost.BigFloatPowPerIteration, uint64(exponent))
@@ -573,8 +578,14 @@ func (context *VMHooksImpl) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	if op.IsInt() {
 		return
 	}
-	if bigIntOp.Sign() < 0 {
-		bigIntOp.Sub(bigIntOp, big.NewInt(1))
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		if op.Sign() < 0 {
+			bigIntOp.Sub(bigIntOp, big.NewInt(1))
+		}
+	} else {
+		if bigIntOp.Sign() < 0 {
+			bigIntOp.Sub(bigIntOp, big.NewInt(1))
+		}
 	}
 }
 
@@ -609,8 +620,14 @@ func (context *VMHooksImpl) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	if op.IsInt() {
 		return
 	}
-	if bigIntOp.Sign() > 0 {
-		bigIntOp.Add(bigIntOp, big.NewInt(1))
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		if op.Sign() > 0 {
+			bigIntOp.Add(bigIntOp, big.NewInt(1))
+		}
+	} else {
+		if bigIntOp.Sign() > 0 {
+			bigIntOp.Add(bigIntOp, big.NewInt(1))
+		}
 	}
 }
 

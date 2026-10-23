@@ -744,6 +744,50 @@ func TestAsyncContext_CreateCallbackInput_LastTransfer_ValueAndNoESDTTransfer_No
 	require.Equal(t, expectedInput, callbackInput)
 }
 
+func TestAsyncContext_CreateCallbackInput_UnrelatedSenderTransferNotAttributed(t *testing.T) {
+	unrelatedSender := []byte("charlie-unrelated-sender")
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value:         big.NewInt(7),
+		SenderAddress: unrelatedSender,
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	vmOutput.ReturnData = nil
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.Arguments = [][]byte{{0}}
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(0) // must be 0 because sender does not match Bob
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_MatchingSenderTransferAttributed(t *testing.T) {
+	matchingSender := Bob
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value:         big.NewInt(7),
+		SenderAddress: matchingSender,
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	vmOutput.ReturnData = nil
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.Arguments = [][]byte{{0}}
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(7) // attributed because sender matches Bob
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
 func TestAsyncContext_CreateCallbackInput_LastTransferValueAndESDTTransfer_WithReturnData(t *testing.T) {
 	originalVMInput, callbackInput, expectedGasProvided := createCallbackInput(t,
 		&vmcommon.OutputTransfer{

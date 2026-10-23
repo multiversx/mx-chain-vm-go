@@ -8,8 +8,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FUNG-00001": "100",
-                        "str:FUNGFROZEN-00002": {
+                        "str:FUNG-000385": "100",
+                        "str:FUNGFROZEN-000388": {
                             "instances": [
                                 {
                                     "nonce": "0",
@@ -18,14 +18,14 @@
                             ],
                             "frozen": "true"
                         },
-                        "str:SFT-00003": {
+                        "str:SFT-00038d": {
                             "instances": [
                                 {
                                     "nonce": "103",
                                     "balance": "300",
                                     "creator": "address:sft-003-creator",
                                     "royalties": "3000",
-                                    "hash": "keccak256:str:SFT-00003-HASH",
+                                    "hash": "keccak256:str:SFT-00038d-HASH",
                                     "uri": [
                                         "str:uri1",
                                         "str:uri2"
@@ -52,7 +52,7 @@
                 "function": "get_esdt_token_data",
                 "arguments": [
                     "sc:forwarder",
-                    "str:FUNG-00001",
+                    "str:FUNG-000385",
                     "0"
                 ]
             },
@@ -79,7 +79,7 @@
                 "function": "is_esdt_frozen",
                 "arguments": [
                     "sc:forwarder",
-                    "str:FUNG-00001",
+                    "str:FUNG-000385",
                     "0"
                 ]
             },
@@ -98,7 +98,7 @@
                 "function": "get_esdt_token_data",
                 "arguments": [
                     "sc:forwarder",
-                    "str:FUNGFROZEN-00002",
+                    "str:FUNGFROZEN-000388",
                     "0"
                 ]
             },
@@ -125,7 +125,7 @@
                 "function": "is_esdt_frozen",
                 "arguments": [
                     "sc:forwarder",
-                    "str:FUNGFROZEN-00002",
+                    "str:FUNGFROZEN-000388",
                     "0"
                 ]
             },
@@ -144,7 +144,7 @@
                 "function": "get_esdt_token_data",
                 "arguments": [
                     "sc:forwarder",
-                    "str:SFT-00003",
+                    "str:SFT-00038d",
                     "103"
                 ]
             },
@@ -153,7 +153,7 @@
                     "1",
                     "300",
                     "true",
-                    "keccak256:str:SFT-00003-HASH",
+                    "keccak256:str:SFT-00038d-HASH",
                     "",
                     "str:other_attributes",
                     "address:sft-003-creator",
@@ -174,7 +174,7 @@
                 "function": "get_esdt_token_data",
                 "arguments": [
                     "address:missing-account",
-                    "str:FUNG-00001",
+                    "str:FUNG-000385",
                     "0"
                 ]
             },
@@ -201,7 +201,7 @@
                 "function": "get_esdt_token_data",
                 "arguments": [
                     "address:other",
-                    "str:FUNG-00001",
+                    "str:FUNG-000385",
                     "0"
                 ]
             },
@@ -228,7 +228,7 @@
                 "function": "get_esdt_token_data",
                 "arguments": [
                     "sc:forwarder",
-                    "str:SFT-00003",
+                    "str:SFT-00038d",
                     "99999"
                 ]
             },
@@ -254,7 +254,7 @@
                 "to": "sc:forwarder",
                 "function": "is_esdt_paused",
                 "arguments": [
-                    "str:SFT-00003"
+                    "str:SFT-00038d"
                 ]
             },
             "expect": {
@@ -271,7 +271,7 @@
                 "to": "sc:forwarder",
                 "function": "is_esdt_limited_transfer",
                 "arguments": [
-                    "str:SFT-00003"
+                    "str:SFT-00038d"
                 ]
             },
             "expect": {

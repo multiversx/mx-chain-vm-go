@@ -108,6 +108,9 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 
 // Clean mocked method
 func (instance *InstanceMock) Clean() bool {
+	if instance.AlreadyClean {
+		return false
+	}
 	instance.AlreadyClean = true
 	return true
 }
@@ -115,6 +118,11 @@ func (instance *InstanceMock) Clean() bool {
 // IsAlreadyCleaned mocked method
 func (instance *InstanceMock) IsAlreadyCleaned() bool {
 	return instance.AlreadyClean
+}
+
+// Abandon mocked method
+func (instance *InstanceMock) Abandon() {
+	instance.AlreadyClean = true
 }
 
 // Reset mocked method

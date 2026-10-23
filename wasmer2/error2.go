@@ -3,6 +3,7 @@ package wasmer2
 import (
 	"errors"
 	"fmt"
+	"runtime"
 	"unsafe"
 )
 
@@ -16,6 +17,9 @@ var ErrCachingFailed = errors.New("instance caching failed")
 
 // GetLastError returns the last error message if any, otherwise returns an error.
 func GetLastError() (string, error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	var errorLength = cWasmerLastErrorLength()
 
 	if errorLength == 0 {

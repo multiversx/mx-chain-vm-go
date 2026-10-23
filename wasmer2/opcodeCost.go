@@ -126,11 +126,6 @@ type OpcodeCost struct {
 	ReturnCall         uint32
 	ReturnCallIndirect uint32
 	Select             uint32
-	TableGet           uint32
-	TableGrow          uint32
-	TableInit          uint32
-	TableSet           uint32
-	TableSize          uint32
 	Throw              uint32
 	Try                uint32
 	TypedSelect        uint32
@@ -262,11 +257,6 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		ReturnCall:         wasmOps.ReturnCall,
 		ReturnCallIndirect: wasmOps.ReturnCallIndirect,
 		Select:             wasmOps.Select,
-		TableGet:           wasmOps.TableGet,
-		TableGrow:          wasmOps.TableGrow,
-		TableInit:          wasmOps.TableInit,
-		TableSet:           wasmOps.TableSet,
-		TableSize:          wasmOps.TableSize,
 		Throw:              wasmOps.Throw,
 		Try:                wasmOps.Try,
 		TypedSelect:        wasmOps.TypedSelect,

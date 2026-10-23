@@ -3,6 +3,7 @@ package wasmer2
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"unsafe"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -39,6 +40,9 @@ func (memory *Wasmer2Memory) Data() []byte {
 
 // Grow the memory by a number of pages (65kb each).
 func (memory *Wasmer2Memory) Grow(numberOfPages uint32) error {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	var growResult = cWasmerMemoryGrow(memory.cgoInstance, cUint32T(numberOfPages))
 
 	if growResult != cWasmerOk {

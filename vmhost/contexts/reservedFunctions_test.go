@@ -149,3 +149,34 @@ func TestReservedFunctions_IsFunctionReserved_WithBarnardOpcodesFlag_Disabled(t 
 	require.True(t, reserved.IsReserved("protocolFunctionBar"))
 	require.True(t, reserved.IsReserved(vmhost.DeleteFunctionName))
 }
+
+func TestReservedFunctions_DynamicActiveBuiltin(t *testing.T) {
+	scAPINames := vmcommon.FunctionNames{
+		"scFunc": struct{}{},
+	}
+
+	builtInFuncContainer := builtInFunctions.NewBuiltInFunctionContainer()
+	isActive := false
+	stub := &mock.BuiltInFunctionStub{
+		IsActiveCalled: func() bool {
+			return isActive
+		},
+	}
+	_ = builtInFuncContainer.Add("dynamicBuiltin", stub)
+
+	enableEpochsHandler := worldmock.EnableEpochsHandlerStubAllFlags()
+	activationFlags := map[string]core.EnableEpochFlag{}
+
+	reserved := NewReservedFunctions(scAPINames, builtInFuncContainer, activationFlags, enableEpochsHandler)
+
+	// Inactive at construction time
+	require.False(t, reserved.IsReserved("dynamicBuiltin"))
+
+	// Activates dynamically at a future epoch
+	isActive = true
+	require.True(t, reserved.IsReserved("dynamicBuiltin"))
+
+	// Deactivates
+	isActive = false
+	require.False(t, reserved.IsReserved("dynamicBuiltin"))
+}

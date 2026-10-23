@@ -1,6 +1,7 @@
 package wasmer2
 
 import (
+	"runtime"
 	"unsafe"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
@@ -23,6 +24,9 @@ type Wasmer2Executor struct {
 
 // CreateExecutor creates a new wasmer executor.
 func CreateExecutor() (*Wasmer2Executor, error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	vmHookPointers := populateCgoFunctionPointers()
 	localPtr := uintptr(unsafe.Pointer(vmHookPointers))
 	localPtrPtr := unsafe.Pointer(&localPtr)
@@ -82,6 +86,9 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	var cInstance *cWasmerInstanceT
 
 	if len(contractCode) == 0 {
@@ -110,6 +117,9 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	var cInstance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {

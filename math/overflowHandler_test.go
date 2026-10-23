@@ -86,6 +86,18 @@ func TestOverflowHandler_MulInt64(t *testing.T) {
 		require.ErrorIs(t, handler.Error(), ErrMultiplicationOverflow)
 		require.Equal(t, int64(math.MaxInt64), product)
 	})
+	t.Run("multiply MinInt64 by -1 should overflow without panic", func(t *testing.T) {
+		handler := NewOverflowHandler()
+
+		product := handler.MulInt64(math.MinInt64, -1)
+		require.ErrorIs(t, handler.Error(), ErrMultiplicationOverflow)
+		require.Equal(t, int64(math.MaxInt64), product)
+
+		handler2 := NewOverflowHandler()
+		product2 := handler2.MulInt64(-1, math.MinInt64)
+		require.ErrorIs(t, handler2.Error(), ErrMultiplicationOverflow)
+		require.Equal(t, int64(math.MaxInt64), product2)
+	})
 	t.Run("error already set, should not perform multiply", func(t *testing.T) {
 		handler := NewOverflowHandler()
 		handler.err = expectedErr

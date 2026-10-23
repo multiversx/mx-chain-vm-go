@@ -11,6 +11,7 @@ type reservedFunctions struct {
 	epochsHandler           vmcommon.EnableEpochsHandler
 	functionNames           vmcommon.FunctionNames
 	functionActivationFlags map[string]core.EnableEpochFlag
+	builtInFuncContainer    vmcommon.BuiltInFunctionContainer
 }
 
 // NewReservedFunctions creates a new reservedFunctions
@@ -24,16 +25,7 @@ func NewReservedFunctions(
 		functionNames:           make(vmcommon.FunctionNames),
 		functionActivationFlags: functionActivationFlags,
 		epochsHandler:           epochsHandler,
-	}
-
-	protocolFuncNames := builtInFuncContainer.Keys()
-	for name := range protocolFuncNames {
-		function, err := builtInFuncContainer.Get(name)
-		if err != nil || !function.IsActive() {
-			continue
-		}
-
-		result.functionNames[name] = struct{}{}
+		builtInFuncContainer:    builtInFuncContainer,
 	}
 
 	for name, value := range scAPINames {
@@ -49,6 +41,11 @@ func NewReservedFunctions(
 
 // IsReserved returns whether a function is reserved
 func (reservedFunctions *reservedFunctions) IsReserved(functionName string) bool {
+	function, err := reservedFunctions.builtInFuncContainer.Get(functionName)
+	if err == nil && function.IsActive() {
+		return true
+	}
+
 	if _, ok := reservedFunctions.functionNames[functionName]; ok {
 		barnardOpcodesEnabled := reservedFunctions.epochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag)
 
@@ -66,11 +63,10 @@ func (reservedFunctions *reservedFunctions) IsReserved(functionName string) bool
 
 // GetReserved gets the reserved functions as a slice of strings
 func (reservedFunctions *reservedFunctions) GetReserved() []string {
-	keys := make([]string, len(reservedFunctions.functionNames))
+	keys := make([]string, 0, len(reservedFunctions.functionNames))
 
 	barnardOpcodesEnabled := reservedFunctions.epochsHandler.IsFlagEnabled(vmhost.BarnardOpcodesFlag)
 
-	i := 0
 	for key := range reservedFunctions.functionNames {
 		if !barnardOpcodesEnabled {
 			if flag, ok := reservedFunctions.functionActivationFlags[key]; ok {
@@ -80,8 +76,17 @@ func (reservedFunctions *reservedFunctions) GetReserved() []string {
 			}
 		}
 
-		keys[i] = key
-		i++
+		keys = append(keys, key)
+	}
+
+	protocolFuncNames := reservedFunctions.builtInFuncContainer.Keys()
+	for name := range protocolFuncNames {
+		function, err := reservedFunctions.builtInFuncContainer.Get(name)
+		if err != nil || !function.IsActive() {
+			continue
+		}
+
+		keys = append(keys, name)
 	}
 
 	return keys

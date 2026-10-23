@@ -57,8 +57,8 @@ func NewStorageContext(
 		host:                       host,
 		blockChainHook:             blockChainHook,
 		stateStack:                 make([][]byte, 0),
-		protectedKeyPrefix:         protectedKeyPrefix,
-		vmProtectedKeyPrefix:       append(protectedKeyPrefix, []byte(VMStoragePrefix)...),
+		protectedKeyPrefix:         bytes.Clone(protectedKeyPrefix),
+		vmProtectedKeyPrefix:       append(bytes.Clone(protectedKeyPrefix), []byte(VMStoragePrefix)...),
 		vmStorageProtectionEnabled: true,
 	}
 
@@ -521,7 +521,7 @@ func (context *storageContext) IsInterfaceNil() bool {
 
 // GetVmProtectedPrefix returns the VM protected prefix as byte slice
 func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
-	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
+	return append(bytes.Clone(context.vmProtectedKeyPrefix), []byte(prefix)...)
 }
 
 // GetStorageLoadCost returns the gas cost for the storage load operation

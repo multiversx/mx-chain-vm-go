@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     },
                     "code": "mxsc:../vault/output/vault.mxsc.json"
                 },
@@ -32,7 +32,7 @@
                 "arguments": [
                     "sc:vault",
                     "str:retrieve_funds",
-                    "str:TEST-TOKENA",
+                    "str:TEST-000390",
                     "0",
                     "1000"
                 ],
@@ -54,14 +54,14 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     }
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "0"
+                        "str:TEST-000390": "0"
                     },
                     "code": "mxsc:../vault/output/vault.mxsc.json"
                 },

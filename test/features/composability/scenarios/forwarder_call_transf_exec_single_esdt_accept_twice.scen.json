@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "2000"
+                        "str:TEST-000390": "2000"
                     }
                 },
                 "sc:vault": {
@@ -31,7 +31,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "value": "2000"
                     }
                 ],
@@ -50,7 +50,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000",
                             "sc:vault"
@@ -58,7 +58,7 @@
                         "data": [
                             "str:TransferAndExecute",
                             "str:ESDTTransfer",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "1000",
                             "str:accept_funds"
                         ]
@@ -68,7 +68,7 @@
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ],
@@ -80,7 +80,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000",
                             "sc:vault"
@@ -88,7 +88,7 @@
                         "data": [
                             "str:TransferAndExecute",
                             "str:ESDTTransfer",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "1000",
                             "str:accept_funds"
                         ]
@@ -98,7 +98,7 @@
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:TEST-TOKENA",
+                            "str:TEST-000390",
                             "0",
                             "1000"
                         ],
@@ -118,7 +118,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "0"
+                        "str:TEST-000390": "0"
                     },
                     "storage": {},
                     "code": ""
@@ -127,7 +127,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "2000"
+                        "str:TEST-000390": "2000"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "2"

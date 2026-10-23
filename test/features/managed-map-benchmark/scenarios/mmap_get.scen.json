@@ -37,7 +37,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "gas": "48627983",
+                "gas": "48623883",
                 "out": [
                     "str:value0"
                 ]
@@ -58,7 +58,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "gas": "37898723",
+                "gas": "37495023",
                 "out": [
                     "str:value0"
                 ]

@@ -302,6 +302,13 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 		return &vmcommon.VMOutput{
 			GasRemaining:   400 + input.GasLocked,
 			OutputAccounts: outputAccounts,
+			Logs: []*vmcommon.LogEntry{
+				{
+					Identifier: []byte(core.BuiltInFunctionClaimDeveloperRewards),
+					Address:    test.ParentAddress,
+					Topics:     [][]byte{big.NewInt(42).Bytes()},
+				},
+			},
 		}, nil
 	}
 	if input.Function == "builtinDoSomething" {

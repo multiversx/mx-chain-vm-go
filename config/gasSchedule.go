@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 
 	"github.com/mitchellh/mapstructure"
@@ -105,7 +106,10 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	if err != nil {
 		return nil, err
 	}
-	dynamicStorageLoadParams := convertFromUnsignedToSigned(dynamicStorageLoadUnsigned)
+	dynamicStorageLoadParams, err := convertFromUnsignedToSigned(dynamicStorageLoadUnsigned)
+	if err != nil {
+		return nil, err
+	}
 
 	isCorrectlyDefined := isDynamicGasComputationFuncCorrectlyDefined(dynamicStorageLoadParams)
 	if !isCorrectlyDefined {
@@ -141,6 +145,10 @@ func isDynamicGasComputationFuncCorrectlyDefined(parameters *DynamicStorageLoadC
 		log.Error("invalid parameters for dynamic gas computation func, the quadratic parameter is not > 0")
 		return false
 	}
+	if parameters.Linear < 0 {
+		log.Error("invalid parameters for dynamic gas computation func, the linear parameter is < 0")
+		return false
+	}
 	stationaryPoint := float64(-1*parameters.Linear) / float64(2*parameters.Quadratic) // -b/2a
 	if stationaryPoint > 0 {
 		// the stationary point should be <= 0 because the func needs to be strictly increasing for x = [0,n)
@@ -156,25 +164,37 @@ func isDynamicGasComputationFuncCorrectlyDefined(parameters *DynamicStorageLoadC
 	return true
 }
 
-func convertFromUnsignedToSigned(dynamicStorageLoadUnsigned *DynamicStorageLoadUnsigned) *DynamicStorageLoadCostCoefficients {
-	quadratic := getSignedCoefficient(dynamicStorageLoadUnsigned.QuadraticCoefficient, dynamicStorageLoadUnsigned.SignOfQuadratic)
-	linear := getSignedCoefficient(dynamicStorageLoadUnsigned.LinearCoefficient, dynamicStorageLoadUnsigned.SignOfLinear)
-	constant := getSignedCoefficient(dynamicStorageLoadUnsigned.ConstantCoefficient, dynamicStorageLoadUnsigned.SignOfConstant)
+func convertFromUnsignedToSigned(dynamicStorageLoadUnsigned *DynamicStorageLoadUnsigned) (*DynamicStorageLoadCostCoefficients, error) {
+	quadratic, err := getSignedCoefficient(dynamicStorageLoadUnsigned.QuadraticCoefficient, dynamicStorageLoadUnsigned.SignOfQuadratic)
+	if err != nil {
+		return nil, fmt.Errorf("%w for QuadraticCoefficient", err)
+	}
+	linear, err := getSignedCoefficient(dynamicStorageLoadUnsigned.LinearCoefficient, dynamicStorageLoadUnsigned.SignOfLinear)
+	if err != nil {
+		return nil, fmt.Errorf("%w for LinearCoefficient", err)
+	}
+	constant, err := getSignedCoefficient(dynamicStorageLoadUnsigned.ConstantCoefficient, dynamicStorageLoadUnsigned.SignOfConstant)
+	if err != nil {
+		return nil, fmt.Errorf("%w for ConstantCoefficient", err)
+	}
 
 	return &DynamicStorageLoadCostCoefficients{
 		Quadratic:  quadratic,
 		Linear:     linear,
 		Constant:   constant,
 		MinGasCost: dynamicStorageLoadUnsigned.MinimumGasCost,
-	}
+	}, nil
 }
 
-func getSignedCoefficient(coefficient uint64, sign uint64) int64 {
+func getSignedCoefficient(coefficient uint64, sign uint64) (int64, error) {
+	if coefficient > math.MaxInt64 {
+		return 0, fmt.Errorf("coefficient %d exceeds max int64", coefficient)
+	}
 	if sign == isNegativeNumber {
-		return int64(coefficient) * -1
+		return -int64(coefficient), nil
 	}
 
-	return int64(coefficient)
+	return int64(coefficient), nil
 }
 
 func checkForZeroUint64Fields(arg interface{}) error {

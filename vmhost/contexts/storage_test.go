@@ -717,3 +717,21 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		require.Equal(t, staticCost, cost)
 	})
 }
+
+func TestStorageContext_GetVmProtectedPrefix_NoBackingArrayAliasing(t *testing.T) {
+	t.Parallel()
+
+	host := &contextmock.VMHostMock{}
+	prefix := []byte("PRE_")
+	storageContext, err := NewStorageContext(host, &contextmock.BlockchainHookStub{}, prefix)
+	require.Nil(t, err)
+
+	p1 := storageContext.GetVmProtectedPrefix("A")
+	p2 := storageContext.GetVmProtectedPrefix("B")
+
+	require.NotEqual(t, string(p1), string(p2))
+	p1[0] = 0xFF
+	p3 := storageContext.GetVmProtectedPrefix("C")
+	require.NotEqual(t, byte(0xFF), p3[0])
+}
+

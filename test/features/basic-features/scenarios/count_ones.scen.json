@@ -39,6 +39,29 @@
                 "gas": "*",
                 "refund": "*"
             }
+        },
+        {
+            "step": "scCall",
+            "id": "1",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "count_ones",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "1"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
         }
     ]
 }

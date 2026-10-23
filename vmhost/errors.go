@@ -13,6 +13,9 @@ var ErrNilVMType = errors.New("nil VMType")
 // ErrNilVMHost signals that the provided VMHost is nil
 var ErrNilVMHost = errors.New("nil VMHost")
 
+// ErrNilInstance signals that the instance is nil or closed
+var ErrNilInstance = errors.New("nil instance")
+
 // ErrNilExecutor signals that the provided Executor is nil
 var ErrNilExecutor = errors.New("nil Executor")
 
@@ -199,6 +202,9 @@ var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not i
 // ErrInputAndOutputGasDoesNotMatch is raised when the output gas (gas used + gas locked + gas remaining)
 // is not equal to the input gas
 var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not match")
+
+// ErrGasUsedUnderflow is raised when gas used calculation underflows due to gas transferred or used by others exceeding contract spend
+var ErrGasUsedUnderflow = errors.New("gas used calculation underflow")
 
 // ErrTransferValueOnESDTCall signals that balance transfer was given in esdt call
 var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")

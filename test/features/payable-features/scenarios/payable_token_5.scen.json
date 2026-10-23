@@ -16,7 +16,7 @@
                     "balance": "1,000,000,000,000",
                     "esdt": {
                         "str:PAYABLE-FEATURES-TOKEN": "1,000,000,000,000",
-                        "str:OTHER-TOKEN": "1,000,000,000,000"
+                        "str:OTHER-00038b": "1,000,000,000,000"
                     }
                 }
             }
@@ -98,7 +98,7 @@
                 "to": "sc:payable-features",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:OTHER-TOKEN",
+                        "tokenIdentifier": "str:OTHER-00038b",
                         "value": "100"
                     }
                 ],

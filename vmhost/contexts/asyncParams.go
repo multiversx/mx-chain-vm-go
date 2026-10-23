@@ -2,6 +2,7 @@
 package contexts
 
 import (
+	"bytes"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
@@ -202,7 +203,7 @@ func CreateCallbackAsyncParams(hasher crypto.Hasher, asyncParams *vmcommon.Async
 
 // GenerateNewCallID will generate a new call ID as byte slice
 func GenerateNewCallID(hasher crypto.Hasher, parentCallID []byte, suffix []byte) []byte {
-	newCallID := append(parentCallID, suffix...)
+	newCallID := append(bytes.Clone(parentCallID), suffix...)
 	newCallID, err := hasher.Sha256(newCallID)
 	if err != nil {
 		return []byte{}
