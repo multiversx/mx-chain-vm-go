@@ -53,6 +53,21 @@ func rustWasmerType(eiType EIType) string {
 	return rustCapiType(eiType)
 }
 
+func rustWasmparserValType(eiType EIType) string {
+	switch eiType {
+	case EITypeMemPtr:
+		fallthrough
+	case EITypeMemLength:
+		fallthrough
+	case EITypeInt32:
+		return "ValType::I32"
+	case EITypeInt64:
+		return "ValType::I64"
+	default:
+		panic("invalid type")
+	}
+}
+
 func rustWasmerProdConvertArg(arg *EIFunctionArg) string {
 	argRustName := snakeCase(arg.Name)
 	switch arg.Type {

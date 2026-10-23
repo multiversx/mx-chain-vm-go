@@ -692,7 +692,9 @@
     MaxMemoryGrow = 100
     MaxMemoryGrowDelta = 1
     MemoryCopy = 5
+    MemoryCopyPerByte = 5
     MemoryFill = 5
+    MemoryFillPerByte = 5
     MemoryGrow = 5
     MemoryInit = 5
     MemorySize = 5
