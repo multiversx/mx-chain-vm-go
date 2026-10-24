@@ -337,7 +337,7 @@ func (context *VMHooksImpl) BigIntUnsignedByteLength(referenceHandle int32) int3
 		return -1
 	}
 
-	return int32(math.UnsignedByteLength(value))
+	return int32(twos.UnsignedByteLength(value))
 }
 
 // BigIntSignedByteLength VMHooks implementation.
@@ -362,7 +362,7 @@ func (context *VMHooksImpl) BigIntSignedByteLength(referenceHandle int32) int32 
 	// the two's complement representation is deliberately not built here: its length
 	// can be computed from the bit length alone, and materializing it would allocate
 	// proportionally to the value while only a flat gas cost is charged
-	return int32(math.TwosComplementByteLength(value))
+	return int32(twos.ByteLength(value))
 }
 
 // BigIntGetUnsignedBytes VMHooks implementation.
