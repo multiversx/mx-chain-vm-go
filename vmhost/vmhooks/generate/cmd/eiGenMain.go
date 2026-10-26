@@ -44,6 +44,8 @@ func main() {
 	}
 
 	writeVMHooks(eiMetadata)
+	writeVMHooksLegacy(eiMetadata)
+	writeVMHooksLegacyAdapter(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
 	writeWasmer2Names(eiMetadata)
@@ -85,6 +87,18 @@ func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHooks.go")
 	defer out.Close()
 	eapigen.WriteEIInterface(out, eiMetadata)
+}
+
+func writeVMHooksLegacy(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHooksLegacy.go")
+	defer out.Close()
+	eapigen.WriteEIInterfaceLegacy(out, eiMetadata)
+}
+
+func writeVMHooksLegacyAdapter(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHooksLegacyAdapter.go")
+	defer out.Close()
+	eapigen.WriteVMHooksLegacyAdapter(out, eiMetadata)
 }
 
 func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {

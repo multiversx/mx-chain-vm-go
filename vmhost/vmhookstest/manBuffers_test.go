@@ -347,21 +347,19 @@ func TestManBuffers_Ints_WithNoBarnardOpcodesFlag(t *testing.T) {
 						host := instanceMock.Host
 						instance := contextmock.GetMockInstance(host)
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						sourceBuffer := managedTypes.NewManagedBufferFromBytes([]byte{0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff})
 
 						bigIntDest := managedTypes.NewBigIntFromInt64(0)
-						result, err := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
-						assert.Nil(t, err)
+						result := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
 						assert.True(t, result == 0)
 
 						bigIntResult, err := managedTypes.GetBigInt(bigIntDest)
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						result, err = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
-						assert.Nil(t, err)
+						result = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
 						assert.True(t, result == 0)
 
 						bigIntResult, err = managedTypes.GetBigInt(bigIntDest)
@@ -403,33 +401,29 @@ func TestManBuffers_Ints_WithBarnardOpcodesFlag(t *testing.T) {
 						host := instanceMock.Host
 						instance := contextmock.GetMockInstance(host)
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						sourceBuffer := managedTypes.NewManagedBufferFromBytes([]byte{0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff})
 
 						bigIntDest := managedTypes.NewBigIntFromInt64(0)
-						result, err := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
-						assert.Nil(t, err)
+						result := hooks.MBufferToBigIntUnsigned(sourceBuffer, bigIntDest)
 						assert.True(t, result == 0)
 
 						bigIntResult, err := managedTypes.GetBigInt(bigIntDest)
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						result, err = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
-						assert.Nil(t, err)
+						result = hooks.MBufferToBigIntSigned(sourceBuffer, bigIntDest)
 						assert.True(t, result == 0)
 
 						bigIntResult, err = managedTypes.GetBigInt(bigIntDest)
 						assert.Nil(t, err)
 						assert.True(t, bigIntResult.Cmp(big.NewInt(0x00_ff_00_ff_00_ff_00_ff)) == 0)
 
-						smallInt, err := hooks.MBufferToSmallIntSigned(sourceBuffer)
-						assert.Nil(t, err)
+						smallInt := hooks.MBufferToSmallIntSigned(sourceBuffer)
 						assert.True(t, smallInt == 0x00_ff_00_ff_00_ff_00_ff)
 
-						smallInt, err = hooks.MBufferToSmallIntUnsigned(sourceBuffer)
-						assert.Nil(t, err)
+						smallInt = hooks.MBufferToSmallIntUnsigned(sourceBuffer)
 						assert.True(t, smallInt == 0x00_ff_00_ff_00_ff_00_ff)
 
 						return instance
@@ -466,36 +460,36 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 					instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 						host := instanceMock.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						sourceBuffer := managedTypes.NewManagedBufferFromBytes([]byte{0x01, 0x02, 0x03})
 						destBuffer := managedTypes.NewManagedBufferFromBytes([]byte{0x00, 0x00, 0x00})
 
 						// startingPosition + sliceLength = MaxInt32 + 1 overflows int32 to negative
-						res, _ := handleHookErr(host)(hooks.MBufferGetByteSlice(sourceBuffer, math.MaxInt32, 1, 0))
+						res := hooks.MBufferGetByteSlice(sourceBuffer, math.MaxInt32, 1, 0)
 						assert.Equal(t, int32(1), res)
 
-						res, _ = handleHookErr(host)(hooks.MBufferCopyByteSlice(sourceBuffer, math.MaxInt32, 1, destBuffer))
+						res = hooks.MBufferCopyByteSlice(sourceBuffer, math.MaxInt32, 1, destBuffer)
 						assert.Equal(t, int32(1), res)
 
 						res, _ = handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, math.MaxInt32, 1, []byte{0x99}))
 						assert.Equal(t, int32(1), res)
 
 						// negative starting position
-						res, _ = handleHookErr(host)(hooks.MBufferGetByteSlice(sourceBuffer, -1, 1, 0))
+						res = hooks.MBufferGetByteSlice(sourceBuffer, -1, 1, 0)
 						assert.Equal(t, int32(1), res)
 
-						res, _ = handleHookErr(host)(hooks.MBufferCopyByteSlice(sourceBuffer, -1, 1, destBuffer))
+						res = hooks.MBufferCopyByteSlice(sourceBuffer, -1, 1, destBuffer)
 						assert.Equal(t, int32(1), res)
 
 						res, _ = handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, -1, 1, []byte{0x99}))
 						assert.Equal(t, int32(1), res)
 
 						// negative slice length
-						res, _ = handleHookErr(host)(hooks.MBufferGetByteSlice(sourceBuffer, 0, -1, 0))
+						res = hooks.MBufferGetByteSlice(sourceBuffer, 0, -1, 0)
 						assert.Equal(t, int32(1), res)
 
-						res, _ = handleHookErr(host)(hooks.MBufferCopyByteSlice(sourceBuffer, 0, -1, destBuffer))
+						res = hooks.MBufferCopyByteSlice(sourceBuffer, 0, -1, destBuffer)
 						assert.Equal(t, int32(1), res)
 
 						res, _ = handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, 0, -1, []byte{0x99}))
@@ -574,10 +568,10 @@ func TestManBuffers_MBufferStorageLoad_InvalidHandleReturnsOne(t *testing.T) {
 					instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 						host := instanceMock.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						destHandle := managedTypes.NewManagedBuffer()
-						res, _ := handleHookErr(host)(hooks.MBufferStorageLoad(-999, destHandle))
+						res := hooks.MBufferStorageLoad(-999, destHandle)
 						assert.Equal(t, int32(1), res)
 
 						return contextmock.GetMockInstance(host)
@@ -606,11 +600,11 @@ func TestManBuffers_MBufferStorageLoad_ValidKey(t *testing.T) {
 					instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 						host := instanceMock.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						destHandle := managedTypes.NewManagedBuffer()
 						keyHandle := managedTypes.NewManagedBufferFromBytes([]byte("test_key"))
-						res, _ := handleHookErr(host)(hooks.MBufferStorageLoad(keyHandle, destHandle))
+						res := hooks.MBufferStorageLoad(keyHandle, destHandle)
 						assert.Equal(t, int32(0), res)
 
 						destBytes, err := managedTypes.GetBytes(destHandle)
@@ -618,10 +612,10 @@ func TestManBuffers_MBufferStorageLoad_ValidKey(t *testing.T) {
 						assert.Equal(t, []byte{}, destBytes)
 
 						valHandle := managedTypes.NewManagedBufferFromBytes([]byte("test_value"))
-						resStore, _ := handleHookErr(host)(hooks.MBufferStorageStore(keyHandle, valHandle))
+						resStore := hooks.MBufferStorageStore(keyHandle, valHandle)
 						assert.Equal(t, int32(0), resStore)
 
-						res, _ = handleHookErr(host)(hooks.MBufferStorageLoad(keyHandle, destHandle))
+						res = hooks.MBufferStorageLoad(keyHandle, destHandle)
 						assert.Equal(t, int32(0), res)
 
 						destBytes, err = managedTypes.GetBytes(destHandle)
@@ -688,12 +682,12 @@ func TestManBuffers_MBufferFromSmallIntSigned_Negatives(t *testing.T) {
 							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 								host := instanceMock.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								bufHandle := managedTypes.NewManagedBufferFromBytes([]byte{})
-								handleHookError(host, hooks.MBufferFromSmallIntSigned(bufHandle, tc.input))
+								hooks.MBufferFromSmallIntSigned(bufHandle, tc.input)
 
-								readBack, _ := handleHookErr64(host)(hooks.MBufferToSmallIntSigned(bufHandle))
+								readBack := hooks.MBufferToSmallIntSigned(bufHandle)
 								assert.Equal(t, tc.expectedOut, readBack)
 
 								return contextmock.GetMockInstance(host)
@@ -750,7 +744,7 @@ func TestManBuffers_MBufferNewFromBytes_GasUsage(t *testing.T) {
 						WithMethods(func(instanceMock *contextmock.InstanceMock, config interface{}) {
 							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 								host := instanceMock.Host
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								testBytes := []byte("01234567890123456789") // 20 bytes
 								err := instanceMock.MemStore(0, testBytes)
@@ -760,7 +754,7 @@ func TestManBuffers_MBufferNewFromBytes_GasUsage(t *testing.T) {
 								copyPerByte := host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte
 
 								gasBefore := host.Metering().GasLeft()
-								handle, _ := handleHookErr(host)(hooks.MBufferNewFromBytes(0, 20))
+								handle := hooks.MBufferNewFromBytes(0, 20)
 								assert.True(t, handle >= 0)
 								gasUsed := gasBefore - host.Metering().GasLeft()
 
@@ -825,7 +819,7 @@ func TestManBuffers_ManagedBufferToHex_GasUsage(t *testing.T) {
 							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 								host := instanceMock.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								testBytes := []byte("0123456789") // 10 bytes -> hex is 20 bytes
 								srcHandle := managedTypes.NewManagedBufferFromBytes(testBytes)
@@ -835,7 +829,7 @@ func TestManBuffers_ManagedBufferToHex_GasUsage(t *testing.T) {
 								copyPerByte := host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte
 
 								gasBefore := host.Metering().GasLeft()
-								handleHookError(host, hooks.ManagedBufferToHex(srcHandle, destHandle))
+								hooks.ManagedBufferToHex(srcHandle, destHandle)
 								gasUsed := gasBefore - host.Metering().GasLeft()
 
 								if tc.flagEnabled {

@@ -13,6 +13,11 @@ var ErrFailedCacheImports = errors.New("could not cache imports")
 
 var ErrInvalidBytecode = errors.New("invalid bytecode")
 
+// ErrVMHooksCannotHandleErrors signals that the VM hooks given to this backend cannot absorb
+// an error returned by a hook. See executor.VMHooksErrorHandler for why this backend needs
+// them to.
+var ErrVMHooksCannotHandleErrors = errors.New("vm hooks do not implement VMHooksErrorHandler")
+
 var ErrCachingFailed = errors.New("instance caching failed")
 
 // GetLastError returns the last error message if any, otherwise returns an error.

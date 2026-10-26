@@ -582,2668 +582,1661 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 //export w2_getGasLeft
 func w2_getGasLeft(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetGasLeft()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetGasLeft()
 }
 
 //export w2_getSCAddress
 func w2_getSCAddress(context unsafe.Pointer, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetSCAddress(executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetSCAddress(executor.MemPtr(resultOffset))
 }
 
 //export w2_getOwnerAddress
 func w2_getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetOwnerAddress(executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetOwnerAddress(executor.MemPtr(resultOffset))
 }
 
 //export w2_getShardOfAddress
 func w2_getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetShardOfAddress(executor.MemPtr(addressOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetShardOfAddress(executor.MemPtr(addressOffset))
 }
 
 //export w2_isSmartContract
 func w2_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.IsSmartContract(executor.MemPtr(addressOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.IsSmartContract(executor.MemPtr(addressOffset))
 }
 
 //export w2_signalError
 func w2_signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.SignalError(executor.MemPtr(messageOffset), messageLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.SignalError(executor.MemPtr(messageOffset), messageLength)
 }
 
 //export w2_getExternalBalance
 func w2_getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(resultOffset))
 }
 
 //export w2_getBlockHash
 func w2_getBlockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockHash(nonce, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockHash(nonce, executor.MemPtr(resultOffset))
 }
 
 //export w2_getESDTBalance
 func w2_getESDTBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, executor.MemPtr(resultOffset))
 }
 
 //export w2_getESDTNFTNameLength
 func w2_getESDTNFTNameLength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTNFTNameLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTNFTNameLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 }
 
 //export w2_getESDTNFTAttributeLength
 func w2_getESDTNFTAttributeLength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTNFTAttributeLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTNFTAttributeLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 }
 
 //export w2_getESDTNFTURILength
 func w2_getESDTNFTURILength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTNFTURILength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTNFTURILength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 }
 
 //export w2_getESDTTokenData
 func w2_getESDTTokenData(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, valueHandle int32, propertiesOffset int32, hashOffset int32, nameOffset int32, attributesOffset int32, creatorOffset int32, royaltiesHandle int32, urisOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenData(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, valueHandle, executor.MemPtr(propertiesOffset), executor.MemPtr(hashOffset), executor.MemPtr(nameOffset), executor.MemPtr(attributesOffset), executor.MemPtr(creatorOffset), royaltiesHandle, executor.MemPtr(urisOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenData(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, valueHandle, executor.MemPtr(propertiesOffset), executor.MemPtr(hashOffset), executor.MemPtr(nameOffset), executor.MemPtr(attributesOffset), executor.MemPtr(creatorOffset), royaltiesHandle, executor.MemPtr(urisOffset))
 }
 
 //export w2_getESDTLocalRoles
 func w2_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTLocalRoles(tokenIdHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTLocalRoles(tokenIdHandle)
 }
 
 //export w2_validateTokenIdentifier
 func w2_validateTokenIdentifier(context unsafe.Pointer, tokenIdHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ValidateTokenIdentifier(tokenIdHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ValidateTokenIdentifier(tokenIdHandle)
 }
 
 //export w2_transferValue
 func w2_transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.TransferValue(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.TransferValue(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
 }
 
 //export w2_transferValueExecute
 func w2_transferValueExecute(context unsafe.Pointer, destOffset int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.TransferValueExecute(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.TransferValueExecute(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_transferESDTExecute
 func w2_transferESDTExecute(context unsafe.Pointer, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.TransferESDTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.TransferESDTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_transferESDTNFTExecute
 func w2_transferESDTNFTExecute(context unsafe.Pointer, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, nonce int64, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.TransferESDTNFTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), nonce, gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.TransferESDTNFTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), nonce, gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_multiTransferESDTNFTExecute
 func w2_multiTransferESDTNFTExecute(context unsafe.Pointer, destOffset int32, numTokenTransfers int32, tokenTransfersArgsLengthOffset int32, tokenTransferDataOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MultiTransferESDTNFTExecute(executor.MemPtr(destOffset), numTokenTransfers, executor.MemPtr(tokenTransfersArgsLengthOffset), executor.MemPtr(tokenTransferDataOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MultiTransferESDTNFTExecute(executor.MemPtr(destOffset), numTokenTransfers, executor.MemPtr(tokenTransfersArgsLengthOffset), executor.MemPtr(tokenTransferDataOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_createAsyncCall
 func w2_createAsyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, dataLength int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.CreateAsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), dataLength, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.CreateAsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), dataLength, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback)
 }
 
 //export w2_setAsyncContextCallback
 func w2_setAsyncContextCallback(context unsafe.Pointer, callback int32, callbackLength int32, data int32, dataLength int32, gas int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SetAsyncContextCallback(executor.MemPtr(callback), callbackLength, executor.MemPtr(data), dataLength, gas)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SetAsyncContextCallback(executor.MemPtr(callback), callbackLength, executor.MemPtr(data), dataLength, gas)
 }
 
 //export w2_upgradeContract
 func w2_upgradeContract(context unsafe.Pointer, destOffset int32, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.UpgradeContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.UpgradeContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_upgradeFromSourceContract
 func w2_upgradeFromSourceContract(context unsafe.Pointer, destOffset int32, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.UpgradeFromSourceContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.UpgradeFromSourceContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_deleteContract
 func w2_deleteContract(context unsafe.Pointer, destOffset int32, gasLimit int64, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.DeleteContract(executor.MemPtr(destOffset), gasLimit, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.DeleteContract(executor.MemPtr(destOffset), gasLimit, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_asyncCall
 func w2_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.AsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.AsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
 }
 
 //export w2_getArgumentLength
 func w2_getArgumentLength(context unsafe.Pointer, id int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetArgumentLength(id)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetArgumentLength(id)
 }
 
 //export w2_getArgument
 func w2_getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetArgument(id, executor.MemPtr(argOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetArgument(id, executor.MemPtr(argOffset))
 }
 
 //export w2_getFunction
 func w2_getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetFunction(executor.MemPtr(functionOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetFunction(executor.MemPtr(functionOffset))
 }
 
 //export w2_getNumArguments
 func w2_getNumArguments(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetNumArguments()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetNumArguments()
 }
 
 //export w2_storageStore
 func w2_storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.StorageStore(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset), dataLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.StorageStore(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset), dataLength)
 }
 
 //export w2_storageLoadLength
 func w2_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.StorageLoadLength(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.StorageLoadLength(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_storageLoadFromAddress
 func w2_storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.StorageLoadFromAddress(executor.MemPtr(addressOffset), executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.StorageLoadFromAddress(executor.MemPtr(addressOffset), executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
 }
 
 //export w2_storageLoad
 func w2_storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.StorageLoad(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.StorageLoad(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
 }
 
 //export w2_setStorageLock
 func w2_setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SetStorageLock(executor.MemPtr(keyOffset), keyLength, lockTimestamp)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SetStorageLock(executor.MemPtr(keyOffset), keyLength, lockTimestamp)
 }
 
 //export w2_getStorageLock
 func w2_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetStorageLock(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetStorageLock(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_isStorageLocked
 func w2_isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.IsStorageLocked(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.IsStorageLocked(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_clearStorageLock
 func w2_clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ClearStorageLock(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ClearStorageLock(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_getCaller
 func w2_getCaller(context unsafe.Pointer, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetCaller(executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetCaller(executor.MemPtr(resultOffset))
 }
 
 //export w2_checkNoPayment
 func w2_checkNoPayment(context unsafe.Pointer) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.CheckNoPayment()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.CheckNoPayment()
 }
 
 //export w2_getCallValue
 func w2_getCallValue(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetCallValue(executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetCallValue(executor.MemPtr(resultOffset))
 }
 
 //export w2_getESDTValue
 func w2_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTValue(executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTValue(executor.MemPtr(resultOffset))
 }
 
 //export w2_getESDTValueByIndex
 func w2_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTValueByIndex(executor.MemPtr(resultOffset), index)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTValueByIndex(executor.MemPtr(resultOffset), index)
 }
 
 //export w2_getESDTTokenName
 func w2_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenName(executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenName(executor.MemPtr(resultOffset))
 }
 
 //export w2_getESDTTokenNameByIndex
 func w2_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenNameByIndex(executor.MemPtr(resultOffset), index)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenNameByIndex(executor.MemPtr(resultOffset), index)
 }
 
 //export w2_getESDTTokenNonce
 func w2_getESDTTokenNonce(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenNonce()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenNonce()
 }
 
 //export w2_getESDTTokenNonceByIndex
 func w2_getESDTTokenNonceByIndex(context unsafe.Pointer, index int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenNonceByIndex(index)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenNonceByIndex(index)
 }
 
 //export w2_getCurrentESDTNFTNonce
 func w2_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetCurrentESDTNFTNonce(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetCurrentESDTNFTNonce(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen)
 }
 
 //export w2_getESDTTokenType
 func w2_getESDTTokenType(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenType()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenType()
 }
 
 //export w2_getESDTTokenTypeByIndex
 func w2_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetESDTTokenTypeByIndex(index)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetESDTTokenTypeByIndex(index)
 }
 
 //export w2_getNumESDTTransfers
 func w2_getNumESDTTransfers(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetNumESDTTransfers()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetNumESDTTransfers()
 }
 
 //export w2_getCallValueTokenName
 func w2_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetCallValueTokenName(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetCallValueTokenName(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset))
 }
 
 //export w2_getCallValueTokenNameByIndex
 func w2_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetCallValueTokenNameByIndex(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset), index)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetCallValueTokenNameByIndex(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset), index)
 }
 
 //export w2_isReservedFunctionName
 func w2_isReservedFunctionName(context unsafe.Pointer, nameHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.IsReservedFunctionName(nameHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.IsReservedFunctionName(nameHandle)
 }
 
 //export w2_writeLog
 func w2_writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.WriteLog(executor.MemPtr(dataPointer), dataLength, executor.MemPtr(topicPtr), numTopics)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.WriteLog(executor.MemPtr(dataPointer), dataLength, executor.MemPtr(topicPtr), numTopics)
 }
 
 //export w2_writeEventLog
 func w2_writeEventLog(context unsafe.Pointer, numTopics int32, topicLengthsOffset int32, topicOffset int32, dataOffset int32, dataLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.WriteEventLog(numTopics, executor.MemPtr(topicLengthsOffset), executor.MemPtr(topicOffset), executor.MemPtr(dataOffset), dataLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.WriteEventLog(numTopics, executor.MemPtr(topicLengthsOffset), executor.MemPtr(topicOffset), executor.MemPtr(dataOffset), dataLength)
 }
 
 //export w2_getBlockTimestamp
 func w2_getBlockTimestamp(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockTimestamp()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockTimestamp()
 }
 
 //export w2_getBlockTimestampMs
 func w2_getBlockTimestampMs(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockTimestampMs()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockTimestampMs()
 }
 
 //export w2_getBlockNonce
 func w2_getBlockNonce(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockNonce()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockNonce()
 }
 
 //export w2_getBlockRound
 func w2_getBlockRound(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockRound()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockRound()
 }
 
 //export w2_getBlockEpoch
 func w2_getBlockEpoch(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockEpoch()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockEpoch()
 }
 
 //export w2_getBlockRandomSeed
 func w2_getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetBlockRandomSeed(executor.MemPtr(pointer))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetBlockRandomSeed(executor.MemPtr(pointer))
 }
 
 //export w2_getStateRootHash
 func w2_getStateRootHash(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetStateRootHash(executor.MemPtr(pointer))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetStateRootHash(executor.MemPtr(pointer))
 }
 
 //export w2_getPrevBlockTimestamp
 func w2_getPrevBlockTimestamp(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetPrevBlockTimestamp()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetPrevBlockTimestamp()
 }
 
 //export w2_getPrevBlockTimestampMs
 func w2_getPrevBlockTimestampMs(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetPrevBlockTimestampMs()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetPrevBlockTimestampMs()
 }
 
 //export w2_getPrevBlockNonce
 func w2_getPrevBlockNonce(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetPrevBlockNonce()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetPrevBlockNonce()
 }
 
 //export w2_getPrevBlockRound
 func w2_getPrevBlockRound(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetPrevBlockRound()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetPrevBlockRound()
 }
 
 //export w2_getPrevBlockEpoch
 func w2_getPrevBlockEpoch(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetPrevBlockEpoch()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetPrevBlockEpoch()
 }
 
 //export w2_getPrevBlockRandomSeed
 func w2_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
 }
 
 //export w2_getBlockRoundTimeMs
 func w2_getBlockRoundTimeMs(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetBlockRoundTimeMs()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetBlockRoundTimeMs()
 }
 
 //export w2_epochStartBlockTimestampMs
 func w2_epochStartBlockTimestampMs(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.EpochStartBlockTimestampMs()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.EpochStartBlockTimestampMs()
 }
 
 //export w2_epochStartBlockNonce
 func w2_epochStartBlockNonce(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.EpochStartBlockNonce()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.EpochStartBlockNonce()
 }
 
 //export w2_epochStartBlockRound
 func w2_epochStartBlockRound(context unsafe.Pointer) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.EpochStartBlockRound()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.EpochStartBlockRound()
 }
 
 //export w2_finish
 func w2_finish(context unsafe.Pointer, pointer int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.Finish(executor.MemPtr(pointer), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.Finish(executor.MemPtr(pointer), length)
 }
 
 //export w2_executeOnSameContext
 func w2_executeOnSameContext(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ExecuteOnSameContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ExecuteOnSameContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_executeOnDestContext
 func w2_executeOnDestContext(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ExecuteOnDestContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ExecuteOnDestContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_executeReadOnly
 func w2_executeReadOnly(context unsafe.Pointer, gasLimit int64, addressOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ExecuteReadOnly(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ExecuteReadOnly(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_createContract
 func w2_createContract(context unsafe.Pointer, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, resultOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.CreateContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, executor.MemPtr(resultOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.CreateContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, executor.MemPtr(resultOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_deployFromSourceContract
 func w2_deployFromSourceContract(context unsafe.Pointer, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, resultAddressOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.DeployFromSourceContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), executor.MemPtr(resultAddressOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.DeployFromSourceContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), executor.MemPtr(resultAddressOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export w2_getNumReturnData
 func w2_getNumReturnData(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetNumReturnData()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetNumReturnData()
 }
 
 //export w2_getReturnDataSize
 func w2_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetReturnDataSize(resultID)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetReturnDataSize(resultID)
 }
 
 //export w2_getReturnData
 func w2_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetReturnData(resultID, executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetReturnData(resultID, executor.MemPtr(dataOffset))
 }
 
 //export w2_cleanReturnData
 func w2_cleanReturnData(context unsafe.Pointer) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.CleanReturnData()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.CleanReturnData()
 }
 
 //export w2_deleteFromReturnData
 func w2_deleteFromReturnData(context unsafe.Pointer, resultID int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.DeleteFromReturnData(resultID)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.DeleteFromReturnData(resultID)
 }
 
 //export w2_getOriginalTxHash
 func w2_getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetOriginalTxHash(executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetOriginalTxHash(executor.MemPtr(dataOffset))
 }
 
 //export w2_getCurrentTxHash
 func w2_getCurrentTxHash(context unsafe.Pointer, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetCurrentTxHash(executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetCurrentTxHash(executor.MemPtr(dataOffset))
 }
 
 //export w2_getPrevTxHash
 func w2_getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.GetPrevTxHash(executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.GetPrevTxHash(executor.MemPtr(dataOffset))
 }
 
 //export w2_managedSCAddress
 func w2_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedSCAddress(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedSCAddress(destinationHandle)
 }
 
 //export w2_managedOwnerAddress
 func w2_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedOwnerAddress(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedOwnerAddress(destinationHandle)
 }
 
 //export w2_managedCaller
 func w2_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedCaller(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedCaller(destinationHandle)
 }
 
 //export w2_managedGetOriginalCallerAddr
 func w2_managedGetOriginalCallerAddr(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
 }
 
 //export w2_managedGetRelayerAddr
 func w2_managedGetRelayerAddr(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetRelayerAddr(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetRelayerAddr(destinationHandle)
 }
 
 //export w2_managedSignalError
 func w2_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedSignalError(errHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedSignalError(errHandle)
 }
 
 //export w2_managedWriteLog
 func w2_managedWriteLog(context unsafe.Pointer, topicsHandle int32, dataHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
 }
 
 //export w2_managedGetOriginalTxHash
 func w2_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetOriginalTxHash(resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetOriginalTxHash(resultHandle)
 }
 
 //export w2_managedGetStateRootHash
 func w2_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetStateRootHash(resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetStateRootHash(resultHandle)
 }
 
 //export w2_managedGetBlockRandomSeed
 func w2_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetBlockRandomSeed(resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetBlockRandomSeed(resultHandle)
 }
 
 //export w2_managedGetPrevBlockRandomSeed
 func w2_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
 }
 
 //export w2_managedGetReturnData
 func w2_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetReturnData(resultID, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetReturnData(resultID, resultHandle)
 }
 
 //export w2_managedGetMultiESDTCallValue
 func w2_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 }
 
 //export w2_managedGetAllTransfersCallValue
 func w2_managedGetAllTransfersCallValue(context unsafe.Pointer, transferCallValuesListHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
 }
 
 //export w2_managedGetBackTransfers
 func w2_managedGetBackTransfers(context unsafe.Pointer, esdtTransfersValueHandle int32, egldValueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 }
 
 //export w2_managedGetESDTBalance
 func w2_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
 }
 
 //export w2_managedGetESDTTokenData
 func w2_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 }
 
 //export w2_managedGetESDTTokenType
 func w2_managedGetESDTTokenType(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 }
 
 //export w2_managedAsyncCall
 func w2_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
 }
 
 //export w2_managedCreateAsyncCall
 func w2_managedCreateAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback, callbackClosureHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback, callbackClosureHandle)
 }
 
 //export w2_managedGetCallbackClosure
 func w2_managedGetCallbackClosure(context unsafe.Pointer, callbackClosureHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
 }
 
 //export w2_managedUpgradeFromSourceContract
 func w2_managedUpgradeFromSourceContract(context unsafe.Pointer, destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedUpgradeContract
 func w2_managedUpgradeContract(context unsafe.Pointer, destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedDeleteContract
 func w2_managedDeleteContract(context unsafe.Pointer, destHandle int32, gasLimit int64, argumentsHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
 }
 
 //export w2_managedDeployFromSourceContract
 func w2_managedDeployFromSourceContract(context unsafe.Pointer, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 }
 
 //export w2_managedCreateContract
 func w2_managedCreateContract(context unsafe.Pointer, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 }
 
 //export w2_managedExecuteReadOnly
 func w2_managedExecuteReadOnly(context unsafe.Pointer, gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedExecuteOnSameContext
 func w2_managedExecuteOnSameContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedExecuteOnDestContext
 func w2_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedExecuteOnDestContextWithErrorReturn
 func w2_managedExecuteOnDestContextWithErrorReturn(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export w2_managedMultiTransferESDTNFTExecute
 func w2_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export w2_managedMultiTransferESDTNFTExecuteWithReturn
 func w2_managedMultiTransferESDTNFTExecuteWithReturn(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export w2_managedMultiTransferESDTNFTExecuteByUser
 func w2_managedMultiTransferESDTNFTExecuteByUser(context unsafe.Pointer, userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export w2_managedTransferValueExecute
 func w2_managedTransferValueExecute(context unsafe.Pointer, dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export w2_managedIsESDTFrozen
 func w2_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
 }
 
 //export w2_managedIsESDTLimitedTransfer
 func w2_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
 }
 
 //export w2_managedIsESDTPaused
 func w2_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedIsESDTPaused(tokenIDHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedIsESDTPaused(tokenIDHandle)
 }
 
 //export w2_managedBufferToHex
 func w2_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
 }
 
 //export w2_managedGetCodeMetadata
 func w2_managedGetCodeMetadata(context unsafe.Pointer, addressHandle int32, responseHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
 }
 
 //export w2_managedGetCodeHash
 func w2_managedGetCodeHash(context unsafe.Pointer, addressHandle int32, codeHashHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 }
 
 //export w2_managedIsBuiltinFunction
 func w2_managedIsBuiltinFunction(context unsafe.Pointer, functionNameHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
 }
 
 //export w2_bigFloatNewFromParts
 func w2_bigFloatNewFromParts(context unsafe.Pointer, integralPart int32, fractionalPart int32, exponent int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
 }
 
 //export w2_bigFloatNewFromFrac
 func w2_bigFloatNewFromFrac(context unsafe.Pointer, numerator int64, denominator int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigFloatNewFromFrac(numerator, denominator)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigFloatNewFromFrac(numerator, denominator)
 }
 
 //export w2_bigFloatNewFromSci
 func w2_bigFloatNewFromSci(context unsafe.Pointer, significand int64, exponent int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigFloatNewFromSci(significand, exponent)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigFloatNewFromSci(significand, exponent)
 }
 
 //export w2_bigFloatAdd
 func w2_bigFloatAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigFloatSub
 func w2_bigFloatSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigFloatMul
 func w2_bigFloatMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigFloatDiv
 func w2_bigFloatDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigFloatNeg
 func w2_bigFloatNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatNeg(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatNeg(destinationHandle, opHandle)
 }
 
 //export w2_bigFloatClone
 func w2_bigFloatClone(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatClone(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatClone(destinationHandle, opHandle)
 }
 
 //export w2_bigFloatCmp
 func w2_bigFloatCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigFloatCmp(op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigFloatCmp(op1Handle, op2Handle)
 }
 
 //export w2_bigFloatAbs
 func w2_bigFloatAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatAbs(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatAbs(destinationHandle, opHandle)
 }
 
 //export w2_bigFloatSign
 func w2_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigFloatSign(opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigFloatSign(opHandle)
 }
 
 //export w2_bigFloatSqrt
 func w2_bigFloatSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatSqrt(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatSqrt(destinationHandle, opHandle)
 }
 
 //export w2_bigFloatPow
 func w2_bigFloatPow(context unsafe.Pointer, destinationHandle int32, opHandle int32, exponent int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
 }
 
 //export w2_bigFloatFloor
 func w2_bigFloatFloor(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
 }
 
 //export w2_bigFloatCeil
 func w2_bigFloatCeil(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
 }
 
 //export w2_bigFloatTruncate
 func w2_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
 }
 
 //export w2_bigFloatSetInt64
 func w2_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatSetInt64(destinationHandle, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatSetInt64(destinationHandle, value)
 }
 
 //export w2_bigFloatIsInt
 func w2_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigFloatIsInt(opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigFloatIsInt(opHandle)
 }
 
 //export w2_bigFloatSetBigInt
 func w2_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle int32, bigIntHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
 }
 
 //export w2_bigFloatGetConstPi
 func w2_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatGetConstPi(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatGetConstPi(destinationHandle)
 }
 
 //export w2_bigFloatGetConstE
 func w2_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigFloatGetConstE(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigFloatGetConstE(destinationHandle)
 }
 
 //export w2_bigIntGetUnsignedArgument
 func w2_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
 }
 
 //export w2_bigIntGetSignedArgument
 func w2_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetSignedArgument(id, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetSignedArgument(id, destinationHandle)
 }
 
 //export w2_bigIntStorageStoreUnsigned
 func w2_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, sourceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, sourceHandle)
 }
 
 //export w2_bigIntStorageLoadUnsigned
 func w2_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength, destinationHandle)
 }
 
 //export w2_bigIntGetCallValue
 func w2_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetCallValue(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetCallValue(destinationHandle)
 }
 
 //export w2_bigIntGetESDTCallValue
 func w2_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetESDTCallValue(destination)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetESDTCallValue(destination)
 }
 
 //export w2_bigIntGetESDTCallValueByIndex
 func w2_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandle int32, index int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
 }
 
 //export w2_bigIntGetExternalBalance
 func w2_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetExternalBalance(executor.MemPtr(addressOffset), result)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetExternalBalance(executor.MemPtr(addressOffset), result)
 }
 
 //export w2_bigIntGetESDTExternalBalance
 func w2_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntGetESDTExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntGetESDTExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, resultHandle)
 }
 
 //export w2_bigIntNew
 func w2_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntNew(smallValue)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntNew(smallValue)
 }
 
 //export w2_bigIntUnsignedByteLength
 func w2_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntUnsignedByteLength(referenceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntUnsignedByteLength(referenceHandle)
 }
 
 //export w2_bigIntSignedByteLength
 func w2_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntSignedByteLength(referenceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntSignedByteLength(referenceHandle)
 }
 
 //export w2_bigIntGetUnsignedBytes
 func w2_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntGetUnsignedBytes(referenceHandle, executor.MemPtr(byteOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntGetUnsignedBytes(referenceHandle, executor.MemPtr(byteOffset))
 }
 
 //export w2_bigIntGetSignedBytes
 func w2_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntGetSignedBytes(referenceHandle, executor.MemPtr(byteOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntGetSignedBytes(referenceHandle, executor.MemPtr(byteOffset))
 }
 
 //export w2_bigIntSetUnsignedBytes
 func w2_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntSetUnsignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntSetUnsignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 }
 
 //export w2_bigIntSetSignedBytes
 func w2_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntSetSignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntSetSignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 }
 
 //export w2_bigIntIsInt64
 func w2_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntIsInt64(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntIsInt64(destinationHandle)
 }
 
 //export w2_bigIntGetInt64
 func w2_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntGetInt64(destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntGetInt64(destinationHandle)
 }
 
 //export w2_bigIntSetInt64
 func w2_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntSetInt64(destinationHandle, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntSetInt64(destinationHandle, value)
 }
 
 //export w2_bigIntAdd
 func w2_bigIntAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntSub
 func w2_bigIntSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntMul
 func w2_bigIntMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntTDiv
 func w2_bigIntTDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntTMod
 func w2_bigIntTMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntEDiv
 func w2_bigIntEDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntEMod
 func w2_bigIntEMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntSqrt
 func w2_bigIntSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntSqrt(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntSqrt(destinationHandle, opHandle)
 }
 
 //export w2_bigIntPow
 func w2_bigIntPow(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntLog2
 func w2_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntLog2(op1Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntLog2(op1Handle)
 }
 
 //export w2_bigIntAbs
 func w2_bigIntAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntAbs(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntAbs(destinationHandle, opHandle)
 }
 
 //export w2_bigIntNeg
 func w2_bigIntNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntNeg(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntNeg(destinationHandle, opHandle)
 }
 
 //export w2_bigIntSign
 func w2_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntSign(opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntSign(opHandle)
 }
 
 //export w2_bigIntCmp
 func w2_bigIntCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.BigIntCmp(op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.BigIntCmp(op1Handle, op2Handle)
 }
 
 //export w2_bigIntNot
 func w2_bigIntNot(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntNot(destinationHandle, opHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntNot(destinationHandle, opHandle)
 }
 
 //export w2_bigIntAnd
 func w2_bigIntAnd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntOr
 func w2_bigIntOr(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntXor
 func w2_bigIntXor(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
 }
 
 //export w2_bigIntShr
 func w2_bigIntShr(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntShr(destinationHandle, opHandle, bits)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntShr(destinationHandle, opHandle, bits)
 }
 
 //export w2_bigIntShl
 func w2_bigIntShl(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntShl(destinationHandle, opHandle, bits)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntShl(destinationHandle, opHandle, bits)
 }
 
 //export w2_bigIntFinishUnsigned
 func w2_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntFinishUnsigned(referenceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntFinishUnsigned(referenceHandle)
 }
 
 //export w2_bigIntFinishSigned
 func w2_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntFinishSigned(referenceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntFinishSigned(referenceHandle)
 }
 
 //export w2_bigIntToString
 func w2_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.BigIntToString(bigIntHandle, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.BigIntToString(bigIntHandle, destinationHandle)
 }
 
 //export w2_mBufferNew
 func w2_mBufferNew(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferNew()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferNew()
 }
 
 //export w2_mBufferNewFromBytes
 func w2_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferNewFromBytes(executor.MemPtr(dataOffset), dataLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferNewFromBytes(executor.MemPtr(dataOffset), dataLength)
 }
 
 //export w2_mBufferGetLength
 func w2_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferGetLength(mBufferHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferGetLength(mBufferHandle)
 }
 
 //export w2_mBufferGetBytes
 func w2_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferGetBytes(mBufferHandle, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferGetBytes(mBufferHandle, executor.MemPtr(resultOffset))
 }
 
 //export w2_mBufferGetByteSlice
 func w2_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, executor.MemPtr(resultOffset))
 }
 
 //export w2_mBufferCopyByteSlice
 func w2_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
 }
 
 //export w2_mBufferEq
 func w2_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2 int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
 }
 
 //export w2_mBufferSetBytes
 func w2_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferSetBytes(mBufferHandle, executor.MemPtr(dataOffset), dataLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferSetBytes(mBufferHandle, executor.MemPtr(dataOffset), dataLength)
 }
 
 //export w2_mBufferSetByteSlice
 func w2_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, executor.MemPtr(dataOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, executor.MemPtr(dataOffset))
 }
 
 //export w2_mBufferAppend
 func w2_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
 }
 
 //export w2_mBufferAppendBytes
 func w2_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferAppendBytes(accumulatorHandle, executor.MemPtr(dataOffset), dataLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferAppendBytes(accumulatorHandle, executor.MemPtr(dataOffset), dataLength)
 }
 
 //export w2_mBufferToBigIntUnsigned
 func w2_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
 }
 
 //export w2_mBufferToBigIntSigned
 func w2_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
 }
 
 //export w2_mBufferFromBigIntUnsigned
 func w2_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
 }
 
 //export w2_mBufferFromBigIntSigned
 func w2_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
 }
 
 //export w2_mBufferToSmallIntUnsigned
 func w2_mBufferToSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
 }
 
 //export w2_mBufferToSmallIntSigned
 func w2_mBufferToSmallIntSigned(context unsafe.Pointer, mBufferHandle int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferToSmallIntSigned(mBufferHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferToSmallIntSigned(mBufferHandle)
 }
 
 //export w2_mBufferFromSmallIntUnsigned
 func w2_mBufferFromSmallIntUnsigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
 }
 
 //export w2_mBufferFromSmallIntSigned
 func w2_mBufferFromSmallIntSigned(context unsafe.Pointer, mBufferHandle int32, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 }
 
 //export w2_mBufferToBigFloat
 func w2_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle int32, bigFloatHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
 }
 
 //export w2_mBufferFromBigFloat
 func w2_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle int32, bigFloatHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
 }
 
 //export w2_mBufferStorageStore
 func w2_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
 }
 
 //export w2_mBufferStorageLoad
 func w2_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
 }
 
 //export w2_mBufferStorageLoadFromAddress
 func w2_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle int32, keyHandle int32, destinationHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
 }
 
 //export w2_mBufferGetArgument
 func w2_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferGetArgument(id, destinationHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferGetArgument(id, destinationHandle)
 }
 
 //export w2_mBufferFinish
 func w2_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferFinish(sourceHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferFinish(sourceHandle)
 }
 
 //export w2_mBufferSetRandom
 func w2_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MBufferSetRandom(destinationHandle, length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MBufferSetRandom(destinationHandle, length)
 }
 
 //export w2_managedMapNew
 func w2_managedMapNew(context unsafe.Pointer) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMapNew()
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMapNew()
 }
 
 //export w2_managedMapPut
 func w2_managedMapPut(context unsafe.Pointer, mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
 }
 
 //export w2_managedMapGet
 func w2_managedMapGet(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
 }
 
 //export w2_managedMapRemove
 func w2_managedMapRemove(context unsafe.Pointer, mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
 }
 
 //export w2_managedMapContains
 func w2_managedMapContains(context unsafe.Pointer, mMapHandle int32, keyHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMapContains(mMapHandle, keyHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMapContains(mMapHandle, keyHandle)
 }
 
 //export w2_smallIntGetUnsignedArgument
 func w2_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SmallIntGetUnsignedArgument(id)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SmallIntGetUnsignedArgument(id)
 }
 
 //export w2_smallIntGetSignedArgument
 func w2_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SmallIntGetSignedArgument(id)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SmallIntGetSignedArgument(id)
 }
 
 //export w2_smallIntFinishUnsigned
 func w2_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.SmallIntFinishUnsigned(value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.SmallIntFinishUnsigned(value)
 }
 
 //export w2_smallIntFinishSigned
 func w2_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.SmallIntFinishSigned(value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.SmallIntFinishSigned(value)
 }
 
 //export w2_smallIntStorageStoreUnsigned
 func w2_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SmallIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SmallIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, value)
 }
 
 //export w2_smallIntStorageStoreSigned
 func w2_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SmallIntStorageStoreSigned(executor.MemPtr(keyOffset), keyLength, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SmallIntStorageStoreSigned(executor.MemPtr(keyOffset), keyLength, value)
 }
 
 //export w2_smallIntStorageLoadUnsigned
 func w2_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SmallIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SmallIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_smallIntStorageLoadSigned
 func w2_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.SmallIntStorageLoadSigned(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.SmallIntStorageLoadSigned(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_int64getArgument
 func w2_int64getArgument(context unsafe.Pointer, id int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.Int64getArgument(id)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.Int64getArgument(id)
 }
 
 //export w2_int64finish
 func w2_int64finish(context unsafe.Pointer, value int64) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.Int64finish(value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.Int64finish(value)
 }
 
 //export w2_int64storageStore
 func w2_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.Int64storageStore(executor.MemPtr(keyOffset), keyLength, value)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.Int64storageStore(executor.MemPtr(keyOffset), keyLength, value)
 }
 
 //export w2_int64storageLoad
 func w2_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.Int64storageLoad(executor.MemPtr(keyOffset), keyLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.Int64storageLoad(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export w2_sha256
 func w2_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.Sha256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.Sha256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 }
 
 //export w2_managedSha256
 func w2_managedSha256(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedSha256(inputHandle, outputHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedSha256(inputHandle, outputHandle)
 }
 
 //export w2_keccak256
 func w2_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.Keccak256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.Keccak256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 }
 
 //export w2_managedKeccak256
 func w2_managedKeccak256(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedKeccak256(inputHandle, outputHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedKeccak256(inputHandle, outputHandle)
 }
 
 //export w2_ripemd160
 func w2_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.Ripemd160(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.Ripemd160(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 }
 
 //export w2_managedRipemd160
 func w2_managedRipemd160(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedRipemd160(inputHandle, outputHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedRipemd160(inputHandle, outputHandle)
 }
 
 //export w2_verifyBLS
 func w2_verifyBLS(context unsafe.Pointer, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.VerifyBLS(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.VerifyBLS(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 }
 
 //export w2_managedVerifyBLS
 func w2_managedVerifyBLS(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
 }
 
 //export w2_verifyEd25519
 func w2_verifyEd25519(context unsafe.Pointer, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.VerifyEd25519(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.VerifyEd25519(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 }
 
 //export w2_managedVerifyEd25519
 func w2_managedVerifyEd25519(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
 }
 
 //export w2_verifyCustomSecp256k1
 func w2_verifyCustomSecp256k1(context unsafe.Pointer, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32, hashType int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.VerifyCustomSecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset), hashType)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.VerifyCustomSecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset), hashType)
 }
 
 //export w2_managedVerifyCustomSecp256k1
 func w2_managedVerifyCustomSecp256k1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
 }
 
 //export w2_verifySecp256k1
 func w2_verifySecp256k1(context unsafe.Pointer, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.VerifySecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.VerifySecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 }
 
 //export w2_managedVerifySecp256k1
 func w2_managedVerifySecp256k1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
 }
 
 //export w2_encodeSecp256k1DerSignature
 func w2_encodeSecp256k1DerSignature(context unsafe.Pointer, rOffset int32, rLength int32, sOffset int32, sLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.EncodeSecp256k1DerSignature(executor.MemPtr(rOffset), rLength, executor.MemPtr(sOffset), sLength, executor.MemPtr(sigOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.EncodeSecp256k1DerSignature(executor.MemPtr(rOffset), rLength, executor.MemPtr(sOffset), sLength, executor.MemPtr(sigOffset))
 }
 
 //export w2_managedEncodeSecp256k1DerSignature
 func w2_managedEncodeSecp256k1DerSignature(context unsafe.Pointer, rHandle int32, sHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
 }
 
 //export w2_addEC
 func w2_addEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
 }
 
 //export w2_doubleEC
 func w2_doubleEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	err := vmHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
+	vmHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
 }
 
 //export w2_isOnCurveEC
 func w2_isOnCurveEC(context unsafe.Pointer, ecHandle int32, pointXHandle int32, pointYHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
 }
 
 //export w2_scalarBaseMultEC
 func w2_scalarBaseMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export w2_managedScalarBaseMultEC
 func w2_managedScalarBaseMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 }
 
 //export w2_scalarMultEC
 func w2_scalarMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, executor.MemPtr(dataOffset), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export w2_managedScalarMultEC
 func w2_managedScalarMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
 }
 
 //export w2_marshalEC
 func w2_marshalEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
 }
 
 //export w2_managedMarshalEC
 func w2_managedMarshalEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 }
 
 //export w2_marshalCompressedEC
 func w2_marshalCompressedEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
 }
 
 //export w2_managedMarshalCompressedEC
 func w2_managedMarshalCompressedEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 }
 
 //export w2_unmarshalEC
 func w2_unmarshalEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export w2_managedUnmarshalEC
 func w2_managedUnmarshalEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 }
 
 //export w2_unmarshalCompressedEC
 func w2_unmarshalCompressedEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export w2_managedUnmarshalCompressedEC
 func w2_managedUnmarshalCompressedEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 }
 
 //export w2_generateKeyEC
 func w2_generateKeyEC(context unsafe.Pointer, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, executor.MemPtr(resultOffset))
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, executor.MemPtr(resultOffset))
 }
 
 //export w2_managedGenerateKeyEC
 func w2_managedGenerateKeyEC(context unsafe.Pointer, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
 }
 
 //export w2_createEC
 func w2_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.CreateEC(executor.MemPtr(dataOffset), dataLength)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.CreateEC(executor.MemPtr(dataOffset), dataLength)
 }
 
 //export w2_managedCreateEC
 func w2_managedCreateEC(context unsafe.Pointer, dataHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedCreateEC(dataHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedCreateEC(dataHandle)
 }
 
 //export w2_getCurveLengthEC
 func w2_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetCurveLengthEC(ecHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetCurveLengthEC(ecHandle)
 }
 
 //export w2_getPrivKeyByteLengthEC
 func w2_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.GetPrivKeyByteLengthEC(ecHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.GetPrivKeyByteLengthEC(ecHandle)
 }
 
 //export w2_ellipticCurveGetValues
 func w2_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 }
 
 //export w2_managedVerifySecp256r1
 func w2_managedVerifySecp256r1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
 }
 
 //export w2_managedVerifyBLSSignatureShare
 func w2_managedVerifyBLSSignatureShare(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
 }
 
 //export w2_managedVerifyBLSAggregatedSignature
 func w2_managedVerifyBLSAggregatedSignature(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	result, err := vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
-	if err != nil {
-		vmHooks.HandleHookError(err)
-	}
-	return result
+	return vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 }

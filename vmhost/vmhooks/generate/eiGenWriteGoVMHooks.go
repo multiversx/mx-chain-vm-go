@@ -13,7 +13,6 @@ func WriteEIInterface(out *eiGenWriter, eiMetadata *EIMetadata) {
 	out.WriteString(`
 // VMHooks contains all VM functions that can be called by the executor during SC execution.
 type VMHooks interface {`)
-	out.WriteString("\n\tVMHooksErrorHandler")
 
 	for _, group := range eiMetadata.Groups {
 		out.WriteString(fmt.Sprintf("\n\t%s", eiGroupInterfaceName(group)))

@@ -8,7 +8,6 @@ package executor
 
 // VMHooks contains all VM functions that can be called by the executor during SC execution.
 type VMHooks interface {
-	VMHooksErrorHandler
 	MainVMHooks
 	ManagedVMHooks
 	BigFloatVMHooks

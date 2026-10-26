@@ -91,7 +91,7 @@ func TestHost_VerifyCustomSecp256k1_MemoryBoundaryGracefulFailure(t *testing.T) 
 				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testSecpBoundary", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						memLen := parentInstance.Memory.Length()
 						// Place key at offset 0 (33 bytes compressed key)
@@ -109,14 +109,14 @@ func TestHost_VerifyCustomSecp256k1_MemoryBoundaryGracefulFailure(t *testing.T) 
 
 						var ret int32
 						require.NotPanics(t, func() {
-							ret, _ = handleHookErr(host)(hooks.VerifyCustomSecp256k1(
+							ret = hooks.VerifyCustomSecp256k1(
 								0,
 								33,
 								messageOffset,
 								messageLength,
 								sigOffset,
 								0, // sha256
-							))
+							)
 						})
 
 						require.Equal(t, int32(1), ret)

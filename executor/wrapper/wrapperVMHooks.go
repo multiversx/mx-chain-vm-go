@@ -15,7 +15,7 @@ import (
 // WrapperVMHooks wraps a VMHooks instance and optionally performs some logging.
 type WrapperVMHooks struct {
 	logger         ExecutorLogger
-	wrappedVMHooks executor.VMHooks
+	wrappedVMHooks vmHooksWithErrorHandler
 }
 
 // GetGasLeft VM hook wrapper

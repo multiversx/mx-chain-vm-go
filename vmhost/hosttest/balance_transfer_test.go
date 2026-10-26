@@ -33,7 +33,7 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 					parentInstance.AddMockMethod("attack", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						// 1. Create managed buffer containing child contract's address
 						childAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)
@@ -44,14 +44,14 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 						argsVecBuf := managedTypes.NewManagedBuffer()
 
 						// 3. Call Child via ManagedExecuteOnDestContext
-						res, _ := handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
+						res := hooks.ManagedExecuteOnDestContext(
 							50000,
 							childAddrBuf,
 							valBuf,
 							fnBuf,
 							argsVecBuf,
 							managedTypes.NewManagedBuffer(),
-						))
+						)
 						require.Equal(t, int32(0), res)
 
 						// 4. Now Child has returned, and Child's output (with sender ChildAddress debited)
@@ -66,14 +66,14 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 						// rekeying the debited account under victimAddress!
 						dummyFnBuf := managedTypes.NewManagedBufferFromBytes([]byte("dummy"))
 						dummyAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)
-						res, _ = handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
+						res = hooks.ManagedExecuteOnDestContext(
 							20000,
 							dummyAddrBuf,
 							valBuf,
 							dummyFnBuf,
 							managedTypes.NewManagedBuffer(),
 							managedTypes.NewManagedBuffer(),
-						))
+						)
 						// Re-create Child in OutputAccounts so meteringContext.setGasUsedToOutputAccounts passes!
 						_, _ = host.Output().GetOutputAccount(test.ChildAddress)
 
@@ -157,7 +157,7 @@ func TestHost_StorageOverwriteResistance(t *testing.T) {
 					parentInstance.AddMockMethod("attackStorage", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						// 1. Create managed buffer containing child contract's address
 						childAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)
@@ -168,14 +168,14 @@ func TestHost_StorageOverwriteResistance(t *testing.T) {
 						argsVecBuf := managedTypes.NewManagedBuffer()
 
 						// 3. Call Child via ManagedExecuteOnDestContext
-						res, _ := handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
+						res := hooks.ManagedExecuteOnDestContext(
 							50000,
 							childAddrBuf,
 							valBuf,
 							fnBuf,
 							argsVecBuf,
 							managedTypes.NewManagedBuffer(),
-						))
+						)
 						require.Equal(t, int32(0), res)
 
 						// 4. Mutate childAddrBuf to victimAddress
@@ -184,14 +184,14 @@ func TestHost_StorageOverwriteResistance(t *testing.T) {
 						// 5. Trigger a second nested execution to rekey via PopMergeActiveState
 						dummyFnBuf := managedTypes.NewManagedBufferFromBytes([]byte("dummy"))
 						dummyAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)
-						res, _ = handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
+						res = hooks.ManagedExecuteOnDestContext(
 							20000,
 							dummyAddrBuf,
 							valBuf,
 							dummyFnBuf,
 							managedTypes.NewManagedBuffer(),
 							managedTypes.NewManagedBuffer(),
-						))
+						)
 						// Re-create Child in OutputAccounts so meteringContext.setGasUsedToOutputAccounts passes
 						_, _ = host.Output().GetOutputAccount(test.ChildAddress)
 

@@ -328,25 +328,16 @@ func Test_BigIntToString(t *testing.T) {
 // This special test case represents an intentionally badly written contract.
 func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{}) {
 	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
-		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
+		vmHooksImpl := vmhooks.NewVMHooksLegacy(parentInstance.Host)
 
 		inputHandle := int32(0)
-		err := vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
-		if err != nil {
-			vmHooksImpl.HandleHookError(err)
-		}
-		result, err := vmHooksImpl.BigIntGetInt64(inputHandle)
-		if err != nil {
-			vmHooksImpl.HandleHookError(err)
-		}
+		vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
+		result := vmHooksImpl.BigIntGetInt64(inputHandle)
 		if result < 0 {
 			return parentInstance
 		}
 
-		err = vmHooksImpl.SmallIntFinishSigned(result)
-		if err != nil {
-			vmHooksImpl.HandleHookError(err)
-		}
+		vmHooksImpl.SmallIntFinishSigned(result)
 
 		return parentInstance
 	})
@@ -1481,11 +1472,8 @@ func Test_ManagedCallCheck(t *testing.T) {
 				WithOwnerAddress(test.ParentAddress).
 				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
-						testHooks := vmhooks.NewVMHooksImpl(parentInstance.Host)
-						err := testHooks.DeleteContract(0, 0, 0x40000000, 0, 0)
-						if err != nil {
-							testHooks.HandleHookError(err)
-						}
+						testHooks := vmhooks.NewVMHooksLegacy(parentInstance.Host)
+						testHooks.DeleteContract(0, 0, 0x40000000, 0, 0)
 						return parentInstance
 					})
 				}),
@@ -2483,8 +2471,8 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_DisabledFlagFails(t *testing.
 				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
 						host := parentInstance.Host
-						testHooks := vmhooks.NewVMHooksImpl(host)
-						ret, _ := handleHookErr(host)(testHooks.ManagedMultiTransferESDTNFTExecuteByUser(0, 0, 0, 0, 0, 0))
+						testHooks := vmhooks.NewVMHooksLegacy(host)
+						ret := testHooks.ManagedMultiTransferESDTNFTExecuteByUser(0, 0, 0, 0, 0, 0)
 						assert.Equal(t, int32(-1), ret)
 						return parentInstance
 					})
@@ -2501,5 +2489,3 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_DisabledFlagFails(t *testing.
 		})
 	assert.Nil(t, err)
 }
-
-

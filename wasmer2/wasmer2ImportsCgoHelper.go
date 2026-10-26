@@ -6,10 +6,14 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-func getVMHooksFromContextRawPtr(contextRawPtr unsafe.Pointer) executor.VMHooks {
+// getVMHooksFromContextRawPtr recovers the VM hooks from the executor's context data.
+//
+// The interface type here must match the one initVMHooks stored, since the cast reinterprets
+// the interface value byte for byte.
+func getVMHooksFromContextRawPtr(contextRawPtr unsafe.Pointer) executor.VMHooksLegacy {
 	vmHooksPtrPtr := (*uintptr)(contextRawPtr)
 	vmHooksPtr := *vmHooksPtrPtr
-	return *(*executor.VMHooks)(unsafe.Pointer(vmHooksPtr))
+	return *(*executor.VMHooksLegacy)(unsafe.Pointer(vmHooksPtr))
 }
 
 func funcPointer(cFuncPtr unsafe.Pointer) *[0]byte {

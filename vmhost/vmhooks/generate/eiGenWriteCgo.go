@@ -97,6 +97,15 @@ func goResultSignature(funcMetadata *EIFunction, typeName func(EIType) string) s
 	}
 }
 
+// goResultSignatureLegacy renders the Go result list of a hook in its pre-migration shape,
+// where the error is not reported back to the caller. Includes the leading space.
+func goResultSignatureLegacy(funcMetadata *EIFunction, typeName func(EIType) string) string {
+	if funcMetadata.Result == nil {
+		return ""
+	}
+	return " " + typeName(funcMetadata.Result.Type)
+}
+
 func (writer *cgoWriter) cgoFuncName(funcMetadata *EIFunction) string {
 	return writer.cgoPrefix + lowerInitial(funcMetadata.Name)
 }
@@ -191,16 +200,9 @@ func (writer *cgoWriter) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadata
 		out.WriteString(" {\n")
 		out.WriteString("\tvmHooks := getVMHooksFromContextRawPtr(context)\n")
 		out.WriteString("\t")
-
-		switch {
-		case !funcMetadata.ReturnsError && funcMetadata.Result != nil:
+		if funcMetadata.Result != nil {
 			out.WriteString("return ")
-		case funcMetadata.ReturnsError && funcMetadata.Result != nil:
-			out.WriteString("result, err := ")
-		case funcMetadata.ReturnsError:
-			out.WriteString("err := ")
 		}
-
 		out.WriteString(fmt.Sprintf("vmHooks.%s(",
 			upperInitial(funcMetadata.Name),
 		))
@@ -211,16 +213,6 @@ func (writer *cgoWriter) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadata
 			out.WriteString(cgoExportConversion(arg))
 		}
 		out.WriteString(")\n")
-
-		if funcMetadata.ReturnsError {
-			out.WriteString("\tif err != nil {\n")
-			out.WriteString("\t\tvmHooks.HandleHookError(err)\n")
-			out.WriteString("\t}\n")
-			if funcMetadata.Result != nil {
-				out.WriteString("\treturn result\n")
-			}
-		}
-
 		out.WriteString("}\n")
 	}
 }

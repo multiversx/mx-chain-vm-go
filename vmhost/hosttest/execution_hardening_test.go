@@ -14,6 +14,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
@@ -289,14 +290,14 @@ func TestHost_DestinationAddressLength_FlagGated(t *testing.T) {
 							parentInstance.AddMockMethod("testShortDest", func() *contextmock.InstanceMock {
 								host := parentInstance.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								destBuf := managedTypes.NewManagedBufferFromBytes(shortDest)
 								valueBuf := managedTypes.NewBigIntFromInt64(0)
 								funcBuf := managedTypes.NewManagedBufferFromBytes([]byte("dummyFunc"))
 								argsBuf := managedTypes.NewManagedBufferFromBytes(nil)
 
-								handleHookError(host, hooks.ManagedAsyncCall(destBuf, valueBuf, funcBuf, argsBuf))
+								hooks.ManagedAsyncCall(destBuf, valueBuf, funcBuf, argsBuf)
 
 								allErrors := host.Runtime().GetAllErrors()
 								if flagEnabled {
@@ -352,7 +353,7 @@ func TestHost_ManagedHooksAddressLength_FlagGated(t *testing.T) {
 							parentInstance.AddMockMethod("testAddressHooks", func() *contextmock.InstanceMock {
 								host := parentInstance.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								addrHandle := managedTypes.NewManagedBufferFromBytes(shortAddr)
 								tokenHandle := managedTypes.NewManagedBufferFromBytes([]byte("TOKEN-123456"))
@@ -360,28 +361,28 @@ func TestHost_ManagedHooksAddressLength_FlagGated(t *testing.T) {
 								respHandle := managedTypes.NewManagedBuffer()
 
 								// 1. ManagedGetESDTBalance
-								handleHookError(host, hooks.ManagedGetESDTBalance(addrHandle, tokenHandle, 0, valHandle))
+								hooks.ManagedGetESDTBalance(addrHandle, tokenHandle, 0, valHandle)
 								allErrors := host.Runtime().GetAllErrors()
 								if flagEnabled {
 									require.ErrorIs(t, allErrors, vmhost.ErrLengthOfBufferNotCorrect)
 								}
 
 								// 2. ManagedGetCodeMetadata
-								handleHookError(host, hooks.ManagedGetCodeMetadata(addrHandle, respHandle))
+								hooks.ManagedGetCodeMetadata(addrHandle, respHandle)
 								allErrors = host.Runtime().GetAllErrors()
 								if flagEnabled {
 									require.ErrorIs(t, allErrors, vmhost.ErrLengthOfBufferNotCorrect)
 								}
 
 								// 3. ManagedGetCodeHash
-								handleHookError(host, hooks.ManagedGetCodeHash(addrHandle, respHandle))
+								hooks.ManagedGetCodeHash(addrHandle, respHandle)
 								allErrors = host.Runtime().GetAllErrors()
 								if flagEnabled {
 									require.ErrorIs(t, allErrors, vmhost.ErrLengthOfBufferNotCorrect)
 								}
 
 								// 4. ManagedIsESDTFrozen
-								res, _ := handleHookErr(host)(hooks.ManagedIsESDTFrozen(addrHandle, tokenHandle, 0))
+								res := hooks.ManagedIsESDTFrozen(addrHandle, tokenHandle, 0)
 								if flagEnabled {
 									require.Equal(t, int32(-1), res)
 									require.ErrorIs(t, host.Runtime().GetAllErrors(), vmhost.ErrLengthOfBufferNotCorrect)
@@ -389,7 +390,7 @@ func TestHost_ManagedHooksAddressLength_FlagGated(t *testing.T) {
 
 								// 5. MBufferStorageLoadFromAddress
 								keyHandle := managedTypes.NewManagedBufferFromBytes([]byte("key"))
-								handleHookError(host, hooks.MBufferStorageLoadFromAddress(addrHandle, keyHandle, respHandle))
+								hooks.MBufferStorageLoadFromAddress(addrHandle, keyHandle, respHandle)
 								if flagEnabled {
 									require.ErrorIs(t, host.Runtime().GetAllErrors(), vmhost.ErrLengthOfBufferNotCorrect)
 								}
@@ -654,11 +655,11 @@ func TestHost_MBufferNewFromBytes_MaxBufferCap_FlagGated(t *testing.T) {
 						WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
 							parentInstance.AddMockMethod("testMaxBuffer", func() *contextmock.InstanceMock {
 								host := parentInstance.Host
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								// Request buffer creation exceeding maxBufferCopyBytes (10MB + 1)
 								oversizedLength := int32(10*1024*1024 + 1)
-								handle, _ := handleHookErr(host)(hooks.MBufferNewFromBytes(0, oversizedLength))
+								handle := hooks.MBufferNewFromBytes(0, oversizedLength)
 
 								allErrors := host.Runtime().GetAllErrors()
 								if flagEnabled {
@@ -705,13 +706,13 @@ func TestHost_MBufferGetArgument_And_BigIntGetUnsignedArgument_ConsumeGas(t *tes
 						WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
 							parentInstance.AddMockMethod("testArgGas", func() *contextmock.InstanceMock {
 								host := parentInstance.Host
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								gasBefore := host.Metering().GasLeft()
 
 								// Call MBufferGetArgument for arg 0
 								destHandle := host.ManagedTypes().NewManagedBuffer()
-								res, _ := handleHookErr(host)(hooks.MBufferGetArgument(0, destHandle))
+								res := hooks.MBufferGetArgument(0, destHandle)
 								require.Equal(t, int32(0), res)
 
 								gasAfterMBuffer := host.Metering().GasLeft()
@@ -719,7 +720,7 @@ func TestHost_MBufferGetArgument_And_BigIntGetUnsignedArgument_ConsumeGas(t *tes
 
 								// Call BigIntGetUnsignedArgument for arg 0
 								bigIntHandle := host.ManagedTypes().NewBigIntFromInt64(0)
-								handleHookError(host, hooks.BigIntGetUnsignedArgument(0, bigIntHandle))
+								hooks.BigIntGetUnsignedArgument(0, bigIntHandle)
 
 								gasAfterBigInt := host.Metering().GasLeft()
 								consumedByBigInt := gasAfterMBuffer - gasAfterBigInt
@@ -773,7 +774,7 @@ func TestHost_GetArgumentsFromMemory_MaxCapped_FlagGated(t *testing.T) {
 						WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
 							parentInstance.AddMockMethod("testMaxArgs", func() *contextmock.InstanceMock {
 								host := parentInstance.Host
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								// Setup memory: dest at 0, balance at 32, func at 64
 								_ = parentInstance.MemStore(0, test.ChildAddress)
@@ -781,7 +782,7 @@ func TestHost_GetArgumentsFromMemory_MaxCapped_FlagGated(t *testing.T) {
 								_ = parentInstance.MemStore(64, []byte("someFunc"))
 
 								// TransferValueExecute with 1025 arguments (exceeding maxNumArgumentsFromMemoryCapped = 1024)
-								res, _ := handleHookErr(host)(hooks.TransferValueExecute(
+								res := hooks.TransferValueExecute(
 									0,
 									32,
 									100000,
@@ -790,7 +791,7 @@ func TestHost_GetArgumentsFromMemory_MaxCapped_FlagGated(t *testing.T) {
 									1025,
 									100,
 									200,
-								))
+								)
 
 								allErrors := host.Runtime().GetAllErrors()
 								if flagEnabled {
@@ -1137,8 +1138,8 @@ func TestHost_BigIntSqrt_BoundsCheckUnderFlag(t *testing.T) {
 								srcHandle := managedTypes.NewBigInt(largeInt)
 								dstHandle := managedTypes.NewBigInt(big.NewInt(0))
 
-								vmHooks := vmhooks.NewVMHooksImpl(host)
-								handleHookError(host, vmHooks.BigIntSqrt(dstHandle, srcHandle))
+								vmHooks := vmhooks.NewVMHooksLegacy(host)
+								vmHooks.BigIntSqrt(dstHandle, srcHandle)
 
 								return parentInstance
 							})
@@ -1486,26 +1487,26 @@ func TestHost_ESDTBalanceHooks_NilSafe(t *testing.T) {
 					instanceMock.AddMockMethod("testNilESDT", func() *contextmock.InstanceMock {
 						host := instanceMock.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						addrHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 						tokenHandle := managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 						valHandle := managedTypes.NewBigIntFromInt64(999)
 
 						// 1. ManagedGetESDTBalance
-						handleHookError(host, hooks.ManagedGetESDTBalance(addrHandle, tokenHandle, 0, valHandle))
+						hooks.ManagedGetESDTBalance(addrHandle, tokenHandle, 0, valHandle)
 						require.Nil(t, host.Runtime().GetAllErrors())
 						resBigInt, err := managedTypes.GetBigInt(valHandle)
 						require.Nil(t, err)
 						require.Equal(t, int64(100), resBigInt.Int64())
 
 						// 2. GetESDTBalance
-						err = hooks.MemStore(0, test.ParentAddress)
+						err = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
 						require.Nil(t, err)
-						err = hooks.MemStore(32, test.ESDTTestTokenName)
+						err = vmhooks.NewVMHooksImpl(host).MemStore(32, test.ESDTTestTokenName)
 						require.Nil(t, err)
 
-						retLen, _ := handleHookErr(host)(hooks.GetESDTBalance(0, 32, 10, 0, 64))
+						retLen := hooks.GetESDTBalance(0, 32, 10, 0, 64)
 						require.True(t, retLen > 0)
 						require.Nil(t, host.Runtime().GetAllErrors())
 
@@ -1566,12 +1567,12 @@ func TestHost_BUG285_ManagedGetCodeMetadata_MissingAccount(t *testing.T) {
 			host.Output().InitState()
 
 			managedTypes := host.ManagedTypes()
-			hooks := vmhooks.NewVMHooksImpl(host)
+			hooks := vmhooks.NewVMHooksLegacy(host)
 
 			addrHandle := managedTypes.NewManagedBufferFromBytes(make([]byte, 32))
 			respHandle := managedTypes.NewManagedBuffer()
 
-			handleHookError(host, hooks.ManagedGetCodeMetadata(addrHandle, respHandle))
+			hooks.ManagedGetCodeMetadata(addrHandle, respHandle)
 
 			if flagEnabled {
 				require.ErrorIs(t, host.Runtime().GetAllErrors(), vmhost.ErrNilContract)
@@ -1599,7 +1600,7 @@ func TestHost_BUG240_CryptoEI_AddEC_InvalidHandle_NoPanic(t *testing.T) {
 	host.Output().InitState()
 
 	managedTypes := host.ManagedTypes()
-	hooks := vmhooks.NewVMHooksImpl(host)
+	hooks := vmhooks.NewVMHooksLegacy(host)
 
 	xRes := managedTypes.NewBigIntFromInt64(0)
 	yRes := managedTypes.NewBigIntFromInt64(0)
@@ -1609,7 +1610,7 @@ func TestHost_BUG240_CryptoEI_AddEC_InvalidHandle_NoPanic(t *testing.T) {
 	y2 := managedTypes.NewBigIntFromInt64(4)
 
 	invalidCurveHandle := int32(9999)
-	handleHookError(host, hooks.AddEC(xRes, yRes, invalidCurveHandle, x1, y1, x2, y2))
+	hooks.AddEC(xRes, yRes, invalidCurveHandle, x1, y1, x2, y2)
 	require.ErrorIs(t, host.Runtime().GetAllErrors(), vmhost.ErrNoEllipticCurveUnderThisHandle)
 }
 
@@ -1625,14 +1626,14 @@ func TestHost_BUG242_CryptoEI_ManagedUnmarshalEC_InvalidDataHandle(t *testing.T)
 					instanceMock.AddMockMethod("testUnmarshalEC", func() *contextmock.InstanceMock {
 						host := instanceMock.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						ecHandle := managedTypes.PutEllipticCurve(elliptic.P256().Params())
 						invalidDataHandle := int32(9999)
 						xRes := managedTypes.NewBigIntFromInt64(0)
 						yRes := managedTypes.NewBigIntFromInt64(0)
 
-						res, _ := handleHookErr(host)(hooks.ManagedUnmarshalEC(xRes, yRes, ecHandle, invalidDataHandle))
+						res := hooks.ManagedUnmarshalEC(xRes, yRes, ecHandle, invalidDataHandle)
 						require.Equal(t, int32(1), res)
 						capturedErr = host.Runtime().GetAllErrors()
 
@@ -1667,10 +1668,10 @@ func TestHost_BUG297_BigInt_GetArgument_OutOfBounds(t *testing.T) {
 							instanceMock.AddMockMethod("testGetArg", func() *contextmock.InstanceMock {
 								host := instanceMock.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								destHandle := managedTypes.NewBigIntFromInt64(0)
-								handleHookError(host, hooks.BigIntGetUnsignedArgument(999, destHandle))
+								hooks.BigIntGetUnsignedArgument(999, destHandle)
 								capturedErr = host.Runtime().GetAllErrors()
 
 								return instanceMock
@@ -1706,7 +1707,7 @@ func TestHost_BUG297_BigInt_GetArgument_OutOfBounds(t *testing.T) {
 func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 	t.Parallel()
 
-	newTestHost := func() (vmhost.VMHost, *vmhooks.VMHooksImpl) {
+	newTestHost := func() (vmhost.VMHost, *executor.VMHooksLegacyAdapter) {
 		stubHook := &contextmock.BlockchainHookStub{
 			GetESDTTokenCalled: func(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 				return nil, nil // esdtToken is nil, error is nil
@@ -1726,7 +1727,7 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		rawCode := test.GetTestSCCode("counter", "../../")
 		err := host.Runtime().StartWasmerInstance(rawCode, 10000000, false)
 		require.Nil(t, err)
-		return host, vmhooks.NewVMHooksImpl(host)
+		return host, vmhooks.NewVMHooksLegacy(host)
 	}
 
 	t.Run("BigIntGetESDTExternalBalance sets 0 without error", func(t *testing.T) {
@@ -1735,9 +1736,9 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		managedTypes := host.ManagedTypes()
 
 		valHandle := managedTypes.NewBigIntFromInt64(0)
-		_ = hooks.MemStore(0, test.ParentAddress)
-		_ = hooks.MemStore(32, []byte("TEST-123456"))
-		handleHookError(host, hooks.BigIntGetESDTExternalBalance(0, 32, 11, 0, valHandle))
+		_ = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
+		_ = vmhooks.NewVMHooksImpl(host).MemStore(32, []byte("TEST-123456"))
+		hooks.BigIntGetESDTExternalBalance(0, 32, 11, 0, valHandle)
 		valBigInt, _ := managedTypes.GetBigInt(valHandle)
 		require.Equal(t, int64(0), valBigInt.Int64())
 		require.Nil(t, host.Runtime().GetAllErrors())
@@ -1759,7 +1760,7 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		royaltiesHandle := managedTypes.NewBigIntFromInt64(0)
 		urisHandle := managedTypes.NewManagedBuffer()
 
-		handleHookError(host, hooks.ManagedGetESDTTokenData(addrHandle, tokenHandle, 0, valHandle, propHandle, hashHandle, nameHandle, attrHandle, creatorHandle, royaltiesHandle, urisHandle))
+		hooks.ManagedGetESDTTokenData(addrHandle, tokenHandle, 0, valHandle, propHandle, hashHandle, nameHandle, attrHandle, creatorHandle, royaltiesHandle, urisHandle)
 		valBigInt, _ := managedTypes.GetBigInt(valHandle)
 		require.Equal(t, int64(0), valBigInt.Int64())
 		require.Nil(t, host.Runtime().GetAllErrors())
@@ -1774,7 +1775,7 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		tokenHandle := managedTypes.NewManagedBufferFromBytes([]byte("TEST-123456"))
 		typeHandle := managedTypes.NewBigIntFromInt64(0)
 
-		handleHookError(host, hooks.ManagedGetESDTTokenType(addrHandle, tokenHandle, 0, typeHandle))
+		hooks.ManagedGetESDTTokenType(addrHandle, tokenHandle, 0, typeHandle)
 		typeBigInt, _ := managedTypes.GetBigInt(typeHandle)
 		require.Equal(t, int64(0), typeBigInt.Int64())
 		require.Nil(t, host.Runtime().GetAllErrors())
@@ -1788,7 +1789,7 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		addrHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 		tokenHandle := managedTypes.NewManagedBufferFromBytes([]byte("TEST-123456"))
 
-		resFrozen, _ := handleHookErr(host)(hooks.ManagedIsESDTFrozen(addrHandle, tokenHandle, 0))
+		resFrozen := hooks.ManagedIsESDTFrozen(addrHandle, tokenHandle, 0)
 		require.Equal(t, int32(0), resFrozen)
 		require.Nil(t, host.Runtime().GetAllErrors())
 	})
@@ -1798,12 +1799,12 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		defer host.Reset()
 		managedTypes := host.ManagedTypes()
 
-		_ = hooks.MemStore(0, test.ParentAddress)
-		_ = hooks.MemStore(32, []byte("TEST-123456"))
+		_ = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
+		_ = vmhooks.NewVMHooksImpl(host).MemStore(32, []byte("TEST-123456"))
 		valHandle := managedTypes.NewBigIntFromInt64(0)
 		royaltiesHandle := managedTypes.NewBigIntFromInt64(0)
 
-		resTokenData, _ := handleHookErr(host)(hooks.GetESDTTokenData(0, 32, 11, 0, valHandle, 100, 200, 300, 400, 500, royaltiesHandle, 600))
+		resTokenData := hooks.GetESDTTokenData(0, 32, 11, 0, valHandle, 100, 200, 300, 400, 500, royaltiesHandle, 600)
 		require.Equal(t, int32(0), resTokenData)
 		valBigInt, _ := managedTypes.GetBigInt(valHandle)
 		require.Equal(t, int64(0), valBigInt.Int64())
@@ -1842,7 +1843,7 @@ func TestHost_BigFloatFloorCeil_RoundingNearZero(t *testing.T) {
 			err := host.Runtime().StartWasmerInstance(rawCode, 10000000, false)
 			require.Nil(t, err)
 
-			hooks := vmhooks.NewVMHooksImpl(host)
+			hooks := vmhooks.NewVMHooksLegacy(host)
 			managedTypes := host.ManagedTypes()
 
 			negHalfHandle, _ := managedTypes.PutBigFloat(big.NewFloat(-0.5))
@@ -1852,7 +1853,7 @@ func TestHost_BigFloatFloorCeil_RoundingNearZero(t *testing.T) {
 			ceilDestHandle := managedTypes.NewBigIntFromInt64(0)
 
 			// Test Floor(-0.5)
-			handleHookError(host, hooks.BigFloatFloor(floorDestHandle, negHalfHandle))
+			hooks.BigFloatFloor(floorDestHandle, negHalfHandle)
 			floorResult, _ := managedTypes.GetBigInt(floorDestHandle)
 			if flagEnabled {
 				require.Equal(t, int64(-1), floorResult.Int64())
@@ -1861,7 +1862,7 @@ func TestHost_BigFloatFloorCeil_RoundingNearZero(t *testing.T) {
 			}
 
 			// Test Ceil(+0.5)
-			handleHookError(host, hooks.BigFloatCeil(ceilDestHandle, posHalfHandle))
+			hooks.BigFloatCeil(ceilDestHandle, posHalfHandle)
 			ceilResult, _ := managedTypes.GetBigInt(ceilDestHandle)
 			if flagEnabled {
 				require.Equal(t, int64(1), ceilResult.Int64())
@@ -1903,13 +1904,13 @@ func TestHost_BigFloatPow_NegativeExponent(t *testing.T) {
 			err := host.Runtime().StartWasmerInstance(rawCode, 10000000, false)
 			require.Nil(t, err)
 
-			hooks := vmhooks.NewVMHooksImpl(host)
+			hooks := vmhooks.NewVMHooksLegacy(host)
 			managedTypes := host.ManagedTypes()
 
 			baseHandle, _ := managedTypes.PutBigFloat(big.NewFloat(2.0))
 			destHandle, _ := managedTypes.PutBigFloat(big.NewFloat(0))
 
-			handleHookError(host, hooks.BigFloatPow(destHandle, baseHandle, -1))
+			hooks.BigFloatPow(destHandle, baseHandle, -1)
 			err = host.Runtime().GetAllErrors()
 			if flagEnabled {
 				require.ErrorIs(t, err, vmhost.ErrExponentTooBigOrTooSmall)
@@ -1932,7 +1933,7 @@ func TestHost_IsReservedFunctionName_ExtraGasUsage(t *testing.T) {
 							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 								host := instanceMock.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								// 200 bytes name (> safeAttributeLength 100)
 								longName := bytes.Repeat([]byte("a"), 200)
@@ -1943,7 +1944,7 @@ func TestHost_IsReservedFunctionName_ExtraGasUsage(t *testing.T) {
 								expectedExtraGas := uint64(len(longName)) * dataCopyPerByte
 
 								gasBefore := host.Metering().GasLeft()
-								res, _ := handleHookErr(host)(hooks.IsReservedFunctionName(nameHandle))
+								res := hooks.IsReservedFunctionName(nameHandle)
 								require.Equal(t, int32(0), res)
 								gasUsed := gasBefore - host.Metering().GasLeft()
 
@@ -1995,7 +1996,7 @@ func TestHost_ManagedIsESDTLimitedTransfer_ExtraGasUsage(t *testing.T) {
 							instanceMock.AddMockMethod("test", func() *contextmock.InstanceMock {
 								host := instanceMock.Host
 								managedTypes := host.ManagedTypes()
-								hooks := vmhooks.NewVMHooksImpl(host)
+								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								// 200 bytes token ID (> safeAttributeLength 100)
 								longTokenID := bytes.Repeat([]byte("T"), 200)
@@ -2006,7 +2007,7 @@ func TestHost_ManagedIsESDTLimitedTransfer_ExtraGasUsage(t *testing.T) {
 								expectedExtraGas := uint64(len(longTokenID)) * dataCopyPerByte
 
 								gasBefore := host.Metering().GasLeft()
-								res, _ := handleHookErr(host)(hooks.ManagedIsESDTLimitedTransfer(tokenIDHandle))
+								res := hooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
 								require.Equal(t, int32(0), res)
 								gasUsed := gasBefore - host.Metering().GasLeft()
 
@@ -2043,4 +2044,3 @@ func TestHost_ManagedIsESDTLimitedTransfer_ExtraGasUsage(t *testing.T) {
 		})
 	}
 }
-
