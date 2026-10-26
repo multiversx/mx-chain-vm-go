@@ -69,7 +69,18 @@ func (context *VMHooksImpl) BigIntGetUnsignedArgument(id int32, destinationHandl
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+			return vmhost.ErrArgOutOfRange
+		}
 		return nil
+	}
+
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(args[id])))
+		err = metering.UseGasBounded(gasToUse)
+		if err != nil {
+			return err
+		}
 	}
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
@@ -94,6 +105,9 @@ func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle 
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+			return vmhost.ErrArgOutOfRange
+		}
 		return nil
 	}
 
@@ -272,11 +286,11 @@ func (context *VMHooksImpl) BigIntGetESDTExternalBalance(
 	if err != nil {
 		return err
 	}
-	if esdtData == nil {
+	value := managedType.GetBigIntOrCreate(resultHandle)
+	if esdtData == nil || esdtData.Value == nil {
+		value.SetUint64(0)
 		return nil
 	}
-
-	value := managedType.GetBigIntOrCreate(resultHandle)
 	value.Set(esdtData.Value)
 	return nil
 }
@@ -313,8 +327,7 @@ func (context *VMHooksImpl) BigIntUnsignedByteLength(referenceHandle int32) (int
 		return -1, err
 	}
 
-	bytes := value.Bytes()
-	return int32(len(bytes)), nil
+	return int32(math.UnsignedByteLength(value)), nil
 }
 
 // BigIntSignedByteLength VMHooks implementation.
@@ -334,8 +347,10 @@ func (context *VMHooksImpl) BigIntSignedByteLength(referenceHandle int32) (int32
 		return -1, err
 	}
 
-	bytes := twos.ToBytes(value)
-	return int32(len(bytes)), nil
+	// the two's complement representation is deliberately not built here: its length
+	// can be computed from the bit length alone, and materializing it would allocate
+	// proportionally to the value while only a flat gas cost is charged
+	return int32(math.TwosComplementByteLength(value)), nil
 }
 
 // BigIntGetUnsignedBytes VMHooks implementation.
@@ -1237,6 +1252,13 @@ func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationH
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if err != nil {
 		return err
+	}
+
+	if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBigIntCopy(value)
+		if err != nil {
+			return err
+		}
 	}
 
 	resultStr := value.String()

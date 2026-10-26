@@ -40,3 +40,4 @@ test/contracts/**/wasm/target
 
 **/Cargo.lock
 vmhost/**/__debug_bin
+.gocache/

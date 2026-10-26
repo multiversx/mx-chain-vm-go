@@ -7,7 +7,7 @@
                     "nonce": "0",
                     "balance": "500",
                     "esdt": {
-                        "str:TEST-TOKENA": "200"
+                        "str:TEST-000390": "200"
                     }
                 },
                 "sc:vault": {
@@ -35,7 +35,7 @@
                         "value": "500"
                     },
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "nonce": "0",
                         "value": "200"
                     }
@@ -63,14 +63,14 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "0"
+                        "str:TEST-000390": "0"
                     }
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "500",
                     "esdt": {
-                        "str:TEST-TOKENA": "200"
+                        "str:TEST-000390": "200"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "1"

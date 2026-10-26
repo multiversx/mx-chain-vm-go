@@ -451,7 +451,9 @@ func (context *asyncContext) incrementCallsCounter() {
 }
 
 func (context *asyncContext) decrementCallsCounter() {
-	context.callsCounter--
+	if context.callsCounter > 0 {
+		context.callsCounter--
+	}
 }
 
 // SetResults fills the child result of the async context

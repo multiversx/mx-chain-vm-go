@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
@@ -118,6 +119,7 @@ const (
 
 // one memory page 64KB / 4 as min bytes per arguments
 const maxNumArgumentsFromMemory = 16000000
+const maxNumArgumentsFromMemoryCapped = 1024
 
 var logEEI = logger.GetOrCreate("vm/eei")
 
@@ -354,16 +356,17 @@ func (context *VMHooksImpl) GetESDTBalance(
 	metering.StartGasTracing(getESDTBalanceName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
-	if err != nil {
-		return -1, err
-	}
-	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
 	if err != nil {
 		return -1, err
 	}
 
-	return int32(len(esdtData.Value.Bytes())), nil
+	bytes := esdtData.Value.Bytes()
+	err = context.MemStore(resultOffset, bytes)
+	if err != nil {
+		return -1, err
+	}
+
+	return int32(len(bytes)), nil
 }
 
 // GetESDTNFTNameLength VMHooks implementation.
@@ -378,7 +381,6 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 	metering.StartGasTracing(getESDTNFTNameLengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		return -1, err
 	}
@@ -401,7 +403,6 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	metering.StartGasTracing(getESDTNFTAttributeLengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		return -1, err
 	}
@@ -424,7 +425,6 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 	metering.StartGasTracing(getESDTNFTURILengthName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		return -1, err
 	}
@@ -459,7 +459,6 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	metering.StartGasTracing(getESDTTokenDataName)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
-
 	if err != nil {
 		return -1, err
 	}
@@ -472,32 +471,34 @@ func (context *VMHooksImpl) GetESDTTokenData(
 		return -1, err
 	}
 
-	if esdtData.TokenMetaData != nil {
-		err = context.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
-		if err != nil {
-			return -1, err
-		}
-		err = context.MemStore(nameOffset, esdtData.TokenMetaData.Name)
-		if err != nil {
-			return -1, err
-		}
-		err = context.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
-		if err != nil {
-			return -1, err
-		}
-		err = context.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
-		if err != nil {
-			return -1, err
-		}
+	if esdtData.TokenMetaData == nil {
+		return int32(len(esdtData.Value.Bytes())), nil
+	}
 
-		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
-		royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
+	err = context.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
+	if err != nil {
+		return -1, err
+	}
+	err = context.MemStore(nameOffset, esdtData.TokenMetaData.Name)
+	if err != nil {
+		return -1, err
+	}
+	err = context.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
+	if err != nil {
+		return -1, err
+	}
+	err = context.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
+	if err != nil {
+		return -1, err
+	}
 
-		if len(esdtData.TokenMetaData.URIs) > 0 {
-			err = context.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
-			if err != nil {
-				return -1, err
-			}
+	royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
+	royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
+
+	if len(esdtData.TokenMetaData.URIs) > 0 {
+		err = context.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
+		if err != nil {
+			return -1, err
 		}
 	}
 	return int32(len(esdtData.Value.Bytes())), nil
@@ -867,12 +868,14 @@ func TransferValueExecuteWithTypedArgs(
 }
 
 func makeCrossShardCallFromInput(function string, arguments [][]byte) string {
-	txData := function
+	var builder strings.Builder
+	builder.WriteString(function)
 	for _, arg := range arguments {
-		txData += "@" + hex.EncodeToString(arg)
+		builder.WriteByte('@')
+		builder.WriteString(hex.EncodeToString(arg))
 	}
 
-	return txData
+	return builder.String()
 }
 
 // TransferESDTExecute VMHooks implementation.
@@ -1592,17 +1595,18 @@ func upgradeContract(
 	minAsyncCallCost := math.AddUint64(
 		math.MulUint64(2, gasSchedule.BaseOpsAPICost.AsyncCallStep),
 		gasSchedule.BaseOpsAPICost.AsyncCallbackGasLock)
-	if uint64(gasLimit) < minAsyncCallCost {
+	if gasLimit < 0 || uint64(gasLimit) < minAsyncCallCost {
 		return vmhost.ExitOutOfGas()
 	}
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// by runtime.ExecuteAsyncCall().
-	callData := vmhost.UpgradeFunctionName + "@" + hex.EncodeToString(code) + "@" + hex.EncodeToString(codeMetadata)
-	for _, arg := range data {
-		callData += "@" + hex.EncodeToString(arg)
-	}
+	args := make([][]byte, 2+len(data))
+	args[0] = code
+	args[1] = codeMetadata
+	copy(args[2:], data)
+	callData := makeCrossShardCallFromInput(vmhost.UpgradeFunctionName, args)
 
 	async := host.Async()
 	err := async.RegisterLegacyAsyncCall(
@@ -1675,14 +1679,11 @@ func deleteContract(
 	minAsyncCallCost := math.AddUint64(
 		math.MulUint64(2, gasSchedule.BaseOpsAPICost.AsyncCallStep),
 		gasSchedule.BaseOpsAPICost.AsyncCallbackGasLock)
-	if uint64(gasLimit) < minAsyncCallCost {
+	if gasLimit < 0 || uint64(gasLimit) < minAsyncCallCost {
 		return vmhost.ExitOutOfGas()
 	}
 
-	callData := vmhost.DeleteFunctionName
-	for _, arg := range data {
-		callData += "@" + hex.EncodeToString(arg)
-	}
+	callData := makeCrossShardCallFromInput(vmhost.DeleteFunctionName, data)
 
 	async := host.Async()
 	err := async.RegisterLegacyAsyncCall(
@@ -2485,6 +2486,11 @@ func (context *VMHooksImpl) IsReservedFunctionName(nameHandle int32) (int32, err
 	}
 
 	name, err := managedTypes.GetBytes(nameHandle)
+	if err != nil {
+		return -1, err
+	}
+
+	err = chargeGasForExtraLengthUnderFlag(len(name), host)
 	if err != nil {
 		return -1, err
 	}
@@ -3530,7 +3536,7 @@ func DeleteFromReturnDataWithHost(host vmhost.VMHost, resultID int32) error {
 	}
 
 	returnData := output.ReturnData()
-	if resultID < int32(len(returnData)) {
+	if resultID >= 0 && resultID < int32(len(returnData)) {
 		output.RemoveReturnData(uint32(resultID))
 	}
 	return nil
@@ -3640,8 +3646,12 @@ func (context *VMHooksImpl) getArgumentsFromMemory(
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
 ) ([][]byte, int32, error) {
-	if numArguments < 0 || numArguments > maxNumArgumentsFromMemory {
-		return nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
+	maxArgs := int32(maxNumArgumentsFromMemory)
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		maxArgs = maxNumArgumentsFromMemoryCapped
+	}
+	if numArguments < 0 || numArguments > maxArgs {
+		return nil, 0, fmt.Errorf("numArguments out of range (%d)", numArguments)
 	}
 
 	metering := context.GetMeteringContext()
@@ -3654,6 +3664,9 @@ func (context *VMHooksImpl) getArgumentsFromMemory(
 	argumentsLengthData, err := context.MemLoad(argumentsLengthOffset, numArguments*4)
 	if err != nil {
 		return nil, 0, err
+	}
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() && len(argumentsLengthData) < int(numArguments)*4 {
+		return nil, 0, fmt.Errorf("arguments length data truncated: %w", executor.ErrMemoryBadBounds)
 	}
 
 	argumentLengths := createInt32Array(argumentsLengthData, numArguments)
@@ -3680,7 +3693,7 @@ func (context *VMHooksImpl) getArgumentsFromMemory(
 func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 	integers := make([]int32, numIntegers)
 	index := 0
-	for cursor := 0; cursor < len(rawData); cursor += 4 {
+	for cursor := 0; cursor+4 <= len(rawData) && index < len(integers); cursor += 4 {
 		rawInt := rawData[cursor : cursor+4]
 		actualInt := binary.LittleEndian.Uint32(rawInt)
 		integers[index] = int32(actualInt)
@@ -3693,6 +3706,9 @@ func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCal
 	host.Async().SetAsyncArgumentsForCall(input)
 	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
 	if err != nil {
+		if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+			_ = host.Async().CompleteChildConditional(true, nil, 0)
+		}
 		return vmOutput, err
 	}
 

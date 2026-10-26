@@ -60,7 +60,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
 	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost)
+	require.Nil(tb, wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost))
 
 	host := &contextmock.VMHostMock{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
@@ -739,6 +739,50 @@ func TestAsyncContext_CreateCallbackInput_LastTransfer_ValueAndNoESDTTransfer_No
 	expectedInput.Arguments = [][]byte{{0}}
 	expectedInput.GasProvided = expectedGasProvided
 	expectedInput.CallValue = big.NewInt(2)
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_UnrelatedSenderTransferNotAttributed(t *testing.T) {
+	unrelatedSender := []byte("charlie-unrelated-sender")
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value:         big.NewInt(7),
+		SenderAddress: unrelatedSender,
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	vmOutput.ReturnData = nil
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.Arguments = [][]byte{{0}}
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(0) // must be 0 because sender does not match Bob
+	expectedInput.ESDTTransfers = nil
+	callbackInput.AsyncArguments = nil
+	require.Equal(t, expectedInput, callbackInput)
+}
+
+func TestAsyncContext_CreateCallbackInput_MatchingSenderTransferAttributed(t *testing.T) {
+	matchingSender := Bob
+	lastTransfer := &vmcommon.OutputTransfer{
+		Value:         big.NewInt(7),
+		SenderAddress: matchingSender,
+	}
+	vmOutput := createDefaultVMOutput(lastTransfer)
+	vmOutput.ReturnData = nil
+
+	originalVMInput, callbackInput, expectedGasProvided := createCallbackInputWithVMOutput(t,
+		vmOutput,
+		lastTransfer)
+
+	expectedInput := defaultCallbackInputBobToAlice(originalVMInput)
+	expectedInput.Arguments = [][]byte{{0}}
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallValue = big.NewInt(7) // attributed because sender matches Bob
 	expectedInput.ESDTTransfers = nil
 	callbackInput.AsyncArguments = nil
 	require.Equal(t, expectedInput, callbackInput)

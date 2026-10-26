@@ -6,6 +6,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	gasschedules "github.com/multiversx/mx-chain-vm-go/scenario/gasSchedules"
@@ -209,4 +210,100 @@ func TestBulkMemoryGas_StillForbiddenOnOpcodeVersionV1(t *testing.T) {
 		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
+}
+
+// TestBulkMemoryGas_ExecutorReconfiguredOnOpcodeV2Activation makes sure that a host which
+// outlives the activation of OpcodeV2Flag switches its executor to the new opcode version.
+// The executor only samples the opcode version when the host creates it, so without an
+// explicit reconfiguration at the epoch boundary it would keep rejecting the bulk memory
+// opcodes for as long as the host lives.
+func TestBulkMemoryGas_ExecutorReconfiguredOnOpcodeV2Activation(t *testing.T) {
+	opcodeV2Enabled := false
+
+	host := testcommon.NewTestHostBuilder(t).
+		WithBlockchainHook(testcommon.BlockchainHookStubForCall(
+			testcommon.GetTestSCCode("bulk-memory", "../../"),
+			big.NewInt(0))).
+		WithGasSchedule(bulkMemoryGasSchedule()).
+		WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				if flag == vmhost.OpcodeV2Flag {
+					return opcodeV2Enabled
+				}
+				return true
+			},
+		}).
+		Build()
+	defer host.Reset()
+
+	// the host is what the epoch notifier of the node notifies
+	epochSubscriber, ok := host.(vmcommon.EpochSubscriberHandler)
+	require.True(t, ok)
+
+	input := testcommon.CreateTestContractCallInputBuilder().
+		WithGasProvided(bulkMemoryGasProvided).
+		WithFunction("memoryCopy").
+		WithArguments(big.NewInt(10).Bytes()).
+		Build()
+
+	// before activation, memory.copy is not part of the opcode whitelist
+	vmOutput, err := host.RunSmartContractCall(input)
+	testcommon.NewVMOutputVerifier(t, vmOutput, err).ContractInvalid()
+
+	// the flag activates while the host is alive
+	opcodeV2Enabled = true
+	epochSubscriber.EpochConfirmed(1, 0)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	testcommon.NewVMOutputVerifier(t, vmOutput, err).Ok()
+}
+
+// TestBulkMemoryGas_OpcodeV2ActivationClearsCachedCompiledCode makes sure that an opcode
+// version change invalidates the caches exactly like a gas schedule change does. The opcode
+// whitelist is applied at compile time, so artifacts compiled under the previous version
+// must not survive the activation.
+func TestBulkMemoryGas_OpcodeV2ActivationClearsCachedCompiledCode(t *testing.T) {
+	opcodeV2Enabled := false
+
+	world := worldmock.NewMockWorld()
+	host := testcommon.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				if flag == vmhost.OpcodeV2Flag {
+					return opcodeV2Enabled
+				}
+				return true
+			},
+		}).
+		Build()
+	defer host.Reset()
+
+	scAddress := testcommon.MakeTestSCAddress("counter")
+	world.AcctMap.CreateSmartContractAccount(
+		testcommon.ParentAddress,
+		scAddress,
+		testcommon.GetTestSCCode("counter", "../../"),
+		world)
+
+	input := testcommon.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(100000).
+		WithFunction("increment").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	testcommon.NewVMOutputVerifier(t, vmOutput, err).Ok()
+
+	// the contract was compiled under opcode version V1 and cached by the blockchain hook
+	require.NotEmpty(t, world.CompiledCode)
+
+	epochSubscriber, ok := host.(vmcommon.EpochSubscriberHandler)
+	require.True(t, ok)
+
+	opcodeV2Enabled = true
+	epochSubscriber.EpochConfirmed(1, 0)
+
+	require.Empty(t, world.CompiledCode)
 }

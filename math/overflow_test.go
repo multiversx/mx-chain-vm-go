@@ -153,3 +153,108 @@ func TestMulUint64(t *testing.T) {
 	product = MulUint64(a, b)
 	require.Equal(t, uint64(math.MaxUint64), product)
 }
+
+func TestSubUint64WithErr(t *testing.T) {
+	diff, err := SubUint64WithErr(0, 0)
+	require.Nil(t, err)
+	require.Equal(t, uint64(0), diff)
+
+	diff, err = SubUint64WithErr(10, 4)
+	require.Nil(t, err)
+	require.Equal(t, uint64(6), diff)
+
+	diff, err = SubUint64WithErr(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, uint64(0), diff)
+
+	diff, err = SubUint64WithErr(math.MaxUint64, 1)
+	require.Nil(t, err)
+	require.Equal(t, uint64(math.MaxUint64-1), diff)
+
+	diff, err = SubUint64WithErr(0, 1)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, uint64(0), diff)
+
+	diff, err = SubUint64WithErr(5, 10)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, uint64(0), diff)
+
+	diff, err = SubUint64WithErr(0, math.MaxUint64)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, uint64(0), diff)
+}
+
+func TestSubInt32(t *testing.T) {
+	require.Equal(t, int32(0), SubInt32(0, 0))
+	require.Equal(t, int32(6), SubInt32(10, 4))
+	require.Equal(t, int32(-14), SubInt32(-10, 4))
+	require.Equal(t, int32(math.MinInt32), SubInt32(math.MinInt32, 1))
+	require.Equal(t, int32(math.MinInt32), SubInt32(math.MinInt32, 100))
+	require.Equal(t, int32(math.MaxInt32), SubInt32(math.MaxInt32, -1))
+}
+
+func TestSubInt32WithErr(t *testing.T) {
+	diff, err := SubInt32WithErr(0, 0)
+	require.Nil(t, err)
+	require.Equal(t, int32(0), diff)
+
+	diff, err = SubInt32WithErr(10, 4)
+	require.Nil(t, err)
+	require.Equal(t, int32(6), diff)
+
+	diff, err = SubInt32WithErr(-10, -4)
+	require.Nil(t, err)
+	require.Equal(t, int32(-6), diff)
+
+	diff, err = SubInt32WithErr(math.MinInt32, 0)
+	require.Nil(t, err)
+	require.Equal(t, int32(math.MinInt32), diff)
+
+	diff, err = SubInt32WithErr(math.MaxInt32, 0)
+	require.Nil(t, err)
+	require.Equal(t, int32(math.MaxInt32), diff)
+
+	diff, err = SubInt32WithErr(math.MinInt32, 1)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, int32(math.MinInt32), diff)
+
+	diff, err = SubInt32WithErr(math.MaxInt32, -1)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, int32(math.MaxInt32), diff)
+
+	diff, err = SubInt32WithErr(math.MinInt32, math.MaxInt32)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, int32(math.MinInt32), diff)
+
+	diff, err = SubInt32WithErr(math.MaxInt32, math.MinInt32)
+	require.Equal(t, ErrSubtractionUnderflow, err)
+	require.Equal(t, int32(math.MaxInt32), diff)
+}
+
+func TestCheckBoundsInt32(t *testing.T) {
+	// valid boundary cases
+	require.Nil(t, CheckBoundsInt32(0, 0, 0))
+	require.Nil(t, CheckBoundsInt32(0, 10, 10))
+	require.Nil(t, CheckBoundsInt32(5, 5, 10))
+	require.Nil(t, CheckBoundsInt32(10, 0, 10))
+	require.Nil(t, CheckBoundsInt32(0, math.MaxInt32, math.MaxInt32))
+
+	// negative start or length
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(-1, 5, 10))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(0, -1, 10))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(-5, -5, 10))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(math.MinInt32, 1, 10))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(0, math.MinInt32, 10))
+
+	// exceeding bounds
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(5, 6, 10))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(11, 0, 10))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(0, 1, 0))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(0, 0, -1))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(1, math.MaxInt32, math.MaxInt32))
+
+	// int32 overflow cases (wrapping prevention)
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(math.MaxInt32, 1, 100))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(1, math.MaxInt32, 100))
+	require.Equal(t, ErrOutOfBounds, CheckBoundsInt32(math.MaxInt32, math.MaxInt32, 100))
+}

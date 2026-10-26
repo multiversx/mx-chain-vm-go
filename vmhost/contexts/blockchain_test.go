@@ -447,3 +447,120 @@ func TestBlockchainContext_Getters(t *testing.T) {
 	require.Equal(t, randomSeed1[:], blockchainContext.LastRandomSeed())
 	require.Equal(t, randomSeed2[:], blockchainContext.CurrentRandomSeed())
 }
+
+func TestBlockchainContext_StateStack_PushPopDiscardAndClear(t *testing.T) {
+	t.Parallel()
+
+	currentSnapshot := 10
+	hookStub := &contextmock.BlockchainHookStub{
+		GetSnapshotCalled: func() int {
+			currentSnapshot += 10
+			return currentSnapshot
+		},
+	}
+	host := &contextmock.VMHostMock{}
+	bc, err := NewBlockchainContext(host, hookStub)
+	require.Nil(t, err)
+
+	require.Equal(t, 0, len(bc.stateStack))
+
+	bc.PushState()
+	require.Equal(t, []int{20}, bc.stateStack)
+
+	bc.PushState()
+	require.Equal(t, []int{20, 30}, bc.stateStack)
+
+	bc.PopDiscard()
+	require.Equal(t, []int{20}, bc.stateStack)
+
+	bc.ClearStateStack()
+	require.Equal(t, 0, len(bc.stateStack))
+
+	// PopDiscard on empty stack should not panic
+	bc.PopDiscard()
+	require.Equal(t, 0, len(bc.stateStack))
+}
+
+func TestBlockchainContext_PopSetActiveState_EmptyStackShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	revertCalled := false
+	hookStub := &contextmock.BlockchainHookStub{
+		RevertToSnapshotCalled: func(snapshot int) error {
+			revertCalled = true
+			return nil
+		},
+	}
+	host := &contextmock.VMHostMock{}
+	bc, err := NewBlockchainContext(host, hookStub)
+	require.Nil(t, err)
+
+	bc.PopSetActiveState()
+	require.False(t, revertCalled)
+	require.Equal(t, 0, len(bc.stateStack))
+}
+
+func TestBlockchainContext_PopSetActiveState_Success(t *testing.T) {
+	t.Parallel()
+
+	revertedSnapshot := -1
+	hookStub := &contextmock.BlockchainHookStub{
+		GetSnapshotCalled: func() int {
+			return 42
+		},
+		RevertToSnapshotCalled: func(snapshot int) error {
+			revertedSnapshot = snapshot
+			return nil
+		},
+	}
+	host := &contextmock.VMHostMock{}
+	bc, err := NewBlockchainContext(host, hookStub)
+	require.Nil(t, err)
+
+	bc.PushState()
+	require.Equal(t, []int{42}, bc.stateStack)
+
+	bc.PopSetActiveState()
+	require.Equal(t, 0, len(bc.stateStack))
+	require.Equal(t, 42, revertedSnapshot)
+}
+
+func TestBlockchainContext_PopSetActiveState_RevertErrorStillPopsStack(t *testing.T) {
+	t.Parallel()
+
+	var revertedSnapshots []int
+	errRevertFailed := errors.New("revert to snapshot failed")
+	hookStub := &contextmock.BlockchainHookStub{
+		RevertToSnapshotCalled: func(snapshot int) error {
+			revertedSnapshots = append(revertedSnapshots, snapshot)
+			if snapshot == 200 {
+				return errRevertFailed
+			}
+			return nil
+		},
+	}
+
+	runtimeMock := &contextmock.RuntimeContextMock{}
+	meteringMock := &contextmock.MeteringContextMock{}
+	host := &contextmock.VMHostMock{
+		RuntimeContext:  runtimeMock,
+		MeteringContext: meteringMock,
+	}
+	bc, err := NewBlockchainContext(host, hookStub)
+	require.Nil(t, err)
+
+	// Simulate pushing two nested states
+	bc.stateStack = []int{100, 200}
+
+	// Pop top state (snapshot 200) which will fail on RevertToSnapshot
+	bc.PopSetActiveState()
+
+	// Stack MUST have popped snapshot 200 even though RevertToSnapshot returned an error!
+	require.Equal(t, []int{100}, bc.stateStack)
+	require.Equal(t, []int{200}, revertedSnapshots)
+
+	// Next pop should now target snapshot 100 (not corrupted or stuck at 200)
+	bc.PopSetActiveState()
+	require.Equal(t, 0, len(bc.stateStack))
+	require.Equal(t, []int{200, 100}, revertedSnapshots)
+}

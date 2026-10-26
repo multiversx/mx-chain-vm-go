@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "4000",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000",
+                        "str:FWD-abcdef": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -48,7 +48,7 @@
                 "arguments": [
                     "sc:vault",
                     "str:reject_funds",
-                    "str:FWD-TOKEN",
+                    "str:FWD-abcdef",
                     "0",
                     "800",
                     "str:NFT-123456",
@@ -98,7 +98,7 @@
                     "nonce": "0",
                     "balance": "4000",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000",
+                        "str:FWD-abcdef": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {

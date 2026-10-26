@@ -110,7 +110,7 @@ func (vhs *VMHostStub) Runtime() vmhost.RuntimeContext {
 	if vhs.RuntimeCalled != nil {
 		return vhs.RuntimeCalled()
 	}
-	return nil
+	return &RuntimeContextMock{}
 }
 
 // ManagedTypes mocked method
@@ -163,9 +163,12 @@ func (vhs *VMHostStub) Storage() vmhost.StorageContext {
 // EnableEpochsHandler mocked method
 func (vhs *VMHostStub) EnableEpochsHandler() vmhost.EnableEpochsHandler {
 	if vhs.EnableEpochsHandlerCalled != nil {
-		return vhs.EnableEpochsHandlerCalled()
+		handler := vhs.EnableEpochsHandlerCalled()
+		if handler != nil {
+			return handler
+		}
 	}
-	return nil
+	return &DefaultEnableEpochsHandlerStub{}
 }
 
 // Async mocked method

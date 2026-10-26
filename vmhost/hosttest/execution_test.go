@@ -625,6 +625,54 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
 }
 
+// TestExecution_ChangeWasmerOpcodeCosts_ClearsCachedCompiledCode makes sure that a gas
+// schedule change drops the precompiled code cache as well as the warm instance cache.
+// The opcode costs are injected into the code at compile time, so an instance built from a
+// module that was compiled under the previous schedule would keep metering with the
+// previous costs, silently ignoring the change.
+func TestExecution_ChangeWasmerOpcodeCosts_ClearsCachedCompiledCode(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	scAddress := test.MakeTestSCAddress("misc")
+	world.AcctMap.CreateSmartContractAccount(
+		test.ParentAddress,
+		scAddress,
+		test.GetTestSCCode("misc", "../../"),
+		world)
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	test.NewVMOutputVerifier(t, vmOutput, err).Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+
+	// the first call compiled the contract and the blockchain hook cached the module
+	require.NotEmpty(t, world.CompiledCode)
+
+	gasSchedule := host.GetGasScheduleMap()
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
+
+	require.Empty(t, world.CompiledCode)
+
+	// the contract is recompiled with the new costs, instead of being restored from a
+	// module metered with the old ones
+	vmOutput, err = host.RunSmartContractCall(input)
+	test.NewVMOutputVerifier(t, vmOutput, err).Ok()
+	require.NotEqual(t, gasRemainingBeforeChange, vmOutput.GasRemaining)
+}
+
 func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	contractCode := test.GetTestSCCode("misc", "../../")
 
@@ -1983,7 +2031,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *test
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{
-								&vmcommon.ESDTTransfer{
+								{
 									ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
 									ESDTTokenName:  test.ESDTTestTokenName,
 									ESDTTokenType:  0,
@@ -2056,6 +2104,62 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T
 						)
 
 						require.Nil(t, err)
+						require.Equal(t, int32(1), returnVal)
+
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						host.Runtime().FailExecution(errors.New("child failed"))
+
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+	assert.Nil(t, err)
+}
+
+func TestExecution_TransferESDTNFTExecute_RollbackOnFailure(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+
+						returnVal, _ := handleHookErr(host)(vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+							host,
+							[]byte(test.ChildAddress),
+							[]*vmcommon.ESDTTransfer{},
+							int64(testConfig.GasProvidedToChild),
+							[]byte("childFunction"),
+							[][]byte{},
+							false,
+						))
+
 						require.Equal(t, int32(1), returnVal)
 
 						return parentInstance
@@ -3087,7 +3191,7 @@ func TestExecution_AsyncCall_Promises_CallBackFails(t *testing.T) {
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
-	childAddress := []byte("newAddress")
+	childAddress := test.MakeTestSCAddressWithDefaultVM("newAddress")
 	l := len(childCode)
 
 	test.BuildInstanceCallTest(t).
@@ -3115,10 +3219,16 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			expectedGasUsed := uint64(16395)
+			expectedGasRemaining := uint64(983015)
+			if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+				expectedGasUsed = 22047
+				expectedGasRemaining = 977363
+			}
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 16395).
-				GasRemaining(983015).
+				GasUsed(test.ParentAddress, expectedGasUsed).
+				GasRemaining(expectedGasRemaining).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
@@ -3138,7 +3248,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
 	sourceAddress := test.MakeTestSCAddress("sourceAddress")
 	sourceCode := test.GetTestSCCode("init-correct", "../../")
-	generatedNewAddress := []byte("newAddress")
+	generatedNewAddress := test.MakeTestSCAddressWithDefaultVM("newAddress")
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -3508,6 +3618,13 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						remainingReturnData := host.Output().ReturnData()
 						assert.Equal(t, remainingReturnData, [][]byte{})
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+
+						// Negative and out-of-bounds indices should safely do nothing
+						require.NotPanics(t, func() {
+							handleHookError(host, vmhooks.DeleteFromReturnDataWithHost(host, -1))
+							handleHookError(host, vmhooks.DeleteFromReturnDataWithHost(host, 100))
+						})
+						assert.Equal(t, [][]byte{}, host.Output().ReturnData())
 
 						instance.BreakpointValue = 0
 						err = vmhooks.CleanReturnDataWithHost(host)

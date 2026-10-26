@@ -52,7 +52,10 @@ func (host *VMHostMock) Blockchain() vmhost.BlockchainContext {
 
 // Runtime mocked method
 func (host *VMHostMock) Runtime() vmhost.RuntimeContext {
-	return host.RuntimeContext
+	if host.RuntimeContext != nil {
+		return host.RuntimeContext
+	}
+	return &RuntimeContextMock{}
 }
 
 // Output mocked method
@@ -72,7 +75,10 @@ func (host *VMHostMock) Storage() vmhost.StorageContext {
 
 // EnableEpochsHandler mocked method
 func (host *VMHostMock) EnableEpochsHandler() vmhost.EnableEpochsHandler {
-	return host.EnableEpochsHandlerField
+	if host.EnableEpochsHandlerField != nil {
+		return host.EnableEpochsHandlerField
+	}
+	return &DefaultEnableEpochsHandlerStub{}
 }
 
 // ManagedTypes mocked method

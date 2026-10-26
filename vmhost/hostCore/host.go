@@ -20,6 +20,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/verifier"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
@@ -36,6 +37,7 @@ var _ scenexec.VMInterface = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
+const timeoutGracePeriod = 1 * time.Second
 
 // allFlags must have all flags used by mx-chain-vm-go in the current version
 var allFlags = []core.EnableEpochFlag{
@@ -47,6 +49,8 @@ var allFlags = []core.EnableEpochFlag{
 	vmhost.BarnardOpcodesFlag,
 	vmhost.FixGetBalanceFlag,
 	vmhost.AttributeExtraGasUsageFlag,
+	vmhost.FixCorrectSmallIntAndGasLimitsFlag,
+	vmhost.OutputRollbackOnDestContextFlag,
 	vmhost.OpcodeV2Flag,
 }
 
@@ -68,6 +72,7 @@ type vmHost struct {
 	managedTypesContext vmhost.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
+	opcodeVersion        executor.OpcodeVersion
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       vmhost.CallArgsParser
@@ -76,6 +81,7 @@ type vmHost struct {
 
 	transferLogIdentifiers    map[string]bool
 	mapOpcodeAddressIsAllowed map[string]map[string]struct{}
+	outputVerifier            verifier.OutputVerifier
 }
 
 // NewVMHost creates a new VM vmHost
@@ -202,6 +208,8 @@ func NewVMHost(
 	host.transferLogIdentifiers["ESDTNFTTransfer"] = true
 	host.transferLogIdentifiers["MultiESDTNFTTransfer"] = true
 
+	host.outputVerifier = verifier.NewVMOutputVerifier()
+
 	return host, nil
 }
 
@@ -221,9 +229,11 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 		vmExecutorFactory = wasmer2.ExecutorFactory()
 	}
 
+	host.opcodeVersion = host.getOpcodeVersionForCurrentEpoch()
+
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
 		VMHooks:                  vmHooks,
-		OpcodeVersion:            host.getOpcodeVersionForCurrentEpoch(),
+		OpcodeVersion:            host.opcodeVersion,
 		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
@@ -358,24 +368,71 @@ func (host *vmHost) getOpcodeVersionForCurrentEpoch() executor.OpcodeVersion {
 	return executor.OpcodeVersionV1
 }
 
+// applyExecutionConfig pushes the given gas schedule and opcode version to the executor and
+// to the metering context.
+//
+// The opcode costs and the opcode version are equivalent as far as caching is concerned:
+// both are baked into compiled code, the costs by the metering injected at compile time and
+// the version by the opcode whitelist applied at compile time. Changing either one makes
+// every artifact compiled so far stale, so both of the caches holding such artifacts - the
+// warm instances and the precompiled code - are discarded here, before any subsequent
+// compilation can pick a stale one up. That is why the two are applied together, by this
+// single function, rather than by two paths that would have to be kept in agreement.
+//
+// Must be called under host.mutExecution.
+func (host *vmHost) applyExecutionConfig(
+	opcodeVersion executor.OpcodeVersion,
+	gasSchedule config.GasScheduleMap,
+) error {
+	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	if err != nil {
+		return err
+	}
+
+	host.gasSchedule = gasSchedule
+	host.opcodeVersion = opcodeVersion
+
+	err = host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
+	if err != nil {
+		return err
+	}
+
+	host.meteringContext.SetGasSchedule(gasSchedule)
+
+	host.runtimeContext.ClearWarmInstanceCache()
+	host.blockchainContext.ClearCompiledCodes()
+
+	return nil
+}
+
+// reconfigureExecutorOpcodeVersion re-applies the execution config whenever the opcode
+// version of the current epoch is no longer the one the executor was configured with. The
+// executor only samples the version when the host creates it, so a host that outlives the
+// activation epoch of a version flag would otherwise keep running the old version.
+func (host *vmHost) reconfigureExecutorOpcodeVersion() {
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
+
+	opcodeVersion := host.getOpcodeVersionForCurrentEpoch()
+	if opcodeVersion == host.opcodeVersion {
+		return
+	}
+
+	err := host.applyExecutionConfig(opcodeVersion, host.gasSchedule)
+	if err != nil {
+		log.Error("cannot apply new opcode version", "err", err)
+	}
+}
+
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
 
-	host.gasSchedule = newGasSchedule
-	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
+	err := host.applyExecutionConfig(host.getOpcodeVersionForCurrentEpoch(), newGasSchedule)
 	if err != nil {
 		log.Error("cannot apply new gas config", "err", err)
-		return
 	}
-
-	opcodeVersion := host.getOpcodeVersionForCurrentEpoch()
-
-	host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
-
-	host.meteringContext.SetGasSchedule(newGasSchedule)
-	host.runtimeContext.ClearWarmInstanceCache()
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
@@ -418,14 +475,18 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
+	var localOutput *vmcommon.VMOutput
+	var localErr error
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				err = vmhost.ErrExecutionPanicked
-				host.Runtime().CleanInstance()
-			} else {
+				localErr = vmhost.ErrExecutionPanicked
+				if ctx.Err() == nil {
+					host.Runtime().CleanInstance()
+				}
+			} else if ctx.Err() == nil {
 				host.Runtime().EndExecution()
 			}
 
@@ -433,27 +494,48 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		host.InitState()
-		vmOutput = host.doRunSmartContractCreate(input)
-		host.CompleteLogEntriesWithCallType(vmOutput, vmhost.DeploySmartContractString)
+		localOutput = host.doRunSmartContractCreate(input)
+		if ctx.Err() != nil {
+			return
+		}
+		host.CompleteLogEntriesWithCallType(localOutput, vmhost.DeploySmartContractString)
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
-			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
+			localOutput.Logs = append(localOutput.Logs, logsFromErrors)
+		}
+
+		vInput := host.createVerificationInputForCreate(input)
+		errVerify := host.outputVerifier.Verify(vInput, localOutput)
+		if errVerify != nil {
+			log.Debug("exit boundary VM output verification failed", "error", errVerify)
+			localOutput = host.Output().CreateVMOutputInCaseOfError(errVerify)
+			localErr = errVerify
 		}
 
 		log.Trace("RunSmartContractCreate end",
-			"returnCode", vmOutput.ReturnCode,
-			"returnMessage", vmOutput.ReturnMessage,
-			"gasRemaining", vmOutput.GasRemaining)
+			"returnCode", localOutput.ReturnCode,
+			"returnMessage", localOutput.ReturnMessage,
+			"gasRemaining", localOutput.GasRemaining)
 		host.logFromGasTracer("init")
 	}()
 
 	select {
 	case <-done:
-		return
+		return localOutput, localErr
 	case <-ctx.Done():
+		host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
+		select {
+		case <-done:
+			host.Runtime().CleanInstance()
+		case <-time.After(timeoutGracePeriod):
+			log.Warn("VM create execution timed out and failed to stop within grace period; waiting for instance to finish",
+				"caller", input.CallerAddr)
+			<-done
+			host.Runtime().CleanInstance()
+		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
-		<-done
+		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
 		err = vmhost.ErrExecutionFailedWithTimeout
 	}
 
@@ -484,14 +566,18 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
+	var localOutput *vmcommon.VMOutput
+	var localErr error
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				err = vmhost.ErrExecutionPanicked
-				host.Runtime().CleanInstance()
-			} else {
+				localErr = vmhost.ErrExecutionPanicked
+				if ctx.Err() == nil {
+					host.Runtime().CleanInstance()
+				}
+			} else if ctx.Err() == nil {
 				host.Runtime().EndExecution()
 			}
 
@@ -501,38 +587,62 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		host.InitState()
 		switch input.Function {
 		case vmhost.UpgradeFunctionName:
-			vmOutput = host.doRunSmartContractUpgrade(input)
+			localOutput = host.doRunSmartContractUpgrade(input)
 		case vmhost.DeleteFunctionName:
-			vmOutput = host.doRunSmartContractDelete(input)
+			localOutput = host.doRunSmartContractDelete(input)
 		default:
-			vmOutput = host.doRunSmartContractCall(input)
+			localOutput = host.doRunSmartContractCall(input)
+		}
+		if ctx.Err() != nil {
+			return
 		}
 
 		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.RecipientAddr, input.Function)
 		if logsFromErrors != nil {
-			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
+			localOutput.Logs = append(localOutput.Logs, logsFromErrors)
+		}
+
+		vInput := host.createVerificationInputForCall(input)
+		errVerify := host.outputVerifier.Verify(vInput, localOutput)
+		if errVerify != nil {
+			log.Debug("exit boundary VM output verification failed", "error", errVerify)
+			localOutput = host.Output().CreateVMOutputInCaseOfError(errVerify)
+			localErr = errVerify
 		}
 
 		log.Trace("RunSmartContractCall end",
 			"function", input.Function,
-			"returnCode", vmOutput.ReturnCode,
-			"returnMessage", vmOutput.ReturnMessage,
-			"gasRemaining", vmOutput.GasRemaining)
+			"returnCode", localOutput.ReturnCode,
+			"returnMessage", localOutput.ReturnMessage,
+			"gasRemaining", localOutput.GasRemaining)
 		host.logFromGasTracer(input.Function)
 	}()
 
 	select {
 	case <-done:
 		// Normal termination.
-		return
+		return localOutput, localErr
 	case <-ctx.Done():
 		// Terminated due to timeout. The VM sets the `ExecutionFailed` breakpoint
 		// in Wasmer. Also, the VM must wait for Wasmer to reach the end of a WASM
 		// basic block in order to close the WASM instance cleanly. This is done by
-		// reading the `done` channel once more, awaiting the call to `close(done)`
-		// from above.
+		// reading the `done` channel with a grace period, awaiting the call to `close(done)`
+		// from above. If the execution does not stop within the grace period, the instance
+		// is abandoned without destroying C memory to prevent crashes.
+		host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
+		select {
+		case <-done:
+			host.Runtime().CleanInstance()
+		case <-time.After(timeoutGracePeriod):
+			log.Warn("VM call execution timed out and failed to stop within grace period; waiting for instance to finish",
+				"caller", input.CallerAddr,
+				"recipient", input.RecipientAddr,
+				"function", input.Function)
+			<-done
+			host.Runtime().CleanInstance()
+		}
 		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
-		<-done
+		vmOutput = host.Output().CreateVMOutputInCaseOfError(vmhost.ErrExecutionFailedWithTimeout)
 		err = vmhost.ErrExecutionFailedWithTimeout
 	}
 
@@ -603,6 +713,10 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
+	// the executor samples the opcode version when the host creates it, so a host that
+	// outlives the activation epoch of OpcodeV2Flag must be told about the new version
+	host.reconfigureExecutorOpcodeVersion()
+
 	_, ok := host.activationEpochMap[epoch]
 	if ok {
 		host.Runtime().ClearWarmInstanceCache()
@@ -648,8 +762,35 @@ func (host *vmHost) logFromGasTracer(functionName string) {
 func (host *vmHost) CompleteLogEntriesWithCallType(vmOutput *vmcommon.VMOutput, callType string) {
 	for _, logEntry := range vmOutput.Logs {
 		_, containsId := host.transferLogIdentifiers[string(logEntry.Identifier)]
-		if containsId && len(logEntry.Data[0]) == 0 {
+		if !containsId {
+			continue
+		}
+		if len(logEntry.Data) == 0 {
+			logEntry.Data = [][]byte{[]byte(callType)}
+		} else if len(logEntry.Data[0]) == 0 {
 			logEntry.Data[0] = []byte(callType)
 		}
 	}
+}
+
+// SetOutputVerifier sets the exit boundary verifier for the host
+func (host *vmHost) SetOutputVerifier(v verifier.OutputVerifier) {
+	host.outputVerifier = v
+}
+
+func (host *vmHost) createVerificationInputForCall(input *vmcommon.ContractCallInput) *verifier.VerificationInput {
+	isReadOnly := host.Runtime().ReadOnly()
+	vInput := verifier.NewVerificationInputFromCall(input, isReadOnly)
+	if len(input.CallerAddr) != verifier.AddressLen || len(input.RecipientAddr) != verifier.AddressLen {
+		vInput.AllowCustomAddressLength = true
+	}
+	return vInput
+}
+
+func (host *vmHost) createVerificationInputForCreate(input *vmcommon.ContractCreateInput) *verifier.VerificationInput {
+	vInput := verifier.NewVerificationInputFromCreate(input)
+	if len(input.CallerAddr) != verifier.AddressLen {
+		vInput.AllowCustomAddressLength = true
+	}
+	return vInput
 }

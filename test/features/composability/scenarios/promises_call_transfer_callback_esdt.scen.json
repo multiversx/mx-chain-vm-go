@@ -7,7 +7,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "2000"
+                        "str:FWD-000389": "2000"
                     }
                 },
                 "sc:vault": {
@@ -30,7 +30,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "1000"
                     }
                 ],
@@ -49,7 +49,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "",
                             "1000",
                             "sc:vault"
@@ -57,7 +57,7 @@
                         "data": [
                             "str:AsyncCall",
                             "str:ESDTTransfer",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "1000"
                         ]
                     },
@@ -111,7 +111,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FWD-TOKEN",
+                        "tokenIdentifier": "str:FWD-000389",
                         "value": "1000"
                     }
                 ],
@@ -130,7 +130,7 @@
                         "address": "sc:forwarder",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "",
                             "1000",
                             "sc:vault"
@@ -138,7 +138,7 @@
                         "data": [
                             "str:AsyncCall",
                             "str:ESDTTransfer",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "1000"
                         ]
                     },
@@ -197,7 +197,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "2000"
+                        "str:FWD-000389": "2000"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "0"

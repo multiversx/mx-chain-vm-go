@@ -12,7 +12,7 @@
                     "nonce": "0",
                     "balance": "4000",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000",
+                        "str:FWD-abcdef": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -48,7 +48,7 @@
                 "function": "forward_sync_retrieve_funds_bt_multi",
                 "arguments": [
                     "sc:vault",
-                    "str:FWD-TOKEN",
+                    "str:FWD-abcdef",
                     "0",
                     "100",
                     "str:NFT-123456",
@@ -78,7 +78,7 @@
                         "data": [
                             "str:ExecuteOnDestContext",
                             "str:retrieve_funds_multi",
-                            "str:FWD-TOKEN",
+                            "str:FWD-abcdef",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -97,7 +97,7 @@
                         "endpoint": "str:retrieve_funds_multi",
                         "topics": [
                             "str:retrieve_funds_multi",
-                            "str:FWD-TOKEN",
+                            "str:FWD-abcdef",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -118,7 +118,7 @@
                         "address": "sc:vault",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-abcdef",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -137,7 +137,7 @@
                             "str:MultiESDTNFTTransfer",
                             "sc:forwarder",
                             "4",
-                            "str:FWD-TOKEN",
+                            "str:FWD-abcdef",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -167,7 +167,7 @@
                         "endpoint": "str:forward_sync_retrieve_funds_bt_multi",
                         "topics": [
                             "str:back_transfers_multi_event",
-                            "str:FWD-TOKEN",
+                            "str:FWD-abcdef",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -189,7 +189,7 @@
                         "endpoint": "str:forward_sync_retrieve_funds_bt_multi",
                         "topics": [
                             "str:balances_after",
-                            "str:FWD-TOKEN",
+                            "str:FWD-abcdef",
                             "0",
                             "100",
                             "str:NFT-123456",
@@ -224,7 +224,7 @@
                     "nonce": "0",
                     "balance": "3900",
                     "esdt": {
-                        "str:FWD-TOKEN": "900",
+                        "str:FWD-abcdef": "900",
                         "str:SFT-456789": {
                             "instances": [
                                 {
@@ -241,7 +241,7 @@
                     "nonce": "0",
                     "balance": "100",
                     "esdt": {
-                        "str:FWD-TOKEN": "100",
+                        "str:FWD-abcdef": "100",
                         "str:NFT-123456": {
                             "instances": [
                                 {

@@ -12,7 +12,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-SFTABC": {
+                        "str:TEST-00038f": {
                             "lastNonce": "2",
                             "roles": [
                                 "ESDTRoleNFTCreate",
@@ -27,7 +27,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-SFTABC": {
+                        "str:TEST-00038f": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -53,10 +53,10 @@
                 "function": "forwarder_async_send_and_retrieve_multi_transfer_funds",
                 "arguments": [
                     "sc:vault",
-                    "str:TEST-SFTABC",
+                    "str:TEST-00038f",
                     "1",
                     "1000",
-                    "str:TEST-SFTABC",
+                    "str:TEST-00038f",
                     "2",
                     "1000"
                 ],
@@ -84,7 +84,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-SFTABC": {
+                        "str:TEST-00038f": {
                             "lastNonce": "4",
                             "roles": [
                                 "ESDTRoleNFTCreate",
@@ -100,7 +100,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-SFTABC": {
+                        "str:TEST-00038f": {
                             "instances": [
                                 {
                                     "nonce": "3",
@@ -119,12 +119,12 @@
                         },
                         "str:callback_args.len": "1",
                         "str:callback_payments.item|u32:1": {
-                            "1-token_id": "nested:str:TEST-SFTABC",
+                            "1-token_id": "nested:str:TEST-00038f",
                             "2-nonce": "u64:3",
                             "3-amount": "biguint:1000"
                         },
                         "str:callback_payments.item|u32:2": {
-                            "1-token_id": "nested:str:TEST-SFTABC",
+                            "1-token_id": "nested:str:TEST-00038f",
                             "2-nonce": "u64:4",
                             "3-amount": "biguint:1000"
                         },

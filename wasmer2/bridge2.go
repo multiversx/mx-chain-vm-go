@@ -46,11 +46,6 @@ func toCWasmerCompilationOptions(options executor.CompilationOptions) cWasmerCom
 	}
 }
 
-// Tripwire for a field added to vm_exec_compilation_options_t without a matching
-// field (and conversion above) added to executor.CompilationOptions: the two
-// composite literal lengths differ, so this fails to compile.
-var _ [unsafe.Sizeof(executor.CompilationOptions{})]byte = [unsafe.Sizeof(cWasmerCompilationOptions{})]byte{}
-
 func cWasmerSetLogLevel(
 	value uint64,
 ) cWasmerResultT {

@@ -39,6 +39,8 @@ const (
 	mBufferFromBigFloatName         = "mBufferFromBigFloat"
 )
 
+const maxBufferCopyBytes = 10 * 1024 * 1024
+
 // MBufferNew VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) MBufferNew() (int32, error) {
@@ -66,9 +68,16 @@ func (context *VMHooksImpl) MBufferNewFromBytes(dataOffset executor.MemPtr, data
 		return -1, err
 	}
 
-	data, err := context.MemLoad(dataOffset, dataLength)
+	data, err := context.loadBoundedBuffer(dataOffset, dataLength)
 	if err != nil {
 		return -1, err
+	}
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBytes(data)
+		if err != nil {
+			return -1, err
+		}
 	}
 
 	return managedType.NewManagedBufferFromBytes(data), nil
@@ -151,7 +160,8 @@ func (context *VMHooksImpl) MBufferGetByteSlice(
 		return 1, err
 	}
 
-	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
+	err = math.CheckBoundsInt32(startingPosition, sliceLength, len(sourceBytes))
+	if err != nil {
 		// does not fail execution if slice exceeds bounds
 		return 1, nil
 	}
@@ -193,7 +203,8 @@ func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, 
 		return 1, err
 	}
 
-	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
+	err = math.CheckBoundsInt32(startingPosition, sliceLength, len(sourceBytes))
+	if err != nil {
 		// does not fail execution if slice exceeds bounds
 		return 1, nil
 	}
@@ -261,7 +272,7 @@ func (context *VMHooksImpl) MBufferSetBytes(mBufferHandle int32, dataOffset exec
 		return 1, err
 	}
 
-	data, err := context.MemLoad(dataOffset, dataLength)
+	data, err := context.loadBoundedBuffer(dataOffset, dataLength)
 	if err != nil {
 		return 1, err
 	}
@@ -329,18 +340,21 @@ func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle in
 		return 1, err
 	}
 
-	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
+	err = math.CheckBoundsInt32(startingPosition, dataLength, len(bufferBytes))
+	if err != nil {
 		// does not fail execution if slice exceeds bounds
 		return 1, nil
 	}
 
 	start := int(startingPosition)
 	length := int(dataLength)
-	destination := bufferBytes[start : start+length]
+
+	clonedBytes := bytes.Clone(bufferBytes)
+	destination := clonedBytes[start : start+length]
 
 	copy(destination, data)
 
-	managedType.SetBytes(mBufferHandle, bufferBytes)
+	managedType.SetBytes(mBufferHandle, clonedBytes)
 
 	return 0, nil
 }
@@ -389,7 +403,7 @@ func (context *VMHooksImpl) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 		return 1, err
 	}
 
-	data, err := context.MemLoad(dataOffset, dataLength)
+	data, err := context.loadBoundedBuffer(dataOffset, dataLength)
 	if err != nil {
 		return 1, err
 	}
@@ -616,7 +630,12 @@ func (context *VMHooksImpl) MBufferFromSmallIntSigned(mBufferHandle int32, value
 		return err
 	}
 
-	valueBytes := big.NewInt(0).SetInt64(value).Bytes()
+	var valueBytes []byte
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		valueBytes = twos.ToBytes(big.NewInt(value))
+	} else {
+		valueBytes = big.NewInt(0).SetInt64(value).Bytes()
+	}
 	managedType.SetBytes(mBufferHandle, valueBytes)
 	return nil
 }
@@ -791,6 +810,13 @@ func (context *VMHooksImpl) MBufferStorageLoad(keyHandle int32, destinationHandl
 		return -1, err
 	}
 
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBytes(storageBytes)
+		if err != nil {
+			return -1, err
+		}
+	}
+
 	managedType.SetBytes(destinationHandle, storageBytes)
 
 	return 0, nil
@@ -807,14 +833,21 @@ func (context *VMHooksImpl) MBufferStorageLoadFromAddress(addressHandle, keyHand
 		return err
 	}
 
-	address, err := managedType.GetBytes(addressHandle)
+	address, err := loadAddressFromHandle(context.host, managedType, addressHandle)
 	if err != nil {
-		return vmhost.ErrArgOutOfRange
+		return err
 	}
 
 	storageBytes, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
 	if err != nil {
 		return err
+	}
+
+	if context.GetRuntimeContext().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBytes(storageBytes)
+		if err != nil {
+			return err
+		}
 	}
 
 	managedType.SetBytes(destinationHandle, storageBytes)
@@ -838,6 +871,14 @@ func (context *VMHooksImpl) MBufferGetArgument(id int32, destinationHandle int32
 	if int32(len(args)) <= id || id < 0 {
 		return 1, vmhost.ErrArgOutOfRange
 	}
+
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		err = managedType.ConsumeGasForBytes(args[id])
+		if err != nil {
+			return -1, err
+		}
+	}
+
 	managedType.SetBytes(destinationHandle, args[id])
 	return 0, nil
 }
@@ -898,4 +939,14 @@ func (context *VMHooksImpl) MBufferSetRandom(destinationHandle int32, length int
 
 	managedType.SetBytes(destinationHandle, buffer)
 	return 0, nil
+}
+
+func (context *VMHooksImpl) loadBoundedBuffer(dataOffset executor.MemPtr, dataLength executor.MemLength) ([]byte, error) {
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		if int64(dataLength) > maxBufferCopyBytes || dataLength < 0 {
+			return nil, vmhost.ErrArgOutOfRange
+		}
+	}
+
+	return context.MemLoad(dataOffset, dataLength)
 }

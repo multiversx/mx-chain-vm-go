@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	"github.com/multiversx/mx-chain-vm-go/config"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
@@ -729,4 +731,338 @@ func TestManagedTypesContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T
 	managedTypesCtx.PopDiscard()
 
 	require.Equal(t, 0, len(managedTypesCtx.managedTypesStack))
+}
+
+func TestManagedTypesContext_ManagedMapPut_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+
+			gasLeftBefore := meteringMock.GasLeft()
+			err := managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+			require.Nil(t, err)
+
+			gasConsumedInPut := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// both key (6) and value (10) consumed
+				require.Equal(t, uint64(16), gasConsumedInPut)
+			} else {
+				// only value (10) consumed
+				require.Equal(t, uint64(10), gasConsumedInPut)
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_ManagedMapGet_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+			_ = managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+
+			outValHandle := managedTypesCtx.NewManagedBuffer()
+			gasLeftBefore := meteringMock.GasLeft()
+			err := managedTypesCtx.ManagedMapGet(mapHandle, keyHandle, outValHandle)
+			require.Nil(t, err)
+
+			gasConsumedInGet := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// both key (6) and value (10) consumed
+				require.Equal(t, uint64(16), gasConsumedInGet)
+			} else {
+				// only value (10) consumed
+				require.Equal(t, uint64(10), gasConsumedInGet)
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_ManagedMapRemove_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+			_ = managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+
+			outValHandle := managedTypesCtx.NewManagedBuffer()
+			gasLeftBefore := meteringMock.GasLeft()
+			err := managedTypesCtx.ManagedMapRemove(mapHandle, keyHandle, outValHandle)
+			require.Nil(t, err)
+
+			gasConsumedInRemove := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// both key (6) and value (10) consumed
+				require.Equal(t, uint64(16), gasConsumedInRemove)
+			} else {
+				// only value (10) consumed
+				require.Equal(t, uint64(10), gasConsumedInRemove)
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_ManagedMapContains_KeyGas(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			meteringMock := &contextmock.MeteringContextMock{
+				GasCost:     &config.GasCost{},
+				GasLeftMock: 1_000_000,
+			}
+			meteringMock.GasCost.BaseOperationCost.DataCopyPerByte = 1
+
+			host := &contextmock.VMHostStub{
+				MeteringCalled: func() vmhost.MeteringContext {
+					return meteringMock
+				},
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+			managedTypesCtx.InitState()
+
+			mapHandle := managedTypesCtx.NewManagedMap()
+			keyHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("key123"))     // 6 bytes
+			valHandle := managedTypesCtx.NewManagedBufferFromBytes([]byte("value45678")) // 10 bytes
+			_ = managedTypesCtx.ManagedMapPut(mapHandle, keyHandle, valHandle)
+
+			gasLeftBefore := meteringMock.GasLeft()
+			contains, err := managedTypesCtx.ManagedMapContains(mapHandle, keyHandle)
+			require.Nil(t, err)
+			require.True(t, contains)
+
+			gasConsumedInContains := gasLeftBefore - meteringMock.GasLeft()
+			if flagEnabled {
+				// key (6) consumed
+				require.Equal(t, uint64(6), gasConsumedInContains)
+			} else {
+				// 0 key bytes consumed
+				require.Equal(t, uint64(0), gasConsumedInContains)
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_EncodedBigFloatIsNotValid_MaxLen(t *testing.T) {
+	t.Parallel()
+
+	valid18Bytes := []byte{1, 10, 0, 0, 0, 53, 0, 0, 0, 108, 136, 217, 65, 19, 144, 71, 160, 0}
+	oversized19Bytes := append(bytes.Clone(valid18Bytes), 0xFF)
+	oversized50Bytes := append(bytes.Clone(valid18Bytes), make([]byte, 32)...)
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			host := &contextmock.VMHostStub{
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+
+			// 18 bytes is valid in both cases
+			require.False(t, managedTypesCtx.EncodedBigFloatIsNotValid(valid18Bytes))
+
+			// >18 bytes is invalid when flagEnabled, but was accepted when flag was disabled
+			if flagEnabled {
+				require.True(t, managedTypesCtx.EncodedBigFloatIsNotValid(oversized19Bytes))
+				require.True(t, managedTypesCtx.EncodedBigFloatIsNotValid(oversized50Bytes))
+			} else {
+				require.False(t, managedTypesCtx.EncodedBigFloatIsNotValid(oversized19Bytes))
+				require.False(t, managedTypesCtx.EncodedBigFloatIsNotValid(oversized50Bytes))
+			}
+		})
+	}
+}
+
+func TestManagedTypesContext_EncodedBigFloatIsNotValid_CanonicalZero(t *testing.T) {
+	t.Parallel()
+
+	canonicalZero := []byte{1, 8, 0, 0, 0, 53}
+	invalid6Bytes := []byte{1, 9, 0, 0, 0, 53}
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			host := &contextmock.VMHostStub{
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			managedTypesCtx, _ := NewManagedTypesContext(host)
+
+			if flagEnabled {
+				// Canonical zero must be accepted as valid
+				require.False(t, managedTypesCtx.EncodedBigFloatIsNotValid(canonicalZero))
+			} else {
+				// Historically, zero was rejected by prefix fallthrough
+				require.True(t, managedTypesCtx.EncodedBigFloatIsNotValid(canonicalZero))
+			}
+			// Non-canonical 6 bytes must always be invalid
+			require.True(t, managedTypesCtx.EncodedBigFloatIsNotValid(invalid6Bytes))
+		})
+	}
+}
+
+func TestManagedTypesContext_SparseHandleAllocation_Monotonic(t *testing.T) {
+	t.Parallel()
+
+	for _, flagEnabled := range []bool{false, true} {
+		flagEnabled := flagEnabled
+		t.Run("flag="+strconv.FormatBool(flagEnabled), func(t *testing.T) {
+			host := &contextmock.VMHostStub{
+				RuntimeCalled: func() vmhost.RuntimeContext {
+					return &contextmock.RuntimeContextMock{
+						FixCorrectSmallIntAndGasLimitsFunc: func() bool {
+							return flagEnabled
+						},
+					}
+				},
+			}
+
+			ctx, err := NewManagedTypesContext(host)
+			require.Nil(t, err)
+
+			// Attacker places sparse handles at 100..199
+			for h := int32(100); h < 200; h++ {
+				_ = ctx.GetBigIntOrCreate(h)
+				ctx.SetBytes(h, []byte{byte(h)})
+			}
+
+			if flagEnabled {
+				// Under flag, allocation starts from nextBigIntHandle (0) and fills in 0..99
+				for i := 0; i < 100; i++ {
+					h := ctx.NewBigInt(big.NewInt(int64(i)))
+					require.Equal(t, int32(i), h)
+					mb := ctx.NewManagedBuffer()
+					require.Equal(t, int32(i), mb)
+				}
+
+				// The next allocation hits the occupied block [100, 199]
+				// It skips it and allocates 200
+				hNext := ctx.NewBigInt(big.NewInt(999))
+				require.Equal(t, int32(200), hNext)
+				mbNext := ctx.NewManagedBuffer()
+				require.Equal(t, int32(200), mbNext)
+
+				// Next allocations proceed from 201 without scanning
+				hNext2 := ctx.NewBigInt(big.NewInt(1000))
+				require.Equal(t, int32(201), hNext2)
+
+				// Verify PushState / PopSetActiveState
+				ctx.PushState()
+				hChild := ctx.NewBigInt(big.NewInt(1001))
+				require.Equal(t, int32(202), hChild)
+
+				ctx.PopSetActiveState()
+				// After pop, handle 202 is restored as next in parent
+				hParent := ctx.NewBigInt(big.NewInt(1002))
+				require.Equal(t, int32(202), hParent)
+			} else {
+				// Without flag, legacy allocation starts from len(map) (100), scans [100..199], and returns 200+
+				for i := 0; i < 5; i++ {
+					h := ctx.NewBigInt(big.NewInt(int64(i)))
+					require.Equal(t, int32(200+i), h)
+				}
+			}
+		})
+	}
 }

@@ -929,8 +929,10 @@ func testGasUsedAsyncCallCrossShardCallBack(t *testing.T, isLegacy bool) {
 			err := host.Runtime().StartWasmerInstance(test.ParentAddress, testConfig.GasUsedByParent, false)
 			assert.Nil(t, err)
 
+			host.Runtime().GetVMInput().RecipientAddr = test.ParentAddress
 			fakeInput := &host.Runtime().GetVMInput().VMInput
 			fakeInput.GasProvided = 1000
+			fakeInput.CallerAddr = test.ParentAddress
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 
 			err = contracts.RegisterAsyncCallToChild(host, testConfig, arguments)
@@ -2293,6 +2295,10 @@ func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
 		test.ParentAddress,
 		testConfig.TransferToThirdParty,
 		[]byte("test"))
+	vmhost.AddNewOutputAccount(vmOutput,
+		test.ParentAddress,
+		-testConfig.TransferToThirdParty,
+		nil)
 	world.OtherVMOutputMap[string(fakeVMType)] = vmOutput
 
 	_, err := test.BuildMockInstanceCallTest(t).
@@ -2409,6 +2415,13 @@ func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldm
 				mockClaimBuiltin.AmountToGive,
 				nil)
 			vmOutput.GasRemaining = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			vmOutput.Logs = []*vmcommon.LogEntry{
+				{
+					Identifier: []byte(core.BuiltInFunctionClaimDeveloperRewards),
+					Address:    acntSnd.AddressBytes(),
+					Topics:     [][]byte{big.NewInt(mockClaimBuiltin.AmountToGive).Bytes()},
+				},
+			}
 			return vmOutput, nil
 		},
 	})

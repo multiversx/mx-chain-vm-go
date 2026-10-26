@@ -11,7 +11,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "1000",
+                        "str:FWD-000389": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -49,7 +49,7 @@
                     "sc:vault",
                     "str:accept_funds_echo_payment",
                     "5,000",
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "500",
                     "str:NFT-123456",
@@ -64,7 +64,7 @@
             },
             "expect": {
                 "out": [
-                    "str:FWD-TOKEN",
+                    "str:FWD-000389",
                     "0",
                     "500",
                     "str:NFT-123456",
@@ -81,7 +81,7 @@
                         "address": "sc:promises",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "500",
                             "str:NFT-123456",
@@ -97,7 +97,7 @@
                             "str:MultiESDTNFTTransfer",
                             "sc:vault",
                             "3",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "500",
                             "str:NFT-123456",
@@ -114,7 +114,7 @@
                         "endpoint": "str:accept_funds_echo_payment",
                         "topics": [
                             "str:accept_funds",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "500",
                             "str:NFT-123456",
@@ -139,7 +139,7 @@
                             "str:AsyncCallback",
                             "str:the_one_callback",
                             "0x00",
-                            "str:FWD-TOKEN",
+                            "str:FWD-000389",
                             "0",
                             "500",
                             "str:NFT-123456",
@@ -161,7 +161,7 @@
                         "data": [
                             [
                                 "nested:0x00",
-                                "nested:str:FWD-TOKEN",
+                                "nested:str:FWD-000389",
                                 "nested:0",
                                 "nested:500",
                                 "nested:str:NFT-123456",
@@ -189,7 +189,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "500",
+                        "str:FWD-000389": "500",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -216,7 +216,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:FWD-TOKEN": "500",
+                        "str:FWD-000389": "500",
                         "str:NFT-123456": {
                             "instances": [
                                 {

@@ -25,6 +25,9 @@ func readESDTTransfer(
 	}
 
 	tokenIdentifierHandle := int32(binary.BigEndian.Uint32(data[0:4]))
+	nonce := binary.BigEndian.Uint64(data[4:12])
+	valueHandle := int32(binary.BigEndian.Uint32(data[12:16]))
+
 	tokenIdentifier, err := managedType.GetBytes(tokenIdentifierHandle)
 	if err != nil {
 		return nil, err
@@ -35,11 +38,13 @@ func readESDTTransfer(
 		return nil, err
 	}
 
-	nonce := binary.BigEndian.Uint64(data[4:12])
-	valueHandle := int32(binary.BigEndian.Uint32(data[12:16]))
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
 		return nil, err
+	}
+
+	if runtime.FixCorrectSmallIntAndGasLimits() && value.Sign() < 0 {
+		return nil, vmhost.ErrTransferNegativeValue
 	}
 
 	err = managedType.ConsumeGasForBigIntCopy(value)
@@ -219,7 +224,9 @@ func readDestinationArguments(
 	if err != nil {
 		return nil, err
 	}
-
+	if err = checkAddressLength(host, destBytes); err != nil {
+		return nil, err
+	}
 	vmInput.destination = bytes.Clone(destBytes)
 	vmInput.value = big.NewInt(0)
 	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)

@@ -202,6 +202,11 @@ func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 func (o *OutputContextMock) DeployCode(_ vmhost.CodeDeployInput) {
 }
 
+// HasCodeUpdate mocked method
+func (o *OutputContextMock) HasCodeUpdate(_ []byte) bool {
+	return false
+}
+
 // CreateVMOutputInCaseOfError mocked method
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOutput {
 	return o.OutputStateMock

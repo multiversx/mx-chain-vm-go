@@ -21,7 +21,7 @@
             "accounts": {
                 "address:esdt-owner": {
                     "esdt": {
-                        "str:FUNG-TOKEN": "1000",
+                        "str:FUNG-000387": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {
@@ -50,7 +50,7 @@
                 "to": "sc:multisig",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:FUNG-TOKEN",
+                        "tokenIdentifier": "str:FUNG-000387",
                         "value": "1000"
                     },
                     {
@@ -81,7 +81,7 @@
                     "str:MultiESDTNFTTransfer",
                     "address:esdt-owner",
                     "3",
-                    "str:FUNG-TOKEN",
+                    "str:FUNG-000387",
                     "0",
                     "1000",
                     "str:NFT-123456",
@@ -182,7 +182,7 @@
                             "str:MultiESDTNFTTransfer",
                             "address:esdt-owner",
                             "3",
-                            "str:FUNG-TOKEN",
+                            "str:FUNG-000387",
                             "0",
                             "1000",
                             "str:NFT-123456",
@@ -198,7 +198,7 @@
                         "address": "sc:multisig",
                         "endpoint": "str:MultiESDTNFTTransfer",
                         "topics": [
-                            "str:FUNG-TOKEN",
+                            "str:FUNG-000387",
                             "0",
                             "1000",
                             "str:NFT-123456",
@@ -243,7 +243,7 @@
                 "address:esdt-owner": {
                     "nonce": "1",
                     "esdt": {
-                        "str:FUNG-TOKEN": "1000",
+                        "str:FUNG-000387": "1000",
                         "str:NFT-123456": {
                             "instances": [
                                 {

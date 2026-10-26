@@ -54,7 +54,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	storage.SetAddress(runtime.GetContextAddress())
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
+		ContractCode:         bytes.Clone(input.ContractCode),
 		ContractCodeMetadata: input.ContractCodeMetadata,
 		ContractAddress:      address,
 		CodeDeployerAddress:  input.CallerAddr,
@@ -151,7 +151,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	}
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         code,
+		ContractCode:         bytes.Clone(code),
 		ContractCodeMetadata: codeMetadata,
 		ContractAddress:      input.RecipientAddr,
 		CodeDeployerAddress:  input.CallerAddr,
@@ -183,6 +183,14 @@ func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) 
 	if err != nil {
 		log.Trace("doRunSmartContractDelete", "error", vmhost.ErrUpgradeNotAllowed)
 		return output.CreateVMOutputInCaseOfError(err)
+	}
+
+	runtime := host.Runtime()
+	metering := host.Metering()
+	if len(runtime.GetContextAddress()) == 0 {
+		runtime.InitStateFromContractCallInput(input)
+		metering.InitStateFromContractCallInput(&input.VMInput)
+		output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	}
 
 	vmOutput := output.GetVMOutput()
@@ -291,35 +299,55 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	blockchain := host.Blockchain()
 	output := host.Output()
+	// Output state rollback is gated to preserve historical execution compatibility
+	// with pre-v1.5.50 blocks during importdb (e.g. epochs 1819, 2060, 2207).
+	isOutputRollbackEnabled := host.Runtime().OutputRollbackOnDestContext()
 
 	blockchain.PushState()
-	output.PushState()
+	if isOutputRollbackEnabled {
+		output.PushState()
+	}
 
+	var builtinVMOutput *vmcommon.VMOutput
 	if host.IsBuiltinFunctionName(input.Function) {
-		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
+		scExecutionInput, builtinVMOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
-			output.PopSetActiveState()
+			if isOutputRollbackEnabled {
+				output.PopSetActiveState()
+			}
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			isChildComplete = true
 			return
 		}
-		host.completeLogEntriesAfterBuiltinCall(input, vmOutput)
+		host.completeLogEntriesAfterBuiltinCall(input, builtinVMOutput)
+		vmOutput = builtinVMOutput
 	}
 
 	isChildComplete = true
 	if scExecutionInput != nil {
-		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		childOutput, childComplete, childErr := host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		isChildComplete = childComplete
+		err = childErr
+		vmOutput = childOutput
+		if builtinVMOutput != nil && err == nil {
+			contexts.MergeVMOutputs(builtinVMOutput, childOutput)
+			vmOutput = builtinVMOutput
+		}
 		host.addNewBackTransfersFromVMOutput(vmOutput, scExecutionInput.CallerAddr, scExecutionInput.RecipientAddr)
 	}
 
 	if err != nil {
 		blockchain.PopSetActiveState()
-		output.PopSetActiveState()
+		if isOutputRollbackEnabled {
+			output.PopSetActiveState()
+		}
 	} else {
 		blockchain.PopDiscard()
-		output.PopDiscard()
+		if isOutputRollbackEnabled {
+			output.PopDiscard()
+		}
 	}
 
 	return
@@ -701,7 +729,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput, creat
 	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         input.ContractCode,
+		ContractCode:         bytes.Clone(input.ContractCode),
 		ContractCodeMetadata: input.ContractCodeMetadata,
 		ContractAddress:      nil,
 		CodeDeployerAddress:  input.CallerAddr,
@@ -794,6 +822,10 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
+	if runtime.FixCorrectSmallIntAndGasLimits() && runtime.ReadOnly() {
+		return vmhost.ErrInvalidCallOnReadOnlyMode
+	}
+
 	err := host.checkUpgradePermission(input)
 	if err != nil {
 		return err
@@ -805,7 +837,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	}
 
 	codeDeployInput := vmhost.CodeDeployInput{
-		ContractCode:         code,
+		ContractCode:         bytes.Clone(code),
 		ContractCodeMetadata: codeMetadata,
 		ContractAddress:      input.RecipientAddr,
 		CodeDeployerAddress:  input.CallerAddr,
@@ -839,7 +871,20 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 }
 
 func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
-	host.doRunSmartContractDelete(input)
+	isFixEnabled := host.Runtime().FixCorrectSmallIntAndGasLimits()
+	if isFixEnabled {
+		if host.Runtime().ReadOnly() {
+			return vmhost.ErrInvalidCallOnReadOnlyMode
+		}
+		err := host.checkUpgradePermission(input)
+		if err != nil {
+			return err
+		}
+	}
+	vmOutput := host.doRunSmartContractDelete(input)
+	if isFixEnabled && vmOutput != nil && vmOutput.ReturnCode != vmcommon.Ok {
+		return vmhost.ErrContractInvalid
+	}
 	return nil
 }
 
@@ -875,6 +920,9 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	isDelete := input.Function == vmhost.DeleteFunctionName
 	if isDelete {
+		if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+			host.Runtime().UnsetInstance()
+		}
 		return host.executeDelete(input)
 	}
 
@@ -1035,6 +1083,10 @@ func (host *vmHost) ExecuteESDTTransfer(transfersArgs *vmhost.ESDTTransfersArgs,
 func (host *vmHost) callFunctionOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	metering := host.Metering()
 
+	if host.Runtime().ReadOnly() {
+		return nil, vmhost.ErrInvalidCallOnReadOnlyMode
+	}
+
 	vmOutput, err := host.Blockchain().ExecuteSmartContractCallOnOtherVM(input)
 	if err != nil {
 		_ = metering.UseGasBounded(input.GasProvided)
@@ -1171,13 +1223,12 @@ func (host *vmHost) callSCFunction(functionName string) error {
 	err := runtime.CallSCFunction(functionName)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+		if err != nil {
+			return err
+		}
 	}
 
-	if err == nil {
-		err = host.checkFinalGasAfterExit()
-	}
-
-	return err
+	return host.checkFinalGasAfterExit()
 }
 
 func (host *vmHost) callSCMethod() error {
@@ -1240,19 +1291,26 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		runtime.SetCustomCallFunction(callbackName)
 		isCallComplete, callbackErr := host.callFunctionAndExecuteAsync()
 
-		if callbackErr != nil {
-			metering := host.Metering()
-			_ = metering.UseGasBounded(metering.GasLeft())
-		}
+		if runtime.FixCorrectSmallIntAndGasLimits() {
+			if callbackErr != nil {
+				metering := host.Metering()
+				_ = metering.UseGasBounded(metering.GasLeft())
+				return callbackErr
+			}
+			if host.Output().ReturnCode() != vmcommon.Ok {
+				metering := host.Metering()
+				_ = metering.UseGasBounded(metering.GasLeft())
+				return vmhost.ErrExecutionFailed
+			}
+		} else {
+			if callbackErr != nil {
+				metering := host.Metering()
+				_ = metering.UseGasBounded(metering.GasLeft())
+			}
 
-		// TODO matei-p R2 Returning an error here will cause the VMOutput to be
-		// empty (due to CreateVMOutputInCaseOfError()). But in release 2 of
-		// Promises, CreateVMOutputInCaseOfError() should still contain storage
-		// deletions caused by AsyncContext cleanup, even if callbackErr != nil and
-		// was returned here. The storage deletions MUST be persisted in the data
-		// trie once R2 goes live.
-		if !isCallComplete {
-			return callbackErr
+			if !isCallComplete {
+				return callbackErr
+			}
 		}
 	}
 
@@ -1289,10 +1347,13 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 		if err != nil {
 			err = host.handleBreakpointIfAny(err)
 			log.Trace("breakpoint detected and handled", "err", err)
+			if err != nil {
+				log.Trace("call SC method failed", "error", err, "src", "sc function")
+				return true, err
+			}
 		}
-		if err == nil {
-			err = host.checkFinalGasAfterExit()
-		}
+
+		err = host.checkFinalGasAfterExit()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err, "src", "sc function")
 			return true, err

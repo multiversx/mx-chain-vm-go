@@ -44,15 +44,20 @@ func TestDeployFromSource_Success(t *testing.T) {
 	testConfig := getDeployFromSourceTestConfig()
 	deployedCode := testConfig.DeployedContractAddress /* this is the actual mock code of the deployed contract */
 	deployedCodeLen := uint64(len(deployedCode))
+	parentCodeLen := uint64(len(test.ParentAddress))
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		newContractAddress := verify.VmOutput.ReturnData[0]
+		expectedGasRemaining := testConfig.GasProvided -
+			testConfig.GasUsedByInit -
+			deployedCodeLen*testConfig.CompilePerByteCost -
+			deployedCodeLen*testConfig.AoTPreparePerByteCost
+		if world.EnableEpochsHandler.IsFlagEnabled(vmhost.FixCorrectSmallIntAndGasLimitsFlag) {
+			expectedGasRemaining -= parentCodeLen * testConfig.AoTPreparePerByteCost
+		}
 		verify.
 			Ok().
 			Code(newContractAddress, deployedCode).
-			GasRemaining(testConfig.GasProvided -
-				testConfig.GasUsedByInit -
-				deployedCodeLen*testConfig.CompilePerByteCost -
-				deployedCodeLen*testConfig.AoTPreparePerByteCost)
+			GasRemaining(expectedGasRemaining)
 	})
 }
 

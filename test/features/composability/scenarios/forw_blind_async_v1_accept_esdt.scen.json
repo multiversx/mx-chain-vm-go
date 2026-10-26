@@ -7,7 +7,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     }
                 },
                 "sc:vault": {
@@ -30,7 +30,7 @@
                 "to": "sc:forwarder",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "tokenIdentifier": "str:TEST-000390",
                         "value": "1000"
                     }
                 ],
@@ -57,14 +57,14 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "0"
+                        "str:TEST-000390": "0"
                     }
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKENA": "1000"
+                        "str:TEST-000390": "1000"
                     },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "1"

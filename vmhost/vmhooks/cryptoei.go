@@ -2,6 +2,7 @@ package vmhooks
 
 import (
 	"crypto/elliptic"
+	"fmt"
 
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256"
 	"github.com/multiversx/mx-chain-vm-go/executor"
@@ -16,6 +17,7 @@ const ed25519SignatureLength = 64
 const secp256k1CompressedPublicKeyLength = 33
 const secp256k1UncompressedPublicKeyLength = 65
 const curveNameLength = 4
+const maxBLSAggregateSigners = 400
 
 const (
 	sha256Name                      = "sha256"
@@ -85,6 +87,34 @@ func (context *VMHooksImpl) Sha256(
 	return 0, nil
 }
 
+func getBytesAndConsumeGas(managedType vmhost.ManagedTypesContext, handle int32) ([]byte, error) {
+	data, err := managedType.GetBytes(handle)
+	if err != nil {
+		return nil, err
+	}
+	err = managedType.ConsumeGasForBytes(data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func getVerifyBuffers(managedType vmhost.ManagedTypesContext, keyHandle, messageHandle, sigHandle int32) ([]byte, []byte, []byte, error) {
+	key, err := getBytesAndConsumeGas(managedType, keyHandle)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	msg, err := getBytesAndConsumeGas(managedType, messageHandle)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	sig, err := getBytesAndConsumeGas(managedType, sigHandle)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return key, msg, sig, nil
+}
+
 // ManagedSha256 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) (int32, error) {
@@ -98,12 +128,7 @@ func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) (int3
 		return 1, err
 	}
 
-	inputBytes, err := managedType.GetBytes(inputHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(inputBytes)
+	inputBytes, err := getBytesAndConsumeGas(managedType, inputHandle)
 	if err != nil {
 		return 1, err
 	}
@@ -171,12 +196,7 @@ func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) (i
 		return 1, err
 	}
 
-	inputBytes, err := managedType.GetBytes(inputHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(inputBytes)
+	inputBytes, err := getBytesAndConsumeGas(managedType, inputHandle)
 	if err != nil {
 		return 1, err
 	}
@@ -250,12 +270,7 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 		return 1, err
 	}
 
-	inputBytes, err := managedType.GetBytes(inputHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(inputBytes)
+	inputBytes, err := getBytesAndConsumeGas(managedType, inputHandle)
 	if err != nil {
 		return 1, err
 	}
@@ -378,32 +393,7 @@ func ManagedVerifyBLSWithHost(
 		return 1, err
 	}
 
-	keyBytes, err := managedType.GetBytes(keyHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(keyBytes)
-	if err != nil {
-		return 1, err
-	}
-
-	msgBytes, err := managedType.GetBytes(messageHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(msgBytes)
-	if err != nil {
-		return 1, err
-	}
-
-	sigBytes, err := managedType.GetBytes(sigHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(sigBytes)
+	keyBytes, msgBytes, sigBytes, err := getVerifyBuffers(managedType, keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		return 1, err
 	}
@@ -419,6 +409,33 @@ func ManagedVerifyBLSWithHost(
 		pubKeyBytes, _, invalidSigErr = managedType.ReadManagedVecOfManagedBuffers(keyHandle)
 		if invalidSigErr != nil {
 			break
+		}
+
+		if host.Runtime().FixCorrectSmallIntAndGasLimits() {
+			if len(pubKeyBytes) == 0 {
+				return 1, vmhost.ErrInvalidArgument
+			}
+			if len(pubKeyBytes) > maxBLSAggregateSigners {
+				return 1, vmhost.ErrArgOutOfRange
+			}
+			for _, pubKey := range pubKeyBytes {
+				if len(pubKey) != blsPublicKeyLength {
+					return 1, vmhost.ErrLengthOfBufferNotCorrect
+				}
+			}
+
+			if len(pubKeyBytes) > 1 {
+				additionalSigners := uint64(len(pubKeyBytes) - 1)
+				perSignerCost := metering.GasSchedule().CryptoAPICost.VerifyBLSSignatureShare
+				if perSignerCost == 0 {
+					perSignerCost = metering.GasSchedule().CryptoAPICost.VerifyBLS
+				}
+				cryptoGasToUse := math.MulUint64(perSignerCost, additionalSigners)
+				err = metering.UseGasBounded(cryptoGasToUse)
+				if err != nil {
+					return 1, err
+				}
+			}
 		}
 
 		invalidSigErr = crypto.VerifyAggregatedSig(pubKeyBytes, msgBytes, sigBytes)
@@ -513,32 +530,7 @@ func ManagedVerifyEd25519WithHost(
 		return 1, err
 	}
 
-	keyBytes, err := managedType.GetBytes(keyHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(keyBytes)
-	if err != nil {
-		return 1, err
-	}
-
-	msgBytes, err := managedType.GetBytes(messageHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(msgBytes)
-	if err != nil {
-		return 1, err
-	}
-
-	sigBytes, err := managedType.GetBytes(sigHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(sigBytes)
+	keyBytes, msgBytes, sigBytes, err := getVerifyBuffers(managedType, keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		return 1, err
 	}
@@ -604,6 +596,9 @@ func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	if err != nil {
 		return 1, err
 	}
+	if len(sigHeader) < sigHeaderLength {
+		return 1, fmt.Errorf("sigHeader: %w", executor.ErrMemoryBadBounds)
+	}
 	sigLength := int32(sigHeader[1]) + sigHeaderLength
 	sig, err := context.MemLoad(sigOffset, sigLength)
 	if err != nil {
@@ -656,32 +651,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 		return 1, err
 	}
 
-	keyBytes, err := managedType.GetBytes(keyHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(keyBytes)
-	if err != nil {
-		return 1, err
-	}
-
-	msgBytes, err := managedType.GetBytes(messageHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(msgBytes)
-	if err != nil {
-		return 1, err
-	}
-
-	sigBytes, err := managedType.GetBytes(sigHandle)
-	if err != nil {
-		return 1, err
-	}
-
-	err = managedType.ConsumeGasForBytes(sigBytes)
+	keyBytes, msgBytes, sigBytes, err := getVerifyBuffers(managedType, keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		return 1, err
 	}
@@ -1516,10 +1486,7 @@ func ManagedUnmarshalECWithHost(
 
 	data, err := managedType.GetBytes(dataHandle)
 	if err != nil {
-		// deliberate: does not fail execution if the buffer cannot be read,
-		// matches the original code which returned 1 without calling
-		// FailExecution here.
-		return 1, nil
+		return 1, err
 	}
 
 	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
@@ -1821,6 +1788,9 @@ func (context *VMHooksImpl) CreateEC(dataOffset executor.MemPtr, dataLength exec
 	case "p521":
 		curveParams := elliptic.P521().Params()
 		return managedType.PutEllipticCurve(curveParams), nil
+	}
+	if context.host.Runtime().FixCorrectSmallIntAndGasLimits() {
+		return -1, vmhost.ErrBadBounds
 	}
 	return -1, nil
 }
