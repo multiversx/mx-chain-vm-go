@@ -33,7 +33,7 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 								require.True(t, initialIsComplete)
 
 								// Call child contract with non-existent method using error return hook
-								retCode, _ := handleHookErr(host)(vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+								retCode, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 									host,
 									100000,
 									big.NewInt(0),
@@ -41,7 +41,8 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 									test.ChildAddress,
 									nil,
 									0,
-								))
+								)
+								handleHookError(host, err)
 								// Returns 1 indicating error in child execution
 								require.Equal(t, int32(1), retCode)
 

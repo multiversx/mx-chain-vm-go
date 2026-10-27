@@ -58,7 +58,8 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 						// is merged into Parent. In Parent's outputState, Child's OutputAccount.Address
 						// points to the backing slice of childAddrBuf!
 						// We now mutate childAddrBuf in place to victimAddress!
-						handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress))
+						_, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress)
+						handleHookError(host, err)
 
 						// 5. Trigger a second nested execution (dummy call to Child)
 						// This pushes Parent's state to stateStack, executes dummy call,
@@ -179,7 +180,8 @@ func TestHost_StorageOverwriteResistance(t *testing.T) {
 						require.Equal(t, int32(0), res)
 
 						// 4. Mutate childAddrBuf to victimAddress
-						handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress))
+						_, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress)
+						handleHookError(host, err)
 
 						// 5. Trigger a second nested execution to rekey via PopMergeActiveState
 						dummyFnBuf := managedTypes.NewManagedBufferFromBytes([]byte("dummy"))

@@ -472,7 +472,9 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 						res = hooks.MBufferCopyByteSlice(sourceBuffer, math.MaxInt32, 1, destBuffer)
 						assert.Equal(t, int32(1), res)
 
-						res, _ = handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, math.MaxInt32, 1, []byte{0x99}))
+						var err error
+						res, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, math.MaxInt32, 1, []byte{0x99})
+						handleHookError(host, err)
 						assert.Equal(t, int32(1), res)
 
 						// negative starting position
@@ -482,7 +484,8 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 						res = hooks.MBufferCopyByteSlice(sourceBuffer, -1, 1, destBuffer)
 						assert.Equal(t, int32(1), res)
 
-						res, _ = handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, -1, 1, []byte{0x99}))
+						res, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, -1, 1, []byte{0x99})
+						handleHookError(host, err)
 						assert.Equal(t, int32(1), res)
 
 						// negative slice length
@@ -492,7 +495,8 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 						res = hooks.MBufferCopyByteSlice(sourceBuffer, 0, -1, destBuffer)
 						assert.Equal(t, int32(1), res)
 
-						res, _ = handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, 0, -1, []byte{0x99}))
+						res, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, 0, -1, []byte{0x99})
+						handleHookError(host, err)
 						assert.Equal(t, int32(1), res)
 
 						return contextmock.GetMockInstance(host)
@@ -531,7 +535,8 @@ func TestManBuffers_ManagedBufferSetByteSlice_CopyOnWrite(t *testing.T) {
 						assert.Equal(t, []byte{0xAA, 0xBB, 0xCC, 0xDD}, refSlice)
 
 						// Overwrite part of the buffer via SetByteSlice
-						res, _ := handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, bufHandle, 1, 2, []byte{0x11, 0x22}))
+						res, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, bufHandle, 1, 2, []byte{0x11, 0x22})
+						handleHookError(host, err)
 						assert.Equal(t, int32(0), res)
 
 						// Live buffer should have new content

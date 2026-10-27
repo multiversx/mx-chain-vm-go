@@ -453,12 +453,13 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 									msgHandle := managedTypes.NewManagedBufferFromBytes([]byte("message"))
 									sigHandle := managedTypes.NewManagedBufferFromBytes(make([]byte, 48))
 
-									res, _ := handleHookErr(host)(vmhooks.ManagedVerifyBLSWithHost(
+									res, err := vmhooks.ManagedVerifyBLSWithHost(
 										host,
 										keysHandle,
 										msgHandle,
 										sigHandle,
-										"verifyBLSAggregatedSignature"))
+										"verifyBLSAggregatedSignature")
+									handleHookError(host, err)
 
 									allErrors := host.Runtime().GetAllErrors()
 									if flagEnabled {
@@ -507,12 +508,13 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 									msgHandle := managedTypes.NewManagedBufferFromBytes([]byte("message"))
 									sigHandle := managedTypes.NewManagedBufferFromBytes(make([]byte, 48))
 
-									res, _ := handleHookErr(host)(vmhooks.ManagedVerifyBLSWithHost(
+									res, err := vmhooks.ManagedVerifyBLSWithHost(
 										host,
 										keysHandle,
 										msgHandle,
 										sigHandle,
-										"verifyBLSAggregatedSignature"))
+										"verifyBLSAggregatedSignature")
+									handleHookError(host, err)
 
 									allErrors := host.Runtime().GetAllErrors()
 									if flagEnabled {
@@ -560,12 +562,13 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 									msgHandle := managedTypes.NewManagedBufferFromBytes([]byte("message"))
 									sigHandle := managedTypes.NewManagedBufferFromBytes(make([]byte, 48))
 
-									res, _ := handleHookErr(host)(vmhooks.ManagedVerifyBLSWithHost(
+									res, err := vmhooks.ManagedVerifyBLSWithHost(
 										host,
 										keysHandle,
 										msgHandle,
 										sigHandle,
-										"verifyBLSAggregatedSignature"))
+										"verifyBLSAggregatedSignature")
+									handleHookError(host, err)
 
 									allErrors := host.Runtime().GetAllErrors()
 									if flagEnabled {
@@ -1238,7 +1241,7 @@ func TestHost_OtherVM_FailedCallDoesNotPoisonOutput(t *testing.T) {
 						host := parentInstance.Host
 
 						resHandle := host.ManagedTypes().NewManagedBuffer()
-						ret, _ := handleHookErr(host)(vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						ret, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							50000,
 							big.NewInt(0),
@@ -1246,7 +1249,8 @@ func TestHost_OtherVM_FailedCallDoesNotPoisonOutput(t *testing.T) {
 							otherVMAddr,
 							nil,
 							resHandle,
-						))
+						)
+						handleHookError(host, err)
 						require.NotEqual(t, int32(0), ret)
 
 						require.Equal(t, vmcommon.Ok, host.Output().ReturnCode())

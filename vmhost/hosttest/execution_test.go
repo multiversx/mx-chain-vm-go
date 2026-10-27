@@ -2150,7 +2150,7 @@ func TestExecution_TransferESDTNFTExecute_RollbackOnFailure(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal, _ := handleHookErr(host)(vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+						returnVal, err := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{},
@@ -2158,7 +2158,8 @@ func TestExecution_TransferESDTNFTExecute_RollbackOnFailure(t *testing.T) {
 							[]byte("childFunction"),
 							[][]byte{},
 							false,
-						))
+						)
+						handleHookError(host, err)
 
 						require.Equal(t, int32(1), returnVal)
 
