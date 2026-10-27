@@ -1,5 +1,10 @@
 package executor
 
+// The adapter is generated, so its conformance is asserted here, next to the one hand-written
+// piece it depends on.
+var _ VMHooksLegacy = (*VMHooksLegacyAdapter)(nil)
+var _ ExecutorRuntime = fixedVMHooksRuntime{}
+
 // fixedVMHooksRuntime is the runtime of a caller that has one hooks object for good, and no
 // instance to speak of.
 //
