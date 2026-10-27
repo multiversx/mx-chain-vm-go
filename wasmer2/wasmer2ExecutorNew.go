@@ -10,6 +10,7 @@ import (
 )
 
 var _ executor.ExecutorNew = (*Wasmer2ExecutorNew)(nil)
+var _ executor.VMHooksLegacy = newInstanceVMHooks(nil, nil)
 
 // Wasmer2ExecutorNew creates Wasmer 2.2 instances through the new interfaces.
 //
@@ -189,7 +190,7 @@ func (wasmerExecutor *Wasmer2ExecutorNew) applyOpcodeConfig(opcodeConfig *execut
 		return nil
 	}
 
-	wasmerExecutor.opcodeCost = opcodeCostOf(opcodeConfig.OpcodeCosts)
+	wasmerExecutor.opcodeCost = extractOpcodeCost(opcodeConfig.OpcodeCosts)
 
 	result := cWasmerExecutorSetOpcodeConfig(
 		wasmerExecutor.cgoExecutor,
@@ -201,18 +202,6 @@ func (wasmerExecutor *Wasmer2ExecutorNew) applyOpcodeConfig(opcodeConfig *execut
 	}
 
 	return nil
-}
-
-// opcodeCostOf narrows the VM's cost table to the opcodes this backend meters.
-//
-// The converter is generated as a method on the legacy executor and ignores its receiver, so
-// it is called through a nil one. Borrowed rather than duplicated or regenerated: the two
-// executors want the identical table, and opcodeCost.go is generated code that this change
-// has no other reason to touch.
-func opcodeCostOf(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {
-	var legacyExecutor *Wasmer2Executor
-
-	return legacyExecutor.extractOpcodeCost(wasmOps)
 }
 
 // FunctionNames returns the low-level function names provided to contracts.

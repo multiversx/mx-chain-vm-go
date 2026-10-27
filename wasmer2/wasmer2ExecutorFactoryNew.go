@@ -6,7 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ = (executor.ExecutorNewAbstractFactory)((*Wasmer2ExecutorFactoryNew)(nil))
+var _ executor.ExecutorNewAbstractFactory = (*Wasmer2ExecutorFactoryNew)(nil)
 
 // Wasmer2ExecutorFactoryNew builds Wasmer 2.2 executors that speak the new interfaces.
 type Wasmer2ExecutorFactoryNew struct{}
