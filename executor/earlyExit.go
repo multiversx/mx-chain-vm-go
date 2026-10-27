@@ -1,13 +1,16 @@
 package executor
 
 import (
+	"errors"
+
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // defaultEarlyExitCode is what an error that does not describe its own early exit means.
 //
-// Named rather than inlined into ExitExecutionFailed, because an executor that learns to
-// report early exits of its own will have to agree with it.
+// Named rather than inlined into ExitExecutionFailed, because EarlyExitCodeOf has to agree
+// with it, and the two are reached by different paths: the VM builds the full exit to apply
+// its side effects, while an executor only ever reads the code.
 const defaultEarlyExitCode = vmcommon.ExecutionFailed
 
 // EarlyExit is an error that describes how execution must be terminated from inside a VM
@@ -58,4 +61,17 @@ func ExitExecutionFailed(err error) *EarlyExit {
 		ConsumeAllGas: true,
 		Cause:         err,
 	}
+}
+
+// EarlyExitCodeOf maps a VM hook's error to the code that travels to the executor.
+//
+// errors.As rather than a type assertion, so the code survives the fmt.Errorf("%w") wrapping
+// that hook helpers do on the way out.
+func EarlyExitCodeOf(err error) uint64 {
+	var earlyExit *EarlyExit
+	if errors.As(err, &earlyExit) {
+		return uint64(earlyExit.Code)
+	}
+
+	return uint64(defaultEarlyExitCode)
 }

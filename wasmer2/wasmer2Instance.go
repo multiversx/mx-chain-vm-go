@@ -223,9 +223,13 @@ func (instance *Wasmer2Instance) HasFunction(functionName string) bool {
 	return result == 1
 }
 
-// GetLastError returns the last error message if any, otherwise returns an error.
-func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
-	var bufferLength = cWasmerInstanceExportedFunctionNamesLength(instance.cgoInstance)
+// exportedFunctionNamesConcat reads the exported function names out of an instance, as the
+// single pipe-separated string the C API produces.
+//
+// Package-level rather than a method, because both instance types ask for it and the two-step
+// buffer protocol is worth having once.
+func exportedFunctionNamesConcat(cgoInstance *cWasmerInstanceT) (string, error) {
+	var bufferLength = cWasmerInstanceExportedFunctionNamesLength(cgoInstance)
 
 	if bufferLength == 0 {
 		return "", nil
@@ -234,7 +238,7 @@ func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
 	var buffer = make([]cChar, bufferLength)
 	var bufferPointer = (*cChar)(unsafe.Pointer(&buffer[0]))
 
-	var result = cWasmerInstanceExportedFunctionNames(instance.cgoInstance, bufferPointer, bufferLength)
+	var result = cWasmerInstanceExportedFunctionNames(cgoInstance, bufferPointer, bufferLength)
 
 	if result == -1 {
 		return "", errors.New("cannot read function names")
@@ -251,13 +255,23 @@ func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
 	return "", nil
 }
 
+// exportedFunctionNames reads the names of the functions an instance exports.
+func exportedFunctionNames(cgoInstance *cWasmerInstanceT) ([]string, error) {
+	concat, err := exportedFunctionNamesConcat(cgoInstance)
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.Split(concat, "|"), nil
+}
+
 // GetFunctionNames returns a list of the function names exported by the contract.
 func (instance *Wasmer2Instance) GetFunctionNames() []string {
-	buffer, err := instance.getFunctionNamesConcat()
+	names, err := exportedFunctionNames(instance.cgoInstance)
 	if err != nil {
 		return nil
 	}
-	return strings.Split(buffer, "|")
+	return names
 }
 
 // ValidateFunctionArities checks that no function (endpoint) of the given contract has any parameters or returns any result.
