@@ -15,26 +15,56 @@ package executor
 // mock contracts, tests - because a contract never sees the error channel either: it is
 // simply stopped.
 //
-// Counterpart of the Rust VMHooksLegacyAdapter, generated from the same metadata.
+// Counterpart of the Rust VMHooksLegacyAdapter, generated from the same metadata and holding
+// what it holds: the host behind the executor, and the state of the one instance these hooks
+// belong to. The hooks themselves are asked for per hook rather than held, which is what
+// makes them serve whichever execution the host has current instead of the one that happened
+// to be current when the instance was created.
+//
+// The error handler is the field Rust does not need, its InstanceState carrying
+// handle_early_exit_legacy instead.
 type VMHooksLegacyAdapter struct {
-	vmHooks      VMHooks
-	errorHandler VMHooksErrorHandler
+	runtime       ExecutorRuntime
+	instanceState InstanceState
+	errorHandler  VMHooksErrorHandler
 }
 
-// NewVMHooksLegacyAdapter wraps VM hooks so that they can be used through VMHooksLegacy.
+// NewVMHooksLegacyAdapter wraps one fixed hooks object so that it can be used through
+// VMHooksLegacy.
+//
+// For a caller that reaches the hooks directly and has no instance: mock contracts and
+// tests, which simulate a contract and so never see the error channel either.
 //
 // The error handler is a separate argument rather than being pulled off vmHooks, so that the
 // two roles stay distinct; in practice one object plays both.
 func NewVMHooksLegacyAdapter(vmHooks VMHooks, errorHandler VMHooksErrorHandler) *VMHooksLegacyAdapter {
+	return NewVMHooksLegacyAdapterForRuntime(
+		fixedVMHooksRuntime{vmHooks: vmHooks},
+		nil,
+		errorHandler)
+}
+
+// NewVMHooksLegacyAdapterForRuntime wraps the hooks of one instance, resolved through the
+// host on every hook.
+//
+// For a backend whose imported functions cannot carry an error. errorHandler is what applies
+// the failure to that instance, since a legacy hook has nowhere to report it.
+func NewVMHooksLegacyAdapterForRuntime(
+	runtime ExecutorRuntime,
+	instanceState InstanceState,
+	errorHandler VMHooksErrorHandler,
+) *VMHooksLegacyAdapter {
 	return &VMHooksLegacyAdapter{
-		vmHooks:      vmHooks,
-		errorHandler: errorHandler,
+		runtime:       runtime,
+		instanceState: instanceState,
+		errorHandler:  errorHandler,
 	}
 }
 
 // GetGasLeft VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetGasLeft() int64 {
-	result, err := adapter.vmHooks.GetGasLeft()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetGasLeft()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -43,7 +73,8 @@ func (adapter *VMHooksLegacyAdapter) GetGasLeft() int64 {
 
 // GetSCAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetSCAddress(resultOffset MemPtr) {
-	err := adapter.vmHooks.GetSCAddress(resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetSCAddress(resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -51,7 +82,8 @@ func (adapter *VMHooksLegacyAdapter) GetSCAddress(resultOffset MemPtr) {
 
 // GetOwnerAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetOwnerAddress(resultOffset MemPtr) {
-	err := adapter.vmHooks.GetOwnerAddress(resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetOwnerAddress(resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -59,7 +91,8 @@ func (adapter *VMHooksLegacyAdapter) GetOwnerAddress(resultOffset MemPtr) {
 
 // GetShardOfAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetShardOfAddress(addressOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetShardOfAddress(addressOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetShardOfAddress(addressOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -68,7 +101,8 @@ func (adapter *VMHooksLegacyAdapter) GetShardOfAddress(addressOffset MemPtr) int
 
 // IsSmartContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) IsSmartContract(addressOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.IsSmartContract(addressOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.IsSmartContract(addressOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -77,7 +111,8 @@ func (adapter *VMHooksLegacyAdapter) IsSmartContract(addressOffset MemPtr) int32
 
 // SignalError VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SignalError(messageOffset MemPtr, messageLength MemLength) {
-	err := adapter.vmHooks.SignalError(messageOffset, messageLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.SignalError(messageOffset, messageLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -85,7 +120,8 @@ func (adapter *VMHooksLegacyAdapter) SignalError(messageOffset MemPtr, messageLe
 
 // GetExternalBalance VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetExternalBalance(addressOffset MemPtr, resultOffset MemPtr) {
-	err := adapter.vmHooks.GetExternalBalance(addressOffset, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetExternalBalance(addressOffset, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -93,7 +129,8 @@ func (adapter *VMHooksLegacyAdapter) GetExternalBalance(addressOffset MemPtr, re
 
 // GetBlockHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockHash(nonce int64, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetBlockHash(nonce, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockHash(nonce, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -102,7 +139,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockHash(nonce int64, resultOffset MemP
 
 // GetESDTBalance VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -111,7 +149,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTBalance(addressOffset MemPtr, tokenI
 
 // GetESDTNFTNameLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTNFTNameLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32 {
-	result, err := adapter.vmHooks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -120,7 +159,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTNFTNameLength(addressOffset MemPtr, 
 
 // GetESDTNFTAttributeLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTNFTAttributeLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32 {
-	result, err := adapter.vmHooks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -129,7 +169,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTNFTAttributeLength(addressOffset Mem
 
 // GetESDTNFTURILength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTNFTURILength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32 {
-	result, err := adapter.vmHooks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -138,7 +179,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTNFTURILength(addressOffset MemPtr, t
 
 // GetESDTTokenData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenData(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, valueHandle int32, propertiesOffset MemPtr, hashOffset MemPtr, nameOffset MemPtr, attributesOffset MemPtr, creatorOffset MemPtr, royaltiesHandle int32, urisOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -147,7 +189,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenData(addressOffset MemPtr, toke
 
 // GetESDTLocalRoles VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTLocalRoles(tokenIdHandle int32) int64 {
-	result, err := adapter.vmHooks.GetESDTLocalRoles(tokenIdHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTLocalRoles(tokenIdHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -156,7 +199,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTLocalRoles(tokenIdHandle int32) int6
 
 // ValidateTokenIdentifier VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ValidateTokenIdentifier(tokenIdHandle int32) int32 {
-	result, err := adapter.vmHooks.ValidateTokenIdentifier(tokenIdHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ValidateTokenIdentifier(tokenIdHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -165,7 +209,8 @@ func (adapter *VMHooksLegacyAdapter) ValidateTokenIdentifier(tokenIdHandle int32
 
 // TransferValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) TransferValue(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength) int32 {
-	result, err := adapter.vmHooks.TransferValue(destOffset, valueOffset, dataOffset, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.TransferValue(destOffset, valueOffset, dataOffset, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -174,7 +219,8 @@ func (adapter *VMHooksLegacyAdapter) TransferValue(destOffset MemPtr, valueOffse
 
 // TransferValueExecute VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) TransferValueExecute(destOffset MemPtr, valueOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -183,7 +229,8 @@ func (adapter *VMHooksLegacyAdapter) TransferValueExecute(destOffset MemPtr, val
 
 // TransferESDTExecute VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) TransferESDTExecute(destOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, valueOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -192,7 +239,8 @@ func (adapter *VMHooksLegacyAdapter) TransferESDTExecute(destOffset MemPtr, toke
 
 // TransferESDTNFTExecute VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) TransferESDTNFTExecute(destOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, valueOffset MemPtr, nonce int64, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -201,7 +249,8 @@ func (adapter *VMHooksLegacyAdapter) TransferESDTNFTExecute(destOffset MemPtr, t
 
 // MultiTransferESDTNFTExecute VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MultiTransferESDTNFTExecute(destOffset MemPtr, numTokenTransfers int32, tokenTransfersArgsLengthOffset MemPtr, tokenTransferDataOffset MemPtr, gasLimit int64, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -210,7 +259,8 @@ func (adapter *VMHooksLegacyAdapter) MultiTransferESDTNFTExecute(destOffset MemP
 
 // CreateAsyncCall VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) CreateAsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, dataLength MemLength, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64) int32 {
-	result, err := adapter.vmHooks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -219,7 +269,8 @@ func (adapter *VMHooksLegacyAdapter) CreateAsyncCall(destOffset MemPtr, valueOff
 
 // SetAsyncContextCallback VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SetAsyncContextCallback(callback MemPtr, callbackLength MemLength, data MemPtr, dataLength MemLength, gas int64) int32 {
-	result, err := adapter.vmHooks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -228,7 +279,8 @@ func (adapter *VMHooksLegacyAdapter) SetAsyncContextCallback(callback MemPtr, ca
 
 // UpgradeContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) UpgradeContract(destOffset MemPtr, gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) {
-	err := adapter.vmHooks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -236,7 +288,8 @@ func (adapter *VMHooksLegacyAdapter) UpgradeContract(destOffset MemPtr, gasLimit
 
 // UpgradeFromSourceContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) UpgradeFromSourceContract(destOffset MemPtr, gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) {
-	err := adapter.vmHooks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -244,7 +297,8 @@ func (adapter *VMHooksLegacyAdapter) UpgradeFromSourceContract(destOffset MemPtr
 
 // DeleteContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) DeleteContract(destOffset MemPtr, gasLimit int64, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) {
-	err := adapter.vmHooks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -252,7 +306,8 @@ func (adapter *VMHooksLegacyAdapter) DeleteContract(destOffset MemPtr, gasLimit 
 
 // AsyncCall VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) AsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength) {
-	err := adapter.vmHooks.AsyncCall(destOffset, valueOffset, dataOffset, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.AsyncCall(destOffset, valueOffset, dataOffset, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -260,7 +315,8 @@ func (adapter *VMHooksLegacyAdapter) AsyncCall(destOffset MemPtr, valueOffset Me
 
 // GetArgumentLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetArgumentLength(id int32) int32 {
-	result, err := adapter.vmHooks.GetArgumentLength(id)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetArgumentLength(id)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -269,7 +325,8 @@ func (adapter *VMHooksLegacyAdapter) GetArgumentLength(id int32) int32 {
 
 // GetArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetArgument(id int32, argOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetArgument(id, argOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetArgument(id, argOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -278,7 +335,8 @@ func (adapter *VMHooksLegacyAdapter) GetArgument(id int32, argOffset MemPtr) int
 
 // GetFunction VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetFunction(functionOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetFunction(functionOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetFunction(functionOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -287,7 +345,8 @@ func (adapter *VMHooksLegacyAdapter) GetFunction(functionOffset MemPtr) int32 {
 
 // GetNumArguments VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetNumArguments() int32 {
-	result, err := adapter.vmHooks.GetNumArguments()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetNumArguments()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -296,7 +355,8 @@ func (adapter *VMHooksLegacyAdapter) GetNumArguments() int32 {
 
 // StorageStore VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) StorageStore(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr, dataLength MemLength) int32 {
-	result, err := adapter.vmHooks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -305,7 +365,8 @@ func (adapter *VMHooksLegacyAdapter) StorageStore(keyOffset MemPtr, keyLength Me
 
 // StorageLoadLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) StorageLoadLength(keyOffset MemPtr, keyLength MemLength) int32 {
-	result, err := adapter.vmHooks.StorageLoadLength(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.StorageLoadLength(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -314,7 +375,8 @@ func (adapter *VMHooksLegacyAdapter) StorageLoadLength(keyOffset MemPtr, keyLeng
 
 // StorageLoadFromAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) StorageLoadFromAddress(addressOffset MemPtr, keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -323,7 +385,8 @@ func (adapter *VMHooksLegacyAdapter) StorageLoadFromAddress(addressOffset MemPtr
 
 // StorageLoad VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) StorageLoad(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.StorageLoad(keyOffset, keyLength, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.StorageLoad(keyOffset, keyLength, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -332,7 +395,8 @@ func (adapter *VMHooksLegacyAdapter) StorageLoad(keyOffset MemPtr, keyLength Mem
 
 // SetStorageLock VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SetStorageLock(keyOffset MemPtr, keyLength MemLength, lockTimestamp int64) int32 {
-	result, err := adapter.vmHooks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -341,7 +405,8 @@ func (adapter *VMHooksLegacyAdapter) SetStorageLock(keyOffset MemPtr, keyLength 
 
 // GetStorageLock VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetStorageLock(keyOffset MemPtr, keyLength MemLength) int64 {
-	result, err := adapter.vmHooks.GetStorageLock(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetStorageLock(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -350,7 +415,8 @@ func (adapter *VMHooksLegacyAdapter) GetStorageLock(keyOffset MemPtr, keyLength 
 
 // IsStorageLocked VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) IsStorageLocked(keyOffset MemPtr, keyLength MemLength) int32 {
-	result, err := adapter.vmHooks.IsStorageLocked(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.IsStorageLocked(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -359,7 +425,8 @@ func (adapter *VMHooksLegacyAdapter) IsStorageLocked(keyOffset MemPtr, keyLength
 
 // ClearStorageLock VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ClearStorageLock(keyOffset MemPtr, keyLength MemLength) int32 {
-	result, err := adapter.vmHooks.ClearStorageLock(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ClearStorageLock(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -368,7 +435,8 @@ func (adapter *VMHooksLegacyAdapter) ClearStorageLock(keyOffset MemPtr, keyLengt
 
 // GetCaller VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCaller(resultOffset MemPtr) {
-	err := adapter.vmHooks.GetCaller(resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetCaller(resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -376,7 +444,8 @@ func (adapter *VMHooksLegacyAdapter) GetCaller(resultOffset MemPtr) {
 
 // CheckNoPayment VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) CheckNoPayment() {
-	err := adapter.vmHooks.CheckNoPayment()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.CheckNoPayment()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -384,7 +453,8 @@ func (adapter *VMHooksLegacyAdapter) CheckNoPayment() {
 
 // GetCallValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCallValue(resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetCallValue(resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetCallValue(resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -393,7 +463,8 @@ func (adapter *VMHooksLegacyAdapter) GetCallValue(resultOffset MemPtr) int32 {
 
 // GetESDTValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTValue(resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetESDTValue(resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTValue(resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -402,7 +473,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTValue(resultOffset MemPtr) int32 {
 
 // GetESDTValueByIndex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTValueByIndex(resultOffset MemPtr, index int32) int32 {
-	result, err := adapter.vmHooks.GetESDTValueByIndex(resultOffset, index)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTValueByIndex(resultOffset, index)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -411,7 +483,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTValueByIndex(resultOffset MemPtr, in
 
 // GetESDTTokenName VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenName(resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetESDTTokenName(resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenName(resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -420,7 +493,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenName(resultOffset MemPtr) int32
 
 // GetESDTTokenNameByIndex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenNameByIndex(resultOffset MemPtr, index int32) int32 {
-	result, err := adapter.vmHooks.GetESDTTokenNameByIndex(resultOffset, index)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenNameByIndex(resultOffset, index)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -429,7 +503,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenNameByIndex(resultOffset MemPtr
 
 // GetESDTTokenNonce VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenNonce() int64 {
-	result, err := adapter.vmHooks.GetESDTTokenNonce()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenNonce()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -438,7 +513,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenNonce() int64 {
 
 // GetESDTTokenNonceByIndex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenNonceByIndex(index int32) int64 {
-	result, err := adapter.vmHooks.GetESDTTokenNonceByIndex(index)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenNonceByIndex(index)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -447,7 +523,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenNonceByIndex(index int32) int64
 
 // GetCurrentESDTNFTNonce VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCurrentESDTNFTNonce(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength) int64 {
-	result, err := adapter.vmHooks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -456,7 +533,8 @@ func (adapter *VMHooksLegacyAdapter) GetCurrentESDTNFTNonce(addressOffset MemPtr
 
 // GetESDTTokenType VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenType() int32 {
-	result, err := adapter.vmHooks.GetESDTTokenType()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenType()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -465,7 +543,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenType() int32 {
 
 // GetESDTTokenTypeByIndex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetESDTTokenTypeByIndex(index int32) int32 {
-	result, err := adapter.vmHooks.GetESDTTokenTypeByIndex(index)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetESDTTokenTypeByIndex(index)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -474,7 +553,8 @@ func (adapter *VMHooksLegacyAdapter) GetESDTTokenTypeByIndex(index int32) int32 
 
 // GetNumESDTTransfers VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetNumESDTTransfers() int32 {
-	result, err := adapter.vmHooks.GetNumESDTTransfers()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetNumESDTTransfers()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -483,7 +563,8 @@ func (adapter *VMHooksLegacyAdapter) GetNumESDTTransfers() int32 {
 
 // GetCallValueTokenName VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCallValueTokenName(callValueOffset MemPtr, tokenNameOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -492,7 +573,8 @@ func (adapter *VMHooksLegacyAdapter) GetCallValueTokenName(callValueOffset MemPt
 
 // GetCallValueTokenNameByIndex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCallValueTokenNameByIndex(callValueOffset MemPtr, tokenNameOffset MemPtr, index int32) int32 {
-	result, err := adapter.vmHooks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -501,7 +583,8 @@ func (adapter *VMHooksLegacyAdapter) GetCallValueTokenNameByIndex(callValueOffse
 
 // IsReservedFunctionName VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) IsReservedFunctionName(nameHandle int32) int32 {
-	result, err := adapter.vmHooks.IsReservedFunctionName(nameHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.IsReservedFunctionName(nameHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -510,7 +593,8 @@ func (adapter *VMHooksLegacyAdapter) IsReservedFunctionName(nameHandle int32) in
 
 // WriteLog VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32) {
-	err := adapter.vmHooks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -518,7 +602,8 @@ func (adapter *VMHooksLegacyAdapter) WriteLog(dataPointer MemPtr, dataLength Mem
 
 // WriteEventLog VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength) {
-	err := adapter.vmHooks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -526,7 +611,8 @@ func (adapter *VMHooksLegacyAdapter) WriteEventLog(numTopics int32, topicLengths
 
 // GetBlockTimestamp VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockTimestamp() int64 {
-	result, err := adapter.vmHooks.GetBlockTimestamp()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockTimestamp()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -535,7 +621,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockTimestamp() int64 {
 
 // GetBlockTimestampMs VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockTimestampMs() int64 {
-	result, err := adapter.vmHooks.GetBlockTimestampMs()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockTimestampMs()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -544,7 +631,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockTimestampMs() int64 {
 
 // GetBlockNonce VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockNonce() int64 {
-	result, err := adapter.vmHooks.GetBlockNonce()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockNonce()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -553,7 +641,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockNonce() int64 {
 
 // GetBlockRound VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockRound() int64 {
-	result, err := adapter.vmHooks.GetBlockRound()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockRound()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -562,7 +651,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockRound() int64 {
 
 // GetBlockEpoch VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockEpoch() int64 {
-	result, err := adapter.vmHooks.GetBlockEpoch()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockEpoch()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -571,7 +661,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockEpoch() int64 {
 
 // GetBlockRandomSeed VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockRandomSeed(pointer MemPtr) {
-	err := adapter.vmHooks.GetBlockRandomSeed(pointer)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetBlockRandomSeed(pointer)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -579,7 +670,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockRandomSeed(pointer MemPtr) {
 
 // GetStateRootHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetStateRootHash(pointer MemPtr) {
-	err := adapter.vmHooks.GetStateRootHash(pointer)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetStateRootHash(pointer)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -587,7 +679,8 @@ func (adapter *VMHooksLegacyAdapter) GetStateRootHash(pointer MemPtr) {
 
 // GetPrevBlockTimestamp VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevBlockTimestamp() int64 {
-	result, err := adapter.vmHooks.GetPrevBlockTimestamp()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetPrevBlockTimestamp()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -596,7 +689,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevBlockTimestamp() int64 {
 
 // GetPrevBlockTimestampMs VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevBlockTimestampMs() int64 {
-	result, err := adapter.vmHooks.GetPrevBlockTimestampMs()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetPrevBlockTimestampMs()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -605,7 +699,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevBlockTimestampMs() int64 {
 
 // GetPrevBlockNonce VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevBlockNonce() int64 {
-	result, err := adapter.vmHooks.GetPrevBlockNonce()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetPrevBlockNonce()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -614,7 +709,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevBlockNonce() int64 {
 
 // GetPrevBlockRound VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevBlockRound() int64 {
-	result, err := adapter.vmHooks.GetPrevBlockRound()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetPrevBlockRound()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -623,7 +719,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevBlockRound() int64 {
 
 // GetPrevBlockEpoch VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevBlockEpoch() int64 {
-	result, err := adapter.vmHooks.GetPrevBlockEpoch()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetPrevBlockEpoch()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -632,7 +729,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevBlockEpoch() int64 {
 
 // GetPrevBlockRandomSeed VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevBlockRandomSeed(pointer MemPtr) {
-	err := adapter.vmHooks.GetPrevBlockRandomSeed(pointer)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetPrevBlockRandomSeed(pointer)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -640,7 +738,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevBlockRandomSeed(pointer MemPtr) {
 
 // GetBlockRoundTimeMs VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetBlockRoundTimeMs() int64 {
-	result, err := adapter.vmHooks.GetBlockRoundTimeMs()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetBlockRoundTimeMs()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -649,7 +748,8 @@ func (adapter *VMHooksLegacyAdapter) GetBlockRoundTimeMs() int64 {
 
 // EpochStartBlockTimestampMs VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) EpochStartBlockTimestampMs() int64 {
-	result, err := adapter.vmHooks.EpochStartBlockTimestampMs()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.EpochStartBlockTimestampMs()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -658,7 +758,8 @@ func (adapter *VMHooksLegacyAdapter) EpochStartBlockTimestampMs() int64 {
 
 // EpochStartBlockNonce VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) EpochStartBlockNonce() int64 {
-	result, err := adapter.vmHooks.EpochStartBlockNonce()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.EpochStartBlockNonce()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -667,7 +768,8 @@ func (adapter *VMHooksLegacyAdapter) EpochStartBlockNonce() int64 {
 
 // EpochStartBlockRound VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) EpochStartBlockRound() int64 {
-	result, err := adapter.vmHooks.EpochStartBlockRound()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.EpochStartBlockRound()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -676,7 +778,8 @@ func (adapter *VMHooksLegacyAdapter) EpochStartBlockRound() int64 {
 
 // Finish VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Finish(pointer MemPtr, length MemLength) {
-	err := adapter.vmHooks.Finish(pointer, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.Finish(pointer, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -684,7 +787,8 @@ func (adapter *VMHooksLegacyAdapter) Finish(pointer MemPtr, length MemLength) {
 
 // ExecuteOnSameContext VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ExecuteOnSameContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -693,7 +797,8 @@ func (adapter *VMHooksLegacyAdapter) ExecuteOnSameContext(gasLimit int64, addres
 
 // ExecuteOnDestContext VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ExecuteOnDestContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -702,7 +807,8 @@ func (adapter *VMHooksLegacyAdapter) ExecuteOnDestContext(gasLimit int64, addres
 
 // ExecuteReadOnly VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ExecuteReadOnly(gasLimit int64, addressOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -711,7 +817,8 @@ func (adapter *VMHooksLegacyAdapter) ExecuteReadOnly(gasLimit int64, addressOffs
 
 // CreateContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) CreateContract(gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, resultOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -720,7 +827,8 @@ func (adapter *VMHooksLegacyAdapter) CreateContract(gasLimit int64, valueOffset 
 
 // DeployFromSourceContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) DeployFromSourceContract(gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, resultAddressOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -729,7 +837,8 @@ func (adapter *VMHooksLegacyAdapter) DeployFromSourceContract(gasLimit int64, va
 
 // GetNumReturnData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetNumReturnData() int32 {
-	result, err := adapter.vmHooks.GetNumReturnData()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetNumReturnData()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -738,7 +847,8 @@ func (adapter *VMHooksLegacyAdapter) GetNumReturnData() int32 {
 
 // GetReturnDataSize VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetReturnDataSize(resultID int32) int32 {
-	result, err := adapter.vmHooks.GetReturnDataSize(resultID)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetReturnDataSize(resultID)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -747,7 +857,8 @@ func (adapter *VMHooksLegacyAdapter) GetReturnDataSize(resultID int32) int32 {
 
 // GetReturnData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetReturnData(resultID int32, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GetReturnData(resultID, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetReturnData(resultID, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -756,7 +867,8 @@ func (adapter *VMHooksLegacyAdapter) GetReturnData(resultID int32, dataOffset Me
 
 // CleanReturnData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) CleanReturnData() {
-	err := adapter.vmHooks.CleanReturnData()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.CleanReturnData()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -764,7 +876,8 @@ func (adapter *VMHooksLegacyAdapter) CleanReturnData() {
 
 // DeleteFromReturnData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) DeleteFromReturnData(resultID int32) {
-	err := adapter.vmHooks.DeleteFromReturnData(resultID)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.DeleteFromReturnData(resultID)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -772,7 +885,8 @@ func (adapter *VMHooksLegacyAdapter) DeleteFromReturnData(resultID int32) {
 
 // GetOriginalTxHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetOriginalTxHash(dataOffset MemPtr) {
-	err := adapter.vmHooks.GetOriginalTxHash(dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetOriginalTxHash(dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -780,7 +894,8 @@ func (adapter *VMHooksLegacyAdapter) GetOriginalTxHash(dataOffset MemPtr) {
 
 // GetCurrentTxHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCurrentTxHash(dataOffset MemPtr) {
-	err := adapter.vmHooks.GetCurrentTxHash(dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetCurrentTxHash(dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -788,7 +903,8 @@ func (adapter *VMHooksLegacyAdapter) GetCurrentTxHash(dataOffset MemPtr) {
 
 // GetPrevTxHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrevTxHash(dataOffset MemPtr) {
-	err := adapter.vmHooks.GetPrevTxHash(dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.GetPrevTxHash(dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -796,7 +912,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrevTxHash(dataOffset MemPtr) {
 
 // ManagedSCAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedSCAddress(destinationHandle int32) {
-	err := adapter.vmHooks.ManagedSCAddress(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedSCAddress(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -804,7 +921,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedSCAddress(destinationHandle int32) {
 
 // ManagedOwnerAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedOwnerAddress(destinationHandle int32) {
-	err := adapter.vmHooks.ManagedOwnerAddress(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedOwnerAddress(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -812,7 +930,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedOwnerAddress(destinationHandle int32
 
 // ManagedCaller VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedCaller(destinationHandle int32) {
-	err := adapter.vmHooks.ManagedCaller(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedCaller(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -820,7 +939,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedCaller(destinationHandle int32) {
 
 // ManagedGetOriginalCallerAddr VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetOriginalCallerAddr(destinationHandle int32) {
-	err := adapter.vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetOriginalCallerAddr(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -828,7 +948,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetOriginalCallerAddr(destinationHan
 
 // ManagedGetRelayerAddr VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetRelayerAddr(destinationHandle int32) {
-	err := adapter.vmHooks.ManagedGetRelayerAddr(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetRelayerAddr(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -836,7 +957,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetRelayerAddr(destinationHandle int
 
 // ManagedSignalError VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedSignalError(errHandle int32) {
-	err := adapter.vmHooks.ManagedSignalError(errHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedSignalError(errHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -844,7 +966,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedSignalError(errHandle int32) {
 
 // ManagedWriteLog VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedWriteLog(topicsHandle int32, dataHandle int32) {
-	err := adapter.vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -852,7 +975,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedWriteLog(topicsHandle int32, dataHan
 
 // ManagedGetOriginalTxHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetOriginalTxHash(resultHandle int32) {
-	err := adapter.vmHooks.ManagedGetOriginalTxHash(resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetOriginalTxHash(resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -860,7 +984,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetOriginalTxHash(resultHandle int32
 
 // ManagedGetStateRootHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetStateRootHash(resultHandle int32) {
-	err := adapter.vmHooks.ManagedGetStateRootHash(resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetStateRootHash(resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -868,7 +993,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetStateRootHash(resultHandle int32)
 
 // ManagedGetBlockRandomSeed VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetBlockRandomSeed(resultHandle int32) {
-	err := adapter.vmHooks.ManagedGetBlockRandomSeed(resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetBlockRandomSeed(resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -876,7 +1002,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetBlockRandomSeed(resultHandle int3
 
 // ManagedGetPrevBlockRandomSeed VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
-	err := adapter.vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -884,7 +1011,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetPrevBlockRandomSeed(resultHandle 
 
 // ManagedGetReturnData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetReturnData(resultID int32, resultHandle int32) {
-	err := adapter.vmHooks.ManagedGetReturnData(resultID, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetReturnData(resultID, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -892,7 +1020,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetReturnData(resultID int32, result
 
 // ManagedGetMultiESDTCallValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) {
-	err := adapter.vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -900,7 +1029,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetMultiESDTCallValue(multiCallValue
 
 // ManagedGetAllTransfersCallValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetAllTransfersCallValue(transferCallValuesListHandle int32) {
-	err := adapter.vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetAllTransfersCallValue(transferCallValuesListHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -908,7 +1038,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetAllTransfersCallValue(transferCal
 
 // ManagedGetBackTransfers VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetBackTransfers(esdtTransfersValueHandle int32, egldValueHandle int32) {
-	err := adapter.vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetBackTransfers(esdtTransfersValueHandle, egldValueHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -916,7 +1047,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetBackTransfers(esdtTransfersValueH
 
 // ManagedGetESDTBalance VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
-	err := adapter.vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -924,7 +1056,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetESDTBalance(addressHandle int32, 
 
 // ManagedGetESDTTokenData VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetESDTTokenData(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
-	err := adapter.vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -932,7 +1065,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetESDTTokenData(addressHandle int32
 
 // ManagedGetESDTTokenType VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetESDTTokenType(addressHandle int32, tokenIDHandle int32, nonce int64, typeHandle int32) {
-	err := adapter.vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetESDTTokenType(addressHandle, tokenIDHandle, nonce, typeHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -940,7 +1074,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetESDTTokenType(addressHandle int32
 
 // ManagedAsyncCall VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
-	err := adapter.vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -948,7 +1083,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedAsyncCall(destHandle int32, valueHan
 
 // ManagedCreateAsyncCall VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedCreateAsyncCall(destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset MemPtr, successLength MemLength, errorOffset MemPtr, errorLength MemLength, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -957,7 +1093,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedCreateAsyncCall(destHandle int32, va
 
 // ManagedGetCallbackClosure VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetCallbackClosure(callbackClosureHandle int32) {
-	err := adapter.vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -965,7 +1102,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetCallbackClosure(callbackClosureHa
 
 // ManagedUpgradeFromSourceContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedUpgradeFromSourceContract(destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
-	err := adapter.vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -973,7 +1111,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedUpgradeFromSourceContract(destHandle
 
 // ManagedUpgradeContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedUpgradeContract(destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
-	err := adapter.vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -981,7 +1120,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedUpgradeContract(destHandle int32, ga
 
 // ManagedDeleteContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedDeleteContract(destHandle int32, gasLimit int64, argumentsHandle int32) {
-	err := adapter.vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -989,7 +1129,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedDeleteContract(destHandle int32, gas
 
 // ManagedDeployFromSourceContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedDeployFromSourceContract(gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -998,7 +1139,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedDeployFromSourceContract(gas int64, 
 
 // ManagedCreateContract VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedCreateContract(gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1007,7 +1149,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedCreateContract(gas int64, valueHandl
 
 // ManagedExecuteReadOnly VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedExecuteReadOnly(gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1016,7 +1159,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedExecuteReadOnly(gas int64, addressHa
 
 // ManagedExecuteOnSameContext VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedExecuteOnSameContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1025,7 +1169,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedExecuteOnSameContext(gas int64, addr
 
 // ManagedExecuteOnDestContext VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedExecuteOnDestContext(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1034,7 +1179,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedExecuteOnDestContext(gas int64, addr
 
 // ManagedExecuteOnDestContextWithErrorReturn VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedExecuteOnDestContextWithErrorReturn(gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedExecuteOnDestContextWithErrorReturn(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1043,7 +1189,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedExecuteOnDestContextWithErrorReturn(
 
 // ManagedMultiTransferESDTNFTExecute VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMultiTransferESDTNFTExecute(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1052,7 +1199,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMultiTransferESDTNFTExecute(dstHandl
 
 // ManagedMultiTransferESDTNFTExecuteWithReturn VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteWithReturn(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1061,7 +1209,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMultiTransferESDTNFTExecuteWithRetur
 
 // ManagedMultiTransferESDTNFTExecuteByUser VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMultiTransferESDTNFTExecuteByUser(userHandle int32, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMultiTransferESDTNFTExecuteByUser(userHandle, dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1070,7 +1219,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMultiTransferESDTNFTExecuteByUser(us
 
 // ManagedTransferValueExecute VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedTransferValueExecute(dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1079,7 +1229,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedTransferValueExecute(dstHandle int32
 
 // ManagedIsESDTFrozen VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedIsESDTFrozen(addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
-	result, err := adapter.vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1088,7 +1239,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedIsESDTFrozen(addressHandle int32, to
 
 // ManagedIsESDTLimitedTransfer VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1097,7 +1249,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedIsESDTLimitedTransfer(tokenIDHandle 
 
 // ManagedIsESDTPaused VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedIsESDTPaused(tokenIDHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedIsESDTPaused(tokenIDHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1106,7 +1259,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedIsESDTPaused(tokenIDHandle int32) in
 
 // ManagedBufferToHex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedBufferToHex(sourceHandle int32, destHandle int32) {
-	err := adapter.vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1114,7 +1268,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedBufferToHex(sourceHandle int32, dest
 
 // ManagedGetCodeMetadata VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetCodeMetadata(addressHandle int32, responseHandle int32) {
-	err := adapter.vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetCodeMetadata(addressHandle, responseHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1122,7 +1277,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetCodeMetadata(addressHandle int32,
 
 // ManagedGetCodeHash VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGetCodeHash(addressHandle int32, codeHashHandle int32) {
-	err := adapter.vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.ManagedGetCodeHash(addressHandle, codeHashHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1130,7 +1286,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGetCodeHash(addressHandle int32, cod
 
 // ManagedIsBuiltinFunction VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedIsBuiltinFunction(functionNameHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedIsBuiltinFunction(functionNameHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1139,7 +1296,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedIsBuiltinFunction(functionNameHandle
 
 // BigFloatNewFromParts VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32 {
-	result, err := adapter.vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1148,7 +1306,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatNewFromParts(integralPart int32, fr
 
 // BigFloatNewFromFrac VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatNewFromFrac(numerator int64, denominator int64) int32 {
-	result, err := adapter.vmHooks.BigFloatNewFromFrac(numerator, denominator)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigFloatNewFromFrac(numerator, denominator)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1157,7 +1316,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatNewFromFrac(numerator int64, denomi
 
 // BigFloatNewFromSci VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatNewFromSci(significand int64, exponent int64) int32 {
-	result, err := adapter.vmHooks.BigFloatNewFromSci(significand, exponent)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigFloatNewFromSci(significand, exponent)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1166,7 +1326,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatNewFromSci(significand int64, expon
 
 // BigFloatAdd VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1174,7 +1335,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatAdd(destinationHandle int32, op1Han
 
 // BigFloatSub VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1182,7 +1344,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatSub(destinationHandle int32, op1Han
 
 // BigFloatMul VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1190,7 +1353,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatMul(destinationHandle int32, op1Han
 
 // BigFloatDiv VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1198,7 +1362,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatDiv(destinationHandle int32, op1Han
 
 // BigFloatNeg VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatNeg(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatNeg(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatNeg(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1206,7 +1371,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatNeg(destinationHandle int32, opHand
 
 // BigFloatClone VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatClone(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatClone(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatClone(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1214,7 +1380,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatClone(destinationHandle int32, opHa
 
 // BigFloatCmp VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatCmp(op1Handle int32, op2Handle int32) int32 {
-	result, err := adapter.vmHooks.BigFloatCmp(op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigFloatCmp(op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1223,7 +1390,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatCmp(op1Handle int32, op2Handle int3
 
 // BigFloatAbs VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatAbs(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatAbs(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatAbs(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1231,7 +1399,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatAbs(destinationHandle int32, opHand
 
 // BigFloatSign VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatSign(opHandle int32) int32 {
-	result, err := adapter.vmHooks.BigFloatSign(opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigFloatSign(opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1240,7 +1409,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatSign(opHandle int32) int32 {
 
 // BigFloatSqrt VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatSqrt(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatSqrt(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatSqrt(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1248,7 +1418,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatSqrt(destinationHandle int32, opHan
 
 // BigFloatPow VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatPow(destinationHandle int32, opHandle int32, exponent int32) {
-	err := adapter.vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1256,7 +1427,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatPow(destinationHandle int32, opHand
 
 // BigFloatFloor VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatFloor(destBigIntHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1264,7 +1436,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatFloor(destBigIntHandle int32, opHan
 
 // BigFloatCeil VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatCeil(destBigIntHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1272,7 +1445,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatCeil(destBigIntHandle int32, opHand
 
 // BigFloatTruncate VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatTruncate(destBigIntHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1280,7 +1454,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatTruncate(destBigIntHandle int32, op
 
 // BigFloatSetInt64 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatSetInt64(destinationHandle int32, value int64) {
-	err := adapter.vmHooks.BigFloatSetInt64(destinationHandle, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatSetInt64(destinationHandle, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1288,7 +1463,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatSetInt64(destinationHandle int32, v
 
 // BigFloatIsInt VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatIsInt(opHandle int32) int32 {
-	result, err := adapter.vmHooks.BigFloatIsInt(opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigFloatIsInt(opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1297,7 +1473,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatIsInt(opHandle int32) int32 {
 
 // BigFloatSetBigInt VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32) {
-	err := adapter.vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1305,7 +1482,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatSetBigInt(destinationHandle int32, 
 
 // BigFloatGetConstPi VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatGetConstPi(destinationHandle int32) {
-	err := adapter.vmHooks.BigFloatGetConstPi(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatGetConstPi(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1313,7 +1491,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatGetConstPi(destinationHandle int32)
 
 // BigFloatGetConstE VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigFloatGetConstE(destinationHandle int32) {
-	err := adapter.vmHooks.BigFloatGetConstE(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigFloatGetConstE(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1321,7 +1500,8 @@ func (adapter *VMHooksLegacyAdapter) BigFloatGetConstE(destinationHandle int32) 
 
 // BigIntGetUnsignedArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetUnsignedArgument(id int32, destinationHandle int32) {
-	err := adapter.vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1329,7 +1509,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetUnsignedArgument(id int32, destina
 
 // BigIntGetSignedArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetSignedArgument(id int32, destinationHandle int32) {
-	err := adapter.vmHooks.BigIntGetSignedArgument(id, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetSignedArgument(id, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1337,7 +1518,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetSignedArgument(id int32, destinati
 
 // BigIntStorageStoreUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, sourceHandle int32) int32 {
-	result, err := adapter.vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1346,7 +1528,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntStorageStoreUnsigned(keyOffset MemPtr
 
 // BigIntStorageLoadUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength, destinationHandle int32) int32 {
-	result, err := adapter.vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1355,7 +1538,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntStorageLoadUnsigned(keyOffset MemPtr,
 
 // BigIntGetCallValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetCallValue(destinationHandle int32) {
-	err := adapter.vmHooks.BigIntGetCallValue(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetCallValue(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1363,7 +1547,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetCallValue(destinationHandle int32)
 
 // BigIntGetESDTCallValue VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetESDTCallValue(destination int32) {
-	err := adapter.vmHooks.BigIntGetESDTCallValue(destination)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetESDTCallValue(destination)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1371,7 +1556,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetESDTCallValue(destination int32) {
 
 // BigIntGetESDTCallValueByIndex VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) {
-	err := adapter.vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1379,7 +1565,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetESDTCallValueByIndex(destinationHa
 
 // BigIntGetExternalBalance VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetExternalBalance(addressOffset MemPtr, result int32) {
-	err := adapter.vmHooks.BigIntGetExternalBalance(addressOffset, result)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetExternalBalance(addressOffset, result)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1387,7 +1574,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetExternalBalance(addressOffset MemP
 
 // BigIntGetESDTExternalBalance VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetESDTExternalBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultHandle int32) {
-	err := adapter.vmHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1395,7 +1583,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetESDTExternalBalance(addressOffset 
 
 // BigIntNew VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntNew(smallValue int64) int32 {
-	result, err := adapter.vmHooks.BigIntNew(smallValue)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntNew(smallValue)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1404,7 +1593,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntNew(smallValue int64) int32 {
 
 // BigIntUnsignedByteLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntUnsignedByteLength(referenceHandle int32) int32 {
-	result, err := adapter.vmHooks.BigIntUnsignedByteLength(referenceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntUnsignedByteLength(referenceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1413,7 +1603,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntUnsignedByteLength(referenceHandle in
 
 // BigIntSignedByteLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSignedByteLength(referenceHandle int32) int32 {
-	result, err := adapter.vmHooks.BigIntSignedByteLength(referenceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntSignedByteLength(referenceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1422,7 +1613,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSignedByteLength(referenceHandle int3
 
 // BigIntGetUnsignedBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1431,7 +1623,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetUnsignedBytes(referenceHandle int3
 
 // BigIntGetSignedBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetSignedBytes(referenceHandle int32, byteOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1440,7 +1633,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetSignedBytes(referenceHandle int32,
 
 // BigIntSetUnsignedBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength) {
-	err := adapter.vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1448,7 +1642,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSetUnsignedBytes(destinationHandle in
 
 // BigIntSetSignedBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSetSignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength) {
-	err := adapter.vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1456,7 +1651,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSetSignedBytes(destinationHandle int3
 
 // BigIntIsInt64 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntIsInt64(destinationHandle int32) int32 {
-	result, err := adapter.vmHooks.BigIntIsInt64(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntIsInt64(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1465,7 +1661,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntIsInt64(destinationHandle int32) int3
 
 // BigIntGetInt64 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntGetInt64(destinationHandle int32) int64 {
-	result, err := adapter.vmHooks.BigIntGetInt64(destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntGetInt64(destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1474,7 +1671,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntGetInt64(destinationHandle int32) int
 
 // BigIntSetInt64 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSetInt64(destinationHandle int32, value int64) {
-	err := adapter.vmHooks.BigIntSetInt64(destinationHandle, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntSetInt64(destinationHandle, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1482,7 +1680,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSetInt64(destinationHandle int32, val
 
 // BigIntAdd VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1490,7 +1689,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntAdd(destinationHandle int32, op1Handl
 
 // BigIntSub VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1498,7 +1698,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSub(destinationHandle int32, op1Handl
 
 // BigIntMul VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1506,7 +1707,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntMul(destinationHandle int32, op1Handl
 
 // BigIntTDiv VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1514,7 +1716,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntTDiv(destinationHandle int32, op1Hand
 
 // BigIntTMod VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1522,7 +1725,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntTMod(destinationHandle int32, op1Hand
 
 // BigIntEDiv VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1530,7 +1734,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntEDiv(destinationHandle int32, op1Hand
 
 // BigIntEMod VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1538,7 +1743,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntEMod(destinationHandle int32, op1Hand
 
 // BigIntSqrt VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSqrt(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigIntSqrt(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntSqrt(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1546,7 +1752,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSqrt(destinationHandle int32, opHandl
 
 // BigIntPow VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1554,7 +1761,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntPow(destinationHandle int32, op1Handl
 
 // BigIntLog2 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntLog2(op1Handle int32) int32 {
-	result, err := adapter.vmHooks.BigIntLog2(op1Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntLog2(op1Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1563,7 +1771,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntLog2(op1Handle int32) int32 {
 
 // BigIntAbs VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntAbs(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigIntAbs(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntAbs(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1571,7 +1780,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntAbs(destinationHandle int32, opHandle
 
 // BigIntNeg VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntNeg(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigIntNeg(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntNeg(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1579,7 +1789,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntNeg(destinationHandle int32, opHandle
 
 // BigIntSign VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntSign(opHandle int32) int32 {
-	result, err := adapter.vmHooks.BigIntSign(opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntSign(opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1588,7 +1799,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntSign(opHandle int32) int32 {
 
 // BigIntCmp VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntCmp(op1Handle int32, op2Handle int32) int32 {
-	result, err := adapter.vmHooks.BigIntCmp(op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.BigIntCmp(op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1597,7 +1809,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntCmp(op1Handle int32, op2Handle int32)
 
 // BigIntNot VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntNot(destinationHandle int32, opHandle int32) {
-	err := adapter.vmHooks.BigIntNot(destinationHandle, opHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntNot(destinationHandle, opHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1605,7 +1818,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntNot(destinationHandle int32, opHandle
 
 // BigIntAnd VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1613,7 +1827,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntAnd(destinationHandle int32, op1Handl
 
 // BigIntOr VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1621,7 +1836,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntOr(destinationHandle int32, op1Handle
 
 // BigIntXor VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32) {
-	err := adapter.vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1629,7 +1845,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntXor(destinationHandle int32, op1Handl
 
 // BigIntShr VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntShr(destinationHandle int32, opHandle int32, bits int32) {
-	err := adapter.vmHooks.BigIntShr(destinationHandle, opHandle, bits)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntShr(destinationHandle, opHandle, bits)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1637,7 +1854,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntShr(destinationHandle int32, opHandle
 
 // BigIntShl VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntShl(destinationHandle int32, opHandle int32, bits int32) {
-	err := adapter.vmHooks.BigIntShl(destinationHandle, opHandle, bits)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntShl(destinationHandle, opHandle, bits)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1645,7 +1863,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntShl(destinationHandle int32, opHandle
 
 // BigIntFinishUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntFinishUnsigned(referenceHandle int32) {
-	err := adapter.vmHooks.BigIntFinishUnsigned(referenceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntFinishUnsigned(referenceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1653,7 +1872,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntFinishUnsigned(referenceHandle int32)
 
 // BigIntFinishSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntFinishSigned(referenceHandle int32) {
-	err := adapter.vmHooks.BigIntFinishSigned(referenceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntFinishSigned(referenceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1661,7 +1881,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntFinishSigned(referenceHandle int32) {
 
 // BigIntToString VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) BigIntToString(bigIntHandle int32, destinationHandle int32) {
-	err := adapter.vmHooks.BigIntToString(bigIntHandle, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.BigIntToString(bigIntHandle, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1669,7 +1890,8 @@ func (adapter *VMHooksLegacyAdapter) BigIntToString(bigIntHandle int32, destinat
 
 // MBufferNew VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferNew() int32 {
-	result, err := adapter.vmHooks.MBufferNew()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferNew()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1678,7 +1900,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferNew() int32 {
 
 // MBufferNewFromBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferNewFromBytes(dataOffset MemPtr, dataLength MemLength) int32 {
-	result, err := adapter.vmHooks.MBufferNewFromBytes(dataOffset, dataLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferNewFromBytes(dataOffset, dataLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1687,7 +1910,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferNewFromBytes(dataOffset MemPtr, data
 
 // MBufferGetLength VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferGetLength(mBufferHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferGetLength(mBufferHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferGetLength(mBufferHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1696,7 +1920,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferGetLength(mBufferHandle int32) int32
 
 // MBufferGetBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferGetBytes(mBufferHandle int32, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.MBufferGetBytes(mBufferHandle, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferGetBytes(mBufferHandle, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1705,7 +1930,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferGetBytes(mBufferHandle int32, result
 
 // MBufferGetByteSlice VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1714,7 +1940,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferGetByteSlice(sourceHandle int32, sta
 
 // MBufferCopyByteSlice VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1723,7 +1950,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferCopyByteSlice(sourceHandle int32, st
 
 // MBufferEq VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32 {
-	result, err := adapter.vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1732,7 +1960,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferEq(mBufferHandle1 int32, mBufferHand
 
 // MBufferSetBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferSetBytes(mBufferHandle int32, dataOffset MemPtr, dataLength MemLength) int32 {
-	result, err := adapter.vmHooks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1741,7 +1970,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferSetBytes(mBufferHandle int32, dataOf
 
 // MBufferSetByteSlice VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength MemLength, dataOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1750,7 +1980,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferSetByteSlice(mBufferHandle int32, st
 
 // MBufferAppend VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1759,7 +1990,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferAppend(accumulatorHandle int32, data
 
 // MBufferAppendBytes VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferAppendBytes(accumulatorHandle int32, dataOffset MemPtr, dataLength MemLength) int32 {
-	result, err := adapter.vmHooks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1768,7 +2000,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferAppendBytes(accumulatorHandle int32,
 
 // MBufferToBigIntUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1777,7 +2010,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferToBigIntUnsigned(mBufferHandle int32
 
 // MBufferToBigIntSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1786,7 +2020,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferToBigIntSigned(mBufferHandle int32, 
 
 // MBufferFromBigIntUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1795,7 +2030,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferFromBigIntUnsigned(mBufferHandle int
 
 // MBufferFromBigIntSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1804,7 +2040,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferFromBigIntSigned(mBufferHandle int32
 
 // MBufferToSmallIntUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferToSmallIntUnsigned(mBufferHandle int32) int64 {
-	result, err := adapter.vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferToSmallIntUnsigned(mBufferHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1813,7 +2050,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferToSmallIntUnsigned(mBufferHandle int
 
 // MBufferToSmallIntSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferToSmallIntSigned(mBufferHandle int32) int64 {
-	result, err := adapter.vmHooks.MBufferToSmallIntSigned(mBufferHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferToSmallIntSigned(mBufferHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1822,7 +2060,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferToSmallIntSigned(mBufferHandle int32
 
 // MBufferFromSmallIntUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferFromSmallIntUnsigned(mBufferHandle int32, value int64) {
-	err := adapter.vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.MBufferFromSmallIntUnsigned(mBufferHandle, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1830,7 +2069,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferFromSmallIntUnsigned(mBufferHandle i
 
 // MBufferFromSmallIntSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferFromSmallIntSigned(mBufferHandle int32, value int64) {
-	err := adapter.vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.MBufferFromSmallIntSigned(mBufferHandle, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1838,7 +2078,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferFromSmallIntSigned(mBufferHandle int
 
 // MBufferToBigFloat VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferToBigFloat(mBufferHandle int32, bigFloatHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1847,7 +2088,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferToBigFloat(mBufferHandle int32, bigF
 
 // MBufferFromBigFloat VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferFromBigFloat(mBufferHandle int32, bigFloatHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1856,7 +2098,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferFromBigFloat(mBufferHandle int32, bi
 
 // MBufferStorageStore VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferStorageStore(keyHandle int32, sourceHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1865,7 +2108,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferStorageStore(keyHandle int32, source
 
 // MBufferStorageLoad VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1874,7 +2118,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferStorageLoad(keyHandle int32, destina
 
 // MBufferStorageLoadFromAddress VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferStorageLoadFromAddress(addressHandle int32, keyHandle int32, destinationHandle int32) {
-	err := adapter.vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1882,7 +2127,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferStorageLoadFromAddress(addressHandle
 
 // MBufferGetArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferGetArgument(id int32, destinationHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferGetArgument(id, destinationHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferGetArgument(id, destinationHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1891,7 +2137,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferGetArgument(id int32, destinationHan
 
 // MBufferFinish VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferFinish(sourceHandle int32) int32 {
-	result, err := adapter.vmHooks.MBufferFinish(sourceHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferFinish(sourceHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1900,7 +2147,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferFinish(sourceHandle int32) int32 {
 
 // MBufferSetRandom VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MBufferSetRandom(destinationHandle int32, length int32) int32 {
-	result, err := adapter.vmHooks.MBufferSetRandom(destinationHandle, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MBufferSetRandom(destinationHandle, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1909,7 +2157,8 @@ func (adapter *VMHooksLegacyAdapter) MBufferSetRandom(destinationHandle int32, l
 
 // ManagedMapNew VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMapNew() int32 {
-	result, err := adapter.vmHooks.ManagedMapNew()
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMapNew()
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1918,7 +2167,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMapNew() int32 {
 
 // ManagedMapPut VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMapPut(mMapHandle, keyHandle, valueHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1927,7 +2177,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMapPut(mMapHandle int32, keyHandle i
 
 // ManagedMapGet VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMapGet(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1936,7 +2187,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMapGet(mMapHandle int32, keyHandle i
 
 // ManagedMapRemove VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMapRemove(mMapHandle int32, keyHandle int32, outValueHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMapRemove(mMapHandle, keyHandle, outValueHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1945,7 +2197,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMapRemove(mMapHandle int32, keyHandl
 
 // ManagedMapContains VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMapContains(mMapHandle int32, keyHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMapContains(mMapHandle, keyHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMapContains(mMapHandle, keyHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1954,7 +2207,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMapContains(mMapHandle int32, keyHan
 
 // SmallIntGetUnsignedArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntGetUnsignedArgument(id int32) int64 {
-	result, err := adapter.vmHooks.SmallIntGetUnsignedArgument(id)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SmallIntGetUnsignedArgument(id)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1963,7 +2217,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntGetUnsignedArgument(id int32) int64
 
 // SmallIntGetSignedArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntGetSignedArgument(id int32) int64 {
-	result, err := adapter.vmHooks.SmallIntGetSignedArgument(id)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SmallIntGetSignedArgument(id)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1972,7 +2227,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntGetSignedArgument(id int32) int64 {
 
 // SmallIntFinishUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntFinishUnsigned(value int64) {
-	err := adapter.vmHooks.SmallIntFinishUnsigned(value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.SmallIntFinishUnsigned(value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1980,7 +2236,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntFinishUnsigned(value int64) {
 
 // SmallIntFinishSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntFinishSigned(value int64) {
-	err := adapter.vmHooks.SmallIntFinishSigned(value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.SmallIntFinishSigned(value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1988,7 +2245,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntFinishSigned(value int64) {
 
 // SmallIntStorageStoreUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, value int64) int32 {
-	result, err := adapter.vmHooks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -1997,7 +2255,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntStorageStoreUnsigned(keyOffset MemP
 
 // SmallIntStorageStoreSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntStorageStoreSigned(keyOffset MemPtr, keyLength MemLength, value int64) int32 {
-	result, err := adapter.vmHooks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2006,7 +2265,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntStorageStoreSigned(keyOffset MemPtr
 
 // SmallIntStorageLoadUnsigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength) int64 {
-	result, err := adapter.vmHooks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2015,7 +2275,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntStorageLoadUnsigned(keyOffset MemPt
 
 // SmallIntStorageLoadSigned VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) SmallIntStorageLoadSigned(keyOffset MemPtr, keyLength MemLength) int64 {
-	result, err := adapter.vmHooks.SmallIntStorageLoadSigned(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.SmallIntStorageLoadSigned(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2024,7 +2285,8 @@ func (adapter *VMHooksLegacyAdapter) SmallIntStorageLoadSigned(keyOffset MemPtr,
 
 // Int64getArgument VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Int64getArgument(id int32) int64 {
-	result, err := adapter.vmHooks.Int64getArgument(id)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.Int64getArgument(id)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2033,7 +2295,8 @@ func (adapter *VMHooksLegacyAdapter) Int64getArgument(id int32) int64 {
 
 // Int64finish VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Int64finish(value int64) {
-	err := adapter.vmHooks.Int64finish(value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.Int64finish(value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2041,7 +2304,8 @@ func (adapter *VMHooksLegacyAdapter) Int64finish(value int64) {
 
 // Int64storageStore VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Int64storageStore(keyOffset MemPtr, keyLength MemLength, value int64) int32 {
-	result, err := adapter.vmHooks.Int64storageStore(keyOffset, keyLength, value)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.Int64storageStore(keyOffset, keyLength, value)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2050,7 +2314,8 @@ func (adapter *VMHooksLegacyAdapter) Int64storageStore(keyOffset MemPtr, keyLeng
 
 // Int64storageLoad VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Int64storageLoad(keyOffset MemPtr, keyLength MemLength) int64 {
-	result, err := adapter.vmHooks.Int64storageLoad(keyOffset, keyLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.Int64storageLoad(keyOffset, keyLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2059,7 +2324,8 @@ func (adapter *VMHooksLegacyAdapter) Int64storageLoad(keyOffset MemPtr, keyLengt
 
 // Sha256 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Sha256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.Sha256(dataOffset, length, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.Sha256(dataOffset, length, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2068,7 +2334,8 @@ func (adapter *VMHooksLegacyAdapter) Sha256(dataOffset MemPtr, length MemLength,
 
 // ManagedSha256 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedSha256(inputHandle int32, outputHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedSha256(inputHandle, outputHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedSha256(inputHandle, outputHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2077,7 +2344,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedSha256(inputHandle int32, outputHand
 
 // Keccak256 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Keccak256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.Keccak256(dataOffset, length, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.Keccak256(dataOffset, length, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2086,7 +2354,8 @@ func (adapter *VMHooksLegacyAdapter) Keccak256(dataOffset MemPtr, length MemLeng
 
 // ManagedKeccak256 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedKeccak256(inputHandle int32, outputHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedKeccak256(inputHandle, outputHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedKeccak256(inputHandle, outputHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2095,7 +2364,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedKeccak256(inputHandle int32, outputH
 
 // Ripemd160 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) Ripemd160(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.Ripemd160(dataOffset, length, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.Ripemd160(dataOffset, length, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2104,7 +2374,8 @@ func (adapter *VMHooksLegacyAdapter) Ripemd160(dataOffset MemPtr, length MemLeng
 
 // ManagedRipemd160 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedRipemd160(inputHandle, outputHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedRipemd160(inputHandle, outputHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2113,7 +2384,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedRipemd160(inputHandle int32, outputH
 
 // VerifyBLS VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) VerifyBLS(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2122,7 +2394,8 @@ func (adapter *VMHooksLegacyAdapter) VerifyBLS(keyOffset MemPtr, messageOffset M
 
 // ManagedVerifyBLS VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2131,7 +2404,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedVerifyBLS(keyHandle int32, messageHa
 
 // VerifyEd25519 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) VerifyEd25519(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2140,7 +2414,8 @@ func (adapter *VMHooksLegacyAdapter) VerifyEd25519(keyOffset MemPtr, messageOffs
 
 // ManagedVerifyEd25519 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifyEd25519(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2149,7 +2424,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedVerifyEd25519(keyHandle int32, messa
 
 // VerifyCustomSecp256k1 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) VerifyCustomSecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr, hashType int32) int32 {
-	result, err := adapter.vmHooks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2158,7 +2434,8 @@ func (adapter *VMHooksLegacyAdapter) VerifyCustomSecp256k1(keyOffset MemPtr, key
 
 // ManagedVerifyCustomSecp256k1 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2167,7 +2444,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedVerifyCustomSecp256k1(keyHandle int3
 
 // VerifySecp256k1 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) VerifySecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2176,7 +2454,8 @@ func (adapter *VMHooksLegacyAdapter) VerifySecp256k1(keyOffset MemPtr, keyLength
 
 // ManagedVerifySecp256k1 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2185,7 +2464,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedVerifySecp256k1(keyHandle int32, mes
 
 // EncodeSecp256k1DerSignature VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) EncodeSecp256k1DerSignature(rOffset MemPtr, rLength MemLength, sOffset MemPtr, sLength MemLength, sigOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2194,7 +2474,8 @@ func (adapter *VMHooksLegacyAdapter) EncodeSecp256k1DerSignature(rOffset MemPtr,
 
 // ManagedEncodeSecp256k1DerSignature VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2203,7 +2484,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedEncodeSecp256k1DerSignature(rHandle 
 
 // AddEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) {
-	err := adapter.vmHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2211,7 +2493,8 @@ func (adapter *VMHooksLegacyAdapter) AddEC(xResultHandle int32, yResultHandle in
 
 // DoubleEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) {
-	err := adapter.vmHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	err := vmHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2219,7 +2502,8 @@ func (adapter *VMHooksLegacyAdapter) DoubleEC(xResultHandle int32, yResultHandle
 
 // IsOnCurveEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) IsOnCurveEC(ecHandle int32, pointXHandle int32, pointYHandle int32) int32 {
-	result, err := adapter.vmHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2228,7 +2512,8 @@ func (adapter *VMHooksLegacyAdapter) IsOnCurveEC(ecHandle int32, pointXHandle in
 
 // ScalarBaseMultEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32 {
-	result, err := adapter.vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2237,7 +2522,8 @@ func (adapter *VMHooksLegacyAdapter) ScalarBaseMultEC(xResultHandle int32, yResu
 
 // ManagedScalarBaseMultEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2246,7 +2532,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedScalarBaseMultEC(xResultHandle int32
 
 // ScalarMultEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset MemPtr, length MemLength) int32 {
-	result, err := adapter.vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2255,7 +2542,8 @@ func (adapter *VMHooksLegacyAdapter) ScalarMultEC(xResultHandle int32, yResultHa
 
 // ManagedScalarMultEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2264,7 +2552,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedScalarMultEC(xResultHandle int32, yR
 
 // MarshalEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2273,7 +2562,8 @@ func (adapter *VMHooksLegacyAdapter) MarshalEC(xPairHandle int32, yPairHandle in
 
 // ManagedMarshalEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2282,7 +2572,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMarshalEC(xPairHandle int32, yPairHa
 
 // MarshalCompressedEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2291,7 +2582,8 @@ func (adapter *VMHooksLegacyAdapter) MarshalCompressedEC(xPairHandle int32, yPai
 
 // ManagedMarshalCompressedEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2300,7 +2592,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedMarshalCompressedEC(xPairHandle int3
 
 // UnmarshalEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32 {
-	result, err := adapter.vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2309,7 +2602,8 @@ func (adapter *VMHooksLegacyAdapter) UnmarshalEC(xResultHandle int32, yResultHan
 
 // ManagedUnmarshalEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2318,7 +2612,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedUnmarshalEC(xResultHandle int32, yRe
 
 // UnmarshalCompressedEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32 {
-	result, err := adapter.vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2327,7 +2622,8 @@ func (adapter *VMHooksLegacyAdapter) UnmarshalCompressedEC(xResultHandle int32, 
 
 // ManagedUnmarshalCompressedEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2336,7 +2632,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedUnmarshalCompressedEC(xResultHandle 
 
 // GenerateKeyEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset MemPtr) int32 {
-	result, err := adapter.vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2345,7 +2642,8 @@ func (adapter *VMHooksLegacyAdapter) GenerateKeyEC(xPubKeyHandle int32, yPubKeyH
 
 // ManagedGenerateKeyEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2354,7 +2652,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedGenerateKeyEC(xPubKeyHandle int32, y
 
 // CreateEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) CreateEC(dataOffset MemPtr, dataLength MemLength) int32 {
-	result, err := adapter.vmHooks.CreateEC(dataOffset, dataLength)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.CreateEC(dataOffset, dataLength)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2363,7 +2662,8 @@ func (adapter *VMHooksLegacyAdapter) CreateEC(dataOffset MemPtr, dataLength MemL
 
 // ManagedCreateEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedCreateEC(dataHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedCreateEC(dataHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedCreateEC(dataHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2372,7 +2672,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedCreateEC(dataHandle int32) int32 {
 
 // GetCurveLengthEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetCurveLengthEC(ecHandle int32) int32 {
-	result, err := adapter.vmHooks.GetCurveLengthEC(ecHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetCurveLengthEC(ecHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2381,7 +2682,8 @@ func (adapter *VMHooksLegacyAdapter) GetCurveLengthEC(ecHandle int32) int32 {
 
 // GetPrivKeyByteLengthEC VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
-	result, err := adapter.vmHooks.GetPrivKeyByteLengthEC(ecHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.GetPrivKeyByteLengthEC(ecHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2390,7 +2692,8 @@ func (adapter *VMHooksLegacyAdapter) GetPrivKeyByteLengthEC(ecHandle int32) int3
 
 // EllipticCurveGetValues VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
-	result, err := adapter.vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2399,7 +2702,8 @@ func (adapter *VMHooksLegacyAdapter) EllipticCurveGetValues(ecHandle int32, fiel
 
 // ManagedVerifySecp256r1 VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifySecp256r1(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifySecp256r1(keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2408,7 +2712,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedVerifySecp256r1(keyHandle int32, mes
 
 // ManagedVerifyBLSSignatureShare VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifyBLSSignatureShare(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifyBLSSignatureShare(keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
@@ -2417,7 +2722,8 @@ func (adapter *VMHooksLegacyAdapter) ManagedVerifyBLSSignatureShare(keyHandle in
 
 // ManagedVerifyBLSAggregatedSignature VM hook legacy adapter
 func (adapter *VMHooksLegacyAdapter) ManagedVerifyBLSAggregatedSignature(keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	result, err := adapter.vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
+	vmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)
+	result, err := vmHooks.ManagedVerifyBLSAggregatedSignature(keyHandle, messageHandle, sigHandle)
 	if err != nil {
 		adapter.errorHandler.HandleHookError(err)
 	}
