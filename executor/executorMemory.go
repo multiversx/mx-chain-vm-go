@@ -87,3 +87,42 @@ func MemStoreToMemory(memory Memory, memPtr MemPtr, data []byte) error {
 	copy(memoryView[memPtr:requestedEnd], data)
 	return nil
 }
+
+// MemoryLoadFromMemory is the strict load: a range that does not fit entirely inside the
+// memory is rejected rather than truncated.
+//
+// Named after InstanceState.MemoryLoad, where MemLoadFromMemory is named after the old
+// Instance.MemLoad that truncates. Two functions that differ only in behaviour must not also
+// agree in name.
+//
+// Counterpart of the Rust checked_load_range (new_traits/memory.rs). The bounds rules are
+// observable by contracts, so there is one implementation of them and not one per backend.
+// Two asymmetries are deliberate, and shared with the clamped load: a zero length returns
+// empty before the offset is looked at, and an offset exactly at the end of the memory is a
+// valid offset that nothing can be read from.
+func MemoryLoadFromMemory(memory Memory, memPtr MemPtr, length MemLength) ([]byte, error) {
+	if length == 0 {
+		return []byte{}, nil
+	}
+
+	memoryLength := uint64(memory.Length())
+
+	if memPtr < 0 || uint64(memPtr) > memoryLength {
+		return nil, fmt.Errorf("mem load: %w", ErrMemoryBadBounds)
+	}
+	if length < 0 {
+		return nil, fmt.Errorf("mem load: %w", ErrMemoryNegativeLength)
+	}
+
+	// Added in uint64 rather than through MemPtr.Offset, so that a length a contract is free
+	// to choose cannot wrap the sum into a range that looks valid.
+	requestedEnd := uint64(memPtr) + uint64(length)
+	if requestedEnd > memoryLength {
+		return nil, fmt.Errorf("mem load: %w", ErrMemoryBadBoundsUpper)
+	}
+
+	result := make([]byte, length)
+	copy(result, memory.Data()[memPtr:requestedEnd])
+
+	return result, nil
+}

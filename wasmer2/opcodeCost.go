@@ -138,7 +138,8 @@ type OpcodeCost struct {
 	LocalAllocate      uint32
 }
 
-func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {
+// extractOpcodeCost narrows the VM's cost table to the opcodes this backend meters.
+func extractOpcodeCost(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {
 	return &OpcodeCost{
 		Block:              wasmOps.Block,
 		Br:                 wasmOps.Br,

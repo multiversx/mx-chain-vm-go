@@ -82,7 +82,7 @@ func TestExtractOpcodeCost_CoversAllFields(t *testing.T) {
 	wasmOps := executor.WASMOpcodeCost{}
 	setAllFields(t, &wasmOps)
 
-	opcodeCost := (&Wasmer2Executor{}).extractOpcodeCost(&wasmOps)
+	opcodeCost := extractOpcodeCost(&wasmOps)
 	requireAllFieldsSet(t, reflect.ValueOf(*opcodeCost), "opcode cost")
 }
 
