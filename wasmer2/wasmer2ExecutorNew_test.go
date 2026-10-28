@@ -34,6 +34,10 @@ type stubVMHooks struct {
 	// nested, if set, runs from inside Int64storageStore, which is how a contract called
 	// from a hook is simulated.
 	nested func()
+
+	// onHook, if set, runs at the start of every hook. A contract that calls one before
+	// doing anything else is therefore able to tell a test exactly when it is running.
+	onHook func()
 }
 
 func newStubVMHooks() *stubVMHooks {
@@ -42,6 +46,9 @@ func newStubVMHooks() *stubVMHooks {
 
 func (hooks *stubVMHooks) enter(name string) error {
 	hooks.calls = append(hooks.calls, name)
+	if hooks.onHook != nil {
+		hooks.onHook()
+	}
 	if hooks.failOn == name {
 		return hooks.failWith
 	}
@@ -86,6 +93,16 @@ func (hooks *stubVMHooks) Int64storageLoad(keyOffset executor.MemPtr, keyLength 
 	}
 
 	return hooks.storage[key], nil
+}
+
+// GetNumArguments is here for the interrupt fixture, which calls it to announce that the
+// contract has started running.
+func (hooks *stubVMHooks) GetNumArguments() (int32, error) {
+	if err := hooks.enter("getNumArguments"); err != nil {
+		return 0, err
+	}
+
+	return 0, nil
 }
 
 func (hooks *stubVMHooks) Int64finish(value int64) error {

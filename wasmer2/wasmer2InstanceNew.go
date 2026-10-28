@@ -121,7 +121,12 @@ func (instance *Wasmer2InstanceNew) Call(funcName string, pointsLimit uint64) ex
 		return executor.CallResultEarlyExit(earlyExit, executor.EarlyExitCodeOf(earlyExit))
 	}
 
+	// Reached only when no hook stashed an error above, which is what makes the
+	// host-requested stop distinguishable from a hook's failure; see
+	// legacyBreakpointHostRequestedStop.
 	switch cWasmerInstanceGetBreakpointValue(instance.cgoInstance) {
+	case legacyBreakpointHostRequestedStop:
+		return executor.CallResultInterrupted()
 	case legacyBreakpointOutOfGas:
 		return executor.CallResultBreakpoint(executor.BreakpointOutOfGasNew)
 	case legacyBreakpointMemoryLimit:
@@ -201,6 +206,23 @@ func (instance *Wasmer2InstanceNew) instanceState() executor.InstanceState {
 	}
 
 	return &instance.state
+}
+
+// RequestStop asks a running call to stop at the next opportunity.
+//
+// Writes the breakpoint global, which the metering middleware polls at every basic-block
+// boundary. Called from another goroutine while Call is in flight, which is the only moment
+// it does anything: the cgo instance pointer is set at creation and never reassigned, so
+// there is nothing here for the two to race over beyond the global itself, and writing that
+// while wasm runs is what a halt trigger is.
+func (instance *Wasmer2InstanceNew) RequestStop() {
+	if instance.cgoInstance == nil {
+		return
+	}
+
+	// Nothing useful to do with a failure: the call may simply have finished already, and a
+	// stop is best effort by contract.
+	_ = cWasmerInstanceSetBreakpointValue(instance.cgoInstance, legacyBreakpointHostRequestedStop)
 }
 
 func (instance *Wasmer2InstanceNew) takeEarlyExit() error {
