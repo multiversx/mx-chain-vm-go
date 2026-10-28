@@ -24,6 +24,13 @@ const (
 
 	// CallBreakpoint means a middleware stopped execution: out of gas, or the memory limit.
 	CallBreakpoint
+
+	// CallInterrupted means the host asked for the call to stop, through
+	// InstanceNew.RequestStop.
+	//
+	// Its own kind rather than a breakpoint: BreakpointValueNew covers what the executor's
+	// own middlewares raise, and this came from outside the executor entirely.
+	CallInterrupted
 )
 
 // InstanceCallResult is the outcome of calling an exported function.
@@ -73,4 +80,9 @@ func CallResultEarlyExit(err error, code uint64) InstanceCallResult {
 // CallResultBreakpoint reports a call stopped by one of the executor's own middlewares.
 func CallResultBreakpoint(breakpoint BreakpointValueNew) InstanceCallResult {
 	return InstanceCallResult{Kind: CallBreakpoint, Breakpoint: breakpoint}
+}
+
+// CallResultInterrupted reports a call the host asked to stop.
+func CallResultInterrupted() InstanceCallResult {
+	return InstanceCallResult{Kind: CallInterrupted}
 }

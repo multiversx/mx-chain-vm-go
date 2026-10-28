@@ -127,6 +127,17 @@ func (wasmerExecutor *Wasmer2Executor) newInstance(
 		id:          fmt.Sprintf("%p", cInstance),
 	}
 
+	// Taken now, while nothing is running on the instance, because that is the only time it
+	// can be: the handle exists so that a stop never has to reach back through an instance a
+	// call owns.
+	var stopHandle *cStopHandleT
+	status = cInstanceStopHandle(cInstance, &stopHandle, buf)
+	if err := buf.AsError(status, "could not take a stop handle"); err != nil {
+		instance.Close()
+		return nil, err
+	}
+	instance.stopHandle = stopHandle
+
 	err = instance.readFunctionNames()
 	if err != nil {
 		instance.Close()

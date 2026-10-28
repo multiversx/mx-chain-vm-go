@@ -20,6 +20,13 @@ typedef struct vm_exec_w2_instance_t {
 } vm_exec_w2_instance_t;
 
 /**
+ * Opaque handle that can stop a running call.
+ */
+typedef struct vm_exec_w2_stop_handle_t {
+
+} vm_exec_w2_stop_handle_t;
+
+/**
  * Creates an executor from one configuration struct and one hook table.
  *
  * `hook_table` is copied, so the caller is free to release it as soon as this returns. Every
@@ -45,6 +52,45 @@ vm_exec_status_t vm_exec_w2_new_executor(struct vm_exec_w2_executor_t **executor
  * C API function, works with raw object pointers.
  */
 void vm_exec_w2_executor_destroy(struct vm_exec_w2_executor_t *executor);
+
+/**
+ * Produces a handle that can stop a call on this instance.
+ *
+ * Take it *before* the call it is meant to stop, then use it, from any thread, while that
+ * call is running. That ordering is the point: a stop is only useful mid-call, and the call
+ * owns the instance for its whole duration, so the handle is a separate object rather than
+ * something reached back through the instance pointer.
+ *
+ * The handle must be released with `vm_exec_w2_stop_handle_destroy`. It may outlive the
+ * instance; a stop requested after the instance is gone does nothing.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_status_t vm_exec_w2_instance_stop_handle(const struct vm_exec_w2_instance_t *instance, struct vm_exec_w2_stop_handle_t **handle_out, char *err_buf, int err_buf_len);
+
+/**
+ * Asks the instance this handle came from to stop at the next opportunity.
+ *
+ * Best effort, and says nothing about whether it worked: the call may already have finished,
+ * and neither backend can interrupt a contract that is inside a VM hook — the stop is
+ * noticed when control returns to wasm. Safe to call when no call is running.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+void vm_exec_w2_stop_handle_request_stop(const struct vm_exec_w2_stop_handle_t *handle);
+
+/**
+ * Releases a stop handle.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+void vm_exec_w2_stop_handle_destroy(struct vm_exec_w2_stop_handle_t *handle);
 
 /**
  * Creates an instance.

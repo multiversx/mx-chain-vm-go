@@ -64,4 +64,36 @@ type InstanceNew interface {
 
 	// Cache serializes the compiled module, for [ExecutorNew.NewInstanceFromCache].
 	Cache() ([]byte, error)
+
+	// RequestStop asks a call that is running on this instance to stop at the next
+	// opportunity.
+	//
+	// The one method here that may be called from another goroutine, and while [Call] is in
+	// flight - which is the only moment it is useful. It is what an execution deadline is
+	// enforced with.
+	//
+	// Best effort, and deliberately silent about whether it worked, for two reasons no
+	// backend can do anything about: a contract already past its last checkpoint may finish
+	// first, and neither backend can interrupt a contract that is inside a VM hook, where
+	// the stop is only noticed once control returns to wasm. A caller that must bound the
+	// wait needs its own timeout regardless.
+	//
+	// Safe at any time, including with no call running or after the call has finished: both
+	// are no-ops. The call it stops reports [CallInterrupted].
+	RequestStop()
+
+	// ID returns an identifier for the instance, unique at runtime.
+	//
+	// On the interface because a host that caches instances needs to key them by something,
+	// and because every trace line about an instance names it.
+	ID() string
+
+	// Close releases the instance.
+	//
+	// Go has no destructor, so this is the only thing that frees what a backend holds
+	// outside the Go heap - C memory, and for a backend reached over cgo the handle its
+	// hooks are found through. An instance that is never closed leaks both.
+	//
+	// The Rust Instance trait has no counterpart, and needs none: there, Drop does this.
+	Close()
 }

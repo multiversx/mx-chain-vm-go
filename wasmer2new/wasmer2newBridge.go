@@ -23,6 +23,7 @@ import (
 
 type cExecutorT = C.struct_vm_exec_w2_executor_t
 type cInstanceT = C.struct_vm_exec_w2_instance_t
+type cStopHandleT = C.struct_vm_exec_w2_stop_handle_t
 type cHookContextT = C.vm_exec_hook_context_t
 type cOpcodeCostT = C.struct_vm_exec_opcode_cost_t
 type cVMHookPointers = C.vm_exec_vm_hook_c_func_pointers
@@ -86,6 +87,22 @@ func cNewInstanceFromCache(
 
 func cInstanceDestroy(instance *cInstanceT) {
 	C.vm_exec_w2_instance_destroy(instance)
+}
+
+func cInstanceStopHandle(
+	instance *cInstanceT,
+	handleOut **cStopHandleT,
+	buf errBuf,
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_instance_stop_handle(instance, handleOut, bufPtr(buf), errBufLen))
+}
+
+func cStopHandleRequestStop(handle *cStopHandleT) {
+	C.vm_exec_w2_stop_handle_request_stop(handle)
+}
+
+func cStopHandleDestroy(handle *cStopHandleT) {
+	C.vm_exec_w2_stop_handle_destroy(handle)
 }
 
 func cInstanceReset(instance *cInstanceT, buf errBuf) wasmercommon.Status {

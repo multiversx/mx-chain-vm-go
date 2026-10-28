@@ -21,6 +21,20 @@ const (
 	legacyBreakpointMemoryLimit
 )
 
+// legacyBreakpointHostRequestedStop is what RequestStop writes to halt a running contract.
+//
+// It is ExecutionFailed, reused, and not a value of its own - which is what this backend
+// would prefer, and what the new C API does with a dedicated 6. The old C API will not carry
+// one: vm_exec_instance_set_breakpoint_value converts through BreakpointValueLegacy and
+// rejects anything outside the six, so a value nothing else uses cannot be written.
+//
+// Reusing it is unambiguous here all the same, because of who else writes it. In this
+// package the only other writer is HandleHookError, and it never writes without also
+// stashing the hook's error - so Call, which takes that error first, reaches the breakpoint
+// switch only when no hook asked to stop. ExecutionFailed with nothing stashed can therefore
+// only be this.
+const legacyBreakpointHostRequestedStop = legacyBreakpointExecutionFailed
+
 // legacyAsyncCallCode is the early exit of a legacy async call. Code 0 is reserved for it,
 // which is why executor.EarlyExit never carries vmcommon.Ok.
 const legacyAsyncCallCode = uint64(vmcommon.Ok)

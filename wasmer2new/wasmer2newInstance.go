@@ -23,6 +23,13 @@ type Wasmer2Instance struct {
 	cInstance   *cInstanceT
 	hooksHandle cgo.Handle
 
+	// stopHandle is how a call on this instance is stopped from another goroutine.
+	//
+	// Taken once, at creation, rather than per call: the C API hands out a separate object
+	// precisely so that it never has to be reached back through the instance while a call
+	// owns it, and the handle stays valid across resets. Released in Close.
+	stopHandle *cStopHandleT
+
 	// exportedFunctions and importedFunctions are read once at creation. The library hands
 	// over each whole list in a pair of calls, and neither can change for a compiled module,
 	// so the repeated questions the VM asks - once per name of a blocklist, for every
@@ -93,6 +100,9 @@ func (instance *Wasmer2Instance) toCallResult(
 			executor.ExitExecutionFailed(newCallError(ErrEarlyExit, buf.Message())),
 			uint64(cResult.early_exit_code))
 
+	case C.VM_EXEC_CALL_INTERRUPTED:
+		return executor.CallResultInterrupted()
+
 	case C.VM_EXEC_CALL_BREAKPOINT:
 		breakpoint, err := executor.ParseBreakpointValueNew(uint64(cResult.breakpoint))
 		if err != nil {
@@ -104,6 +114,22 @@ func (instance *Wasmer2Instance) toCallResult(
 	default:
 		return executor.CallResultRuntimeError(newCallError(ErrInstanceCall, buf.Message()))
 	}
+}
+
+// RequestStop asks a running call to stop at the next opportunity.
+//
+// Goes through the stop handle rather than the instance, which is what lets it be called from
+// another goroutine while Call is in flight: the handle is a separate object on the C side,
+// so the two never reach the same one.
+//
+// On this backend the stop is delivered by signal rather than by polling a global, so a tight
+// loop stops at once instead of at the next injected checkpoint.
+func (instance *Wasmer2Instance) RequestStop() {
+	if instance.stopHandle == nil {
+		return
+	}
+
+	cStopHandleRequestStop(instance.stopHandle)
 }
 
 // CheckSignatures checks that all public module functions (SC endpoints) have no arguments
@@ -225,6 +251,15 @@ func (instance *Wasmer2Instance) Close() {
 
 	cInstanceDestroy(instance.cInstance)
 	instance.cInstance = nil
+
+	// After the instance, so that nothing can ask to stop an instance that is half gone. A
+	// stop requested on a released handle would be reading freed memory; one requested on a
+	// live handle whose instance has ended is a no-op, which is the contract.
+	if instance.stopHandle != nil {
+		cStopHandleDestroy(instance.stopHandle)
+		instance.stopHandle = nil
+	}
+
 	instance.hooksHandle.Delete()
 
 	logWasmer2New.Trace("closed instance", "id", instance.id)
