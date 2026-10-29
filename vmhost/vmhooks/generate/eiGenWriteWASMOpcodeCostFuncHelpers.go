@@ -21,7 +21,7 @@ func WriteWASMOpcodeCostFuncHelpers(out *eiGenWriter) {
 	out.WriteString("func FillGasMap_WASMOpcodeCosts(value uint64) map[string]uint64 {\n")
 	out.WriteString("\tgasMap := make(map[string]uint64)\n\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasm_opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasm_all_opcodes.txt")
 	if err != nil {
 		panic(err)
 	}

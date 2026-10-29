@@ -40,10 +40,10 @@ func loadOpcodeNamesForVersion(filePath string) []string {
 
 func LoadOpcodeNames() *OpcodeNames {
 	return &OpcodeNames{
-		AllowedV1:       loadOpcodeNamesForVersion("generate/cmd/input/wasmer2_allowed_opcodes_v1.txt"),
-		AllowedV2:       loadOpcodeNamesForVersion("generate/cmd/input/wasmer2_allowed_opcodes_v2.txt"),
-		PerByteCodes:    loadOpcodeNamesForVersion("generate/cmd/input/wasmer2_per_byte_opcodes.txt"),
-		AdditionalCosts: loadOpcodeNamesForVersion("generate/cmd/input/wasmer2_additional_costs.txt"),
+		AllowedV1:       loadOpcodeNamesForVersion("generate/cmd/input/wasm_allowed_opcodes_v1.txt"),
+		AllowedV2:       loadOpcodeNamesForVersion("generate/cmd/input/wasm_allowed_opcodes_v2.txt"),
+		PerByteCodes:    loadOpcodeNamesForVersion("generate/cmd/input/wasm_per_byte_opcodes.txt"),
+		AdditionalCosts: loadOpcodeNamesForVersion("generate/cmd/input/wasm_additional_costs.txt"),
 	}
 }
 
