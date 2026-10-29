@@ -389,13 +389,13 @@ func (host *vmHost) applyExecutionConfig(
 		return err
 	}
 
-	host.gasSchedule = gasSchedule
-	host.opcodeVersion = opcodeVersion
-
 	err = host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
 	if err != nil {
 		return err
 	}
+
+	host.gasSchedule = gasSchedule
+	host.opcodeVersion = opcodeVersion
 
 	host.meteringContext.SetGasSchedule(gasSchedule)
 
