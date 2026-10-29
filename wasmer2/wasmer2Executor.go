@@ -54,6 +54,9 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 
 // SetOpcodeConfig sets the opcode version and opcode costs, based on the gas schedule.
 func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) error {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	// extract only wasmer2 opcodes
 	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
 	result := cWasmerExecutorSetOpcodeConfig(
