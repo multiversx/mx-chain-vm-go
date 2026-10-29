@@ -34,19 +34,25 @@ The operators allowed by each `OpcodeVersion`. The names must match the variants
 
 Each version is a standalone list rather than a delta over the previous one, because an
 older version has to keep metering already deployed contracts exactly as it did before. A
-name the target no longer understands is filtered out while writing: `Unwind` is dropped
-from the whitelist entirely, and commented out in the Wasmer 6 middleware.
+name the target no longer understands is filtered out while writing: `Unwind` (still listed in
+`v1`) is dropped from the whitelist entirely, and commented out in the Wasmer 6 middleware.
 
-`v2` additionally drops 15 operators that `v1` still allows: legacy exception handling
-(`Catch`, `CatchAll`, `Delegate`, `Rethrow`, `Throw`, `Try`), reference types (`RefFunc`,
-`RefIsNull`, `RefNull`, `TypedSelect`), and table manipulation (`TableGet`, `TableGrow`,
-`TableInit`, `TableSet`, `TableSize`). Each group sits behind a WASM proposal
-(exception-handling, reference-types, bulk-memory/reference-types) that this SDK's
+`v2` additionally drops 10 operators that `v1` still allows (and `Unwind`, which neither
+version whitelists): legacy exception handling (`Catch`, `CatchAll`, `Delegate`, `Rethrow`,
+`Throw`, `Try`) and reference types (`RefFunc`, `RefIsNull`, `RefNull`, `TypedSelect`).
+Each group sits behind a WASM proposal (exception-handling, reference-types) that this SDK's
 `wasm32-unknown-unknown` build never turns on, so no contract built with today's tooling
 can contain them: shrinking the whitelist removes attack surface from the execution engine
 at no functional cost. They stay in `v1` and in `wasm_opcodes.txt`, since `v1` still has to
-meter contracts deployed before this change exactly as before, and the cost middlewares
-keep a match arm for them regardless of version, as those are unaffected by the whitelist.
+meter contracts deployed before this change exactly as before. The cost middlewares are
+generated per version from the same lists, so `v2` has no match arm for them and treats
+them as illegal.
+
+The table operators (`TableGet`, `TableGrow`, `TableInit`, `TableSet`, `TableSize`) are
+not in either list. They were already removed from `v1` by an advisory, before `OpcodeVersion`
+was introduced. They remain in `wasm_opcodes.txt` only because the gas schedule still
+declares a cost for them, and are illegal in every version.
+
 Tail calls (`ReturnCall`, `ReturnCallIndirect`) are equally unreachable by this toolchain
 today but were deliberately kept allowed in both versions.
 
