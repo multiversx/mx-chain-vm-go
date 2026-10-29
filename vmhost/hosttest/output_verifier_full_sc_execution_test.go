@@ -49,7 +49,7 @@ func TestOutputVerifier_ComplicatedMultiContractCall_WithDevRewardsAndTransfers(
 					parentInstance.AddMockMethod("executeComplicatedWorkflow", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						// 1. Cross-contract call from Parent to Child
 						childAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)

@@ -15,7 +15,7 @@ type Wasmer2Executor struct {
 	cgoExecutor *cWasmerExecutorT
 
 	vmHookPointers *cWasmerVmHookPointers
-	vmHooks        executor.VMHooks
+	vmHooks        executor.VMHooksLegacy
 	vmHooksPtr     uintptr
 	vmHooksPtrPtr  unsafe.Pointer
 
@@ -150,8 +150,15 @@ func (wasmerExecutor *Wasmer2Executor) IsInterfaceNil() bool {
 	return wasmerExecutor == nil
 }
 
-// InitVMHooks inits the VM hooks
-func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooks) {
+// initVMHooks inits the VM hooks.
+//
+// The hooks are legacy-shaped because the functions this backend imports are plain C
+// functions: they return a value and have nowhere to report that the hook wants execution to
+// stop. The adapter the factory built applies that as a side effect instead.
+//
+// The context data is set once, for the executor, so every instance it makes shares these
+// hooks; a hook resolves the execution it serves through the host, not through the caller.
+func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooksLegacy) {
 	wasmerExecutor.vmHooks = vmHooks
 	localPtr := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 	wasmerExecutor.vmHooksPtr = localPtr

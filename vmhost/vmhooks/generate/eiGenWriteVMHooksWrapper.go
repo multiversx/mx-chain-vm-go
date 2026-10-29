@@ -22,7 +22,7 @@ import (
 // WrapperVMHooks wraps a VMHooks instance and optionally performs some logging.
 type WrapperVMHooks struct {
 	logger         ExecutorLogger
-	wrappedVMHooks executor.VMHooks
+	wrappedVMHooks vmHooksWithErrorHandler
 }
 `)
 
@@ -36,25 +36,40 @@ type WrapperVMHooks struct {
 			out.WriteString(fmt.Sprintf("%s %s", arg.Name, vmHooksWrapperType(arg.Type)))
 		}
 		out.WriteString(")")
-		if funcMetadata.Result != nil {
-			out.WriteString(fmt.Sprintf(" %s", vmHooksWrapperType(funcMetadata.Result.Type)))
-		}
+		out.WriteString(goResultSignature(funcMetadata, vmHooksWrapperType))
 		out.WriteString(" {")
 		writeCallInfo(out, funcMetadata)
 		out.WriteString("\n\tw.logger.LogVMHookCallBefore(callInfo)")
 		out.WriteString("\n\t")
-		if funcMetadata.Result != nil {
+		switch {
+		case funcMetadata.Result != nil && funcMetadata.ReturnsError:
+			out.WriteString("result, err := ")
+		case funcMetadata.Result != nil:
 			out.WriteString("result := ")
+		case funcMetadata.ReturnsError:
+			out.WriteString("err := ")
 		}
 		out.WriteString(fmt.Sprintf("w.wrappedVMHooks.%s(", upperInitial(funcMetadata.Name)))
 		writeCommaSeparatedArgumentNames(out, funcMetadata.Arguments)
 		out.WriteString(")")
 		out.WriteString("\n\tw.logger.LogVMHookCallAfter(callInfo)")
-		if funcMetadata.Result != nil {
+		switch {
+		case funcMetadata.Result != nil && funcMetadata.ReturnsError:
+			out.WriteString("\n\treturn result, err")
+		case funcMetadata.Result != nil:
 			out.WriteString("\n\treturn result")
+		case funcMetadata.ReturnsError:
+			out.WriteString("\n\treturn err")
 		}
 		out.WriteString("\n}\n")
 	}
+
+	out.WriteString(`
+// HandleHookError passthrough
+func (w *WrapperVMHooks) HandleHookError(err error) {
+	w.wrappedVMHooks.HandleHookError(err)
+}
+`)
 }
 
 func writeCallInfo(out *eiGenWriter, funcMetadata *EIFunction) {

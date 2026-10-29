@@ -33,7 +33,7 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 								require.True(t, initialIsComplete)
 
 								// Call child contract with non-existent method using error return hook
-								retCode := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+								retCode, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 									host,
 									100000,
 									big.NewInt(0),
@@ -42,6 +42,7 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 									nil,
 									0,
 								)
+								handleHookError(host, err)
 								// Returns 1 indicating error in child execution
 								require.Equal(t, int32(1), retCode)
 
@@ -91,7 +92,7 @@ func TestHost_VerifyCustomSecp256k1_MemoryBoundaryGracefulFailure(t *testing.T) 
 				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testSecpBoundary", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						memLen := parentInstance.Memory.Length()
 						// Place key at offset 0 (33 bytes compressed key)

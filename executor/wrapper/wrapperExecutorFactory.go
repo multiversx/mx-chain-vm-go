@@ -30,10 +30,17 @@ func SimpleWrappedExecutorFactory(wrappedFactory executor.ExecutorAbstractFactor
 
 // CreateExecutor creates a new Executor instance.
 func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	// The wrapper forwards HandleHookError, so it can only wrap hooks that have it.
+	// Asserted here, at construction, rather than silently dropped at call time.
+	vmHooks, ok := args.VMHooks.(vmHooksWithErrorHandler)
+	if !ok {
+		return nil, ErrVMHooksCannotHandleErrors
+	}
+
 	wrappedExecutor, err := factory.wrappedFactory.CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: &WrapperVMHooks{
 			logger:         factory.logger,
-			wrappedVMHooks: args.VMHooks,
+			wrappedVMHooks: vmHooks,
 		},
 		OpcodeVersion:            args.OpcodeVersion,
 		OpcodeCosts:              args.OpcodeCosts,

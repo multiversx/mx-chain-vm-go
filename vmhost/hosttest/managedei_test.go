@@ -70,11 +70,14 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 						addressHandle = managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
-						retValue := vmhooks.ManagedIsESDTFrozenWithHost(
+						retValue, err := vmhooks.ManagedIsESDTFrozenWithHost(
 							host,
 							addressHandle,
 							tokenIDHandle,
 							nonce)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
 						return parentInstance
@@ -137,9 +140,12 @@ func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 						managedTypes := host.ManagedTypes()
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
-						retValue := vmhooks.ManagedIsESDTPausedWithHost(
+						retValue, err := vmhooks.ManagedIsESDTPausedWithHost(
 							host,
 							tokenIDHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
 						return parentInstance
@@ -192,9 +198,12 @@ func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bo
 						managedTypes := host.ManagedTypes()
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
-						retValue := vmhooks.ManagedIsESDTLimitedTransferWithHost(
+						retValue, err := vmhooks.ManagedIsESDTLimitedTransferWithHost(
 							host,
 							tokenIDHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
 						return parentInstance
@@ -236,10 +245,13 @@ func Test_ManagedBufferToHex(t *testing.T) {
 						sourceHandle := managedTypes.NewManagedBufferFromBytes(asBytes)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.ManagedBufferToHexWithHost(
+						err := vmhooks.ManagedBufferToHexWithHost(
 							host,
 							sourceHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if string(bytesResult) != asString {
@@ -282,10 +294,13 @@ func Test_BigIntToString(t *testing.T) {
 						sourceHandle := managedTypes.NewBigInt(asBigInt)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.BigIntToStringWithHost(
+						err := vmhooks.BigIntToStringWithHost(
 							host,
 							sourceHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if string(bytesResult) != asString {
@@ -313,7 +328,7 @@ func Test_BigIntToString(t *testing.T) {
 // This special test case represents an intentionally badly written contract.
 func bigIntToInt64MockContract(parentInstance *mock.InstanceMock, _ interface{}) {
 	parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
-		vmHooksImpl := vmhooks.NewVMHooksImpl(parentInstance.Host)
+		vmHooksImpl := vmhooks.NewVMHooksLegacy(parentInstance.Host)
 
 		inputHandle := int32(0)
 		vmHooksImpl.BigIntGetSignedArgument(0, inputHandle)
@@ -397,10 +412,13 @@ func Test_ManagedRipemd160(t *testing.T) {
 						sourceHandle := managedTypes.NewManagedBufferFromBytes(asBytes)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.ManagedRipemd160WithHost(
+						_, err := vmhooks.ManagedRipemd160WithHost(
 							host,
 							sourceHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if !bytes.Equal(bytesResult, asRipemd160) {
@@ -475,12 +493,15 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyBLSWithHost(
+						result, err := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							"verifyBLS")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -526,11 +547,14 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyEd25519WithHost(
+						result, err := vmhooks.ManagedVerifyEd25519WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -578,11 +602,14 @@ func Test_VerifySecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifySecp256k1WithHost(
+						result, err := vmhooks.ManagedVerifySecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -630,13 +657,16 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
+						result, err := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							int32(secp256.ECDSADoubleSha256),
 							"verifyCustomSecp256k1")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -680,13 +710,16 @@ func Test_VerifySecp256r1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
+						result, err := vmhooks.ManagedVerifyCustomSecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							0,
 							"verifySecp256R1Signature")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -732,11 +765,14 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 						sHandle := managedTypes.NewManagedBufferFromBytes(s)
 						sigHandle := managedTypes.NewManagedBuffer()
 
-						retResult := vmhooks.ManagedEncodeSecp256k1DerSignatureWithHost(
+						retResult, err := vmhooks.ManagedEncodeSecp256k1DerSignatureWithHost(
 							host,
 							rHandle,
 							sHandle,
 							sigHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						result, _ := managedTypes.GetBytes(sigHandle)
 						if retResult != 0 || !bytes.Equal(result, sig) {
@@ -778,12 +814,15 @@ func Test_ManagedVerifyBLSSignatureShare(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyBLSWithHost(
+						result, err := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
 							sigHandle,
 							"verifyBLSSignatureShare")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -827,12 +866,15 @@ func Test_ManagedVerifyBLSMultiSig(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := vmhooks.ManagedVerifyBLSWithHost(
+						result, err := vmhooks.ManagedVerifyBLSWithHost(
 							host,
 							keysHandle,
 							messageHandle,
 							sigHandle,
 							"verifyBLSAggregatedSignature")
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if result != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -877,12 +919,15 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 						ecHandle := managedTypes.PutEllipticCurve(p521ec)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedScalarBaseMultECWithHost(
+						retResult, err := vmhooks.ManagedScalarBaseMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if retResult != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -931,7 +976,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 						pointYHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedScalarMultECWithHost(
+						retResult, err := vmhooks.ManagedScalarMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -939,6 +984,9 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 							pointXHandle,
 							pointYHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						if retResult != 0 {
 							host.Runtime().SignalUserError("assert failed")
@@ -985,12 +1033,15 @@ func Test_ManagedMarshalEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := vmhooks.ManagedMarshalECWithHost(
+						retResult, err := vmhooks.ManagedMarshalECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
 							ecHandle,
 							resultHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
 
@@ -1039,12 +1090,15 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedUnmarshalECWithHost(
+						retResult, err := vmhooks.ManagedUnmarshalECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						xResult, _ := managedTypes.GetBigInt(xResultHandle)
 						yResult, _ := managedTypes.GetBigInt(yResultHandle)
@@ -1096,12 +1150,15 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := vmhooks.ManagedMarshalCompressedECWithHost(
+						retResult, err := vmhooks.ManagedMarshalCompressedECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
 							ecHandle,
 							resultHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
 
@@ -1150,12 +1207,15 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := vmhooks.ManagedUnmarshalCompressedECWithHost(
+						retResult, err := vmhooks.ManagedUnmarshalCompressedECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							dataHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						xResult, _ := managedTypes.GetBigInt(xResultHandle)
 						yResult, _ := managedTypes.GetBigInt(yResultHandle)
@@ -1207,12 +1267,15 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						resultHandle := managedTypes.NewManagedBuffer()
 
-						retResult := vmhooks.ManagedGenerateKeyECWithHost(
+						retResult, err := vmhooks.ManagedGenerateKeyECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
 							ecHandle,
 							resultHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
 						if retResult != 0 ||
@@ -1289,9 +1352,12 @@ func checkCreateECSuccess(host vmhost.VMHost, name string, ecParams *elliptic.Cu
 	managedTypes := host.ManagedTypes()
 	dataHandle := managedTypes.NewManagedBufferFromBytes([]byte(name))
 
-	retResult := vmhooks.ManagedCreateECWithHost(
+	retResult, err := vmhooks.ManagedCreateECWithHost(
 		host,
 		dataHandle)
+	if err != nil {
+		vmhooks.FailExecution(host, err)
+	}
 
 	resultEC, _ := managedTypes.GetEllipticCurve(retResult)
 	if resultEC.Params().Name != ecParams.Name {
@@ -1322,11 +1388,14 @@ func Test_ManagedDeleteContract(t *testing.T) {
 
 						destHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 
-						vmhooks.ManagedDeleteContractWithHost(
+						err := vmhooks.ManagedDeleteContractWithHost(
 							host,
 							destHandle,
 							100000,
 							argumentsHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						return parentInstance
 					})
@@ -1403,7 +1472,7 @@ func Test_ManagedCallCheck(t *testing.T) {
 				WithOwnerAddress(test.ParentAddress).
 				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
-						testHooks := vmhooks.NewVMHooksImpl(parentInstance.Host)
+						testHooks := vmhooks.NewVMHooksLegacy(parentInstance.Host)
 						testHooks.DeleteContract(0, 0, 0x40000000, 0, 0)
 						return parentInstance
 					})
@@ -1457,11 +1526,14 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 						royaltiesHandle := managed.NewManagedBuffer()
 						urisHandle := managed.NewManagedBuffer()
 
-						vmhooks.ManagedGetESDTTokenDataWithHost(host,
+						err := vmhooks.ManagedGetESDTTokenDataWithHost(host,
 							addressHandle,
 							tokenIDHandle,
 							nonce,
 							valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						value, err := managed.GetBigInt(valueHandle)
 						if err != nil {
@@ -1522,11 +1594,14 @@ func TestBaseOpsAPI_GetESDTTokenType(t *testing.T) {
 
 						typeHandle := managed.NewBigIntFromInt64(0)
 
-						vmhooks.ManagedGetESDTTokenTypeWithHost(host,
+						err := vmhooks.ManagedGetESDTTokenTypeWithHost(host,
 							addressHandle,
 							tokenIDHandle,
 							int64(nonce),
 							typeHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						typeValue, err := managed.GetBigInt(typeHandle)
 						if err != nil {
@@ -1585,10 +1660,13 @@ func Test_ManagedGetCodeMetadata(t *testing.T) {
 						addressHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						vmhooks.ManagedGetCodeMetadataWithHost(
+						err := vmhooks.ManagedGetCodeMetadataWithHost(
 							host,
 							addressHandle,
 							destHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
 						if !bytes.Equal(metadata, bytesResult) {
@@ -1663,9 +1741,12 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 						managedTypes := host.ManagedTypes()
 						functionNameHandle := managedTypes.NewManagedBufferFromBytes([]byte("ESDTTransfer"))
 
-						returnValue := vmhooks.ManagedIsBuiltinFunctionWithHost(
+						returnValue, err := vmhooks.ManagedIsBuiltinFunctionWithHost(
 							host,
 							functionNameHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if returnValue != 1 {
 							host.Runtime().SignalUserError("assert failed")
 							return parentInstance
@@ -1673,9 +1754,12 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 
 						functionNameHandle = managedTypes.NewManagedBufferFromBytes([]byte("NotABuiltInFunction"))
 
-						returnValue = vmhooks.ManagedIsBuiltinFunctionWithHost(
+						returnValue, err = vmhooks.ManagedIsBuiltinFunctionWithHost(
 							host,
 							functionNameHandle)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if returnValue != 0 {
 							host.Runtime().SignalUserError("assert failed")
 							return parentInstance
@@ -1754,7 +1838,7 @@ func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
@@ -1845,13 +1929,14 @@ func Test_MultipleCalls_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvidedToChild),
 							nil,
 							nil)
+						assert.Nil(t, err)
 						assert.Equal(t, ret, int32(0))
 
 						return parentInstance
@@ -1934,13 +2019,14 @@ func Test_MultipleCalls_MultipleReads_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvidedToChild),
 							nil,
 							nil)
+						assert.Nil(t, err)
 						assert.Equal(t, ret, int32(0))
 
 						return parentInstance
@@ -2052,7 +2138,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
@@ -2125,7 +2211,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
@@ -2196,7 +2282,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_ReturnOnFail(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
@@ -2385,7 +2471,7 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_DisabledFlagFails(t *testing.
 				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
 					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
 						host := parentInstance.Host
-						testHooks := vmhooks.NewVMHooksImpl(host)
+						testHooks := vmhooks.NewVMHooksLegacy(host)
 						ret := testHooks.ManagedMultiTransferESDTNFTExecuteByUser(0, 0, 0, 0, 0, 0)
 						assert.Equal(t, int32(-1), ret)
 						return parentInstance
@@ -2403,5 +2489,3 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_DisabledFlagFails(t *testing.
 		})
 	assert.Nil(t, err)
 }
-
-

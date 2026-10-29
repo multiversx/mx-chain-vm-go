@@ -744,7 +744,7 @@ func TestBigFloats_Pow_WithNoBarnardOpcodesFlag(t *testing.T) {
 						host := instanceMock.Host
 						instance := contextmock.GetMockInstance(host)
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						destination, err := managedTypes.PutBigFloat(big.NewFloat(0))
 						assert.Nil(t, err)
@@ -795,7 +795,7 @@ func TestBigFloats_Pow_WithBarnardOpcodesFlag(t *testing.T) {
 						host := instanceMock.Host
 						instance := contextmock.GetMockInstance(host)
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						destination, err := managedTypes.PutBigFloat(big.NewFloat(0))
 						assert.Nil(t, err)

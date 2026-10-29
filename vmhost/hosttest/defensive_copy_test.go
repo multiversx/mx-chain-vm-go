@@ -32,7 +32,7 @@ func TestDefensiveCopy_StorageUpdateKeyMutation(t *testing.T) {
 					parentInstance.AddMockMethod("testStorage", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						keyBuf := managedTypes.NewManagedBufferFromBytes(originalKey)
 						valBuf := managedTypes.NewManagedBufferFromBytes(originalVal)
@@ -41,7 +41,8 @@ func TestDefensiveCopy_StorageUpdateKeyMutation(t *testing.T) {
 						require.Equal(t, int32(0), res)
 
 						// Mutate keyBuf in place
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, keyBuf, 0, int32(len(mutatedKey)), mutatedKey)
+						_, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, keyBuf, 0, int32(len(mutatedKey)), mutatedKey)
+						handleHookError(host, err)
 
 						return parentInstance
 					})
@@ -87,7 +88,7 @@ func TestDefensiveCopy_WriteLogTopicAndDataMutation(t *testing.T) {
 					parentInstance.AddMockMethod("testLog", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						topicBuf := managedTypes.NewManagedBufferFromBytes(originalTopic)
 						dataBuf := managedTypes.NewManagedBufferFromBytes(originalData)
@@ -101,8 +102,10 @@ func TestDefensiveCopy_WriteLogTopicAndDataMutation(t *testing.T) {
 						hooks.ManagedWriteLog(vecBuf, dataBuf)
 
 						// Mutate topicBuf and dataBuf in place
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, topicBuf, 0, int32(len(mutatedTopic)), mutatedTopic)
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, dataBuf, 0, int32(len(mutatedData)), mutatedData)
+						_, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, topicBuf, 0, int32(len(mutatedTopic)), mutatedTopic)
+						handleHookError(host, err)
+						_, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, dataBuf, 0, int32(len(mutatedData)), mutatedData)
+						handleHookError(host, err)
 
 						return parentInstance
 					})
@@ -148,14 +151,15 @@ func TestDefensiveCopy_FinishReturnDataMutation(t *testing.T) {
 					parentInstance.AddMockMethod("testFinish", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						managedTypes := host.ManagedTypes()
-						hooks := vmhooks.NewVMHooksImpl(host)
+						hooks := vmhooks.NewVMHooksLegacy(host)
 
 						retBuf := managedTypes.NewManagedBufferFromBytes(originalRet)
 						res := hooks.MBufferFinish(retBuf)
 						require.Equal(t, int32(0), res)
 
 						// Mutate retBuf in place
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, retBuf, 0, int32(len(mutatedRet)), mutatedRet)
+						_, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, retBuf, 0, int32(len(mutatedRet)), mutatedRet)
+						handleHookError(host, err)
 
 						return parentInstance
 					})
@@ -284,7 +288,8 @@ func TestDefensiveCopy_ReadManagedVec(t *testing.T) {
 						require.Equal(t, originalData2, vecSlices[1])
 
 						// Mutate buf1 in place
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, buf1, 0, int32(len(mutatedData)), mutatedData)
+						_, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, buf1, 0, int32(len(mutatedData)), mutatedData)
+						handleHookError(host, err)
 
 						// Verify vecSlices[0] was NOT affected
 						require.Equal(t, originalData1, vecSlices[0], "ReadManagedVecOfManagedBuffers returned slice must not be mutated")

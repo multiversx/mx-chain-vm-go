@@ -83,24 +83,31 @@ func vmHooksWrapperType(eiType EIType) string {
 	}
 }
 
+// goResultSignature renders the Go result list of a hook, including the leading space.
+func goResultSignature(funcMetadata *EIFunction, typeName func(EIType) string) string {
+	switch {
+	case funcMetadata.Result == nil && !funcMetadata.ReturnsError:
+		return ""
+	case funcMetadata.Result == nil:
+		return " error"
+	case !funcMetadata.ReturnsError:
+		return " " + typeName(funcMetadata.Result.Type)
+	default:
+		return fmt.Sprintf(" (%s, error)", typeName(funcMetadata.Result.Type))
+	}
+}
+
+// goResultSignatureLegacy renders the Go result list of a hook in its pre-migration shape,
+// where the error is not reported back to the caller. Includes the leading space.
+func goResultSignatureLegacy(funcMetadata *EIFunction, typeName func(EIType) string) string {
+	if funcMetadata.Result == nil {
+		return ""
+	}
+	return " " + typeName(funcMetadata.Result.Type)
+}
+
 func (writer *cgoWriter) cgoFuncName(funcMetadata *EIFunction) string {
 	return writer.cgoPrefix + lowerInitial(funcMetadata.Name)
-}
-
-func (writer *cgoWriter) cgoImportName(funcMetadata *EIFunction) string {
-	return fmt.Sprintf("C.%s", writer.cgoFuncName(funcMetadata))
-}
-
-// WriteWasmer1Cgo writes the metadata in the provided file
-func WriteWasmer1Cgo(out *eiGenWriter, eiMetadata *EIMetadata) {
-	writer := &cgoWriter{
-		goPackage: "wasmer",
-		cgoPrefix: "v1_5_",
-	}
-	writer.writeHeader(out, eiMetadata)
-	writer.writeCgoFunctions(out, eiMetadata)
-	writer.writePopulateImports(out, eiMetadata)
-	writer.writeGoExports(out, eiMetadata)
 }
 
 // WriteWasmer2Cgo writes the metadata in the provided file
@@ -147,26 +154,6 @@ import (
 )
 
 `)
-}
-
-func (writer *cgoWriter) writePopulateImports(out *eiGenWriter, eiMetadata *EIMetadata) {
-	out.WriteString(`// populateWasmerImports populates imports with the BaseOpsAPI API methods
-func populateWasmerImports(imports *wasmerImports) error {
-	var err error
-`)
-
-	for _, funcMetadata := range eiMetadata.AllFunctions {
-		out.WriteString(fmt.Sprintf("\terr = imports.append(\"%s\", %s, %s)\n",
-			lowerInitial(funcMetadata.Name),
-			writer.cgoFuncName(funcMetadata),
-			writer.cgoImportName(funcMetadata),
-		))
-		out.WriteString("\tif err != nil {\n")
-		out.WriteString("\t\treturn err\n")
-		out.WriteString("\t}\n\n")
-	}
-	out.WriteString("\treturn nil\n")
-	out.WriteString("}\n")
 }
 
 func (writer *cgoWriter) writePopulateFuncPointers(out *eiGenWriter, eiMetadata *EIMetadata) {
@@ -226,7 +213,6 @@ func (writer *cgoWriter) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadata
 			out.WriteString(cgoExportConversion(arg))
 		}
 		out.WriteString(")\n")
-
 		out.WriteString("}\n")
 	}
 }
