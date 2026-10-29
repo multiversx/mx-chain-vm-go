@@ -13,7 +13,11 @@ func WriteNames(
 	out.WriteString(`
 var empty struct{}
 
-var functionNames = map[string]struct{}{`)
+// vmHookNames lists the names of all VM hooks.
+// It is used only to validate that a smart contract does not export a function
+// with a reserved name (see reservedFunctions). The executor validates
+// the hooks imported by a contract separately.
+var vmHookNames = map[string]struct{}{`)
 
 	maxNameLength := longestFuncNameLengthCamel(eiMetadata)
 	for _, funcMetadata := range eiMetadata.AllFunctions {
