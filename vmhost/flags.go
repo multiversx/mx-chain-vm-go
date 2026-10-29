@@ -39,5 +39,9 @@ const (
 	// OutputRollbackOnDestContextFlag defines the flag that activates output state rollback on failed destination context calls
 	OutputRollbackOnDestContextFlag core.EnableEpochFlag = "OutputRollbackOnDestContextFlag"
 
+	// OpcodeV2Flag defines the flag that switches the executor to the V2 opcode version,
+	// which whitelists and meters the bulk memory opcodes
+	OpcodeV2Flag core.EnableEpochFlag = "OpcodeV2Flag"
+
 	// all new flags must be added to allFlags slice from hostCore/host
 )

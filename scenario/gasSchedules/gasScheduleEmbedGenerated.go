@@ -123,10 +123,10 @@ const (
     GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
-    GetRoundTime = 100
-    EpochStartBlockTimeStamp = 100
-    EpochStartBlockNonce = 100
-    EpochStartBlockRound = 100
+    GetRoundTime = 10000
+    EpochStartBlockTimeStamp = 10000
+    EpochStartBlockNonce = 10000
+    EpochStartBlockRound = 10000
 
 [EthAPICost]
     UseGas = 100
@@ -702,7 +702,9 @@ const (
     MaxMemoryGrow = 8
     MaxMemoryGrowDelta = 10
     MemoryCopy = 5
+    MemoryCopyPerByte = 5
     MemoryFill = 5
+    MemoryFillPerByte = 5
     MemoryGrow = 5
     MemoryInit = 5
     MemorySize = 5
@@ -971,10 +973,10 @@ const (
     GetCodeHash = 100
     IsBuiltinFunction = 100
     IsReservedFunctionName = 100
-    GetRoundTime = 100
-    EpochStartBlockTimeStamp = 100
-    EpochStartBlockNonce = 100
-    EpochStartBlockRound = 100
+    GetRoundTime = 10000
+    EpochStartBlockTimeStamp = 10000
+    EpochStartBlockNonce = 10000
+    EpochStartBlockRound = 10000
 
 [EthAPICost]
     UseGas = 100
@@ -1550,7 +1552,9 @@ const (
     MaxMemoryGrow = 100
     MaxMemoryGrowDelta = 1
     MemoryCopy = 5
+    MemoryCopyPerByte = 5
     MemoryFill = 5
+    MemoryFillPerByte = 5
     MemoryGrow = 5
     MemoryInit = 5
     MemorySize = 5

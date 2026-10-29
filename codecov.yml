@@ -8,3 +8,4 @@ ignore:
     - "**test/**"
     - "**testcommon/**"
     - "**testgen/**"
+    - "vmhost/vmhooks/generate/**"
