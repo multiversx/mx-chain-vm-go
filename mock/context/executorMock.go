@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
@@ -58,11 +57,6 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 // SetOpcodeConfig should set gas costs, but it does nothing in the case of this mock.
 func (executorMock *ExecutorMock) SetOpcodeConfig(_ executor.OpcodeVersion, _ *executor.WASMOpcodeCost) error {
 	return nil
-}
-
-// FunctionNames mocked method
-func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
-	return functionNames
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a

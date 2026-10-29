@@ -1,7 +1,6 @@
 package executorwrapper
 
 import (
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
@@ -18,12 +17,6 @@ type WrapperExecutor struct {
 // SetOpcodeConfig wraps the call to the underlying executor.
 func (wexec *WrapperExecutor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) error {
 	return wexec.wrappedExecutor.SetOpcodeConfig(opcodeVersion, wasmOps)
-}
-
-// FunctionNames wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) FunctionNames() vmcommon.FunctionNames {
-	functionNames := wexec.wrappedExecutor.FunctionNames()
-	return functionNames
 }
 
 // NewInstanceWithOptions wraps the call to the underlying executor.

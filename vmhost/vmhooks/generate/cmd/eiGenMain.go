@@ -48,9 +48,7 @@ func main() {
 	writeVMHooksLegacyAdapter(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
-	writeWasmer2Names(eiMetadata)
-
-	writeNamesForMockExecutor(eiMetadata)
+	writeVMHookNames(eiMetadata)
 
 	tryCreateRustOutputDirectory()
 
@@ -116,16 +114,10 @@ func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
-func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2Names.go")
+func writeVMHookNames(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../vmhost/contexts/vmHookNames.go")
 	defer out.Close()
-	eapigen.WriteNames(out, "wasmer2", eiMetadata)
-}
-
-func writeNamesForMockExecutor(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../mock/context/executorMockFunc.go")
-	defer out.Close()
-	eapigen.WriteNames(out, "mock", eiMetadata)
+	eapigen.WriteNames(out, "contexts", eiMetadata)
 }
 
 func tryCreateRustOutputDirectory() {
