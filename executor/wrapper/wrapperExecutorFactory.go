@@ -35,6 +35,7 @@ func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFact
 			logger:         factory.logger,
 			wrappedVMHooks: args.VMHooks,
 		},
+		OpcodeVersion:            args.OpcodeVersion,
 		OpcodeCosts:              args.OpcodeCosts,
 		RkyvSerializationEnabled: args.RkyvSerializationEnabled,
 		WasmerSIGSEGVPassthrough: args.WasmerSIGSEGVPassthrough,

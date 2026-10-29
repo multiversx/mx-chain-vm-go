@@ -8,10 +8,12 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	gasschedules "github.com/multiversx/mx-chain-vm-go/scenario/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -306,4 +308,32 @@ func TestBulkMemoryGas_OpcodeV2ActivationClearsCachedCompiledCode(t *testing.T) 
 	epochSubscriber.EpochConfirmed(1, 0)
 
 	require.Empty(t, world.CompiledCode)
+}
+
+// TestBulkMemoryGas_WrappedExecutorFactoryForwardsOpcodeVersion makes sure that the executor
+// wrapper does not drop the opcode version chosen by the host, which would silently create a
+// V1 executor and reject the bulk memory opcodes even though OpcodeV2Flag is active.
+func TestBulkMemoryGas_WrappedExecutorFactoryForwardsOpcodeVersion(t *testing.T) {
+	host := testcommon.NewTestHostBuilder(t).
+		WithExecutorFactory(executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())).
+		WithBlockchainHook(testcommon.BlockchainHookStubForCall(
+			testcommon.GetTestSCCode("bulk-memory", "../../"),
+			big.NewInt(0))).
+		WithGasSchedule(bulkMemoryGasSchedule()).
+		WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
+			IsFlagEnabledCalled: func(_ core.EnableEpochFlag) bool {
+				return true
+			},
+		}).
+		Build()
+	defer host.Reset()
+
+	input := testcommon.CreateTestContractCallInputBuilder().
+		WithGasProvided(bulkMemoryGasProvided).
+		WithFunction("memoryCopy").
+		WithArguments(big.NewInt(10).Bytes()).
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	testcommon.NewVMOutputVerifier(t, vmOutput, err).Ok()
 }
