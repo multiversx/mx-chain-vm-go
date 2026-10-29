@@ -27,8 +27,11 @@ func TestManaged_SetByteSlice(t *testing.T) {
 						managedType := host.ManagedTypes()
 						mBuffer := managedType.NewManagedBufferFromBytes(
 							make([]byte, len(data)))
-						result := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(
+						result, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(
 							host, mBuffer, int32(len(prefix)), int32(len(slice)), []byte(data))
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if result != 0 {
 							vmhooks.FailExecution(host, vmhost.ErrSignalError)
 						}
@@ -74,8 +77,11 @@ func TestManaged_CopyByteSlice_DifferentBuffer(t *testing.T) {
 							[]byte(sourceData))
 						destMBuffer := managedType.NewManagedBufferFromBytes(
 							[]byte(destinationData))
-						result := vmhooks.ManagedBufferCopyByteSliceWithHost(
+						result, err := vmhooks.ManagedBufferCopyByteSliceWithHost(
 							host, sourceMBuffer, int32(len(prefix)), int32(len(slice)), destMBuffer)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if result != 0 {
 							vmhooks.FailExecution(host, vmhost.ErrSignalError)
 						}
@@ -116,8 +122,11 @@ func TestManaged_CopyByteSlice_SameBuffer(t *testing.T) {
 						managedType := host.ManagedTypes()
 						sourceMBuffer := managedType.NewManagedBufferFromBytes(
 							[]byte(sourceData))
-						result := vmhooks.ManagedBufferCopyByteSliceWithHost(
+						result, err := vmhooks.ManagedBufferCopyByteSliceWithHost(
 							host, sourceMBuffer, int32(len(prefix))-deltaForSlice, int32(len(slice)), sourceMBuffer)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						if result != 0 {
 							vmhooks.FailExecution(host, vmhost.ErrSignalError)
 						}

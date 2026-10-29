@@ -30,13 +30,16 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 		noOfTransfers := int(big.NewInt(0).SetBytes(arguments[0]).Int64())
 
 		for transfer := 0; transfer < noOfTransfers; transfer++ {
-			vmhooks.TransferValueExecuteWithTypedArgs(host,
+			_, err := vmhooks.TransferValueExecuteWithTypedArgs(host,
 				GetChildAddressForTransfer(transfer),
 				big.NewInt(testConfig.TransferFromParentToChild),
 				int64(testConfig.GasProvidedToChild),
 				big.NewInt(int64(transfer)).Bytes(), // transfer data
 				[][]byte{},
 			)
+			if err != nil {
+				vmhooks.FailExecution(host, err)
+			}
 		}
 
 		host.Output().Finish(TransferAndExecuteReturnData)
@@ -53,13 +56,16 @@ func TransferEGLDToParent(instanceMock *mock.InstanceMock, config interface{}) {
 
 		_ = host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 
-		vmhooks.TransferValueExecuteWithTypedArgs(host,
+		_, err := vmhooks.TransferValueExecuteWithTypedArgs(host,
 			test.ParentAddress,
 			big.NewInt(testConfig.ChildBalance/2),
 			0,
 			[]byte{}, // transfer data
 			[][]byte{},
 		)
+		if err != nil {
+			vmhooks.FailExecution(host, err)
+		}
 
 		return instance
 	})
@@ -74,13 +80,16 @@ func TransferAndExecuteWithBuiltIn(instanceMock *mock.InstanceMock, config inter
 		_ = host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 
 		transferString := "ESDTTransfer@" + hex.EncodeToString([]byte("XYY-ABCDEF")) + "@" + hex.EncodeToString(big.NewInt(100000).Bytes())
-		vmhooks.TransferValueExecuteWithTypedArgs(host,
+		_, err := vmhooks.TransferValueExecuteWithTypedArgs(host,
 			test.UserAddress,
 			big.NewInt(0),
 			1,
 			[]byte(transferString),
 			[][]byte{},
 		)
+		if err != nil {
+			vmhooks.FailExecution(host, err)
+		}
 
 		return instance
 	})

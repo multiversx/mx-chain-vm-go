@@ -89,13 +89,16 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			ESDTTokenNonce: 0,
 		}
 
-		vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+		_, err = vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
 			input.RecipientAddr,
 			[]*vmcommon.ESDTTransfer{transfer},
 			int64(testConfig.GasProvidedToChild),
 			functionName,
 			args)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
 
 		return instance
 	})

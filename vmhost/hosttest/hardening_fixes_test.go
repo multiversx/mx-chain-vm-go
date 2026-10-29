@@ -33,7 +33,7 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 								require.True(t, initialIsComplete)
 
 								// Call child contract with non-existent method using error return hook
-								retCode := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+								retCode, _ := handleHookErr(host)(vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 									host,
 									100000,
 									big.NewInt(0),
@@ -41,7 +41,7 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 									test.ChildAddress,
 									nil,
 									0,
-								)
+								))
 								// Returns 1 indicating error in child execution
 								require.Equal(t, int32(1), retCode)
 
@@ -109,14 +109,14 @@ func TestHost_VerifyCustomSecp256k1_MemoryBoundaryGracefulFailure(t *testing.T) 
 
 						var ret int32
 						require.NotPanics(t, func() {
-							ret = hooks.VerifyCustomSecp256k1(
+							ret, _ = handleHookErr(host)(hooks.VerifyCustomSecp256k1(
 								0,
 								33,
 								messageOffset,
 								messageLength,
 								sigOffset,
 								0, // sha256
-							)
+							))
 						})
 
 						require.Equal(t, int32(1), ret)

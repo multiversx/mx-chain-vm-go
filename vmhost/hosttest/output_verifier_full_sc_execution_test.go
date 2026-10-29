@@ -57,14 +57,14 @@ func TestOutputVerifier_ComplicatedMultiContractCall_WithDevRewardsAndTransfers(
 						valBuf := managedTypes.NewBigInt(big.NewInt(0))
 						argsVecBuf := managedTypes.NewManagedBuffer()
 
-						res := hooks.ManagedExecuteOnDestContext(
+						res, _ := handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
 							100000,
 							childAddrBuf,
 							valBuf,
 							fnBuf,
 							argsVecBuf,
 							managedTypes.NewManagedBuffer(),
-						)
+						))
 						require.Equal(t, int32(0), res)
 
 						// 2. Parent performs external transfer of 300,000 to user
