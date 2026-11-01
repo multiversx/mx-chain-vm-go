@@ -20,7 +20,7 @@ type RuntimeContextMock struct {
 	VMType                             []byte
 	ReadOnlyFlag                       bool
 	VerifyCode                         bool
-	CurrentBreakpointValue             vmhost.BreakpointValue
+	CallResult                         executor.InstanceCallResult
 	PointsUsed                         uint64
 	InstanceCtxID                      int
 	MemLoadResult                      []byte
@@ -44,7 +44,7 @@ type RuntimeContextMock struct {
 	SameContractOnStackCount           uint64
 	HasFunctionResult                  bool
 	UnsetInstanceFunc                  func()
-	Instance                           executor.Instance
+	Instance                           executor.InstanceNew
 }
 
 // InitState mocked method
@@ -52,12 +52,12 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // GetVMExecutor mocked method
-func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
+func (r *RuntimeContextMock) GetVMExecutor() executor.ExecutorNew {
 	return nil
 }
 
 // ReplaceVMExecutor mocked method
-func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.Executor) {
+func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.ExecutorNew) {
 }
 
 // GetInstanceTracker mocked method
@@ -219,13 +219,12 @@ func (r *RuntimeContextMock) SignalExit(_ int) {
 func (r *RuntimeContextMock) SignalUserError(_ string) {
 }
 
-// SetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ vmhost.BreakpointValue) {
+// InterruptExecution mocked method
+func (r *RuntimeContextMock) InterruptExecution() {
 }
 
-// GetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
-	return r.CurrentBreakpointValue
+// SetOpcodeConfig mocked method
+func (r *RuntimeContextMock) SetOpcodeConfig(_ *executor.OpcodeConfig) {
 }
 
 // PrepareLegacyAsyncCall mocked method
@@ -259,12 +258,12 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance mocked method()
-func (r *RuntimeContextMock) GetInstance() executor.Instance {
+func (r *RuntimeContextMock) GetInstance() executor.InstanceNew {
 	return r.Instance
 }
 
 // GetWarmInstance mocked method
-func (r *RuntimeContextMock) GetWarmInstance(codeHash []byte) (executor.Instance, bool) {
+func (r *RuntimeContextMock) GetWarmInstance(codeHash []byte) (executor.InstanceNew, bool) {
 	return nil, false
 }
 
@@ -280,9 +279,13 @@ func (r *RuntimeContextMock) FunctionNameChecked() (string, error) {
 	return "", nil
 }
 
-// CallSCFunction mocked method
-func (r *RuntimeContextMock) CallSCFunction(_ string) error {
-	return r.Err
+// CallSCFunction mocked method.
+//
+// Reports CallResult, which defaults to CallOk. A test that wants the call to fail sets it;
+// Err is about the other methods here and no longer reaches this one, a call result not
+// being an error.
+func (r *RuntimeContextMock) CallSCFunction(_ string) executor.InstanceCallResult {
+	return r.CallResult
 }
 
 // BaseOpsErrorShouldFailExecution mocked method

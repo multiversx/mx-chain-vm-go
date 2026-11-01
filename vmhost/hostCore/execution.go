@@ -971,12 +971,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 		return err
 	}
 
-	err = host.Runtime().CallSCFunction(functionName)
-	if err != nil {
-		err = host.handleBreakpointIfAny(err)
-	}
-
-	return err
+	return host.handleCallResult(host.Runtime().CallSCFunction(functionName))
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
@@ -1220,12 +1215,9 @@ func (host *vmHost) callSCFunction(functionName string) error {
 		return executor.ErrFuncNotFound
 	}
 
-	err := runtime.CallSCFunction(functionName)
+	err := host.handleCallResult(runtime.CallSCFunction(functionName))
 	if err != nil {
-		err = host.handleBreakpointIfAny(err)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	return host.checkFinalGasAfterExit()
@@ -1343,14 +1335,10 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return false, err
 		}
 
-		err = runtime.CallSCFunction(functionName)
+		err = host.handleCallResult(runtime.CallSCFunction(functionName))
 		if err != nil {
-			err = host.handleBreakpointIfAny(err)
-			log.Trace("breakpoint detected and handled", "err", err)
-			if err != nil {
-				log.Trace("call SC method failed", "error", err, "src", "sc function")
-				return true, err
-			}
+			log.Trace("call SC method failed", "error", err, "src", "sc function")
+			return true, err
 		}
 
 		err = host.checkFinalGasAfterExit()

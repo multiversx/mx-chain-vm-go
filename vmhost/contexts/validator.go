@@ -43,16 +43,8 @@ func newWASMValidator(
 	}
 }
 
-func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instance) error {
-	if !instance.HasMemory() {
-		return vmhost.ErrMemoryDeclarationMissing
-	}
-
-	return nil
-}
-
-func (validator *wasmValidator) verifyFunctions(instance executor.Instance) error {
-	functionNames := instance.GetFunctionNames()
+func (validator *wasmValidator) verifyFunctions(instance executor.InstanceNew) error {
+	functionNames := instance.GetExportedFunctionNames()
 	if functionNames == nil {
 		return vmhost.ErrContractInvalid
 	}
@@ -64,7 +56,11 @@ func (validator *wasmValidator) verifyFunctions(instance executor.Instance) erro
 		}
 	}
 
-	return instance.ValidateFunctionArities()
+	if !instance.CheckSignatures() {
+		return executor.ErrFunctionNonvoidSignature
+	}
+
+	return nil
 }
 
 var protectedFunctions = map[string]bool{
@@ -74,8 +70,8 @@ var protectedFunctions = map[string]bool{
 	"signalError":       true,
 	"completedTxEvent":  true}
 
-func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Instance) error {
-	functionNames := instance.GetFunctionNames()
+func (validator *wasmValidator) verifyProtectedFunctions(instance executor.InstanceNew) error {
+	functionNames := instance.GetExportedFunctionNames()
 	if functionNames == nil {
 		return vmhost.ErrContractInvalid
 	}

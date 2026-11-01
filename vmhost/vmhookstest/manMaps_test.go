@@ -6,7 +6,6 @@ import (
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +27,7 @@ func TestManagedMap(t *testing.T) {
 						valueBuff := managedType.NewManagedBufferFromBytes(value)
 						err := managedType.ManagedMapPut(mMap, keyBuff, valueBuff)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 
@@ -36,19 +35,19 @@ func TestManagedMap(t *testing.T) {
 							make([]byte, len(value)))
 						err = managedType.ManagedMapGet(mMap, keyBuff, outValueBuf)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						outValueBytes, err := managedType.GetBytes(outValueBuf)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						host.Output().Finish(outValueBytes)
 
 						contains, err := managedType.ManagedMapContains(mMap, keyBuff)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						if contains {
@@ -61,14 +60,14 @@ func TestManagedMap(t *testing.T) {
 							make([]byte, len(value)))
 						err = managedType.ManagedMapRemove(mMap, keyBuff, outValueBuf)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						host.Output().Finish(outValueBytes)
 
 						containsAfterRemove, err := managedType.ManagedMapContains(mMap, keyBuff)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						if containsAfterRemove {
@@ -81,12 +80,12 @@ func TestManagedMap(t *testing.T) {
 							make([]byte, len(value)))
 						err = managedType.ManagedMapGet(mMap, keyBuff, outValueBuf)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						outValueBytes, err = managedType.GetBytes(outValueBuf)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 							return instance
 						}
 						host.Output().Finish(outValueBytes)

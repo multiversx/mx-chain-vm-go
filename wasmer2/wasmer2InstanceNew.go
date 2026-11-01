@@ -5,7 +5,6 @@ import "C"
 import (
 	"fmt"
 	"runtime"
-	"sort"
 	"sync/atomic"
 	"unsafe"
 
@@ -47,10 +46,6 @@ type Wasmer2InstanceNew struct {
 	// Written only from a hook, which runs on the goroutine that is inside the C call, so it
 	// needs no synchronisation of its own.
 	earlyExit error
-
-	// importedFunctions is computed on demand and then kept: it costs one C call per known
-	// hook name, and the answer cannot change for a compiled module.
-	importedFunctions []string
 }
 
 var instanceNewIDCounter uint64
@@ -80,7 +75,42 @@ func newInstanceNew(cgoInstance *cWasmerInstanceT, wasmerExecutor *Wasmer2Execut
 // instance may be nil, which is the hooks of no instance: every state operation reports
 // itself detached, and an error has nowhere to go but the log.
 func newInstanceVMHooks(runtime executor.ExecutorRuntime, instance *Wasmer2InstanceNew) executor.VMHooksLegacy {
-	return executor.NewVMHooksLegacyAdapterForRuntime(runtime, instance.instanceState(), instance)
+	return executor.NewVMHooksLegacyAdapterForRuntime(
+		runtime,
+		instance.instanceState(),
+		instanceErrorHandler{runtime: runtime, instance: instance},
+	)
+}
+
+var _ executor.VMHooksErrorHandler = instanceErrorHandler{}
+
+// instanceErrorHandler applies a failed hook's side effects on both sides.
+//
+// Two concerns, and both are needed: the VM records in its output state why the contract
+// stopped - the return code, the message - while the instance halts the contract. Neither
+// can do the other's half. The new C API path does the same pairing in hookEarlyExit; here
+// it has to be assembled, because the legacy adapter takes a single error handler.
+type instanceErrorHandler struct {
+	runtime  executor.ExecutorRuntime
+	instance *Wasmer2InstanceNew
+}
+
+// HandleHookError implements executor.VMHooksErrorHandler.
+func (handler instanceErrorHandler) HandleHookError(err error) {
+	if err == nil {
+		return
+	}
+
+	// The VM's half. Asked for per call, like the hooks themselves, because that is the only
+	// way to reach the hooks object servicing this call.
+	vmHooks := handler.runtime.VMHooksForCall(handler.instance.instanceState())
+	if vmErrorHandler, ok := vmHooks.(executor.VMHooksErrorHandler); ok {
+		vmErrorHandler.HandleHookError(err)
+	} else {
+		logWasmer2.Error("VM hooks cannot record a hook error", "err", err)
+	}
+
+	handler.instance.HandleHookError(err)
 }
 
 // Call calls an exported function by name, with the gas it is allowed to burn.
@@ -269,39 +299,16 @@ func (instance *Wasmer2InstanceNew) GetExportedFunctionNames() []string {
 	return names
 }
 
-// GetImportedFunctionNames returns the names of all the host functions (VM hooks) the
-// contract imports.
+// IsFunctionImported returns whether the contract imports the host function with the given
+// name.
 //
-// The 2.2 C API offers no way to list them - only to ask whether one particular name is
-// imported - so the answer is assembled by asking about every hook this backend provides.
-// That is complete rather than approximate: a module only instantiates if every one of its
-// imports resolved against exactly this table, so a name outside it cannot be imported by an
-// instance that exists.
-//
-// Sorted, because the table is a map and the callers compare whole sets.
-func (instance *Wasmer2InstanceNew) GetImportedFunctionNames() []string {
-	if instance.importedFunctions != nil {
-		return instance.importedFunctions
-	}
-
+// One name per call is all the 2.2 C API offers, and all the host needs: it asks about the
+// handful of hooks an epoch has not activated yet, never about the whole import section.
+func (instance *Wasmer2InstanceNew) IsFunctionImported(name string) bool {
 	if instance.cgoInstance == nil {
-		return nil
+		return false
 	}
 
-	imported := make([]string, 0, len(functionNames))
-	for name := range functionNames {
-		if instance.isFunctionImported(name) {
-			imported = append(imported, name)
-		}
-	}
-	sort.Strings(imported)
-
-	instance.importedFunctions = imported
-
-	return imported
-}
-
-func (instance *Wasmer2InstanceNew) isFunctionImported(name string) bool {
 	cImportName := cCString(name)
 	defer cFree(unsafe.Pointer(cImportName))
 
@@ -315,6 +322,19 @@ func (instance *Wasmer2InstanceNew) GetPointsUsedNew() (uint64, error) {
 	}
 
 	return cWasmerInstanceGetPointsUsed(instance.cgoInstance), nil
+}
+
+// SetPointsUsedNew overwrites the points (gas) used by the instance.
+func (instance *Wasmer2InstanceNew) SetPointsUsedNew(points uint64) error {
+	if instance.cgoInstance == nil {
+		return ErrInstanceClosed
+	}
+
+	if cWasmerInstanceSetPointsUsed(instance.cgoInstance, points) != cWasmerOk {
+		return newWrappedError(ErrSetPointsUsed)
+	}
+
+	return nil
 }
 
 // ResetNew returns the instance to the state it was in immediately after creation, so that
@@ -364,8 +384,7 @@ func (instance *Wasmer2InstanceNew) ID() string {
 // Close releases the instance's C memory, and every state handle that points at it reports
 // itself detached from here on.
 //
-// Not part of executor.InstanceNew, which has no lifecycle method: it is the concrete type's
-// own business, as it is on the Rust side. It must not run while the instance is executing -
+// It must not run while the instance is executing -
 // the VM's own abandon-on-timeout handling, which the old Wasmer2Instance carries, has no
 // counterpart here because the new interface cannot express it.
 func (instance *Wasmer2InstanceNew) Close() {
@@ -378,6 +397,61 @@ func (instance *Wasmer2InstanceNew) Close() {
 	instance.memory.cgoInstance = nil
 
 	logWasmer2.Trace("closed instance", "id", instance.id)
+}
+
+// InstanceState returns the handle a hook reaches this instance's memory and gas through.
+//
+// Test-only, and it is why instanceState has an exported twin: during a call the state
+// arrives at the hooks from the executor, so nothing in production ever asks an instance for
+// it. A test that has to read or write an instance's memory between calls has no other way
+// in, the new instance interface carrying no memory operations at all.
+func (instance *Wasmer2InstanceNew) InstanceState() executor.InstanceState {
+	return instance.instanceState()
+}
+
+// MemLength is the size of the instance's linear memory, in bytes.
+//
+// Not on any interface: memory belongs to the per-call instance state, and this reaches it
+// from outside a call. It exists for tests that have to observe an instance's memory between
+// calls - the warm instance memory-reset test above all - which an InstanceState cannot do.
+func (instance *Wasmer2InstanceNew) MemLength() uint32 {
+	return instance.memory.Length()
+}
+
+// MemDump yields the instance's linear memory as the executor sees it, without copying.
+//
+// Test-only, for the same reason as MemLength, and additionally because the slice aliases
+// the memory rather than copying it: a test that needs the memory's base address - to check
+// that a reset did not move it - cannot use a copy.
+func (instance *Wasmer2InstanceNew) MemDump() []byte {
+	return instance.memory.Data()
+}
+
+// IsAlreadyCleaned reports whether the instance has already been released.
+//
+// The C pointer is the honest answer: it is what Close and Abandon both clear.
+func (instance *Wasmer2InstanceNew) IsAlreadyCleaned() bool {
+	return instance.cgoInstance == nil
+}
+
+// Abandon gives up the instance without releasing it, leaking its C memory on purpose.
+//
+// The VM reaches for this when a contract has run past its deadline and has not stopped
+// within the grace period that follows. The C thread may still be executing inside this
+// instance, so destroying it would free memory out from under a live call - a SIGSEGV
+// instead of a timeout. Leaking a few megabytes once per runaway contract is the cheaper
+// failure.
+//
+// The instance reports itself cleaned from here on, so nothing closes it later.
+func (instance *Wasmer2InstanceNew) Abandon() {
+	if instance.cgoInstance == nil {
+		return
+	}
+
+	instance.cgoInstance = nil
+	instance.memory.cgoInstance = nil
+
+	logWasmer2.Trace("abandoned instance", "id", instance.id)
 }
 
 // IsInterfaceNil returns true if underlying object is nil

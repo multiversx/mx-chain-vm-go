@@ -26,7 +26,7 @@ var DefaultTimeOutForSCExecutionInMilliseconds uint32 = 10000
 
 // VMTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with VM.
 type ScenarioVMHostBuilder struct {
-	OverrideVMExecutor                  executor.ExecutorAbstractFactory
+	OverrideVMExecutor                  executor.ExecutorNewAbstractFactory
 	VMType                              []byte
 	TimeOutForSCExecutionInMilliseconds uint32
 }
@@ -83,18 +83,18 @@ func (svb *ScenarioVMHostBuilder) NewVM(
 	return hostCore.NewVMHost(
 		world,
 		&vmhost.VMHostParameters{
-			VMType:                    svb.VMType,
-			OverrideVMExecutor:        svb.OverrideVMExecutor,
-			BlockGasLimit:             blockGasLimit,
-			GasSchedule:               gasSchedule,
-			BuiltInFuncContainer:      world.BuiltinFuncs.Container,
-			ProtectedKeyPrefix:        []byte(core.ProtectedKeyPrefix),
-			ESDTTransferParser:        esdtTransferParser,
-			EpochNotifier:             &mock.EpochNotifierStub{},
-			EnableEpochsHandler:       world.EnableEpochsHandler,
-			WasmerSIGSEGVPassthrough:  false,
-			Hasher:                    worldmock.DefaultHasher,
-			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
+			VMType:                              svb.VMType,
+			OverrideVMExecutor:                  svb.OverrideVMExecutor,
+			BlockGasLimit:                       blockGasLimit,
+			GasSchedule:                         gasSchedule,
+			BuiltInFuncContainer:                world.BuiltinFuncs.Container,
+			ProtectedKeyPrefix:                  []byte(core.ProtectedKeyPrefix),
+			ESDTTransferParser:                  esdtTransferParser,
+			EpochNotifier:                       &mock.EpochNotifierStub{},
+			EnableEpochsHandler:                 world.EnableEpochsHandler,
+			WasmerSIGSEGVPassthrough:            false,
+			Hasher:                              worldmock.DefaultHasher,
+			MapOpcodeAddressIsAllowed:           map[string]map[string]struct{}{},
 			TimeOutForSCExecutionInMilliseconds: svb.TimeOutForSCExecutionInMilliseconds,
 		})
 

@@ -63,6 +63,20 @@ func ExitExecutionFailed(err error) *EarlyExit {
 	}
 }
 
+// EarlyExitOf classifies a VM hook's error into the termination it requires.
+//
+// An error that describes its own exit is that exit; anything else takes the default. Shared
+// rather than private to the VM because anything standing in for a backend - a mock
+// instance, above all - has to classify a hook error the same way a real one does.
+func EarlyExitOf(err error) *EarlyExit {
+	var earlyExit *EarlyExit
+	if errors.As(err, &earlyExit) {
+		return earlyExit
+	}
+
+	return ExitExecutionFailed(err)
+}
+
 // EarlyExitCodeOf maps a VM hook's error to the code that travels to the executor.
 //
 // errors.As rather than a type assertion, so the code survives the fmt.Errorf("%w") wrapping

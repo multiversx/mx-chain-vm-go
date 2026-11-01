@@ -7,45 +7,26 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ executor.Instance = (*WrapperInstance)(nil)
+var _ executor.InstanceNew = (*WrapperInstance)(nil)
 
 // WrapperInstance is a wrapper around an executor instance, which adds the possibility of logging operations.
 type WrapperInstance struct {
 	logger          ExecutorLogger
-	wrappedInstance executor.Instance
+	wrappedInstance executor.InstanceNew
 }
 
-// GetPointsUsed wraps the call to the underlying instance.
-func (inst *WrapperInstance) GetPointsUsed() uint64 {
-	points := inst.wrappedInstance.GetPointsUsed()
+// GetPointsUsedNew wraps the call to the underlying instance.
+func (inst *WrapperInstance) GetPointsUsedNew() (uint64, error) {
+	points, err := inst.wrappedInstance.GetPointsUsedNew()
 	inst.logger.LogExecutorEvent(fmt.Sprintf("GetPointsUsed: %d", points))
-	return points
+	return points, err
 }
 
-// SetPointsUsed wraps the call to the underlying instance.
-func (inst *WrapperInstance) SetPointsUsed(points uint64) {
-	inst.wrappedInstance.SetPointsUsed(points)
+// SetPointsUsedNew wraps the call to the underlying instance.
+func (inst *WrapperInstance) SetPointsUsedNew(points uint64) error {
+	err := inst.wrappedInstance.SetPointsUsedNew(points)
 	inst.logger.LogExecutorEvent(fmt.Sprintf("SetPointsUsed: %d", points))
-
-}
-
-// SetGasLimit wraps the call to the underlying instance.
-func (inst *WrapperInstance) SetGasLimit(gasLimit uint64) {
-	inst.logger.LogExecutorEvent(fmt.Sprintf("SetGasLimit: %d", gasLimit))
-	inst.wrappedInstance.SetGasLimit(gasLimit)
-}
-
-// SetBreakpointValue wraps the call to the underlying instance.
-func (inst *WrapperInstance) SetBreakpointValue(value uint64) {
-	inst.logger.LogExecutorEvent(fmt.Sprintf("SetBreakpointValue: %d", value))
-	inst.wrappedInstance.SetBreakpointValue(value)
-}
-
-// GetBreakpointValue wraps the call to the underlying instance.
-func (inst *WrapperInstance) GetBreakpointValue() uint64 {
-	result := inst.wrappedInstance.GetBreakpointValue()
-	inst.logger.LogExecutorEvent(fmt.Sprintf("GetBreakpointValue: %d", result))
-	return result
+	return err
 }
 
 // Cache wraps the call to the underlying instance.
@@ -53,30 +34,38 @@ func (inst *WrapperInstance) Cache() ([]byte, error) {
 	return inst.wrappedInstance.Cache()
 }
 
-// Clean wraps the call to the underlying instance.
-func (inst *WrapperInstance) Clean() bool {
-	result := inst.wrappedInstance.Clean()
-	inst.logger.LogExecutorEvent(fmt.Sprintf("Clean: %t", result))
-	return result
+// Close wraps the call to the underlying instance.
+func (inst *WrapperInstance) Close() {
+	inst.wrappedInstance.Close()
+	inst.logger.LogExecutorEvent("Clean: true")
 }
 
 // IsAlreadyCleaned wraps the call to the underlying instance.
+//
+// Not part of executor.InstanceNew; required of anything the VM tracks.
 func (inst *WrapperInstance) IsAlreadyCleaned() bool {
-	result := inst.wrappedInstance.IsAlreadyCleaned()
+	result := instanceIsAlreadyCleaned(inst.wrappedInstance)
 	inst.logger.LogExecutorEvent(fmt.Sprintf("IsAlreadyCleaned: %t", result))
 	return result
 }
 
 // Abandon wraps the call to the underlying instance.
+//
+// Not part of executor.InstanceNew; required of anything the VM tracks.
 func (inst *WrapperInstance) Abandon() {
-	inst.wrappedInstance.Abandon()
+	abandonInstance(inst.wrappedInstance)
 	inst.logger.LogExecutorEvent("Abandon")
 }
 
-// CallFunction wraps the call to the underlying instance.
-func (inst *WrapperInstance) CallFunction(functionName string) error {
+// Call wraps the call to the underlying instance.
+func (inst *WrapperInstance) Call(functionName string, pointsLimit uint64) executor.InstanceCallResult {
 	inst.logger.LogExecutorEvent(fmt.Sprintf("CallFunction(%s):", functionName))
-	return inst.wrappedInstance.CallFunction(functionName)
+	return inst.wrappedInstance.Call(functionName, pointsLimit)
+}
+
+// RequestStop wraps the call to the underlying instance.
+func (inst *WrapperInstance) RequestStop() {
+	inst.wrappedInstance.RequestStop()
 }
 
 // HasFunction wraps the call to the underlying instance.
@@ -86,54 +75,23 @@ func (inst *WrapperInstance) HasFunction(functionName string) bool {
 	return result
 }
 
-// GetFunctionNames wraps the call to the underlying instance.
-func (inst *WrapperInstance) GetFunctionNames() []string {
-	result := inst.wrappedInstance.GetFunctionNames()
+// GetExportedFunctionNames wraps the call to the underlying instance.
+func (inst *WrapperInstance) GetExportedFunctionNames() []string {
+	result := inst.wrappedInstance.GetExportedFunctionNames()
 	sort.Strings(result) // to get consistent logs, function names must be sorted
 	inst.logger.LogExecutorEvent(fmt.Sprintf("GetFunctionNames: %s", result))
 	return result
 }
 
-// ValidateFunctionArities wraps the call to the underlying instance.
-func (inst *WrapperInstance) ValidateFunctionArities() error {
-	err := inst.wrappedInstance.ValidateFunctionArities()
-	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateFunctionArities: %t", err == nil))
-	return err
-}
-
-// HasMemory wraps the call to the underlying instance.
-func (inst *WrapperInstance) HasMemory() bool {
-	return inst.wrappedInstance.HasMemory()
-}
-
-// MemLoad returns the contents from the given offset of the WASM memory.
-func (inst *WrapperInstance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
-	return inst.wrappedInstance.MemLoad(memPtr, length)
-}
-
-// MemStore stores the given data in the WASM memory at the given offset.
-func (inst *WrapperInstance) MemStore(memPtr executor.MemPtr, data []byte) error {
-	return inst.wrappedInstance.MemStore(memPtr, data)
-}
-
-// MemLength returns the length of the allocated memory. Only called directly in tests.
-func (inst *WrapperInstance) MemLength() uint32 {
-	return inst.wrappedInstance.MemLength()
-}
-
-// MemGrow allocates more pages to the current memory
-func (inst *WrapperInstance) MemGrow(pages uint32) error {
-	return inst.wrappedInstance.MemGrow(pages)
-}
-
-// MemDump yields the entire contents of the memory. Only used in tests.
-func (inst *WrapperInstance) MemDump() []byte {
-	return inst.wrappedInstance.MemDump()
-}
-
 // IsFunctionImported wraps the call to the underlying instance.
 func (inst *WrapperInstance) IsFunctionImported(name string) bool {
-	result := inst.wrappedInstance.IsFunctionImported(name)
+	return inst.wrappedInstance.IsFunctionImported(name)
+}
+
+// CheckSignatures wraps the call to the underlying instance.
+func (inst *WrapperInstance) CheckSignatures() bool {
+	result := inst.wrappedInstance.CheckSignatures()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateFunctionArities: %t", result))
 	return result
 }
 
@@ -142,24 +100,41 @@ func (inst *WrapperInstance) IsInterfaceNil() bool {
 	return inst == nil
 }
 
-// Reset wraps the call to the underlying instance.
-func (inst *WrapperInstance) Reset() bool {
-	result := inst.wrappedInstance.Reset()
-	inst.logger.LogExecutorEvent(fmt.Sprintf("Reset: %t", result))
-	return result
-}
-
-// SetVMHooksPtr wraps the call to the underlying instance.
-func (inst *WrapperInstance) SetVMHooksPtr(vmHooksPtr uintptr) {
-	inst.wrappedInstance.SetVMHooksPtr(vmHooksPtr)
-}
-
-// GetVMHooksPtr wraps the call to the underlying instance.
-func (inst *WrapperInstance) GetVMHooksPtr() uintptr {
-	return inst.wrappedInstance.GetVMHooksPtr()
+// ResetNew wraps the call to the underlying instance.
+func (inst *WrapperInstance) ResetNew() error {
+	err := inst.wrappedInstance.ResetNew()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("Reset: %t", err == nil))
+	return err
 }
 
 // ID wraps the call to the underlying instance.
 func (inst *WrapperInstance) ID() string {
 	return inst.wrappedInstance.ID()
+}
+
+// instanceCleanupOps is what the VM requires of an instance beyond executor.InstanceNew.
+// Named here rather than imported from vmhost, to keep this package below it.
+type instanceCleanupOps interface {
+	Abandon()
+	IsAlreadyCleaned() bool
+}
+
+// instanceIsAlreadyCleaned asks the wrapped instance, or assumes it is live if the backend
+// does not offer the question - in which case the host would have rejected it anyway.
+func instanceIsAlreadyCleaned(instance executor.InstanceNew) bool {
+	cleanup, ok := instance.(instanceCleanupOps)
+	if !ok {
+		return false
+	}
+
+	return cleanup.IsAlreadyCleaned()
+}
+
+func abandonInstance(instance executor.InstanceNew) {
+	cleanup, ok := instance.(instanceCleanupOps)
+	if !ok {
+		return
+	}
+
+	cleanup.Abandon()
 }

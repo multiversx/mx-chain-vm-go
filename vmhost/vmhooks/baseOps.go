@@ -1622,7 +1622,10 @@ func upgradeContract(
 	if err != nil {
 		return err
 	}
-	return nil
+
+	// Registered: the contract now suspends so the host can run the call. This is what
+	// setting BreakpointAsyncCall inside RegisterLegacyAsyncCall used to do.
+	return vmhost.ExitAsyncCall()
 }
 
 // DeleteContract VMHooks implementation.
@@ -1699,7 +1702,10 @@ func deleteContract(
 	if err != nil {
 		return err
 	}
-	return nil
+
+	// Registered: the contract now suspends so the host can run the call. This is what
+	// setting BreakpointAsyncCall inside RegisterLegacyAsyncCall used to do.
+	return vmhost.ExitAsyncCall()
 }
 
 // AsyncCall VMHooks implementation.
@@ -1751,7 +1757,10 @@ func (context *VMHooksImpl) AsyncCall(
 	if err != nil {
 		return err
 	}
-	return nil
+
+	// Registered: the contract now suspends so the host can run the call. This is what
+	// setting BreakpointAsyncCall inside RegisterLegacyAsyncCall used to do.
+	return vmhost.ExitAsyncCall()
 }
 
 // GetArgumentLength VMHooks implementation.

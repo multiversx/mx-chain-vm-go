@@ -15,25 +15,43 @@ import (
 const memResetPageSize = 65536
 
 type memResetWarmGetter interface {
-	GetWarmInstance(codeHash []byte) (executor.Instance, bool)
+	GetWarmInstance(codeHash []byte) (executor.InstanceNew, bool)
+}
+
+// memResetMemoryObserver is what this test needs of an instance beyond executor.InstanceNew:
+// its memory, from outside a call.
+//
+// Not on any interface, because no production code wants it - memory belongs to the per-call
+// instance state. The backend offers it for exactly this.
+type memResetMemoryObserver interface {
+	MemLength() uint32
+	MemDump() []byte
 }
 
 // memResetInstance returns the instance the host holds for the parent
 // contract: the active one right after a call, or the one parked in the warm
 // instance cache.
-func memResetInstance(t *testing.T, host vmhost.VMHost) executor.Instance {
+func memResetInstance(t *testing.T, host vmhost.VMHost) memResetMemoryObserver {
 	if instance := host.Runtime().GetInstance(); instance != nil && !instance.IsInterfaceNil() {
-		return instance
+		return asMemoryObserver(t, instance)
 	}
 	tracker, ok := host.Runtime().GetInstanceTracker().(memResetWarmGetter)
 	require.True(t, ok, "instance tracker does not expose the warm cache")
 	codeHash := host.Blockchain().GetCodeHash(test.ParentAddress)
 	instance, ok := tracker.GetWarmInstance(codeHash)
 	require.True(t, ok, "no warm instance for the parent contract")
-	return instance
+	return asMemoryObserver(t, instance)
 }
 
-func memResetBase(t *testing.T, instance executor.Instance) uintptr {
+// asMemoryObserver narrows an instance to the memory view this test needs.
+func asMemoryObserver(t *testing.T, instance executor.InstanceNew) memResetMemoryObserver {
+	observer, ok := instance.(memResetMemoryObserver)
+	require.True(t, ok, "instance does not expose its memory")
+
+	return observer
+}
+
+func memResetBase(t *testing.T, instance memResetMemoryObserver) uintptr {
 	data := instance.MemDump()
 	require.NotEmpty(t, data)
 	return uintptr(unsafe.Pointer(&data[0]))

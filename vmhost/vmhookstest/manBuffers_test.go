@@ -752,7 +752,7 @@ func TestManBuffers_MBufferNewFromBytes_GasUsage(t *testing.T) {
 								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								testBytes := []byte("01234567890123456789") // 20 bytes
-								err := instanceMock.MemStore(0, testBytes)
+								err := instanceMock.MemoryStore(0, testBytes)
 								assert.Nil(t, err)
 
 								baseCost := host.Metering().GasSchedule().ManagedBufferAPICost.MBufferNewFromBytes

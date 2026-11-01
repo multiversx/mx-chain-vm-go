@@ -4,10 +4,12 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
+var _ executor.ExecutorNewAbstractFactory = (*WrapperExecutorFactory)(nil)
+
 // WrapperExecutorFactory is the factory for the WrapperExecutor.
 type WrapperExecutorFactory struct {
 	logger         ExecutorLogger
-	wrappedFactory executor.ExecutorAbstractFactory
+	wrappedFactory executor.ExecutorNewAbstractFactory
 
 	// LastCreatedExecutor gives access to the created Executor
 	LastCreatedExecutor *WrapperExecutor
@@ -16,7 +18,7 @@ type WrapperExecutorFactory struct {
 // NewWrappedExecutorFactory yields a new WrapperExecutor factory.
 func NewWrappedExecutorFactory(
 	logger ExecutorLogger,
-	wrappedFactory executor.ExecutorAbstractFactory) *WrapperExecutorFactory {
+	wrappedFactory executor.ExecutorNewAbstractFactory) *WrapperExecutorFactory {
 	return &WrapperExecutorFactory{
 		logger:         logger,
 		wrappedFactory: wrappedFactory,
@@ -24,36 +26,41 @@ func NewWrappedExecutorFactory(
 }
 
 // SimpleWrappedExecutorFactory yields a WrappedExecutor factory without logging.
-func SimpleWrappedExecutorFactory(wrappedFactory executor.ExecutorAbstractFactory) *WrapperExecutorFactory {
+func SimpleWrappedExecutorFactory(wrappedFactory executor.ExecutorNewAbstractFactory) *WrapperExecutorFactory {
 	return NewWrappedExecutorFactory(&NoLogger{}, wrappedFactory)
 }
 
-// CreateExecutor creates a new Executor instance.
-func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
-	// The wrapper forwards HandleHookError, so it can only wrap hooks that have it.
-	// Asserted here, at construction, rather than silently dropped at call time.
-	vmHooks, ok := args.VMHooks.(vmHooksWithErrorHandler)
-	if !ok {
-		return nil, ErrVMHooksCannotHandleErrors
+// CreateExecutorNew creates a new ExecutorNew instance.
+//
+// The hooks are no longer handed over here - they come from the runtime, per call - so what
+// is wrapped is the runtime itself, and the hooks it hands out are wrapped on the way
+// through.
+func (factory *WrapperExecutorFactory) CreateExecutorNew(args executor.ExecutorFactoryArgsNew) (executor.ExecutorNew, error) {
+	runtime := &WrapperRuntime{
+		logger:         factory.logger,
+		wrappedRuntime: args.Runtime,
 	}
 
-	wrappedExecutor, err := factory.wrappedFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: &WrapperVMHooks{
-			logger:         factory.logger,
-			wrappedVMHooks: vmHooks,
-		},
-		OpcodeCosts:              args.OpcodeCosts,
-		RkyvSerializationEnabled: args.RkyvSerializationEnabled,
-		WasmerSIGSEGVPassthrough: args.WasmerSIGSEGVPassthrough,
+	// The wrapper forwards HandleHookError, so it can only wrap hooks that have it.
+	// Asserted once here, at construction, rather than per call where there would be no way
+	// to report it: VMHooksForCall cannot fail.
+	err := runtime.checkHooksCanHandleErrors()
+	if err != nil {
+		return nil, err
+	}
+
+	wrappedExecutor, err := factory.wrappedFactory.CreateExecutorNew(executor.ExecutorFactoryArgsNew{
+		Runtime: runtime,
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	factory.LastCreatedExecutor = &WrapperExecutor{
 		logger:          factory.logger,
 		wrappedExecutor: wrappedExecutor,
 
-		WrappedInstances: make(map[string][]executor.Instance),
+		WrappedInstances: make(map[string][]executor.InstanceNew),
 	}
 	return factory.LastCreatedExecutor, nil
 }
@@ -61,4 +68,51 @@ func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFact
 // IsInterfaceNil returns true if there is no value under the interface
 func (factory *WrapperExecutorFactory) IsInterfaceNil() bool {
 	return factory == nil
+}
+
+// WrapperRuntime is the host behind a WrapperExecutor: it forwards to the real runtime and
+// wraps the hooks it returns, so that the backend's hook calls are logged.
+type WrapperRuntime struct {
+	logger         ExecutorLogger
+	wrappedRuntime executor.ExecutorRuntime
+}
+
+var _ executor.ExecutorRuntime = (*WrapperRuntime)(nil)
+
+// VMHooksForCall returns the wrapped hooks servicing one host call.
+func (runtime *WrapperRuntime) VMHooksForCall(instanceState executor.InstanceState) executor.VMHooks {
+	vmHooks := runtime.wrappedRuntime.VMHooksForCall(instanceState)
+
+	hooksWithHandler, ok := vmHooks.(vmHooksWithErrorHandler)
+	if !ok {
+		// Unreachable: the factory established this before the executor existed. Passing
+		// the hooks through unwrapped loses the logging, which is better than losing the
+		// call.
+		return vmHooks
+	}
+
+	return &WrapperVMHooks{
+		logger:         runtime.logger,
+		wrappedVMHooks: hooksWithHandler,
+	}
+}
+
+// checkHooksCanHandleErrors asks the wrapped runtime for one set of hooks and checks that
+// they carry an error handler.
+//
+// A nil instance state is deliberate and safe: nothing is called on these hooks, they are
+// only examined. Every host builds the same type of hooks for every call, so one is enough
+// to answer the question for all of them.
+func (runtime *WrapperRuntime) checkHooksCanHandleErrors() error {
+	vmHooks := runtime.wrappedRuntime.VMHooksForCall(nil)
+	if _, ok := vmHooks.(vmHooksWithErrorHandler); !ok {
+		return ErrVMHooksCannotHandleErrors
+	}
+
+	return nil
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (runtime *WrapperRuntime) IsInterfaceNil() bool {
+	return runtime == nil
 }

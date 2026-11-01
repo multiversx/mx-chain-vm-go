@@ -57,7 +57,23 @@ type runtimeContext struct {
 	verifyCode           bool
 	maxInstanceStackSize uint64
 
-	vmExecutor executor.Executor
+	vmExecutor executor.ExecutorNew
+
+	// opcodeConfig is the opcode set and gas costs every instance is compiled with. It used
+	// to live on the executor, behind a setter; it is compilation configuration, so it now
+	// travels with the compilation options. Built once per gas schedule by the host, and
+	// shared by every instance under it.
+	opcodeConfig *executor.OpcodeConfig
+
+	// instanceGasLimit is the gas the current instance was started for, and the limit every
+	// call on it is made with.
+	//
+	// Held here because InstanceNew.Call takes the limit as an argument, where
+	// Instance.SetGasLimit used to set it once on the instance. Keeping it rather than
+	// re-reading it at each call preserves the old behaviour exactly: the limit is sampled
+	// when the instance starts, and an instance that is called again - an async callback -
+	// is called under the same limit it was started with.
+	instanceGasLimit uint64
 
 	iTracker *instanceTracker
 
@@ -75,7 +91,7 @@ func NewRuntimeContext(
 	host vmhost.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	vmExecutor executor.Executor,
+	vmExecutor executor.ExecutorNew,
 	hasher vmhost.HashComputer,
 ) (*runtimeContext, error) {
 
@@ -140,14 +156,42 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 }
 
 // GetVMExecutor yields the configured contract executor.
-func (context *runtimeContext) GetVMExecutor() executor.Executor {
+func (context *runtimeContext) GetVMExecutor() executor.ExecutorNew {
 	return context.vmExecutor
+}
+
+// SetOpcodeConfig sets the opcode set and gas costs that instances are compiled with from
+// here on.
+//
+// Replaces Executor.SetOpcodeConfig. The executor no longer has a say in this - it is
+// compilation configuration and travels per instance - so the host hands it here, where the
+// compilation options are assembled. The caller is responsible for clearing the warm
+// instance cache, since instances already compiled were compiled under the old config.
+func (context *runtimeContext) SetOpcodeConfig(opcodeConfig *executor.OpcodeConfig) {
+	context.opcodeConfig = opcodeConfig
 }
 
 // ReplaceVMExecutor force-replaces the current executor.
 // Do not use in production code, it is only suited for tests! The executor should normally be immutable, once initialized.
-func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
+func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.ExecutorNew) {
 	context.vmExecutor = vmExecutor
+}
+
+// compilationOptions assembles everything a module is compiled with.
+//
+// Built per instance rather than held, because the gas schedule can change between
+// instances; the opcode config it points at is the one the host built for the current
+// schedule, and is shared rather than copied.
+func (context *runtimeContext) compilationOptions() *executor.CompilationOptionsNew {
+	gasSchedule := context.host.Metering().GasSchedule()
+
+	return &executor.CompilationOptionsNew{
+		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
+		OpcodeTrace:        false,
+		OpcodeConfig:       context.opcodeConfig,
+	}
 }
 
 // GetInstanceTracker returns the internal instance tracker
@@ -158,6 +202,7 @@ func (context *runtimeContext) GetInstanceTracker() vmhost.InstanceTracker {
 // StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	context.iTracker.UnsetInstance()
+	context.instanceGasLimit = gasLimit
 
 	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
 		logRuntime.Trace("create instance", "error", vmhost.ErrMaxInstancesReached)
@@ -188,7 +233,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		logRuntime.Trace("code was new", "new", newCode)
 	}()
 
-	warmInstanceUsed, err := context.useWarmInstanceIfExists(gasLimit, newCode)
+	warmInstanceUsed, err := context.useWarmInstanceIfExists(newCode)
 	if err != nil {
 		return err
 	}
@@ -196,7 +241,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return nil
 	}
 
-	compiledCodeUsed, err := context.makeInstanceFromCompiledCode(gasLimit, newCode)
+	compiledCodeUsed, err := context.makeInstanceFromCompiledCode(newCode)
 	if err != nil {
 		return err
 	}
@@ -204,10 +249,10 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return nil
 	}
 
-	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
+	return context.makeInstanceFromContractByteCode(contract, newCode)
 }
 
-func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) (bool, error) {
+func (context *runtimeContext) makeInstanceFromCompiledCode(newCode bool) (bool, error) {
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
 		return false, nil
@@ -220,17 +265,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 		return false, nil
 	}
 
-	gasSchedule := context.host.Metering().GasSchedule()
-	options := executor.CompilationOptions{
-		GasLimit:           gasLimit,
-		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
-		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	newInstance, err := context.vmExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	newInstance, err := context.vmExecutor.NewInstanceFromCache(compiledCode, context.compilationOptions())
 	if err != nil {
 		logRuntime.Error("instance creation", "from", "cached compilation", "error", err)
 		return false, nil
@@ -250,7 +285,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	return true, nil
 }
 
-func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
+func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, newCode bool) error {
 	if newCode || context.verifyCode {
 		if bytes.HasPrefix(contract, wasmMagicNumber) {
 			err := context.validator.verifyContractBytecode(contract)
@@ -262,17 +297,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	gasSchedule := context.host.Metering().GasSchedule()
-	options := executor.CompilationOptions{
-		GasLimit:           gasLimit,
-		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
-		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	newInstance, err := context.vmExecutor.NewInstanceWithOptions(contract, options)
+	newInstance, err := context.vmExecutor.NewInstance(contract, context.compilationOptions())
 	if err != nil {
 		context.iTracker.UnsetInstance()
 		logRuntime.Trace("instance creation", "from", "bytecode", "error", err)
@@ -306,7 +331,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	return nil
 }
 
-func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) (bool, error) {
+func (context *runtimeContext) useWarmInstanceIfExists(newCode bool) (bool, error) {
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
 		return false, nil
@@ -324,9 +349,10 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false, nil
 	}
 
-	context.SetPointsUsed(0)
-	context.iTracker.Instance().SetGasLimit(gasLimit)
-	context.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
+	// Nothing is set on the instance here any more. The reset above restored its gas
+	// counter and every other mutable global, and Call arms it with the limit and clears
+	// the breakpoint itself - which is what "do not mutate an instance on the way through"
+	// means in practice.
 	context.verifyCode = false
 	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance().ID())
 	return true, nil
@@ -420,6 +446,7 @@ func (context *runtimeContext) PushState() {
 		readOnly:            context.readOnly,
 		verifyCode:          context.verifyCode,
 		currentContractCode: context.currentContractCode,
+		instanceGasLimit:    context.instanceGasLimit,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -450,6 +477,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.readOnly = prevState.readOnly
 	context.verifyCode = prevState.verifyCode
 	context.currentContractCode = prevState.currentContractCode
+	context.instanceGasLimit = prevState.instanceGasLimit
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -610,30 +638,26 @@ func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, err
 	return code, codeMetadata, nil
 }
 
-// FailExecution informs Wasmer to immediately stop the execution of the contract
-// with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly
-// FailExecution sets the returnMessage, returnCode and runtimeBreakpoint according to the given error.
+// FailExecution records a failed execution in the VMOutput.
+//
+// It no longer stops the contract. It used to do both, by setting a breakpoint that made
+// wasm trap at its next checkpoint, which meant any code anywhere could halt a contract as a
+// side effect. Stopping is now the business of the hook that failed: it returns its error,
+// and the executor ends the call. This records what the failure was.
 func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
 	var message string
-	breakpoint := vmhost.BreakpointExecutionFailed
 
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
-		if errors.Is(err, vmhost.ErrNotEnoughGas) {
-			breakpoint = vmhost.BreakpointOutOfGas
-		}
 	} else {
 		message = "execution failed"
 		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	if !check.IfNil(context.iTracker.Instance()) {
-		context.SetRuntimeBreakpointValue(breakpoint)
-	}
 
 	traceMessage := message
 	if err != nil {
@@ -642,34 +666,33 @@ func (context *runtimeContext) FailExecution(err error) {
 	logRuntime.Trace("execution failed", "message", traceMessage)
 }
 
-// SignalUserError informs Wasmer to immediately stop the execution of the contract
-// with BreakpointSignalError and sets the corresponding VMOutput fields accordingly
+// SignalUserError records a user error in the VMOutput.
+//
+// Like FailExecution, it no longer stops the contract; the hook that signalled the error
+// does that by returning it.
 func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(vmhost.BreakpointSignalError)
 	context.AddError(errors.New(message))
 	logRuntime.Trace("user error signalled", "message", message)
 }
 
-// SetRuntimeBreakpointValue sets the specified runtime breakpoint in Wasmer,
-// immediately stopping the contract execution.
-func (context *runtimeContext) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
-	inst := context.iTracker.Instance()
-	if !check.IfNil(inst) {
-		inst.SetBreakpointValue(uint64(value))
-		logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
-	}
-}
-
-// GetRuntimeBreakpointValue retrieves the value of the breakpoint that has
-// stopped the execution of the contract.
-func (context *runtimeContext) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
+// InterruptExecution asks the contract currently executing to stop as soon as it can.
+//
+// Called from the watchdog goroutine when an execution has run past its deadline, while the
+// call is still in flight on another goroutine - the only moment it does anything.
+//
+// Reading the instance here races with the executing goroutine replacing it, which is the
+// same race the breakpoint setter this replaces always had. It is benign in both directions:
+// a stale instance is one whose call has already ended, and RequestStop on it is a no-op.
+func (context *runtimeContext) InterruptExecution() {
 	inst := context.iTracker.Instance()
 	if check.IfNil(inst) {
-		return 0
+		return
 	}
-	return vmhost.BreakpointValue(inst.GetBreakpointValue())
+
+	inst.RequestStop()
+	logRuntime.Trace("execution interrupt requested")
 }
 
 // VerifyContractCode performs validation on the WASM bytecode (declaration of memory and legal functions).
@@ -688,13 +711,11 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
-	err := context.validator.verifyMemoryDeclaration(context.iTracker.Instance())
-	if err != nil {
-		logRuntime.Trace("verify contract code", "error", err)
-		return err
-	}
-
-	err = context.validator.verifyFunctions(context.iTracker.Instance())
+	// The memory declaration check that used to run here is gone with the old interface.
+	// It only ever asked Instance.HasMemory, which every implementation answered with an
+	// unconditional true, so it could not fail; the new interface does not carry the
+	// question at all.
+	err := context.validator.verifyFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
@@ -729,20 +750,22 @@ func (context *runtimeContext) VerifyContractCode() error {
 }
 
 func (context *runtimeContext) checkIfContainsNewCryptoApi() error {
-	for funcName := range mapNewCryptoAPI {
-		if context.iTracker.Instance().IsFunctionImported(funcName) {
-			return vmhost.ErrContractInvalid
-		}
-	}
-	return nil
+	return context.rejectImportsFrom(mapNewCryptoAPI)
 }
 
 func (context *runtimeContext) checkIfContainsBarnardOpcodes() error {
-	for funcName := range mapBarnardOpcodes {
-		if context.iTracker.Instance().IsFunctionImported(funcName) {
+	return context.rejectImportsFrom(mapBarnardOpcodes)
+}
+
+// rejectImportsFrom fails if the contract imports any of the given hooks, which is how a
+// contract compiled against a newer EI is kept out before its activation epoch.
+func (context *runtimeContext) rejectImportsFrom(disallowed map[string]struct{}) error {
+	for funcName := range disallowed {
+		if context.IsFunctionImported(funcName) {
 			return vmhost.ErrContractInvalid
 		}
 	}
+
 	return nil
 }
 
@@ -776,7 +799,13 @@ func (context *runtimeContext) GetPointsUsed() uint64 {
 	if check.IfNil(context.iTracker.Instance()) {
 		return 0
 	}
-	return context.iTracker.Instance().GetPointsUsed()
+	pointsUsed, err := context.iTracker.Instance().GetPointsUsedNew()
+	if err != nil {
+		logRuntime.Trace("could not read points used", "err", err)
+		return 0
+	}
+
+	return pointsUsed
 }
 
 // SetPointsUsed directly sets the gas amount already spent by the currently running Wasmer instance.
@@ -785,8 +814,13 @@ func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
 		gasPoints = builtinMath.MaxInt64
 	}
 	inst := context.iTracker.Instance()
-	if !check.IfNil(inst) {
-		inst.SetPointsUsed(gasPoints)
+	if check.IfNil(inst) {
+		return
+	}
+
+	err := inst.SetPointsUsedNew(gasPoints)
+	if err != nil {
+		logRuntime.Trace("could not set points used", "err", err)
 	}
 }
 
@@ -801,7 +835,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() executor.Instance {
+func (context *runtimeContext) GetInstance() executor.InstanceNew {
 	return context.iTracker.Instance()
 }
 
@@ -874,8 +908,12 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 }
 
 // CallSCFunction will execute the function with given name from the loaded contract.
-func (context *runtimeContext) CallSCFunction(functionName string) error {
-	return context.iTracker.Instance().CallFunction(functionName)
+//
+// The gas limit is the one the instance was started with, so that an instance called more
+// than once - a contract and then its async callback - is called under one budget, as it was
+// when the limit was set on the instance itself.
+func (context *runtimeContext) CallSCFunction(functionName string) executor.InstanceCallResult {
+	return context.iTracker.Instance().Call(functionName, context.instanceGasLimit)
 }
 
 // IsFunctionImported returns true if the WASM module imports the specified function.

@@ -28,9 +28,6 @@ var ErrReturnCodeNotOk = errors.New("return code is not ok")
 // ErrInvalidCallOnReadOnlyMode signals that an operation is not permitted due to read only mode
 var ErrInvalidCallOnReadOnlyMode = errors.New("operation not permitted in read only mode")
 
-// ErrNotEnoughGas signals that there is not enough gas for the operation
-var ErrNotEnoughGas = errors.New("not enough gas")
-
 // ErrUnhandledRuntimeBreakpoint signals that the runtime breakpoint is unhandled
 var ErrUnhandledRuntimeBreakpoint = errors.New("unhandled runtime breakpoint")
 

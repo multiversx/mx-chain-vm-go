@@ -577,6 +577,41 @@ func TestGasAccounting(t *testing.T) {
 	require.Greater(t, used, uint64(0))
 }
 
+// TestPointsUsedCanBeChargedBetweenCalls covers the reason SetPointsUsedNew is on the
+// instance rather than only on the instance state: the VM charges gas to an instance after a
+// call has returned and before the next one, when it settles an async step or restores what a
+// nested execution did not spend. At that moment no call is running, so there is no instance
+// state to reach the counter through.
+//
+// What is asserted is not the round trip but its consequence: the counter the host writes is
+// the one the metering middleware measures the next call against.
+func TestPointsUsedCanBeChargedBetweenCalls(t *testing.T) {
+	instance, _ := newHooksInstance(t)
+
+	callOk(t, instance, "checkI64Result")
+
+	cost, err := instance.GetPointsUsedNew()
+	require.Nil(t, err)
+	require.Greater(t, cost, uint64(0))
+
+	// Rewind the counter between calls. The instance is then back to having spent nothing.
+	require.Nil(t, instance.SetPointsUsedNew(0))
+
+	used, err := instance.GetPointsUsedNew()
+	require.Nil(t, err)
+	require.Equal(t, uint64(0), used)
+
+	// Charge the instance between calls instead, as the host does when it settles an async
+	// step. The next call is budgeted the limit minus what the counter already holds, so a
+	// limit worth two and a half of these calls no longer covers one.
+	require.Nil(t, instance.SetPointsUsedNew(2*cost))
+
+	result := instance.Call("checkI64Result", 2*cost+cost/2)
+
+	require.Equal(t, executor.CallBreakpoint, result.Kind)
+	require.Equal(t, executor.BreakpointOutOfGasNew, result.Breakpoint)
+}
+
 // --- Lifetime enforcement ----------------------------------------------------
 
 // TestStaleContextIsRejected is the replacement for the borrow the Rust side cannot express

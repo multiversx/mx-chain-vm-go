@@ -19,11 +19,11 @@ var ExecWasmer2 = "wasmer2"
 var defaultExecutorString = ExecWasmer2
 
 // NewDefaultTestExecutorFactory instantiates an executor factory based on the $VMEXECUTOR environment variable
-func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorAbstractFactory {
+func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorNewAbstractFactory {
 	execStr := getVMExecutorString()
 
 	if execStr == ExecWasmer2 {
-		return wasmer2.ExecutorFactory()
+		return wasmer2.ExecutorFactoryNew()
 	}
 
 	if tb == (testing.TB)(nil) {

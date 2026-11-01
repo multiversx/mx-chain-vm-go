@@ -6,6 +6,7 @@ import "C"
 
 import (
 	"runtime/cgo"
+	"slices"
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/wasmercommon"
@@ -160,9 +161,19 @@ func (instance *Wasmer2Instance) GetExportedFunctionNames() []string {
 // contract imports.
 //
 // The library answers this directly, which the old C API could not: there, the only question
-// available was whether one particular name is imported.
+// available was whether one particular name is imported. Not part of executor.InstanceNew,
+// which asks about one name at a time; this backend answers that from the list.
 func (instance *Wasmer2Instance) GetImportedFunctionNames() []string {
 	return instance.importedFunctions
+}
+
+// IsFunctionImported returns whether the contract imports the host function with the given
+// name.
+//
+// Answered from the list captured at creation, so a host checking a whole blocklist against
+// a contract never reaches the library at all.
+func (instance *Wasmer2Instance) IsFunctionImported(name string) bool {
+	return slices.Contains(instance.importedFunctions, name)
 }
 
 // GetPointsUsedNew returns the number of points (gas) used by the instance.
@@ -180,6 +191,18 @@ func (instance *Wasmer2Instance) GetPointsUsedNew() (uint64, error) {
 	}
 
 	return uint64(points), nil
+}
+
+// SetPointsUsedNew overwrites the points (gas) used by the instance.
+func (instance *Wasmer2Instance) SetPointsUsedNew(points uint64) error {
+	if instance.cInstance == nil {
+		return ErrInstanceClosed
+	}
+
+	buf := newErrBuf()
+
+	status := cInstanceSetPointsUsed(instance.cInstance, points, buf)
+	return buf.AsError(status, "could not set points used")
 }
 
 // ResetNew returns the instance to the state it was in immediately after creation, so that
@@ -263,6 +286,34 @@ func (instance *Wasmer2Instance) Close() {
 	instance.hooksHandle.Delete()
 
 	logWasmer2New.Trace("closed instance", "id", instance.id)
+}
+
+// IsAlreadyCleaned reports whether the instance has already been released.
+//
+// The C pointer is the honest answer: it is what Close and Abandon both clear.
+func (instance *Wasmer2Instance) IsAlreadyCleaned() bool {
+	return instance.cInstance == nil
+}
+
+// Abandon gives up the instance without releasing it, leaking everything it holds on
+// purpose: the C instance, the stop handle, and the cgo.Handle its hooks are found through.
+//
+// The VM reaches for this when a contract has run past its deadline and has not stopped
+// within the grace period that follows. The C thread may still be executing inside this
+// instance, so destroying any of the three would pull memory out from under a live call -
+// and deleting the hooks handle would do it to the very call that is about to use it.
+// Leaking once per runaway contract is the cheaper failure.
+//
+// The instance reports itself cleaned from here on, so nothing closes it later.
+func (instance *Wasmer2Instance) Abandon() {
+	if instance.cInstance == nil {
+		return
+	}
+
+	instance.cInstance = nil
+	instance.stopHandle = nil
+
+	logWasmer2New.Trace("abandoned instance", "id", instance.id)
 }
 
 // IsInterfaceNil returns true if underlying object is nil

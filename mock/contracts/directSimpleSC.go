@@ -28,7 +28,7 @@ func ReportOriginalCaller(instanceMock *mock.InstanceMock, config interface{}) {
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 		}
 
 		originalCaller := host.Runtime().GetOriginalCallerAddress()
@@ -42,7 +42,7 @@ func FailChildMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("fail", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Runtime().FailExecution(errors.New("forced fail"))
+		test.FailMockContract(host, errors.New("forced fail"))
 		return instance
 	})
 }
@@ -67,10 +67,10 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, _ interface{}) {
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+			test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 		}
 
-		host.Runtime().FailExecution(errors.New("forced fail"))
+		test.FailMockContract(host, errors.New("forced fail"))
 		return instance
 	})
 }
@@ -83,7 +83,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -106,7 +106,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			for i := uint64(0); i < numCalls; i++ {
 				returnValue := ExecuteOnSameContextInMockContracts(host, input)
 				if returnValue != 0 {
-					host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+					test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 				}
 			}
 		}
@@ -123,7 +123,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -146,7 +146,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			for i := uint64(0); i < numCalls; i++ {
 				returnValue := ExecuteOnDestContextInMockContracts(host, input)
 				if returnValue != 0 {
-					host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+					test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 				}
 			}
 		}
@@ -182,7 +182,7 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+			test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 		}
 
 		originalCaller := host.Runtime().GetOriginalCallerAddress()
@@ -209,7 +209,7 @@ func LocalCallAnotherContract(exposedFunctionName string, recipientAddress []byt
 
 			returnValue := ExecuteOnDestContextInMockContracts(host, input)
 			if returnValue != 0 {
-				host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+				test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 			}
 
 			originalCaller := host.Runtime().GetOriginalCallerAddress()
@@ -320,13 +320,13 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 				nil,
 				nil)
 			if ret != 0 {
-				host.Runtime().FailExecution(fmt.Errorf("Transfer ESDT failed"))
+				test.FailMockContract(host, fmt.Errorf("Transfer ESDT failed"))
 			}
 
 		}
 
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance
@@ -366,7 +366,7 @@ func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
 			returnValue = ExecuteOnDestContextInMockContracts(host, input)
 		}
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+			test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 		}
 
 		return instance

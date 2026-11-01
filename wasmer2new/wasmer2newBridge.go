@@ -153,6 +153,14 @@ func cInstanceGetPointsUsed(
 	return toStatus(C.vm_exec_w2_instance_get_points_used(instance, pointsOut, bufPtr(buf), errBufLen))
 }
 
+func cInstanceSetPointsUsed(
+	instance *cInstanceT,
+	points uint64,
+	buf errBuf,
+) wasmercommon.Status {
+	return toStatus(C.vm_exec_w2_instance_set_points_used(instance, C.uint64_t(points), bufPtr(buf), errBufLen))
+}
+
 func cInstanceCheckSignatures(instance *cInstanceT) int32 {
 	return int32(C.vm_exec_w2_instance_check_signatures(instance))
 }

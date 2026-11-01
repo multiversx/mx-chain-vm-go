@@ -20,7 +20,6 @@ import (
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/testcommon/testexecutor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,8 +48,8 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 
 func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewVMHooksImpl(host),
+	exec, err := execFactory.CreateExecutorNew(executor.ExecutorFactoryArgsNew{
+		Runtime: testExecutorRuntime{host: host},
 	})
 	require.Nil(t, err)
 	runtimeCtx, err := NewRuntimeContext(
@@ -71,8 +70,8 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 	hasher := defaultHasher
 
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewVMHooksImpl(host),
+	exec, err := execFactory.CreateExecutorNew(executor.ExecutorFactoryArgsNew{
+		Runtime: testExecutorRuntime{host: host},
 	})
 	require.Nil(t, err)
 
@@ -169,7 +168,6 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	contractCode := vmhost.GetSCCode(path)
 	err = runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
-	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, uint64(len(contractCode)), runtimeCtx.GetSCCodeSize())
 }
 
@@ -185,7 +183,6 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
-	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 
 	// These API functions exist, and are imported by 'counter'
 	require.True(t, runtimeCtx.IsFunctionImported("int64storageLoad"))
@@ -277,7 +274,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	instance := runtimeCtx.iTracker.instance
 
 	runtimeCtx.pushInstance()
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtimeCtx.iTracker.codeSize = newCodeSize
 	require.Equal(t, newCodeSize, runtimeCtx.GetSCCodeSize())
 	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
@@ -316,7 +313,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	}
 	runtimeCtx.InitStateFromContractCallInput(input)
 
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
@@ -338,11 +335,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeCtx.ReadOnly())
 	require.Nil(t, runtimeCtx.Arguments())
 
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
-	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtimeCtx.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtimeCtx.PushState()
 	require.Equal(t, 2, len(runtimeCtx.stateStack))
 
@@ -362,8 +359,8 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	testVMType := []byte("type")
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewVMHooksImpl(host),
+	exec, err := execFactory.CreateExecutorNew(executor.ExecutorFactoryArgsNew{
+		Runtime: testExecutorRuntime{host: host},
 	})
 	require.Nil(t, err)
 	runtime, _ := NewRuntimeContext(
@@ -390,7 +387,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtime.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtime.PushState()
 	input.RecipientAddr = beta
 	runtime.InitStateFromContractCallInput(input)
@@ -398,7 +395,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtime.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtime.PushState()
 	input.RecipientAddr = gamma
 	runtime.InitStateFromContractCallInput(input)
@@ -406,7 +403,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.iTracker.instance = &wasmer2.Wasmer2Instance{}
+	runtime.iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	runtime.PushState()
 	input.RecipientAddr = alpha
 	runtime.InitStateFromContractCallInput(input)
@@ -477,7 +474,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	require.Nil(t, runtimeCtx.iTracker.instance)
 }
 
-func TestRuntimeContext_Breakpoints(t *testing.T) {
+func TestRuntimeContext_FailureRecording(t *testing.T) {
 	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
@@ -498,52 +495,56 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	// Set and get curent breakpoint value
-	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
-	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
-	require.Equal(t, vmhost.BreakpointOutOfGas, runtimeCtx.GetRuntimeBreakpointValue())
-
-	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
-	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
-
-	// Signal user error
+	// Signal user error. It records the outcome and nothing else: the contract is stopped
+	// by the hook that signalled it, which returns its exit, not by this call.
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	runtimeCtx.SignalUserError("something happened")
-	require.Equal(t, vmhost.BreakpointSignalError, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.UserError, mockOutput.ReturnCode())
 	require.Equal(t, "something happened", mockOutput.ReturnMessage())
 
-	// Fail execution
+	// Fail execution, with no error to describe it.
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	runtimeCtx.FailExecution(nil)
-	require.Equal(t, vmhost.BreakpointExecutionFailed, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
 	require.Equal(t, "execution failed", mockOutput.ReturnMessage())
 
+	// Fail execution, carrying the error's own message.
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
-	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 
 	runtimeError := errors.New("runtime error")
 	runtimeCtx.FailExecution(runtimeError)
-	require.Equal(t, vmhost.BreakpointExecutionFailed, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
 	require.Equal(t, runtimeError.Error(), mockOutput.ReturnMessage())
+
+	// Neither touched the instance. Both used to halt it with a breakpoint; there is now no
+	// path from here into the instance at all.
+	require.False(t, runtimeCtx.GetInstance().IsAlreadyCleaned())
+}
+
+// instanceState is how these tests reach the current instance's memory.
+//
+// Memory belongs to the per-call instance state, which production code only ever receives
+// from the executor, inside a hook. The backend exposes the handle for tests; see
+// Wasmer2InstanceNew.InstanceState.
+func instanceState(runtimeCtx *runtimeContext) executor.InstanceState {
+	type stateProvider interface {
+		InstanceState() executor.InstanceState
+	}
+
+	return runtimeCtx.GetInstance().(stateProvider).InstanceState()
 }
 
 func memLoad(runtimeCtx *runtimeContext, offset int32, length int32) ([]byte, error) {
-	return runtimeCtx.GetInstance().MemLoad(executor.MemPtr(offset), length)
+	return instanceState(runtimeCtx).MemoryLoadClamped(executor.MemPtr(offset), length)
 }
 
 func memStore(runtimeCtx *runtimeContext, offset int32, data []byte) error {
-	return runtimeCtx.GetInstance().MemStore(executor.MemPtr(offset), data)
+	return instanceState(runtimeCtx).MemoryStore(executor.MemPtr(offset), data)
 }
 
 func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
@@ -564,12 +565,12 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	require.Equal(t, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, memContents)
 
 	pageSize := uint32(65536)
-	require.Equal(t, 2*pageSize, runtimeCtx.iTracker.instance.MemLength())
+	require.Equal(t, 2*pageSize, instanceMemoryLength(t, runtimeCtx))
 
 	memContents = []byte("test data")
 	err = memStore(runtimeCtx, 10, memContents)
 	require.Nil(t, err)
-	require.Equal(t, 2*pageSize, runtimeCtx.iTracker.instance.MemLength())
+	require.Equal(t, 2*pageSize, instanceMemoryLength(t, runtimeCtx))
 
 	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
@@ -590,8 +591,12 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	require.Nil(t, err)
 
 	totalPages := 2
-	memoryContents := runtimeCtx.iTracker.instance.MemDump()
-	require.Equal(t, runtimeCtx.iTracker.instance.MemLength(), uint32(len(memoryContents)))
+	// Read through the instance state, the way a hook reaches memory: the whole memory is
+	// not something the new instance interface hands over wholesale.
+	memoryContents, err := instanceState(runtimeCtx).
+		MemoryLoadClamped(0, executor.MemLength(instanceMemoryLength(t, runtimeCtx)))
+	require.Nil(t, err)
+	require.Equal(t, instanceMemoryLength(t, runtimeCtx), uint32(len(memoryContents)))
 	require.Equal(t, totalPages*int(vmhost.WASMPageSize), len(memoryContents))
 
 	for i, value := range memoryContents {
@@ -625,7 +630,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	require.Nil(t, memContents)
 
 	// Offset too larget
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() + 1)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) + 1)
 	length = 10
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
@@ -640,24 +645,24 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 
 	// Requested end too large
 	memContents = []byte("test data")
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 9)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) - 9)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 9)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) - 9)
 	length = 9
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data"), memContents)
 
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 8)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) - 8)
 	length = 9
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte{'e', 's', 't', ' ', 'd', 'a', 't', 'a'}, memContents)
 
 	// Zero length
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 8)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) - 8)
 	length = 0
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
@@ -677,7 +682,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	require.Equal(t, 2*vmhost.WASMPageSize, runtimeCtx.iTracker.instance.MemLength())
+	require.Equal(t, 2*vmhost.WASMPageSize, instanceMemoryLength(t, runtimeCtx))
 
 	// Bad lower bounds
 	memContents := []byte("test data")
@@ -687,7 +692,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 100)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) - 100)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
@@ -725,23 +730,22 @@ func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	instance := runtimeCtx.iTracker.instance
-	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+	require.Equal(t, uint32(2*vmhost.WASMPageSize), instanceMemoryLength(t, runtimeCtx))
 
 	memContents := []byte("test data")
 
 	// Memory growth via MemStore forbidden
-	offset := int32(instance.MemLength() - 4)
+	offset := int32(instanceMemoryLength(t, runtimeCtx) - 4)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBoundsUpper))
-	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+	require.Equal(t, uint32(2*vmhost.WASMPageSize), instanceMemoryLength(t, runtimeCtx))
 
 	// Memory growth via MemStore forbidden
 	memContents = make([]byte, vmhost.WASMPageSize+100)
-	offset = int32(instance.MemLength() - 50)
+	offset = int32(instanceMemoryLength(t, runtimeCtx) - 50)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBoundsUpper))
-	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+	require.Equal(t, uint32(2*vmhost.WASMPageSize), instanceMemoryLength(t, runtimeCtx))
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
@@ -838,4 +842,15 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	runtimeCtx.popInstance()
 
 	require.Equal(t, 0, len(runtimeCtx.stateStack))
+}
+
+// instanceMemoryLength is the current instance's memory size.
+//
+// Memory is reachable only through the per-call instance state, so the test asks the
+// instance for it the way a hook would.
+func instanceMemoryLength(t *testing.T, runtimeCtx *runtimeContext) uint32 {
+	length, err := instanceState(runtimeCtx).MemoryLength()
+	require.Nil(t, err)
+
+	return uint32(length)
 }

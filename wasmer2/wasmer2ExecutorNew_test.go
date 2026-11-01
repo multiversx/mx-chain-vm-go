@@ -266,6 +266,43 @@ func TestWasmer2ExecutorNew_OutOfGasIsABreakpoint(t *testing.T) {
 	require.Equal(t, executor.BreakpointOutOfGasNew, result.Breakpoint)
 }
 
+// TestWasmer2InstanceNew_PointsUsedCanBeChargedBetweenCalls covers the reason
+// SetPointsUsedNew is on the instance rather than only on the instance state: the VM charges
+// gas to an instance after a call has returned and before the next one, when it settles an
+// async step or restores what a nested execution did not spend. At that moment no call is
+// running, so there is no instance state to reach the counter through.
+//
+// What is asserted is not the round trip but its consequence: the counter the host writes is
+// the one the metering middleware measures the next call against.
+func TestWasmer2InstanceNew_PointsUsedCanBeChargedBetweenCalls(t *testing.T) {
+	wasmerExecutor, _, _ := newTestExecutor(t)
+	instance := newCounterInstance(t, wasmerExecutor)
+	defer instance.Close()
+
+	require.Equal(t, executor.CallOk, instance.Call("init", testGasLimit).Kind)
+
+	cost, err := instance.GetPointsUsedNew()
+	require.Nil(t, err)
+	require.Greater(t, cost, uint64(0))
+
+	// Rewind the counter between calls. The instance is then back to having spent nothing.
+	require.Nil(t, instance.SetPointsUsedNew(0))
+
+	used, err := instance.GetPointsUsedNew()
+	require.Nil(t, err)
+	require.Equal(t, uint64(0), used)
+
+	// Charge the instance between calls instead, as the host does when it settles an async
+	// step. The next call is budgeted the limit minus what the counter already holds, so a
+	// limit worth two and a half of these calls no longer covers one.
+	require.Nil(t, instance.SetPointsUsedNew(2*cost))
+
+	result := instance.Call("increment", 2*cost+cost/2)
+
+	require.Equal(t, executor.CallBreakpoint, result.Kind)
+	require.Equal(t, executor.BreakpointOutOfGasNew, result.Breakpoint)
+}
+
 func TestWasmer2ExecutorNew_NestedCallResolvesToTheInnerInstance(t *testing.T) {
 	wasmerExecutor, hooks, runtime := newTestExecutor(t)
 
@@ -329,11 +366,11 @@ func TestWasmer2InstanceNew_ExportedAndImportedNames(t *testing.T) {
 		[]string{"init", "upgrade", "increment", "decrement", "get"},
 		instance.GetExportedFunctionNames())
 
-	// Assembled by asking about every hook this backend offers, which is complete: the module
-	// only instantiated because each of its imports resolved against that same table.
-	require.Equal(t,
-		[]string{"int64finish", "int64storageLoad", "int64storageStore"},
-		instance.GetImportedFunctionNames())
+	for _, imported := range []string{"int64finish", "int64storageLoad", "int64storageStore"} {
+		require.True(t, instance.IsFunctionImported(imported), imported)
+	}
+	require.False(t, instance.IsFunctionImported("getGasLeft"))
+	require.False(t, instance.IsFunctionImported("nonexistent"))
 
 	require.True(t, instance.HasFunction("increment"))
 	require.False(t, instance.HasFunction("nonexistent"))

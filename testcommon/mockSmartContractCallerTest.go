@@ -194,7 +194,7 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 		}
 
 		return instance
@@ -210,7 +210,7 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetContextAddress()), "func", host.Runtime().FunctionName(), "gas", gas)
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 

@@ -15,8 +15,8 @@ import "github.com/multiversx/mx-chain-core-go/core/check"
 //
 // There are no setters. A host that needs different compilation options passes different
 // options; a host that needs a different runtime builds a different executor. This is what
-// SetOpcodeConfig and FunctionNames on [Executor] turn into: the first moves into the
-// compilation options, the second is the host's own business.
+// SetOpcodeConfig on [Executor] turns into: the costs move into the compilation options,
+// chosen per instance instead of set on an executor every instance shares.
 type ExecutorNew interface {
 	check.NilInterfaceChecker
 

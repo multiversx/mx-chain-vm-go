@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
@@ -202,14 +201,6 @@ func (wasmerExecutor *Wasmer2ExecutorNew) applyOpcodeConfig(opcodeConfig *execut
 	}
 
 	return nil
-}
-
-// FunctionNames returns the low-level function names provided to contracts.
-//
-// Not part of executor.ExecutorNew - under the new interfaces the set of hook names is the
-// host's own business - but kept available, since this backend is what defines it.
-func (wasmerExecutor *Wasmer2ExecutorNew) FunctionNames() vmcommon.FunctionNames {
-	return functionNames
 }
 
 // IsInterfaceNil returns true if underlying object is nil

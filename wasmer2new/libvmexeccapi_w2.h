@@ -154,6 +154,15 @@ vm_exec_status_t vm_exec_w2_instance_call(struct vm_exec_w2_instance_t *instance
 vm_exec_status_t vm_exec_w2_instance_get_points_used(struct vm_exec_w2_instance_t *instance, uint64_t *points_out, char *err_buf, int err_buf_len);
 
 /**
+ * Overwrites the number of points (gas) used so far.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_status_t vm_exec_w2_instance_set_points_used(struct vm_exec_w2_instance_t *instance, uint64_t points, char *err_buf, int err_buf_len);
+
+/**
  * Checks that every exported function takes no arguments and returns nothing.
  *
  * Returns 1 if so, 0 if not, or a negative status.

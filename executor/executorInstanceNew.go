@@ -35,18 +35,37 @@ type InstanceNew interface {
 	// GetExportedFunctionNames returns the names of all the SC endpoints.
 	GetExportedFunctionNames() []string
 
-	// GetImportedFunctionNames returns the names of all the host functions (VM hooks) the
-	// contract imports.
+	// IsFunctionImported returns whether the contract imports the host function (VM hook)
+	// with the given name.
 	//
-	// Needed to validate a contract against the set of hooks it is allowed to use. All the
-	// names are returned at once, rather than offering a per-name query, because the callers
-	// check the module against whole sets of names.
-	GetImportedFunctionNames() []string
+	// A membership test rather than a listing, because that is the question the host asks -
+	// whether a contract reaches for a hook its epoch has not activated yet - and the only
+	// one every backend can answer by itself. Listing the imports behind the 2.2 C API,
+	// which can test one name at a time and nothing more, would mean keeping a copy of the
+	// hook table next to the executor; those names are the host's (see contexts.vmHookNames)
+	// and no business of a backend's.
+	IsFunctionImported(name string) bool
 
 	// GetPointsUsedNew returns the number of points (gas) used by the instance.
 	//
 	// New suffix: Instance.GetPointsUsed has no error result.
 	GetPointsUsedNew() (uint64, error)
+
+	// SetPointsUsedNew overwrites the points (gas) used by the instance.
+	//
+	// The counterpart of GetPointsUsedNew, and here for the same reason: the counter belongs
+	// to the instance and outlives any one call, so a host that charges gas between calls
+	// has nowhere else to put it.
+	//
+	// [InstanceState.SetPointsUsedNew] is the same operation seen from inside a host call.
+	// Both moments are real in this VM: a hook charges gas while the contract runs, and the
+	// host charges gas after a call has returned but before the next one on the same
+	// instance - settling an async step, or restoring what a nested execution did not spend.
+	// The counter they adjust is the one the metering middleware compares against the limit
+	// on the next Call.
+	//
+	// New suffix: Instance.SetPointsUsed has no error result.
+	SetPointsUsedNew(points uint64) error
 
 	// ResetNew returns the instance to the state it was in immediately after creation, so
 	// that it can serve another execution.
@@ -96,4 +115,27 @@ type InstanceNew interface {
 	//
 	// The Rust Instance trait has no counterpart, and needs none: there, Drop does this.
 	Close()
+
+	// Abandon gives up the instance without releasing it, deliberately leaking whatever it
+	// holds outside the Go heap.
+	//
+	// The other answer to release, for when releasing would be unsafe: a contract that has
+	// run past its deadline and has not stopped within the grace period may still have a
+	// thread inside this instance, and freeing it would pull memory out from under a live
+	// call - a SIGSEGV instead of a timeout. Leaking once per runaway contract is the
+	// cheaper failure. Afterwards the instance reports itself already cleaned, so nothing
+	// closes it later.
+	//
+	// Like Close, it has no counterpart on the Rust Instance trait, and for the same
+	// reason: there, giving up an instance without freeing it is mem::forget at whoever
+	// owns it, not something the instance offers.
+	Abandon()
+
+	// IsAlreadyCleaned reports whether the instance has been released or abandoned, and so
+	// must not be closed again or handed out.
+	//
+	// Here because in Go the instance outlives what it points at: after Close or Abandon
+	// there is still an object to ask. The question does not arise in Rust, where a dropped
+	// instance is simply gone.
+	IsAlreadyCleaned() bool
 }

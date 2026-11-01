@@ -141,10 +141,10 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
-	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactory())
+	testExecutionDeployWASMWrongInit(t, wasmer2.ExecutorFactoryNew())
 }
 
-func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
+func testExecutionDeployWASMWrongInit(t *testing.T, executorFactory executor.ExecutorNewAbstractFactory) {
 	test.BuildInstanceCreatorTest(t).
 		WithExecutorFactory(executorFactory).
 		WithInput(test.CreateTestContractCreateInputBuilder().
@@ -317,11 +317,28 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 		verify.Ok()
 	}
 
-	var vmHooksPtr = make(map[uintptr]bool)
-	for _, instance := range executorFactory.LastCreatedExecutor.GetContractInstances(code) {
-		vmHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-	require.False(t, len(vmHooksPtr) > 1)
+	// Every instance this host made is served by this host's hooks.
+	//
+	// What this used to assert - that no two instances ended up with different hook
+	// pointers - cannot fail any more, and the pointer it asserted on does not exist. An
+	// executor is handed one ExecutorRuntime when it is built and has no setter to be given
+	// another, so the question is now about the host, not about its instances.
+	require.NotEmpty(t, executorFactory.LastCreatedExecutor.GetContractInstances(code))
+	require.Same(t, host1, hostBehindTheExecutor(t, host1))
+}
+
+// hostBehindTheExecutor is the host that the executor's hooks are built around.
+//
+// Reached by asking the host for one set of hooks and asking those whose host they are,
+// which is the same path the executor takes on every hook call.
+func hostBehindTheExecutor(t *testing.T, host vmhost.VMHost) vmhost.VMHost {
+	runtime, ok := host.(executor.ExecutorRuntime)
+	require.True(t, ok, "the host must be the executor's runtime")
+
+	hooks, ok := runtime.VMHooksForCall(nil).(*vmhooks.VMHooksImpl)
+	require.True(t, ok)
+
+	return hooks.GetVMHost()
 }
 
 func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
@@ -332,7 +349,7 @@ func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
+	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactoryNew())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory1).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -344,7 +361,7 @@ func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())
+	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactoryNew())
 	host2 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory2).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -360,14 +377,12 @@ func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	runNContractsForHostAndVerify(t, host1, input, 5)
 	runNContractsForHostAndVerify(t, host2, input, maxUint8AsInt+1)
 
-	var host1VMHooksPtr = make(map[uintptr]bool)
-	for _, instance := range executorFactory1.LastCreatedExecutor.GetContractInstances(code) {
-		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-	for _, instance := range executorFactory2.LastCreatedExecutor.GetContractInstances(code) {
-		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
-		require.False(t, found)
-	}
+	// Two hosts, two sets of hooks: each executor was built around its own host and cannot
+	// be pointed at the other. This used to be checked by comparing per-instance hook
+	// pointers, which no longer exist.
+	require.NotSame(t, hostBehindTheExecutor(t, host1), hostBehindTheExecutor(t, host2))
+	require.Same(t, host1, hostBehindTheExecutor(t, host1))
+	require.Same(t, host2, hostBehindTheExecutor(t, host2))
 }
 
 func TestExecution_MultipleVMs_CleanInstanceWhileOthersAreRunning(t *testing.T) {
@@ -3479,7 +3494,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 						host := parentInstance.Host
 						instance := contextmock.GetMockInstance(host)
 
-						vmhooks.FailExecution(host, vmhost.ErrNotEnoughGas)
+						test.FailMockContract(host, vmhost.ErrNotEnoughGas)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
@@ -3522,7 +3537,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 						host := parentInstance.Host
 						instance := contextmock.GetMockInstance(host)
 
-						vmhooks.FailExecution(host, vmhost.ErrNotEnoughGas)
+						test.FailMockContract(host, vmhost.ErrNotEnoughGas)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
@@ -3579,46 +3594,46 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
 						assert.Equal(t, int32(0), returnValue)
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						returnData, err := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
 						assert.Nil(t, err)
-						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+						assert.Nil(t, instance.EarlyExit())
 						assert.Equal(t, zero, string(returnData))
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
 						assert.Nil(t, err)
-						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+						assert.Nil(t, instance.EarlyExit())
 						assert.Equal(t, one, string(returnData))
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
 						assert.Nil(t, err)
-						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+						assert.Nil(t, instance.EarlyExit())
 						assert.Equal(t, two, string(returnData))
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						assert.Nil(t, err)
 						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
 						assert.Nil(t, err)
-						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+						assert.Nil(t, instance.EarlyExit())
 						assert.Equal(t, one, string(returnData))
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
 						assert.Nil(t, err)
-						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+						assert.Nil(t, instance.EarlyExit())
 						assert.Equal(t, two, string(returnData))
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						assert.Nil(t, err)
 						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
 						assert.Nil(t, err)
 						remainingReturnData := host.Output().ReturnData()
 						assert.Equal(t, remainingReturnData, [][]byte{})
-						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
+						assert.Nil(t, instance.EarlyExit())
 
 						// Negative and out-of-bounds indices should safely do nothing
 						require.NotPanics(t, func() {
@@ -3627,22 +3642,18 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						})
 						assert.Equal(t, [][]byte{}, host.Output().ReturnData())
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						err = vmhooks.CleanReturnDataWithHost(host)
 						assert.Nil(t, err)
 						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
-						if err != nil {
-							vmhooks.FailExecution(host, err)
-						}
-						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
+						handleHookError(host, err)
+						assert.Equal(t, vmcommon.ExecutionFailed, instance.EarlyExit().Code)
 						assert.Nil(t, returnData)
 
-						instance.BreakpointValue = 0
+						instance.SetEarlyExit(nil)
 						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
-						if err != nil {
-							vmhooks.FailExecution(host, err)
-						}
-						assert.Equal(t, vmhost.BreakpointOutOfGas, instance.BreakpointValue)
+						handleHookError(host, err)
+						assert.Equal(t, vmcommon.OutOfGas, instance.EarlyExit().Code)
 						assert.Nil(t, returnData)
 
 						return instance
@@ -3894,7 +3905,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						_ = host.Metering().UseGasBounded(500)
 						_, err := vmhooks.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						return parentInstance
 					})
@@ -3908,7 +3919,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						_ = host.Metering().UseGasBounded(100)
 						_, err := vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2), true)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						return childInstance
 					})

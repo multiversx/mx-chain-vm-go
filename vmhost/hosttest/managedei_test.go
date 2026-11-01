@@ -76,7 +76,7 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 							tokenIDHandle,
 							nonce)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
@@ -144,7 +144,7 @@ func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 							host,
 							tokenIDHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
@@ -202,7 +202,7 @@ func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bo
 							host,
 							tokenIDHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						host.Output().Finish(big.NewInt(int64(retValue)).Bytes())
@@ -250,7 +250,7 @@ func Test_ManagedBufferToHex(t *testing.T) {
 							sourceHandle,
 							destHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
@@ -299,7 +299,7 @@ func Test_BigIntToString(t *testing.T) {
 							sourceHandle,
 							destHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
@@ -417,7 +417,7 @@ func Test_ManagedRipemd160(t *testing.T) {
 							sourceHandle,
 							destHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
@@ -500,7 +500,7 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 							sigHandle,
 							"verifyBLS")
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -553,7 +553,7 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 							messageHandle,
 							sigHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -608,7 +608,7 @@ func Test_VerifySecp256k1(t *testing.T) {
 							messageHandle,
 							sigHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -665,7 +665,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 							int32(secp256.ECDSADoubleSha256),
 							"verifyCustomSecp256k1")
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -718,7 +718,7 @@ func Test_VerifySecp256r1(t *testing.T) {
 							0,
 							"verifySecp256R1Signature")
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -771,7 +771,7 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 							sHandle,
 							sigHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						result, _ := managedTypes.GetBytes(sigHandle)
@@ -821,7 +821,7 @@ func Test_ManagedVerifyBLSSignatureShare(t *testing.T) {
 							sigHandle,
 							"verifyBLSSignatureShare")
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -873,7 +873,7 @@ func Test_ManagedVerifyBLSMultiSig(t *testing.T) {
 							sigHandle,
 							"verifyBLSAggregatedSignature")
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if result != 0 {
@@ -926,7 +926,7 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 							ecHandle,
 							dataHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if retResult != 0 {
@@ -985,7 +985,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 							pointYHandle,
 							dataHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						if retResult != 0 {
@@ -1040,7 +1040,7 @@ func Test_ManagedMarshalEC(t *testing.T) {
 							ecHandle,
 							resultHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
@@ -1097,7 +1097,7 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 							ecHandle,
 							dataHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						xResult, _ := managedTypes.GetBigInt(xResultHandle)
@@ -1157,7 +1157,7 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 							ecHandle,
 							resultHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
@@ -1214,7 +1214,7 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 							ecHandle,
 							dataHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						xResult, _ := managedTypes.GetBigInt(xResultHandle)
@@ -1274,7 +1274,7 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 							ecHandle,
 							resultHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						resultBytes, _ := managedTypes.GetBytes(resultHandle)
@@ -1356,7 +1356,7 @@ func checkCreateECSuccess(host vmhost.VMHost, name string, ecParams *elliptic.Cu
 		host,
 		dataHandle)
 	if err != nil {
-		vmhooks.FailExecution(host, err)
+		test.FailMockContract(host, err)
 	}
 
 	resultEC, _ := managedTypes.GetEllipticCurve(retResult)
@@ -1394,7 +1394,7 @@ func Test_ManagedDeleteContract(t *testing.T) {
 							100000,
 							argumentsHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						return parentInstance
@@ -1532,7 +1532,7 @@ func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 							nonce,
 							valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						value, err := managed.GetBigInt(valueHandle)
@@ -1600,7 +1600,7 @@ func TestBaseOpsAPI_GetESDTTokenType(t *testing.T) {
 							int64(nonce),
 							typeHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						typeValue, err := managed.GetBigInt(typeHandle)
@@ -1665,7 +1665,7 @@ func Test_ManagedGetCodeMetadata(t *testing.T) {
 							addressHandle,
 							destHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 
 						bytesResult, _ := managedTypes.GetBytes(destHandle)
@@ -1745,7 +1745,7 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 							host,
 							functionNameHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						if returnValue != 1 {
 							host.Runtime().SignalUserError("assert failed")
@@ -1758,7 +1758,7 @@ func Test_ManagedIsBuiltinFunction(t *testing.T) {
 							host,
 							functionNameHandle)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						if returnValue != 0 {
 							host.Runtime().SignalUserError("assert failed")

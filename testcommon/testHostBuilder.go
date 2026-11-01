@@ -82,7 +82,7 @@ func (thb *TestHostBuilder) WithBuiltinFunctions() *TestHostBuilder {
 }
 
 // WithExecutorFactory allows tests to choose what executor to use.
-func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *TestHostBuilder {
+func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorNewAbstractFactory) *TestHostBuilder {
 	thb.vmHostParameters.OverrideVMExecutor = executorFactory
 	return thb
 }

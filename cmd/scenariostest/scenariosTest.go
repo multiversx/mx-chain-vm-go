@@ -41,7 +41,7 @@ func (*vm15Flags) ParseFlags(cCtx *cli.Context) scenclibase.CLIRunOptions {
 
 	vmBuilder := vmscenario.NewScenarioVMHostBuilder()
 	if cCtx.Bool("wasmer2") {
-		vmBuilder.OverrideVMExecutor = wasmer2.ExecutorFactory()
+		vmBuilder.OverrideVMExecutor = wasmer2.ExecutorFactoryNew()
 	}
 
 	return scenclibase.CLIRunOptions{

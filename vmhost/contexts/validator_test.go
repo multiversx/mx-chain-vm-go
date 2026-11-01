@@ -61,7 +61,8 @@ func TestFunctionsProtected(t *testing.T) {
 	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer(), worldmock.EnableEpochsHandlerStubAllFlags())
 
 	world := worldmock.NewMockWorld()
-	imb := contextmock.NewExecutorMock(world)
+	imb, err := contextmock.NewExecutorMock(world, testExecutorRuntime{host: host})
+	require.Nil(t, err)
 	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
 	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {
@@ -70,7 +71,7 @@ func TestFunctionsProtected(t *testing.T) {
 		return testInstance
 	})
 
-	err := validator.verifyProtectedFunctions(instance)
+	err = validator.verifyProtectedFunctions(instance)
 	require.NotNil(t, err)
 }
 
@@ -79,7 +80,7 @@ type instanceWithCustomFunctionNames struct {
 	customFunctionNames []string
 }
 
-func (inst *instanceWithCustomFunctionNames) GetFunctionNames() []string {
+func (inst *instanceWithCustomFunctionNames) GetExportedFunctionNames() []string {
 	return inst.customFunctionNames
 }
 

@@ -35,7 +35,7 @@ func BuildInstanceCreatorTest(tb testing.TB) *InstanceCreatorTestTemplate {
 }
 
 // WithExecutorFactory allows caller to choose the Executor type.
-func (template *InstanceCreatorTestTemplate) WithExecutorFactory(factory executor.ExecutorAbstractFactory) *InstanceCreatorTestTemplate {
+func (template *InstanceCreatorTestTemplate) WithExecutorFactory(factory executor.ExecutorNewAbstractFactory) *InstanceCreatorTestTemplate {
 	template.hostBuilder.WithExecutorFactory(factory)
 	return template
 }

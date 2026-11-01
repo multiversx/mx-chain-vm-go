@@ -30,14 +30,14 @@ func TestManaged_SetByteSlice(t *testing.T) {
 						result, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(
 							host, mBuffer, int32(len(prefix)), int32(len(slice)), []byte(data))
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						if result != 0 {
-							vmhooks.FailExecution(host, vmhost.ErrSignalError)
+							test.FailMockContract(host, vmhost.ErrSignalError)
 						}
 						bufferBytes, err := managedType.GetBytes(mBuffer)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						host.Output().Finish(bufferBytes)
 						return parentInstance
@@ -80,14 +80,14 @@ func TestManaged_CopyByteSlice_DifferentBuffer(t *testing.T) {
 						result, err := vmhooks.ManagedBufferCopyByteSliceWithHost(
 							host, sourceMBuffer, int32(len(prefix)), int32(len(slice)), destMBuffer)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						if result != 0 {
-							vmhooks.FailExecution(host, vmhost.ErrSignalError)
+							test.FailMockContract(host, vmhost.ErrSignalError)
 						}
 						destBytes, err := managedType.GetBytes(destMBuffer)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						host.Output().Finish(destBytes)
 						return parentInstance
@@ -125,14 +125,14 @@ func TestManaged_CopyByteSlice_SameBuffer(t *testing.T) {
 						result, err := vmhooks.ManagedBufferCopyByteSliceWithHost(
 							host, sourceMBuffer, int32(len(prefix))-deltaForSlice, int32(len(slice)), sourceMBuffer)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						if result != 0 {
-							vmhooks.FailExecution(host, vmhost.ErrSignalError)
+							test.FailMockContract(host, vmhost.ErrSignalError)
 						}
 						destBytes, err := managedType.GetBytes(sourceMBuffer)
 						if err != nil {
-							vmhooks.FailExecution(host, err)
+							test.FailMockContract(host, err)
 						}
 						host.Output().Finish(destBytes)
 						return parentInstance

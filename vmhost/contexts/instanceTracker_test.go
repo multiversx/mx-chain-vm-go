@@ -15,8 +15,7 @@ func TestInstanceTracker_TrackInstance(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	newInstance := &wasmer2.Wasmer2Instance{
-		AlreadyClean: false}
+	newInstance := &wasmer2.Wasmer2InstanceNew{}
 
 	_ = iTracker.SetNewInstance(newInstance, Bytecode)
 	iTracker.codeHash = []byte("testinst")
@@ -339,9 +338,7 @@ func TestInstanceTracker_UnsetInstance_Ok(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	iTracker.instance = &wasmer2.Wasmer2Instance{
-		AlreadyClean: true,
-	}
+	iTracker.instance = &wasmer2.Wasmer2InstanceNew{}
 	iTracker.UnsetInstance()
 	require.Nil(t, iTracker.instance)
 }

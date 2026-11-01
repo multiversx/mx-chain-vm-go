@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"math/big"
 
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
@@ -39,7 +40,7 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 			)
 
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 			return instance
 		}
 
@@ -110,7 +111,7 @@ func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 			codeMetadata,
 		)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance

@@ -60,9 +60,6 @@ GetPointsUsed: 136352
 GetPointsUsed: 136352
 GetPointsUsed: 136352
 Reset: true
-SetPointsUsed: 0
-SetGasLimit: 9223372036853566107
-SetBreakpointValue: 0
 HasFunction(getSum): true
 CallFunction(getSum):
 VM hook begin: CheckNoPayment()
@@ -119,9 +116,6 @@ GetPointsUsed: 38624
 GetPointsUsed: 38624
 GetPointsUsed: 38624
 Reset: true
-SetPointsUsed: 0
-SetGasLimit: 3790300
-SetBreakpointValue: 0
 HasFunction(add): true
 CallFunction(add):
 VM hook begin: CheckNoPayment()
@@ -198,6 +192,7 @@ GetPointsUsed: 110731
 GetPointsUsed: 110731
 GetPointsUsed: 110731
 GetPointsUsed: 110731
+IsAlreadyCleaned: false
 Clean: true
 `
 
