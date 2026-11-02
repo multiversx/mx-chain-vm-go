@@ -8,6 +8,7 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2new"
 )
 
 // EnvVMEXECUTOR is the name of the environment variable that controls the default test executor
@@ -15,6 +16,10 @@ var EnvVMEXECUTOR = "VMEXECUTOR"
 
 // ExecWasmer2 is the value of the EnvVMEXECUTOR variable which selects Wasmer 2
 var ExecWasmer2 = "wasmer2"
+
+// ExecWasmer2New is the value of the EnvVMEXECUTOR variable which selects Wasmer 2.2 through the
+// new C API (package wasmer2new).
+var ExecWasmer2New = "wasmer2new"
 
 var defaultExecutorString = ExecWasmer2
 
@@ -24,6 +29,10 @@ func NewDefaultTestExecutorFactory(tb testing.TB) executor.ExecutorNewAbstractFa
 
 	if execStr == ExecWasmer2 {
 		return wasmer2.ExecutorFactoryNew()
+	}
+
+	if execStr == ExecWasmer2New {
+		return wasmer2new.ExecutorFactory()
 	}
 
 	if tb == (testing.TB)(nil) {

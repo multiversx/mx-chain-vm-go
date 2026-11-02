@@ -22,6 +22,9 @@ test:
 test-w2: clean
 	VMEXECUTOR="wasmer2" go test ./...
 
+test-w2new: clean
+	VMEXECUTOR="wasmer2new" go test ./...
+
 test-v: clean
 	go test ./... -v
 
