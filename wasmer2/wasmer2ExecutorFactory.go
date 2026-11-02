@@ -17,23 +17,29 @@ func ExecutorFactory() *Wasmer2ExecutorFactory {
 }
 
 // CreateExecutor creates a new Executor instance.
+//
+// The opcode cost table is required. It used to be applied only when present, so that tests
+// which had not built one could still create an executor - but an executor without a cost
+// table does not fail, it meters every opcode at zero, and the contracts it runs are free.
+// A caller with no schedule of its own passes config.MakeGasMapForTests.
 func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	if args.OpcodeCosts == nil {
+		return nil, executor.ErrNilOpcodeCosts
+	}
+
 	signal.Reset()
 
-	executor, err := CreateExecutor()
+	wasmerExecutor, err := CreateExecutor()
 	if err != nil {
 		return nil, err
 	}
-	executor.initVMHooks(args.VMHooks)
-	if args.OpcodeCosts != nil {
-		// opcode costs are sometimes not initialized at this point in certain tests
-		err = executor.SetOpcodeConfig(args.OpcodeVersion, args.OpcodeCosts)
-		if err != nil {
-			return nil, err
-		}
+	wasmerExecutor.initVMHooks(args.VMHooks)
+	err = wasmerExecutor.SetOpcodeConfig(args.OpcodeVersion, args.OpcodeCosts)
+	if err != nil {
+		return nil, err
 	}
 
-	return executor, nil
+	return wasmerExecutor, nil
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
