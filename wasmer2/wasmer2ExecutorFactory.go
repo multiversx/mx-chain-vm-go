@@ -36,6 +36,8 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 	wasmerExecutor.initVMHooks(args.VMHooks)
 	err = wasmerExecutor.SetOpcodeConfig(args.OpcodeVersion, args.OpcodeCosts)
 	if err != nil {
+		// the native executor is not garbage collected, release it explicitly
+		wasmerExecutor.destroy()
 		return nil, err
 	}
 
