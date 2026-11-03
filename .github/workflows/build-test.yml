@@ -22,6 +22,12 @@ jobs:
       run: | 
         make test
 
+    - name: Cleanup
+      if: always()
+      run: |
+        go clean -testcache
+        git clean -ffdx
+
   test-macos-arm64:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
@@ -35,3 +41,9 @@ jobs:
     - name: Test MacOS ARM64
       run: | 
         make test-w2
+
+    - name: Cleanup
+      if: always()
+      run: |
+        go clean -testcache
+        git clean -ffdx
