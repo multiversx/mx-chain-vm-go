@@ -397,3 +397,53 @@ func TestBulkMemoryGas_MemoryFillReceivesTheOriginalSize(t *testing.T) {
 		}
 	}
 }
+
+// TestBulkMemoryGas_RecreatedHostDoesNotTrustRetainedCompiledCode makes sure that a host
+// created with OpcodeV2 over a compiled-code cache retained from a V1 host does not run
+// artifacts compiled under V1. The cache is keyed by code hash only, and deserializing an
+// artifact skips the opcode whitelist, so a hit would accept what a miss rejects.
+func TestBulkMemoryGas_RecreatedHostDoesNotTrustRetainedCompiledCode(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	scAddress := testcommon.MakeTestSCAddress("ref-types")
+	world.AcctMap.CreateSmartContractAccount(
+		testcommon.ParentAddress,
+		scAddress,
+		testcommon.GetTestSCCode("ref-types", "../../"),
+		world)
+
+	buildHost := func(opcodeV2Enabled bool) vmhost.VMHost {
+		return testcommon.NewTestHostBuilder(t).
+			WithBlockchainHook(world).
+			WithBuiltinFunctions().
+			WithEnableEpochsHandler(&worldmock.EnableEpochsHandlerStub{
+				IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+					if flag == vmhost.OpcodeV2Flag {
+						return opcodeV2Enabled
+					}
+					return true
+				},
+			}).
+			Build()
+	}
+
+	input := testcommon.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(100000).
+		WithFunction("isNull").
+		Build()
+
+	hostV1 := buildHost(false)
+	vmOutput, err := hostV1.RunSmartContractCall(input)
+	testcommon.NewVMOutputVerifier(t, vmOutput, err).Ok()
+	hostV1.Reset()
+	require.NotEmpty(t, world.CompiledCode)
+
+	// the world, and with it the compiled code cache, outlives the first host
+	hostV2 := buildHost(true)
+	defer hostV2.Reset()
+
+	require.Empty(t, world.CompiledCode)
+
+	vmOutput, err = hostV2.RunSmartContractCall(input)
+	testcommon.NewVMOutputVerifier(t, vmOutput, err).ContractInvalid()
+}
