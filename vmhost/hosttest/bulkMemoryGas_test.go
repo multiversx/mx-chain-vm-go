@@ -337,3 +337,63 @@ func TestBulkMemoryGas_WrappedExecutorFactoryForwardsOpcodeVersion(t *testing.T)
 	vmOutput, err := host.RunSmartContractCall(input)
 	testcommon.NewVMOutputVerifier(t, vmOutput, err).Ok()
 }
+
+// bulkMemoryResult runs one of the *Check endpoints, which prepare a marked destination region
+// and return the first bulkMemoryCheckedBytes bytes of memory after the bulk memory opcode.
+func bulkMemoryResult(t *testing.T, function string, numBytes uint64) []byte {
+	var result []byte
+
+	testcommon.BuildInstanceCallTest(t).
+		WithContracts(
+			testcommon.CreateInstanceContract(testcommon.ParentAddress).
+				WithCode(testcommon.GetTestSCCode("bulk-memory", "../../"))).
+		WithGasSchedule(bulkMemoryGasSchedule()).
+		WithInput(testcommon.CreateTestContractCallInputBuilder().
+			WithGasProvided(bulkMemoryGasProvided).
+			WithFunction(function).
+			WithArguments(big.NewInt(0).SetUint64(numBytes).Bytes()).
+			Build()).
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
+			verify.Ok()
+			require.Len(t, verify.VmOutput.ReturnData, 1)
+			result = verify.VmOutput.ReturnData[0]
+		})
+
+	return result
+}
+
+const bulkMemoryCheckedBytes = 1100
+
+// TestBulkMemoryGas_MemoryCopyReceivesTheOriginalSize checks the memory after memory.copy:
+// exactly numBytes bytes of the non-zero source pattern must land at the destination, and
+// the bytes after them must keep their previous value.
+func TestBulkMemoryGas_MemoryCopyReceivesTheOriginalSize(t *testing.T) {
+	for _, numBytes := range []uint64{0, 10, 1000} {
+		result := bulkMemoryResult(t, "memoryCopyCheck", numBytes)
+		require.Len(t, result, bulkMemoryCheckedBytes)
+
+		for i := 0; i < bulkMemoryCheckedBytes; i++ {
+			expected := byte(0xAA)
+			if uint64(i) < numBytes {
+				expected = byte(i%251 + 1)
+			}
+			require.Equal(t, expected, result[i], "memory.copy, numBytes = %d, offset = %d", numBytes, i)
+		}
+	}
+}
+
+// TestBulkMemoryGas_MemoryFillReceivesTheOriginalSize is the memory.fill counterpart.
+func TestBulkMemoryGas_MemoryFillReceivesTheOriginalSize(t *testing.T) {
+	for _, numBytes := range []uint64{0, 10, 1000} {
+		result := bulkMemoryResult(t, "memoryFillCheck", numBytes)
+		require.Len(t, result, bulkMemoryCheckedBytes)
+
+		for i := 0; i < bulkMemoryCheckedBytes; i++ {
+			expected := byte(0xAA)
+			if uint64(i) < numBytes {
+				expected = 7
+			}
+			require.Equal(t, expected, result[i], "memory.fill, numBytes = %d, offset = %d", numBytes, i)
+		}
+	}
+}
