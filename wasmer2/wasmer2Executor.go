@@ -51,8 +51,26 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 	return wasmerExecutor, nil
 }
 
+// destroy releases the native executor. It must not be used afterwards.
+func (wasmerExecutor *Wasmer2Executor) destroy() {
+	if wasmerExecutor.cgoExecutor == nil {
+		return
+	}
+	cWasmerExecutorDestroy(wasmerExecutor.cgoExecutor)
+	wasmerExecutor.cgoExecutor = nil
+}
+
 // SetOpcodeConfig sets the opcode version and opcode costs, based on the gas schedule.
 func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) error {
+	if wasmOps == nil {
+		// Checked here rather than left to extractOpcodeCost, which reads every field and
+		// would panic inside cgo-locked code.
+		return executor.ErrNilOpcodeCosts
+	}
+
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	// extract only wasmer2 opcodes
 	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
 	result := cWasmerExecutorSetOpcodeConfig(

@@ -14,6 +14,13 @@ var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvali
 // ErrFuncNotFound signals that the the function does not exist
 var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 
+// ErrNilOpcodeCosts signals that an executor was configured without a WASM opcode cost table.
+//
+// Rejected rather than defaulted, because an absent table is indistinguishable from one in
+// which every opcode costs zero, and that is a contract running for free. OpcodeVersion needs
+// no such check: its zero value is OpcodeVersionV1, a real choice.
+var ErrNilOpcodeCosts = errors.New("nil WASM opcode costs")
+
 // ErrMemoryBadBounds signals that a certain variable is out of bounds
 var ErrMemoryBadBounds = errors.New("bad bounds")
 
