@@ -10,7 +10,6 @@ package executor
 //
 //   - legacy exception handling: Catch, CatchAll, Delegate, Rethrow, Throw, Try
 //   - reference types: RefFunc, RefIsNull, RefNull, TypedSelect
-//   - table manipulation: TableGet, TableGrow, TableInit, TableSet, TableSize
 type OpcodeVersion uint32
 
 const (
@@ -33,7 +32,6 @@ const (
 	//
 	//   - legacy exception handling: Catch, CatchAll, Delegate, Rethrow, Throw, Try
 	//   - reference types: RefFunc, RefIsNull, RefNull, TypedSelect
-	//   - table manipulation: TableGet, TableGrow, TableInit, TableSet, TableSize
 	//
 	// Note: OpcodeVersionV2 does not add support for memory.init and data.drop.
 	OpcodeVersionV2

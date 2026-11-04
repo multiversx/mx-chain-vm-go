@@ -18,7 +18,7 @@ func WriteExecutorOpcodeCost(out *eiGenWriter) {
 	out.WriteString("package executor\n\n")
 	out.WriteString("type WASMOpcodeCost struct {\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasm_opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasm_all_opcodes.txt")
 	if err != nil {
 		panic(err)
 	}

@@ -32,9 +32,6 @@ var vmType = []byte("type")
 
 func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
-	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
-	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	_ = wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 
@@ -47,11 +44,23 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	return host
 }
 
+// testExecutorFactoryArgs builds what hostCore.createExecutor builds in production: the VM
+// hooks and the opcode configuration. The cost table is not optional - an executor without
+// one meters every opcode at zero, so the contracts the test runs would be free.
+func testExecutorFactoryArgs(tb testing.TB, host vmhost.VMHost) executor.ExecutorFactoryArgs {
+	gasCostConfig, err := config.CreateGasConfig(config.MakeGasMapForTests())
+	require.Nil(tb, err)
+
+	return executor.ExecutorFactoryArgs{
+		VMHooks:       vmhooks.NewVMHooksImpl(host),
+		OpcodeVersion: executor.OpcodeVersionV2,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	}
+}
+
 func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewVMHooksImpl(host),
-	})
+	exec, err := execFactory.CreateExecutor(testExecutorFactoryArgs(t, host))
 	require.Nil(t, err)
 	runtimeCtx, err := NewRuntimeContext(
 		host,
@@ -71,9 +80,7 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 	hasher := defaultHasher
 
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewVMHooksImpl(host),
-	})
+	exec, err := execFactory.CreateExecutor(testExecutorFactoryArgs(t, host))
 	require.Nil(t, err)
 
 	t.Run("NilHost", func(t *testing.T) {
@@ -362,9 +369,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	testVMType := []byte("type")
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(t)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewVMHooksImpl(host),
-	})
+	exec, err := execFactory.CreateExecutor(testExecutorFactoryArgs(t, host))
 	require.Nil(t, err)
 	runtime, _ := NewRuntimeContext(
 		host,
@@ -475,6 +480,25 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	runtimeCtx.ClearWarmInstanceCache()
 	require.Nil(t, runtimeCtx.iTracker.instance)
+}
+
+// An executor built without a cost table does not fail - it prices every opcode at zero, and
+// the contracts it runs cost nothing. That is what makes the omission worth a test of its
+// own: nothing else here would notice.
+func TestRuntimeContext_InstancesAreMetered(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	runtimeCtx := makeDefaultRuntimeContext(t, host)
+	defer runtimeCtx.ClearWarmInstanceCache()
+
+	runtimeCtx.SetMaxInstanceStackSize(1)
+
+	contractCode := vmhost.GetSCCode(counterWasmCode)
+	err := runtimeCtx.StartWasmerInstance(contractCode, uint64(100000000), false)
+	require.Nil(t, err)
+	require.Zero(t, runtimeCtx.GetPointsUsed())
+
+	require.Nil(t, runtimeCtx.GetInstance().CallFunction("init"))
+	require.NotZero(t, runtimeCtx.GetPointsUsed(), "the instance was compiled unmetered")
 }
 
 func TestRuntimeContext_Breakpoints(t *testing.T) {

@@ -214,6 +214,12 @@ func cWasmerExecutorContextDataSet(executor *cWasmerExecutorT, vmHooksPtr unsafe
 	)
 }
 
+func cWasmerExecutorDestroy(executor *cWasmerExecutorT) {
+	C.vm_exec_executor_destroy(
+		(*C.vm_exec_executor_t)(executor),
+	)
+}
+
 func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
 	C.vm_exec_instance_destroy(
 		(*C.vm_exec_instance_t)(instance),
