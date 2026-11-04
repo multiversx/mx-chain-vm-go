@@ -31,9 +31,6 @@ var vmType = []byte("type")
 
 func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
-	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
-	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	_ = wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 
@@ -44,6 +41,19 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook, _ = factory.NewVMCrypto()
 	return host
+}
+
+// testOpcodeConfig builds the opcode configuration hostCore builds in production. The cost
+// table is not optional - an executor without one meters every opcode at zero, so the
+// contracts the test runs would be free.
+func testOpcodeConfig(tb testing.TB) *executor.OpcodeConfig {
+	gasCostConfig, err := config.CreateGasConfig(config.MakeGasMapForTests())
+	require.Nil(tb, err)
+
+	return &executor.OpcodeConfig{
+		OpcodeVersion: executor.OpcodeVersionV2,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	}
 }
 
 func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
@@ -61,9 +71,11 @@ func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeCtx)
+	runtimeCtx.SetOpcodeConfig(testOpcodeConfig(t))
 
 	return runtimeCtx
 }
+
 func TestNewRuntimeContextErrors(t *testing.T) {
 	host := InitializeVMAndWasmer()
 	bfc := builtInFunctions.NewBuiltInFunctionContainer()
@@ -472,6 +484,24 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	runtimeCtx.ClearWarmInstanceCache()
 	require.Nil(t, runtimeCtx.iTracker.instance)
+}
+
+// Compiled without a cost table, an instance does not fail - it prices every opcode at zero,
+// and the contracts it runs cost nothing. That is what makes the omission worth a test of its
+// own: nothing else here would notice.
+func TestRuntimeContext_InstancesAreCompiledMetered(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	runtimeCtx := makeDefaultRuntimeContext(t, host)
+	defer runtimeCtx.ClearWarmInstanceCache()
+
+	options := runtimeCtx.compilationOptions()
+	require.NotNil(t, options.OpcodeConfig, "the instance would be compiled unmetered")
+	require.NotNil(t, options.OpcodeConfig.OpcodeCosts)
+	require.Equal(t, executor.OpcodeVersionV2, options.OpcodeConfig.OpcodeVersion)
+
+	runtimeCtx.SetMaxInstanceStackSize(1)
+	contractCode := vmhost.GetSCCode(counterWasmCode)
+	require.Nil(t, runtimeCtx.StartWasmerInstance(contractCode, uint64(100000000), false))
 }
 
 func TestRuntimeContext_FailureRecording(t *testing.T) {

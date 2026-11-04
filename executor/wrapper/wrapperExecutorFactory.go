@@ -1,10 +1,20 @@
 package executorwrapper
 
 import (
+	"errors"
+
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 var _ executor.ExecutorNewAbstractFactory = (*WrapperExecutorFactory)(nil)
+
+// ErrNilWrappedExecutorFactory signals that the wrapper was built around no factory at all.
+var ErrNilWrappedExecutorFactory = errors.New("nil wrapped executor factory")
+
+// ErrNilExecutorLogger signals that the wrapper was built without a logger. SimpleWrappedExecutorFactory
+// supplies NoLogger for callers that want no logging; nil is not that.
+var ErrNilExecutorLogger = errors.New("nil executor logger")
 
 // WrapperExecutorFactory is the factory for the WrapperExecutor.
 type WrapperExecutorFactory struct {
@@ -32,10 +42,21 @@ func SimpleWrappedExecutorFactory(wrappedFactory executor.ExecutorNewAbstractFac
 
 // CreateExecutorNew creates a new ExecutorNew instance.
 //
+// The dependencies are checked here rather than in NewWrappedExecutorFactory, which has no
+// error to return: the factory struct is inert, and this is the first point at which a
+// missing one would be used.
+//
 // The hooks are no longer handed over here - they come from the runtime, per call - so what
 // is wrapped is the runtime itself, and the hooks it hands out are wrapped on the way
 // through.
 func (factory *WrapperExecutorFactory) CreateExecutorNew(args executor.ExecutorFactoryArgsNew) (executor.ExecutorNew, error) {
+	if check.IfNil(factory.wrappedFactory) {
+		return nil, ErrNilWrappedExecutorFactory
+	}
+	if factory.logger == nil {
+		return nil, ErrNilExecutorLogger
+	}
+
 	runtime := &WrapperRuntime{
 		logger:         factory.logger,
 		wrappedRuntime: args.Runtime,

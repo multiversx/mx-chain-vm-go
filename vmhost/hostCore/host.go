@@ -208,6 +208,12 @@ func NewVMHost(
 
 	host.runtimeContext.SetMaxInstanceStackSize(MaximumRuntimeInstanceStackSize)
 
+	// Cached artifacts are keyed by code hash only, so the opcode version and gas costs they
+	// were compiled under are not recorded with them. The node already clears the cache on
+	// startup and before replacing a host; this guards embedders that create a host over a
+	// blockchain hook whose cache was not cleared.
+	host.blockchainContext.ClearCompiledCodes()
+
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
@@ -427,13 +433,13 @@ func (host *vmHost) applyExecutionConfig(
 		return err
 	}
 
-	host.gasSchedule = gasSchedule
-	host.opcodeVersion = opcodeVersion
-
 	host.runtimeContext.SetOpcodeConfig(&executor.OpcodeConfig{
 		OpcodeVersion: opcodeVersion,
 		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
 	})
+
+	host.gasSchedule = gasSchedule
+	host.opcodeVersion = opcodeVersion
 
 	host.meteringContext.SetGasSchedule(gasSchedule)
 

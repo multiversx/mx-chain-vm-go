@@ -5,8 +5,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/wasmer2"
-
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	"github.com/multiversx/mx-chain-scenario-go/worldmock"
@@ -59,9 +57,6 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	require.Nil(tb, err)
-	wasmerExecutor, _ := wasmer2.CreateExecutor()
-	require.Nil(tb, wasmerExecutor.SetOpcodeConfig(executor.OpcodeVersionV2, gasCostConfig.WASMOpcodeCost))
-
 	host := &contextmock.VMHostMock{
 		EnableEpochsHandlerField: &worldmock.EnableEpochsHandlerStub{},
 	}
@@ -80,6 +75,11 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 		Runtime: testExecutorRuntime{host: host},
 	})
 	require.Nil(tb, err)
+	// The cost table is not optional - an executor without one meters every opcode at zero.
+	opcodeConfig := &executor.OpcodeConfig{
+		OpcodeVersion: executor.OpcodeVersionV2,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	}
 	runtimeCtx, err := NewRuntimeContext(
 		host,
 		testVMType,
@@ -89,6 +89,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	)
 	require.Nil(tb, err)
 
+	runtimeCtx.SetOpcodeConfig(opcodeConfig)
 	runtimeCtx.iTracker.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeCtx
 

@@ -9,6 +9,8 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
@@ -112,4 +114,136 @@ func TestValidateVMInput(t *testing.T) {
 	vmInput.GasProvided = math.MaxInt64
 	err = validateVMInput(vmInput)
 	require.Nil(t, err)
+}
+
+type opcodeConfigRuntimeStub struct {
+	vmhost.RuntimeContext
+	opcodeConfig  *executor.OpcodeConfig
+	configCalls   int
+	warmCacheWipe int
+}
+
+func (r *opcodeConfigRuntimeStub) SetOpcodeConfig(opcodeConfig *executor.OpcodeConfig) {
+	r.configCalls++
+	r.opcodeConfig = opcodeConfig
+}
+func (r *opcodeConfigRuntimeStub) ClearWarmInstanceCache() { r.warmCacheWipe++ }
+
+type opcodeConfigMeteringStub struct {
+	vmhost.MeteringContext
+	schedule config.GasScheduleMap
+}
+
+func (m *opcodeConfigMeteringStub) SetGasSchedule(schedule config.GasScheduleMap) {
+	m.schedule = schedule
+}
+
+type opcodeConfigBlockchainStub struct {
+	vmhost.BlockchainContext
+	codesCleared int
+}
+
+func (b *opcodeConfigBlockchainStub) ClearCompiledCodes() { b.codesCleared++ }
+
+func newOpcodeConfigTestHost(v2Enabled *bool) (*vmHost, *opcodeConfigRuntimeStub, *opcodeConfigMeteringStub, *opcodeConfigBlockchainStub) {
+	runtime := &opcodeConfigRuntimeStub{}
+	metering := &opcodeConfigMeteringStub{}
+	blockchain := &opcodeConfigBlockchainStub{}
+	host := &vmHost{
+		runtimeContext:    runtime,
+		meteringContext:   metering,
+		blockchainContext: blockchain,
+		enableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
+			IsFlagEnabledCalled: func(flag core.EnableEpochFlag) bool {
+				return flag == vmhost.OpcodeV2Flag && *v2Enabled
+			},
+		},
+		activationEpochMap: map[uint32]struct{}{},
+	}
+	return host, runtime, metering, blockchain
+}
+
+func TestVMHost_GetOpcodeVersionForCurrentEpoch(t *testing.T) {
+	v2 := false
+	host, _, _, _ := newOpcodeConfigTestHost(&v2)
+
+	require.Equal(t, executor.OpcodeVersionV1, host.getOpcodeVersionForCurrentEpoch())
+	v2 = true
+	require.Equal(t, executor.OpcodeVersionV2, host.getOpcodeVersionForCurrentEpoch())
+}
+
+func TestVMHost_ApplyExecutionConfig(t *testing.T) {
+	v2 := false
+
+	t.Run("success clears caches", func(t *testing.T) {
+		host, runtime, metering, blockchain := newOpcodeConfigTestHost(&v2)
+		schedule := config.MakeGasMapForTests()
+
+		err := host.applyExecutionConfig(executor.OpcodeVersionV2, schedule)
+		require.Nil(t, err)
+		require.Equal(t, executor.OpcodeVersionV2, runtime.opcodeConfig.OpcodeVersion)
+		require.NotNil(t, runtime.opcodeConfig.OpcodeCosts)
+		require.Equal(t, executor.OpcodeVersionV2, host.opcodeVersion)
+		require.Equal(t, schedule, host.gasSchedule)
+		require.Equal(t, schedule, metering.schedule)
+		require.Equal(t, 1, runtime.warmCacheWipe)
+		require.Equal(t, 1, blockchain.codesCleared)
+	})
+	t.Run("invalid gas schedule", func(t *testing.T) {
+		host, runtime, _, blockchain := newOpcodeConfigTestHost(&v2)
+
+		err := host.applyExecutionConfig(executor.OpcodeVersionV2, config.GasScheduleMap{})
+		require.NotNil(t, err)
+		require.Equal(t, 0, runtime.configCalls)
+		require.Equal(t, 0, runtime.warmCacheWipe)
+		require.Equal(t, 0, blockchain.codesCleared)
+	})
+}
+
+func TestVMHost_ReconfigureExecutorOpcodeVersion(t *testing.T) {
+	v2 := false
+	host, runtime, _, blockchain := newOpcodeConfigTestHost(&v2)
+	host.gasSchedule = config.MakeGasMapForTests()
+
+	// unchanged version: nothing happens
+	host.reconfigureExecutorOpcodeVersion()
+	require.Equal(t, 0, runtime.configCalls)
+
+	// flag flips: opcode config replaced and caches wiped
+	v2 = true
+	host.reconfigureExecutorOpcodeVersion()
+	require.Equal(t, 1, runtime.configCalls)
+	require.Equal(t, executor.OpcodeVersionV2, host.opcodeVersion)
+	require.Equal(t, 1, runtime.warmCacheWipe)
+	require.Equal(t, 1, blockchain.codesCleared)
+
+	// failure is only logged, the old version is kept
+	v2 = false
+	host.gasSchedule = config.GasScheduleMap{}
+	host.reconfigureExecutorOpcodeVersion()
+	require.Equal(t, executor.OpcodeVersionV2, host.opcodeVersion)
+}
+
+func TestVMHost_GasScheduleChange(t *testing.T) {
+	v2 := true
+	host, runtime, metering, _ := newOpcodeConfigTestHost(&v2)
+	schedule := config.MakeGasMapForTests()
+
+	host.GasScheduleChange(schedule)
+	require.Equal(t, executor.OpcodeVersionV2, runtime.opcodeConfig.OpcodeVersion)
+	require.Equal(t, schedule, metering.schedule)
+
+	// error path is only logged
+	host.GasScheduleChange(config.GasScheduleMap{})
+	require.Equal(t, 1, runtime.configCalls)
+}
+
+func TestVMHost_EpochConfirmedReconfiguresExecutor(t *testing.T) {
+	v2 := false
+	host, runtime, _, _ := newOpcodeConfigTestHost(&v2)
+	host.gasSchedule = config.MakeGasMapForTests()
+
+	v2 = true
+	host.EpochConfirmed(5, 0)
+	require.Equal(t, executor.OpcodeVersionV2, runtime.opcodeConfig.OpcodeVersion)
 }

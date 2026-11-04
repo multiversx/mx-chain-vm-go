@@ -6,6 +6,7 @@ import (
 	"testing"
 	"unsafe"
 
+	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +25,13 @@ func newMemoryResetInstance(t *testing.T) executor.Instance {
 	code, err := os.ReadFile(filepath.Join("..", "test", "contracts", "memory-reset", "output", "memory-reset.wasm"))
 	require.Nil(t, err)
 
-	exec, err := ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{})
+	gasCostConfig, err := config.CreateGasConfig(config.MakeGasMapForTests())
+	require.Nil(t, err)
+
+	exec, err := ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+		OpcodeVersion: executor.OpcodeVersionV2,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	})
 	require.Nil(t, err)
 
 	instance, err := exec.NewInstanceWithOptions(code, executor.CompilationOptions{
