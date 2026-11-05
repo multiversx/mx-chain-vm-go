@@ -625,6 +625,54 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
 }
 
+// TestExecution_ChangeWasmerOpcodeCosts_ClearsCachedCompiledCode makes sure that a gas
+// schedule change drops the precompiled code cache as well as the warm instance cache.
+// The opcode costs are injected into the code at compile time, so an instance built from a
+// module that was compiled under the previous schedule would keep metering with the
+// previous costs, silently ignoring the change.
+func TestExecution_ChangeWasmerOpcodeCosts_ClearsCachedCompiledCode(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
+	defer func() {
+		host.Reset()
+	}()
+
+	scAddress := test.MakeTestSCAddress("misc")
+	world.AcctMap.CreateSmartContractAccount(
+		test.ParentAddress,
+		scAddress,
+		test.GetTestSCCode("misc", "../../"),
+		world)
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	test.NewVMOutputVerifier(t, vmOutput, err).Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+
+	// the first call compiled the contract and the blockchain hook cached the module
+	require.NotEmpty(t, world.CompiledCode)
+
+	gasSchedule := host.GetGasScheduleMap()
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
+
+	require.Empty(t, world.CompiledCode)
+
+	// the contract is recompiled with the new costs, instead of being restored from a
+	// module metered with the old ones
+	vmOutput, err = host.RunSmartContractCall(input)
+	test.NewVMOutputVerifier(t, vmOutput, err).Ok()
+	require.NotEqual(t, gasRemainingBeforeChange, vmOutput.GasRemaining)
+}
+
 func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	contractCode := test.GetTestSCCode("misc", "../../")
 
