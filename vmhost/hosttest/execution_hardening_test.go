@@ -1711,10 +1711,10 @@ func TestHost_BUG297_BigInt_GetArgument_OutOfBounds(t *testing.T) {
 func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 	t.Parallel()
 
-	newTestHost := func() (vmhost.VMHost, *executor.VMHooksLegacyAdapter) {
+	newTestHostWithToken := func(token *esdt.ESDigitalToken) (vmhost.VMHost, *executor.VMHooksLegacyAdapter) {
 		stubHook := &contextmock.BlockchainHookStub{
 			GetESDTTokenCalled: func(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
-				return nil, nil // esdtToken is nil, error is nil
+				return token, nil
 			},
 		}
 		host := test.NewTestHostBuilder(t).
@@ -1733,6 +1733,63 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		require.Nil(t, err)
 		return host, vmhooks.NewVMHooksLegacy(host)
 	}
+	newTestHost := func() (vmhost.VMHost, *executor.VMHooksLegacyAdapter) {
+		return newTestHostWithToken(nil) // esdtToken is nil, error is nil
+	}
+
+	// The hooks below dereference TokenMetaData without a nil check of their own. They rely
+	// on the blockchain context to fill in an empty token and empty metadata, both when the
+	// token is missing and when it has no metadata (a fungible token).
+	tokenCases := map[string]*esdt.ESDigitalToken{
+		"nil token":          nil,
+		"nil token metadata": {Value: big.NewInt(42)},
+	}
+	for name, token := range tokenCases {
+		token := token
+		t.Run("NFT length hooks return 0 without error, "+name, func(t *testing.T) {
+			host, hooks := newTestHostWithToken(token)
+			defer host.Reset()
+
+			_ = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
+			_ = vmhooks.NewVMHooksImpl(host).MemStore(32, []byte("TEST-123456"))
+
+			require.Equal(t, int32(0), hooks.GetESDTNFTNameLength(0, 32, 11, 0))
+			require.Equal(t, int32(0), hooks.GetESDTNFTAttributeLength(0, 32, 11, 0))
+			require.Equal(t, int32(0), hooks.GetESDTNFTURILength(0, 32, 11, 0))
+			require.Nil(t, host.Runtime().GetAllErrors())
+		})
+	}
+
+	t.Run("GetESDTTokenData and ManagedGetESDTTokenData keep the value of a token without metadata", func(t *testing.T) {
+		host, hooks := newTestHostWithToken(&esdt.ESDigitalToken{Value: big.NewInt(42)})
+		defer host.Reset()
+		managedTypes := host.ManagedTypes()
+
+		_ = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
+		_ = vmhooks.NewVMHooksImpl(host).MemStore(32, []byte("TEST-123456"))
+		valHandle := managedTypes.NewBigIntFromInt64(0)
+		royaltiesHandle := managedTypes.NewBigIntFromInt64(0)
+
+		resTokenData := hooks.GetESDTTokenData(0, 32, 11, 0, valHandle, 100, 200, 300, 400, 500, royaltiesHandle, 600)
+		require.Equal(t, int32(1), resTokenData) // len(big.NewInt(42).Bytes())
+		valBigInt, _ := managedTypes.GetBigInt(valHandle)
+		require.Equal(t, int64(42), valBigInt.Int64())
+		require.Nil(t, host.Runtime().GetAllErrors())
+
+		addrHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
+		tokenHandle := managedTypes.NewManagedBufferFromBytes([]byte("TEST-123456"))
+		managedValHandle := managedTypes.NewBigIntFromInt64(0)
+		nameHandle := managedTypes.NewManagedBuffer()
+		hooks.ManagedGetESDTTokenData(addrHandle, tokenHandle, 0, managedValHandle,
+			managedTypes.NewManagedBuffer(), managedTypes.NewManagedBuffer(), nameHandle,
+			managedTypes.NewManagedBuffer(), managedTypes.NewManagedBuffer(),
+			managedTypes.NewBigIntFromInt64(0), managedTypes.NewManagedBuffer())
+		managedVal, _ := managedTypes.GetBigInt(managedValHandle)
+		require.Equal(t, int64(42), managedVal.Int64())
+		name, _ := managedTypes.GetBytes(nameHandle)
+		require.Empty(t, name)
+		require.Nil(t, host.Runtime().GetAllErrors())
+	})
 
 	t.Run("BigIntGetESDTExternalBalance sets 0 without error", func(t *testing.T) {
 		host, hooks := newTestHost()
