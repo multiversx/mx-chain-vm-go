@@ -2,7 +2,6 @@ package wasmer2
 
 import (
 	"fmt"
-	"reflect"
 	"runtime"
 	"unsafe"
 
@@ -23,19 +22,11 @@ func (memory *Wasmer2Memory) Length() uint32 {
 }
 
 // Data returns a slice of bytes over the WebAssembly memory.
-// nolint
 func (memory *Wasmer2Memory) Data() []byte {
 	var length = memory.Length()
 	var data = (*uint8)(cWasmerMemoryData(memory.cgoInstance))
 
-	var header reflect.SliceHeader
-	header = *(*reflect.SliceHeader)(unsafe.Pointer(&header))
-
-	header.Data = uintptr(unsafe.Pointer(data))
-	header.Len = int(length)
-	header.Cap = int(length)
-
-	return *(*[]byte)(unsafe.Pointer(&header))
+	return unsafe.Slice(data, int(length))
 }
 
 // Grow the memory by a number of pages (65kb each).
