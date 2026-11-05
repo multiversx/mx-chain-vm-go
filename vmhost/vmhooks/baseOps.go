@@ -384,9 +384,6 @@ func (context *VMHooksImpl) GetESDTNFTNameLength(
 	if err != nil {
 		return -1, err
 	}
-	if esdtData == nil || esdtData.TokenMetaData == nil {
-		return 0, vmhost.ErrNilESDTData
-	}
 
 	return int32(len(esdtData.TokenMetaData.Name)), nil
 }
@@ -406,9 +403,6 @@ func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	if err != nil {
 		return -1, err
 	}
-	if esdtData == nil || esdtData.TokenMetaData == nil {
-		return 0, vmhost.ErrNilESDTData
-	}
 
 	return int32(len(esdtData.TokenMetaData.Attributes)), nil
 }
@@ -427,9 +421,6 @@ func (context *VMHooksImpl) GetESDTNFTURILength(
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if err != nil {
 		return -1, err
-	}
-	if esdtData == nil || esdtData.TokenMetaData == nil {
-		return 0, vmhost.ErrNilESDTData
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
 		return 0, nil
@@ -469,10 +460,6 @@ func (context *VMHooksImpl) GetESDTTokenData(
 	err = context.MemStore(propertiesOffset, esdtData.Properties)
 	if err != nil {
 		return -1, err
-	}
-
-	if esdtData.TokenMetaData == nil {
-		return int32(len(esdtData.Value.Bytes())), nil
 	}
 
 	err = context.MemStore(hashOffset, esdtData.TokenMetaData.Hash)

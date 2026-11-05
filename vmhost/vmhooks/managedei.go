@@ -515,34 +515,32 @@ func ManagedGetESDTTokenDataWithHost(
 	value.Set(esdtToken.Value)
 
 	managedType.SetBytes(propertiesHandle, esdtToken.Properties)
-	if esdtToken.TokenMetaData != nil {
-		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
-		if err != nil {
-			return err
-		}
-		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
-		if err != nil {
-			return err
-		}
-		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
-		if err != nil {
-			return err
-		}
-		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
-		err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
-		if err != nil {
-			return err
-		}
-		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
-		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
+	managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
+	if err != nil {
+		return err
+	}
+	managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
+	if err != nil {
+		return err
+	}
+	managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
+	if err != nil {
+		return err
+	}
+	managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
+	err = managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
+	if err != nil {
+		return err
+	}
+	royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
+	royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
 
-		err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
-		if err != nil {
-			return err
-		}
+	err = managedType.WriteManagedVecOfManagedBuffers(esdtToken.TokenMetaData.URIs, urisHandle)
+	if err != nil {
+		return err
 	}
 
 	return nil
