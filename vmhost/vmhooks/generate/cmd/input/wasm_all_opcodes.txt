@@ -494,7 +494,9 @@ MemoryAtomicNotify
 MemoryAtomicWait32
 MemoryAtomicWait64
 MemoryCopy
+MemoryCopyPerByte
 MemoryFill
+MemoryFillPerByte
 MemoryGrow
 MemoryInit
 MemorySize

@@ -19,11 +19,11 @@ func WriteWASMOpcodeCostConfigHelpers(out *eiGenWriter) {
 
 `)
 	out.WriteString("[WASMOpcodeCost]\n")
-	readFile, err := os.Open("generate/cmd/input/wasm_opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasm_all_opcodes.txt")
 	if err != nil {
 		panic(err)
 	}
-	defer readFile.Close()
+	defer func() { _ = readFile.Close() }()
 
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)

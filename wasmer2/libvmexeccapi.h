@@ -313,12 +313,160 @@ typedef struct vm_exec_vm_hook_c_func_pointers {
   int32_t (*managed_verify_blsaggregated_signature_func_ptr)(void *context, int32_t key_handle, int32_t message_handle, int32_t sig_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
+/**
+ * FFI-safe mirror of `CompilationOptionsLegacy`.
+ *
+ * This is a distinct type rather than a cast of `CompilationOptionsLegacy`
+ * itself, so that the general-purpose struct is free to change shape
+ * without touching the C ABI, and vice versa. Fields that are `usize` on
+ * the Rust side are fixed to `u64` here, since `usize` has no guaranteed
+ * width across host platforms.
+ */
 typedef struct vm_exec_compilation_options_t {
-
+  uint64_t gas_limit;
+  uint64_t unmetered_locals;
+  uint64_t max_memory_grow;
+  uint64_t max_memory_grow_delta;
+  bool opcode_trace;
+  bool metering;
+  bool runtime_breakpoints;
 } vm_exec_compilation_options_t;
 
+/**
+ * FFI-safe mirror of `OpcodeCost`.
+ *
+ * This is a distinct type rather than a cast of `OpcodeCost` itself, so that
+ * the general-purpose struct is free to change shape without touching the C
+ * ABI, and vice versa.
+ */
 typedef struct vm_exec_opcode_cost_t {
-
+  uint32_t opcode_block;
+  uint32_t opcode_br;
+  uint32_t opcode_brif;
+  uint32_t opcode_brtable;
+  uint32_t opcode_call;
+  uint32_t opcode_callindirect;
+  uint32_t opcode_catch;
+  uint32_t opcode_catchall;
+  uint32_t opcode_delegate;
+  uint32_t opcode_drop;
+  uint32_t opcode_else;
+  uint32_t opcode_end;
+  uint32_t opcode_globalget;
+  uint32_t opcode_globalset;
+  uint32_t opcode_i32add;
+  uint32_t opcode_i32and;
+  uint32_t opcode_i32clz;
+  uint32_t opcode_i32const;
+  uint32_t opcode_i32ctz;
+  uint32_t opcode_i32divs;
+  uint32_t opcode_i32divu;
+  uint32_t opcode_i32eq;
+  uint32_t opcode_i32eqz;
+  uint32_t opcode_i32extend16s;
+  uint32_t opcode_i32extend8s;
+  uint32_t opcode_i32ges;
+  uint32_t opcode_i32geu;
+  uint32_t opcode_i32gts;
+  uint32_t opcode_i32gtu;
+  uint32_t opcode_i32les;
+  uint32_t opcode_i32leu;
+  uint32_t opcode_i32load;
+  uint32_t opcode_i32load16s;
+  uint32_t opcode_i32load16u;
+  uint32_t opcode_i32load8s;
+  uint32_t opcode_i32load8u;
+  uint32_t opcode_i32lts;
+  uint32_t opcode_i32ltu;
+  uint32_t opcode_i32mul;
+  uint32_t opcode_i32ne;
+  uint32_t opcode_i32or;
+  uint32_t opcode_i32popcnt;
+  uint32_t opcode_i32rems;
+  uint32_t opcode_i32remu;
+  uint32_t opcode_i32rotl;
+  uint32_t opcode_i32rotr;
+  uint32_t opcode_i32shl;
+  uint32_t opcode_i32shrs;
+  uint32_t opcode_i32shru;
+  uint32_t opcode_i32store;
+  uint32_t opcode_i32store16;
+  uint32_t opcode_i32store8;
+  uint32_t opcode_i32sub;
+  uint32_t opcode_i32wrapi64;
+  uint32_t opcode_i32xor;
+  uint32_t opcode_i64add;
+  uint32_t opcode_i64and;
+  uint32_t opcode_i64clz;
+  uint32_t opcode_i64const;
+  uint32_t opcode_i64ctz;
+  uint32_t opcode_i64divs;
+  uint32_t opcode_i64divu;
+  uint32_t opcode_i64eq;
+  uint32_t opcode_i64eqz;
+  uint32_t opcode_i64extend16s;
+  uint32_t opcode_i64extend32s;
+  uint32_t opcode_i64extend8s;
+  uint32_t opcode_i64extendi32s;
+  uint32_t opcode_i64extendi32u;
+  uint32_t opcode_i64ges;
+  uint32_t opcode_i64geu;
+  uint32_t opcode_i64gts;
+  uint32_t opcode_i64gtu;
+  uint32_t opcode_i64les;
+  uint32_t opcode_i64leu;
+  uint32_t opcode_i64load;
+  uint32_t opcode_i64load16s;
+  uint32_t opcode_i64load16u;
+  uint32_t opcode_i64load32s;
+  uint32_t opcode_i64load32u;
+  uint32_t opcode_i64load8s;
+  uint32_t opcode_i64load8u;
+  uint32_t opcode_i64lts;
+  uint32_t opcode_i64ltu;
+  uint32_t opcode_i64mul;
+  uint32_t opcode_i64ne;
+  uint32_t opcode_i64or;
+  uint32_t opcode_i64popcnt;
+  uint32_t opcode_i64rems;
+  uint32_t opcode_i64remu;
+  uint32_t opcode_i64rotl;
+  uint32_t opcode_i64rotr;
+  uint32_t opcode_i64shl;
+  uint32_t opcode_i64shrs;
+  uint32_t opcode_i64shru;
+  uint32_t opcode_i64store;
+  uint32_t opcode_i64store16;
+  uint32_t opcode_i64store32;
+  uint32_t opcode_i64store8;
+  uint32_t opcode_i64sub;
+  uint32_t opcode_i64xor;
+  uint32_t opcode_if;
+  uint32_t opcode_localget;
+  uint32_t opcode_localset;
+  uint32_t opcode_localtee;
+  uint32_t opcode_loop;
+  uint32_t opcode_memorygrow;
+  uint32_t opcode_memorysize;
+  uint32_t opcode_nop;
+  uint32_t opcode_reffunc;
+  uint32_t opcode_refisnull;
+  uint32_t opcode_refnull;
+  uint32_t opcode_rethrow;
+  uint32_t opcode_return;
+  uint32_t opcode_returncall;
+  uint32_t opcode_returncallindirect;
+  uint32_t opcode_select;
+  uint32_t opcode_throw;
+  uint32_t opcode_try;
+  uint32_t opcode_typedselect;
+  uint32_t opcode_unreachable;
+  uint32_t opcode_unwind;
+  uint32_t opcode_memorycopy;
+  uint32_t opcode_memoryfill;
+  uint32_t opcode_memorycopyperbyte;
+  uint32_t opcode_memoryfillperbyte;
+  uint32_t opcode_localallocate;
 } vm_exec_opcode_cost_t;
 
 /**
@@ -600,7 +748,7 @@ enum vm_exec_result_t vm_exec_instance_memory_grow(struct vm_exec_instance_t *in
  *
  * C API function, works with raw object pointers.
  */
-enum vm_exec_result_t vm_exec_set_opcode_costs(struct vm_exec_executor_t *executor_ptr, const struct vm_exec_opcode_cost_t *opcode_cost_ptr);
+enum vm_exec_result_t vm_exec_set_opcode_config(struct vm_exec_executor_t *executor_ptr, int32_t opcode_version_code, const struct vm_exec_opcode_cost_t *opcode_cost_ptr);
 
 /**
  * Sets the number of points(gas) limit for the given instance.
