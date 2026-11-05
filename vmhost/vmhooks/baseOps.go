@@ -2127,15 +2127,14 @@ func (context *VMHooksImpl) IsStorageLocked(keyOffset executor.MemPtr, keyLength
 		return -1, nil
 	}
 
+	// No early return on err: GetBlockTimestamp yields -1 when it fails, and the comparison
+	// below has always run on that value, so a failure here returns 1 (timeLock >= 0 here).
 	currentTimestamp, err := context.GetBlockTimestamp()
-	if err != nil {
-		return -1, err
-	}
 	if timeLock <= currentTimestamp {
-		return 0, nil
+		return 0, err
 	}
 
-	return 1, nil
+	return 1, err
 }
 
 // ClearStorageLock VMHooks implementation.

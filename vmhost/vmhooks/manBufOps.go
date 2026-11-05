@@ -798,7 +798,7 @@ func (context *VMHooksImpl) MBufferStorageLoad(keyHandle int32, destinationHandl
 
 	storageBytes, trieDepth, usedCache, err := storage.GetStorage(key)
 	if err != nil {
-		return 0, err
+		return 1, err
 	}
 
 	err = storage.UseGasForStorageLoad(
