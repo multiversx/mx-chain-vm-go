@@ -49,31 +49,25 @@ func NewVMHooksLegacyAdapter(vmHooks VMHooks, errorHandler VMHooksErrorHandler) 
 		out.WriteString(" {")
 
 		out.WriteString("\n\t")
-		switch {
-		case funcMetadata.Result != nil && funcMetadata.ReturnsError:
+		if funcMetadata.Result != nil {
 			out.WriteString("result, err := ")
-		case funcMetadata.Result != nil:
-			out.WriteString("return ")
-		case funcMetadata.ReturnsError:
+		} else {
 			out.WriteString("err := ")
 		}
 		out.WriteString(fmt.Sprintf("adapter.vmHooks.%s(", upperInitial(funcMetadata.Name)))
 		writeCommaSeparatedArgumentNames(out, funcMetadata.Arguments)
 		out.WriteString(")")
 
-		if funcMetadata.ReturnsError {
-			out.WriteString("\n\tif err != nil {")
-			out.WriteString("\n\t\tadapter.errorHandler.HandleHookError(err)")
-			out.WriteString("\n\t}")
-			if funcMetadata.Result != nil {
-				// The hook's own result, not the zero value. Before the migration a failing
-				// hook applied the side effect itself and returned a sentinel - -1, 1, -2 -
-				// which contracts branch on; the migration moved the side effect out but kept
-				// the sentinel next to the error. Zeroing here would change what a contract
-				// reads. This is where Go departs from the Rust adapter, whose hooks return a
-				// Result and so have no value to carry on the error path.
-				out.WriteString("\n\treturn result")
-			}
+		out.WriteString("\n\tif err != nil {")
+		out.WriteString("\n\t\tadapter.errorHandler.HandleHookError(err)")
+		out.WriteString("\n\t}")
+		if funcMetadata.Result != nil {
+			// The hook's own result, not the zero value. A failing hook returns a sentinel
+			// (-1, 1, -2, ...) next to its error, the same value it returned back when it
+			// applied the failure itself, and contracts branch on it. Zeroing here would
+			// change what a contract reads. This is where Go departs from the Rust adapter,
+			// whose hooks return a Result and so have no value to carry on the error path.
+			out.WriteString("\n\treturn result")
 		}
 
 		out.WriteString("\n}\n")

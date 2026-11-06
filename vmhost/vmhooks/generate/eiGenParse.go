@@ -55,29 +55,30 @@ func isErrorType(ty ast.Expr) bool {
 	return ok && ident.Name == "error"
 }
 
-func extractEIFunctionResults(decl *ast.FuncDecl) (*EIFunctionResult, bool, error) {
-	if decl.Type.Results == nil {
-		return nil, false, nil
+// extractEIFunctionResults returns the value result of a hook, nil if it has none. Every hook
+// must end with an `error` result, which is not part of the returned metadata.
+func extractEIFunctionResults(decl *ast.FuncDecl) (*EIFunctionResult, error) {
+	var list []*ast.Field
+	if decl.Type.Results != nil {
+		list = decl.Type.Results.List
 	}
-
-	list := decl.Type.Results.List
-	returnsError := false
-	if n := len(list); n > 0 && isErrorType(list[n-1].Type) {
-		returnsError = true
-		list = list[:n-1]
+	n := len(list)
+	if n == 0 || !isErrorType(list[n-1].Type) {
+		return nil, fmt.Errorf("VM hook %s must return a trailing error", decl.Name.Name)
 	}
+	list = list[:n-1]
 
 	switch len(list) {
 	case 0:
-		return nil, returnsError, nil
+		return nil, nil
 	case 1:
 		eiType, err := processType(list[0].Type)
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
-		return &EIFunctionResult{Type: eiType}, returnsError, nil
+		return &EIFunctionResult{Type: eiType}, nil
 	default:
-		return nil, false, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"too many results in function %s, at most one value result plus a trailing error accepted",
 			decl.Name.Name)
 	}
@@ -124,18 +125,14 @@ func extractEIFunction(decl *ast.FuncDecl) (*EIFunction, error) {
 	if err != nil {
 		return nil, err
 	}
-	result, returnsError, err := extractEIFunctionResults(decl)
+	result, err := extractEIFunctionResults(decl)
 	if err != nil {
 		return nil, err
 	}
-	if !returnsError {
-		return nil, fmt.Errorf("VM hook %s must return a trailing error", decl.Name.Name)
-	}
 	eiFunction := &EIFunction{
-		Name:         decl.Name.Name,
-		Arguments:    arguments,
-		Result:       result,
-		ReturnsError: returnsError,
+		Name:      decl.Name.Name,
+		Arguments: arguments,
+		Result:    result,
 	}
 
 	return eiFunction, nil

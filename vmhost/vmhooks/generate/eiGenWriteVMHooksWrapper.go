@@ -41,24 +41,18 @@ type WrapperVMHooks struct {
 		writeCallInfo(out, funcMetadata)
 		out.WriteString("\n\tw.logger.LogVMHookCallBefore(callInfo)")
 		out.WriteString("\n\t")
-		switch {
-		case funcMetadata.Result != nil && funcMetadata.ReturnsError:
+		if funcMetadata.Result != nil {
 			out.WriteString("result, err := ")
-		case funcMetadata.Result != nil:
-			out.WriteString("result := ")
-		case funcMetadata.ReturnsError:
+		} else {
 			out.WriteString("err := ")
 		}
 		out.WriteString(fmt.Sprintf("w.wrappedVMHooks.%s(", upperInitial(funcMetadata.Name)))
 		writeCommaSeparatedArgumentNames(out, funcMetadata.Arguments)
 		out.WriteString(")")
 		out.WriteString("\n\tw.logger.LogVMHookCallAfter(callInfo)")
-		switch {
-		case funcMetadata.Result != nil && funcMetadata.ReturnsError:
+		if funcMetadata.Result != nil {
 			out.WriteString("\n\treturn result, err")
-		case funcMetadata.Result != nil:
-			out.WriteString("\n\treturn result")
-		case funcMetadata.ReturnsError:
+		} else {
 			out.WriteString("\n\treturn err")
 		}
 		out.WriteString("\n}\n")

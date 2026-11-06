@@ -26,10 +26,6 @@ type EIFunction struct {
 	Name      string
 	Arguments []*EIFunctionArg
 	Result    *EIFunctionResult
-
-	// ReturnsError is true when the hook has a trailing `error` result.
-	// During the migration both shapes must be supported; see the parser.
-	ReturnsError bool
 }
 
 // EIGroup groups EI functions into bundles.

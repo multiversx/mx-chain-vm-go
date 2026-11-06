@@ -85,16 +85,10 @@ func vmHooksWrapperType(eiType EIType) string {
 
 // goResultSignature renders the Go result list of a hook, including the leading space.
 func goResultSignature(funcMetadata *EIFunction, typeName func(EIType) string) string {
-	switch {
-	case funcMetadata.Result == nil && !funcMetadata.ReturnsError:
-		return ""
-	case funcMetadata.Result == nil:
+	if funcMetadata.Result == nil {
 		return " error"
-	case !funcMetadata.ReturnsError:
-		return " " + typeName(funcMetadata.Result.Type)
-	default:
-		return fmt.Sprintf(" (%s, error)", typeName(funcMetadata.Result.Type))
 	}
+	return fmt.Sprintf(" (%s, error)", typeName(funcMetadata.Result.Type))
 }
 
 // goResultSignatureLegacy renders the Go result list of a hook in its pre-migration shape,
