@@ -1838,13 +1838,14 @@ func Test_Direct_ManagedGetBackTransfers(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret, _ := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 							host,
 							test.ParentAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvidedToChild),
 							nil,
 							nil)
+						vmhooks.FailExecution(host, err)
 						if ret != 0 {
 							host.Runtime().FailExecution(fmt.Errorf("Transfer ESDT failed"))
 						}
@@ -2138,13 +2139,14 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_JustTransfer(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvided),
 							[]byte{}, [][]byte{})
+						vmhooks.FailExecution(host, err)
 
 						if ret != 0 {
 							host.Runtime().FailExecution(fmt.Errorf("transfer ESDT failed"))
@@ -2211,13 +2213,14 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvided),
 							[]byte("childFunction"), [][]byte{})
+						vmhooks.FailExecution(host, err)
 
 						if ret != 0 {
 							host.Runtime().FailExecution(fmt.Errorf("transfer ESDT failed"))
@@ -2282,13 +2285,14 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_ReturnOnFail(t *testing.T) {
 							ESDTTokenNonce: 0,
 						}
 
-						ret, _ := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
+						ret, err := vmhooks.TransferESDTNFTExecuteByUserWithTypedArgs(
 							host,
 							test.UserAddress,
 							test.ChildAddress,
 							[]*vmcommon.ESDTTransfer{transfer},
 							int64(testConfig.GasProvided),
 							[]byte("childFunction"), [][]byte{})
+						vmhooks.FailExecution(host, err)
 
 						if ret != 0 {
 							host.Runtime().FailExecution(fmt.Errorf("transfer ESDT failed"))

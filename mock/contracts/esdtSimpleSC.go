@@ -97,7 +97,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			functionName,
 			args)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			vmhooks.FailExecution(host, err)
 		}
 
 		return instance

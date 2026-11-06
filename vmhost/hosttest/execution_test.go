@@ -2159,7 +2159,7 @@ func TestExecution_TransferESDTNFTExecute_RollbackOnFailure(t *testing.T) {
 							[][]byte{},
 							false,
 						)
-						handleHookError(host, err)
+						vmhooks.FailExecution(host, err)
 
 						require.Equal(t, int32(1), returnVal)
 
@@ -3622,8 +3622,8 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 
 						// Negative and out-of-bounds indices should safely do nothing
 						require.NotPanics(t, func() {
-							handleHookError(host, vmhooks.DeleteFromReturnDataWithHost(host, -1))
-							handleHookError(host, vmhooks.DeleteFromReturnDataWithHost(host, 100))
+							vmhooks.FailExecution(host, vmhooks.DeleteFromReturnDataWithHost(host, -1))
+							vmhooks.FailExecution(host, vmhooks.DeleteFromReturnDataWithHost(host, 100))
 						})
 						assert.Equal(t, [][]byte{}, host.Output().ReturnData())
 

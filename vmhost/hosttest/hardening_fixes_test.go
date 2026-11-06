@@ -42,7 +42,7 @@ func TestHost_ExecuteOnDestContextWithErrorReturn_CallsCounterCleanup(t *testing
 									nil,
 									0,
 								)
-								handleHookError(host, err)
+								vmhooks.FailExecution(host, err)
 								// Returns 1 indicating error in child execution
 								require.Equal(t, int32(1), retCode)
 

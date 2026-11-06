@@ -459,7 +459,7 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 										msgHandle,
 										sigHandle,
 										"verifyBLSAggregatedSignature")
-									handleHookError(host, err)
+									vmhooks.FailExecution(host, err)
 
 									allErrors := host.Runtime().GetAllErrors()
 									if flagEnabled {
@@ -514,7 +514,7 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 										msgHandle,
 										sigHandle,
 										"verifyBLSAggregatedSignature")
-									handleHookError(host, err)
+									vmhooks.FailExecution(host, err)
 
 									allErrors := host.Runtime().GetAllErrors()
 									if flagEnabled {
@@ -568,7 +568,7 @@ func TestHost_VerifyBLSAggregated_Hardening_BUG524(t *testing.T) {
 										msgHandle,
 										sigHandle,
 										"verifyBLSAggregatedSignature")
-									handleHookError(host, err)
+									vmhooks.FailExecution(host, err)
 
 									allErrors := host.Runtime().GetAllErrors()
 									if flagEnabled {
@@ -1082,7 +1082,7 @@ func TestHost_BigIntToString_LargeIntGas(t *testing.T) {
 								dstHandle := managedTypes.NewManagedBuffer()
 
 								gasBefore := host.Metering().GasLeft()
-								handleHookError(host, vmhooks.BigIntToStringWithHost(host, srcHandle, dstHandle))
+								vmhooks.FailExecution(host, vmhooks.BigIntToStringWithHost(host, srcHandle, dstHandle))
 								gasAfter := host.Metering().GasLeft()
 
 								gasUsed := gasBefore - gasAfter
@@ -1250,7 +1250,7 @@ func TestHost_OtherVM_FailedCallDoesNotPoisonOutput(t *testing.T) {
 							nil,
 							resHandle,
 						)
-						handleHookError(host, err)
+						vmhooks.FailExecution(host, err)
 						require.NotEqual(t, int32(0), ret)
 
 						require.Equal(t, vmcommon.Ok, host.Output().ReturnCode())

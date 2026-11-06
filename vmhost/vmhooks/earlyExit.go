@@ -11,10 +11,7 @@ import (
 // HandleHookError applies the side effects of an error returned by a VM hook.
 // Called only from generated hook wrappers.
 func (context *VMHooksImpl) HandleHookError(err error) {
-	if err == nil {
-		return
-	}
-	applyEarlyExit(context.host, resolveEarlyExit(err))
+	FailExecution(context.host, err)
 }
 
 // resolveEarlyExit classifies a hook error into the termination it requires.

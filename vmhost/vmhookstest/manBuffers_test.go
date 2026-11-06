@@ -474,7 +474,7 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 
 						var err error
 						res, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, math.MaxInt32, 1, []byte{0x99})
-						handleHookError(host, err)
+						vmhooks.FailExecution(host, err)
 						assert.Equal(t, int32(1), res)
 
 						// negative starting position
@@ -485,7 +485,7 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 						assert.Equal(t, int32(1), res)
 
 						res, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, -1, 1, []byte{0x99})
-						handleHookError(host, err)
+						vmhooks.FailExecution(host, err)
 						assert.Equal(t, int32(1), res)
 
 						// negative slice length
@@ -496,7 +496,7 @@ func TestManBuffers_Int32OverflowBoundsCheck(t *testing.T) {
 						assert.Equal(t, int32(1), res)
 
 						res, err = vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, destBuffer, 0, -1, []byte{0x99})
-						handleHookError(host, err)
+						vmhooks.FailExecution(host, err)
 						assert.Equal(t, int32(1), res)
 
 						return contextmock.GetMockInstance(host)
@@ -536,7 +536,7 @@ func TestManBuffers_ManagedBufferSetByteSlice_CopyOnWrite(t *testing.T) {
 
 						// Overwrite part of the buffer via SetByteSlice
 						res, err := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, bufHandle, 1, 2, []byte{0x11, 0x22})
-						handleHookError(host, err)
+						vmhooks.FailExecution(host, err)
 						assert.Equal(t, int32(0), res)
 
 						// Live buffer should have new content

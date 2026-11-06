@@ -223,7 +223,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		retVal, _ := vmhooks.ExecuteOnSameContextWithTypedArgs(
+		retVal, err := vmhooks.ExecuteOnSameContextWithTypedArgs(
 			host,
 			int64(host.Metering().GasLeft()),
 			big.NewInt(0),
@@ -231,6 +231,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
 			[][]byte{},
 		)
+		vmhooks.FailExecution(host, err)
 
 		if retVal != 0 {
 			host.Runtime().SignalUserError("execution by caller failed")

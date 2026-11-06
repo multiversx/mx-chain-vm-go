@@ -110,7 +110,7 @@ func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 			codeMetadata,
 		)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			vmhooks.FailExecution(host, err)
 		}
 
 		return instance
