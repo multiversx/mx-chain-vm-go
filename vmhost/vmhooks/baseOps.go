@@ -1115,12 +1115,12 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 		output.PopSetActiveState()
 		errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 		if withFailure {
+			// Execution used to fail with errRevert first and with executeErr second. The last
+			// failure decides the outcome, but both errors reach the runtime error trace.
+			runtime.AddError(errRevert)
 			return 1, executeErr
 		}
-		if errRevert != nil {
-			return 1, errRevert
-		}
-		return 1, nil
+		return 1, errRevert
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
@@ -1133,12 +1133,12 @@ func TransferESDTNFTExecuteWithTypedArgsWithFailure(
 			output.PopSetActiveState()
 			errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 			if vmOutput == nil || withFailure {
+				// Execution used to fail with errRevert first and with executeErr second. The last
+				// failure decides the outcome, but both errors reach the runtime error trace.
+				runtime.AddError(errRevert)
 				return 1, executeErr
 			}
-			if errRevert != nil {
-				return 1, errRevert
-			}
-			return 1, nil
+			return 1, errRevert
 		}
 
 		output.PopDiscard()
@@ -1231,7 +1231,10 @@ func TransferESDTNFTExecuteByUserWithTypedArgs(
 			_, executeErr = output.TransferESDT(returnTransferArgs, nil)
 			if executeErr != nil {
 				output.PopSetActiveState()
-				_ = host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
+				errRevert := host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
+				// Execution used to fail with errRevert first and with executeErr second. The last
+				// failure decides the outcome, but both errors reach the runtime error trace.
+				runtime.AddError(errRevert)
 				// fail execution is needed here - tokens are at destination contract, so fail is needed to revert everything
 				return 1, executeErr
 			}

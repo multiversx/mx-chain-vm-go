@@ -2493,3 +2493,81 @@ func Test_ManagedMultiTransferESDTNFTExecuteByUser_DisabledFlagFails(t *testing.
 		})
 	assert.Nil(t, err)
 }
+
+// When the execution after the transfer fails and so does the revert, execution fails with the
+// execution error, and the revert error is kept in the runtime error trace.
+func Test_TransferESDTNFTExecute_FailedRevertKeptInErrorTrace(t *testing.T) {
+	testConfig := baseTestConfig
+	errChild := fmt.Errorf("child failed")
+	var world *worldmock.MockWorld
+	var snapshots []worldmock.AccountMap
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("childFunction", func() *mock.InstanceMock {
+						// dropping the snapshots makes the parent's RevertToSnapshot fail
+						accounts := world.AccountsAdapter.(*worldmock.MockAccountsAdapter)
+						snapshots, accounts.Snapshots = accounts.Snapshots, nil
+						childInstance.Host.Runtime().FailExecution(errChild)
+						return childInstance
+					})
+				}),
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						transfer := &vmcommon.ESDTTransfer{
+							ESDTValue:     big.NewInt(5),
+							ESDTTokenName: test.ESDTTestTokenName,
+						}
+						ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+							host,
+							test.ChildAddress,
+							[]*vmcommon.ESDTTransfer{transfer},
+							int64(testConfig.GasProvided),
+							[]byte("childFunction"),
+							nil)
+						// restore the snapshots, so the rest of the call can revert normally
+						world.AccountsAdapter.(*worldmock.MockAccountsAdapter).Snapshots = snapshots
+						require.Equal(t, int32(1), ret)
+						require.Equal(t, vmhost.ErrExecutionFailed, err)
+						vmhooks.FailExecution(host, err)
+						return parentInstance
+					})
+				}),
+		).
+		WithSetup(func(host vmhost.VMHost, w *worldmock.MockWorld) {
+			world = w
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			parentAccount := world.AcctMap.GetAccount(test.ParentAddress)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, 100)
+		}).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		AndAssertResults(func(_ *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				ExecutionFailed().
+				HasRuntimeErrors(errChild.Error(), vmhost.ErrExecutionFailed.Error())
+
+			// The blockchain context records its own failed reverts too (2 entries in this trace);
+			// the third entry is the hook's revert error.
+			revertErrors := 0
+			for _, e := range verify.AllErrors.GetAllErrors() {
+				if e.Error() == "no snapshots" {
+					revertErrors++
+				}
+			}
+			require.Equal(t, 3, revertErrors, "errors: %q", verify.AllErrors.GetAllErrors())
+		})
+	assert.Nil(t, err)
+}
