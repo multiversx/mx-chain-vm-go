@@ -780,9 +780,9 @@ func TestHost_GetArgumentsFromMemory_MaxCapped_FlagGated(t *testing.T) {
 								hooks := vmhooks.NewVMHooksLegacy(host)
 
 								// Setup memory: dest at 0, balance at 32, func at 64
-								_ = parentInstance.MemStore(0, test.ChildAddress)
-								_ = parentInstance.MemStore(32, make([]byte, 32))
-								_ = parentInstance.MemStore(64, []byte("someFunc"))
+								_ = parentInstance.MemoryStore(0, test.ChildAddress)
+								_ = parentInstance.MemoryStore(32, make([]byte, 32))
+								_ = parentInstance.MemoryStore(64, []byte("someFunc"))
 
 								// TransferValueExecute with 1025 arguments (exceeding maxNumArgumentsFromMemoryCapped = 1024)
 								res := hooks.TransferValueExecute(
@@ -895,7 +895,7 @@ func TestAsyncCallback_Fails_RevertsPartialStateAndReturnsError(t *testing.T) {
 								host.Runtime().SignalUserError("callback user error")
 							case "out_of_gas":
 								_ = host.Metering().UseGasBounded(testConfig.GasProvided + 1)
-								host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+								contextmock.GetMockInstance(host).SetEarlyExit(vmhost.ExitOutOfGas())
 							}
 
 							return instanceMock
@@ -1505,9 +1505,9 @@ func TestHost_ESDTBalanceHooks_NilSafe(t *testing.T) {
 						require.Equal(t, int64(100), resBigInt.Int64())
 
 						// 2. GetESDTBalance
-						err = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
+						err = vmhooks.NewVMHooksImpl(host, vmhooks.InstanceStateOf(host)).MemStore(0, test.ParentAddress)
 						require.Nil(t, err)
-						err = vmhooks.NewVMHooksImpl(host).MemStore(32, test.ESDTTestTokenName)
+						err = vmhooks.NewVMHooksImpl(host, vmhooks.InstanceStateOf(host)).MemStore(32, test.ESDTTestTokenName)
 						require.Nil(t, err)
 
 						retLen := hooks.GetESDTBalance(0, 32, 10, 0, 64)
@@ -1797,8 +1797,8 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		managedTypes := host.ManagedTypes()
 
 		valHandle := managedTypes.NewBigIntFromInt64(0)
-		_ = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
-		_ = vmhooks.NewVMHooksImpl(host).MemStore(32, []byte("TEST-123456"))
+		_ = vmhooks.NewVMHooksImpl(host, vmhooks.InstanceStateOf(host)).MemStore(0, test.ParentAddress)
+		_ = vmhooks.NewVMHooksImpl(host, vmhooks.InstanceStateOf(host)).MemStore(32, []byte("TEST-123456"))
 		hooks.BigIntGetESDTExternalBalance(0, 32, 11, 0, valHandle)
 		valBigInt, _ := managedTypes.GetBigInt(valHandle)
 		require.Equal(t, int64(0), valBigInt.Int64())
@@ -1860,8 +1860,8 @@ func TestHost_ESDT_NilTokenData_Guards(t *testing.T) {
 		defer host.Reset()
 		managedTypes := host.ManagedTypes()
 
-		_ = vmhooks.NewVMHooksImpl(host).MemStore(0, test.ParentAddress)
-		_ = vmhooks.NewVMHooksImpl(host).MemStore(32, []byte("TEST-123456"))
+		_ = vmhooks.NewVMHooksImpl(host, vmhooks.InstanceStateOf(host)).MemStore(0, test.ParentAddress)
+		_ = vmhooks.NewVMHooksImpl(host, vmhooks.InstanceStateOf(host)).MemStore(32, []byte("TEST-123456"))
 		valHandle := managedTypes.NewBigIntFromInt64(0)
 		royaltiesHandle := managedTypes.NewBigIntFromInt64(0)
 

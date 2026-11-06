@@ -29,11 +29,12 @@ func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, _ interface
 			argumentsHandle,
 		)
 		if err != nil {
-			// ManagedAsyncCallWithHost may return a *executor.EarlyExit (out-of-gas
-			// breakpoint) rather than a plain error; route through HandleHookError
-			// (as the generated wrapper would) instead of vmhooks.FailExecution,
-			// which only knows how to apply the plain-error failure path.
-			vmhooks.NewVMHooksImpl(host).HandleHookError(err)
+			// ManagedAsyncCallWithHost may return a *executor.EarlyExit rather than a plain
+			// error; route it through both halves of what a backend does with a failed
+			// hook, as the generated wrapper would, instead of vmhooks.FailExecution, which
+			// only knows how to apply the plain-error failure path.
+			vmhooks.NewVMHooksImpl(host, instance).HandleHookError(err)
+			instance.HandleHookError(err)
 		}
 
 		return instance

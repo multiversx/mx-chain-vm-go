@@ -30,7 +30,7 @@ func BackTransfer_ParentCallsChild(instanceMock *mock.InstanceMock, config inter
 		input.Function = "childFunction"
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+			test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 		}
 		managedTypes := host.ManagedTypes()
 
@@ -40,19 +40,19 @@ func BackTransfer_ParentCallsChild(instanceMock *mock.InstanceMock, config inter
 			if checkBackTransfers[0] == 1 {
 				esdtTransfers, egld := managedTypes.GetBackTransfers()
 				if len(esdtTransfers) != 1 {
-					host.Runtime().FailExecution(fmt.Errorf("found esdt transfers %d", len(esdtTransfers)))
+					test.FailMockContract(host, fmt.Errorf("found esdt transfers %d", len(esdtTransfers)))
 					storedResult = []byte("err")
 				}
 				if !bytes.Equal(test.ESDTTestTokenName, esdtTransfers[0].ESDTTokenName) {
-					host.Runtime().FailExecution(fmt.Errorf("invalid token name %s", string(esdtTransfers[0].ESDTTokenName)))
+					test.FailMockContract(host, fmt.Errorf("invalid token name %s", string(esdtTransfers[0].ESDTTokenName)))
 					storedResult = []byte("err")
 				}
 				if big.NewInt(0).SetUint64(testConfig.ESDTTokensToTransfer).Cmp(esdtTransfers[0].ESDTValue) != 0 {
-					host.Runtime().FailExecution(fmt.Errorf("invalid token value %d", esdtTransfers[0].ESDTValue.Uint64()))
+					test.FailMockContract(host, fmt.Errorf("invalid token value %d", esdtTransfers[0].ESDTValue.Uint64()))
 					storedResult = []byte("err")
 				}
 				if egld.Cmp(big.NewInt(testConfig.TransferFromChildToParent)) != 0 {
-					host.Runtime().FailExecution(fmt.Errorf("invalid egld value %d", egld))
+					test.FailMockContract(host, fmt.Errorf("invalid egld value %d", egld))
 					storedResult = []byte("err")
 				}
 			}
@@ -60,7 +60,7 @@ func BackTransfer_ParentCallsChild(instanceMock *mock.InstanceMock, config inter
 
 		_, err := host.Storage().SetStorage(test.ParentKeyA, storedResult)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance
@@ -90,7 +90,7 @@ func BackTransfer_ChildMakesAsync(instanceMock *mock.InstanceMock, config interf
 			CallbackClosure: nil,
 		})
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 		return instance
 	})
@@ -108,7 +108,7 @@ func BackTransfer_ChildCallback(instanceMock *mock.InstanceMock, config interfac
 			testConfig.ParentAddress,
 			testConfig.ChildAddress, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, []byte{}, vm.DirectCall)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 
 		transfer := &vmcommon.ESDTTransfer{
@@ -126,7 +126,7 @@ func BackTransfer_ChildCallback(instanceMock *mock.InstanceMock, config interfac
 			nil,
 			nil)
 		if ret != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("Transfer ESDT failed"))
+			test.FailMockContract(host, fmt.Errorf("Transfer ESDT failed"))
 		}
 
 		return instance

@@ -6,7 +6,12 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-// reservedFunctions holds the reserved function names
+// reservedFunctions holds the reserved function names.
+//
+// The VM hook names are included here only to reject contracts that export a function
+// with the same name as a VM hook (see wasmValidator.verifyValidFunctionName).
+// It plays no part in import resolution: the executor validates the hooks a contract
+// imports separately, against the hooks it actually provides.
 type reservedFunctions struct {
 	epochsHandler           vmcommon.EnableEpochsHandler
 	functionNames           vmcommon.FunctionNames

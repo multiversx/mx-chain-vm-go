@@ -180,7 +180,7 @@ func TestBaseOps_GetArgumentsFromMemory_TruncationGated(t *testing.T) {
 				MeteringContext: meteringMock,
 			}
 
-			hooks := NewVMHooksImpl(hostMock)
+			hooks := NewVMHooksImpl(hostMock, instanceMock)
 
 			// Memory has 100 bytes (valid offsets 0..99).
 			// If argumentsLengthOffset is 96, and numArguments is 2 (requires 2 * 4 = 8 bytes):

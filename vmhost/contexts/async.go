@@ -582,8 +582,9 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 		return err
 	}
 
-	context.host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointAsyncCall)
-
+	// No breakpoint here any more. Registering the call is all this does; suspending the
+	// contract is the business of the hook that called it, which returns vmhost.ExitAsyncCall
+	// once registration has succeeded.
 	return nil
 }
 

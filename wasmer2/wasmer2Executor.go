@@ -4,7 +4,6 @@ import (
 	"runtime"
 	"unsafe"
 
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
@@ -73,7 +72,7 @@ func (wasmerExecutor *Wasmer2Executor) SetOpcodeConfig(opcodeVersion executor.Op
 	defer runtime.UnlockOSThread()
 
 	// extract only wasmer2 opcodes
-	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
+	wasmerExecutor.opcodeCost = extractOpcodeCost(wasmOps)
 	result := cWasmerExecutorSetOpcodeConfig(
 		wasmerExecutor.cgoExecutor,
 		(int32)(opcodeVersion),
@@ -92,10 +91,6 @@ func (wasmerExecutor *Wasmer2Executor) SetRkyvSerializationEnabled(_ bool) {
 
 // SetSIGSEGVPassthrough controls a Wasmer flag.
 func (wasmerExecutor *Wasmer2Executor) SetSIGSEGVPassthrough() {
-}
-
-func (wasmerExecutor *Wasmer2Executor) FunctionNames() vmcommon.FunctionNames {
-	return functionNames
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,

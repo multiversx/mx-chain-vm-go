@@ -198,7 +198,7 @@ type CodeDeployInput struct {
 // VMHostParameters represents the parameters to be passed to VMHost
 type VMHostParameters struct {
 	VMType                              []byte
-	OverrideVMExecutor                  executor.ExecutorAbstractFactory
+	OverrideVMExecutor                  executor.ExecutorNewAbstractFactory
 	BlockGasLimit                       uint64
 	GasSchedule                         config.GasScheduleMap
 	BuiltInFuncContainer                vmcommon.BuiltInFunctionContainer

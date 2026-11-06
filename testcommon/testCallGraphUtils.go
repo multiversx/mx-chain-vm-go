@@ -167,14 +167,12 @@ func createGraphContractMockMethod(
 
 		for _, edge := range crtNode.AdjacentEdges {
 			if edge.Type == Sync {
-				breakPointValue := makeSyncCallFromEdge(host, edge, testConfig)
-				if breakPointValue == vmhost.BreakpointExecutionFailed {
+				if makeSyncCallFromEdge(host, edge, testConfig) {
 					err = ErrSyncCallFail
 					return instance
 				}
 			} else {
-				makeAsyncCallFromEdge(host, edge, testConfig)
-				if host.Runtime().GetRuntimeBreakpointValue() == vmhost.BreakpointExecutionFailed {
+				if makeAsyncCallFromEdge(host, edge, testConfig) {
 					err = ErrAsyncRegisterFail
 					return instance
 				}
@@ -238,7 +236,12 @@ func callbackArgumentsFromRuntimeConfig(runtimeConfig *RuntimeConfigOfCall) [][]
 	return arguments
 }
 
-func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *TestConfig) vmhost.BreakpointValue {
+// makeSyncCallFromEdge reports whether the call failed.
+//
+// It used to return the breakpoint the call left behind, which the only caller compared
+// against BreakpointExecutionFailed. There is no breakpoint to read any more, and the error
+// was always the thing being asked about.
+func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *TestConfig) bool {
 	value := big.NewInt(testConfig.TransferFromParentToChild)
 	destFunctionName := edge.To.Call.FunctionName
 	destAddress := edge.To.Call.ContractAddress
@@ -262,7 +265,7 @@ func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *Te
 		vmhooks.FailExecution(host, err)
 	}
 
-	return host.Runtime().GetRuntimeBreakpointValue()
+	return err != nil
 }
 
 func failAsInt(fail bool) int {
@@ -277,7 +280,8 @@ func setGraphCallArg(arguments [][]byte, index int, value int) {
 	arguments[index] = big.NewInt(int64(value)).Bytes()
 }
 
-func makeAsyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *TestConfig) {
+// makeAsyncCallFromEdge reports whether registering the async call failed.
+func makeAsyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *TestConfig) bool {
 	destFunctionName := edge.To.Call.FunctionName
 	destAddress := edge.To.Call.ContractAddress
 	value := big.NewInt(testConfig.TransferFromParentToChild)
@@ -315,6 +319,8 @@ func makeAsyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *T
 	if err != nil {
 		vmhooks.FailExecution(host, err)
 	}
+
+	return err != nil
 }
 
 func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte) ([]byte, string) {

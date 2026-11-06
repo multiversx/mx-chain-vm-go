@@ -262,10 +262,10 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 }
 
 func TestBadContractExtra_LongIntLoop_Wasmer2(t *testing.T) {
-	testBadContractExtraLongIntLoop(t, wasmer2.ExecutorFactory())
+	testBadContractExtraLongIntLoop(t, wasmer2.ExecutorFactoryNew())
 }
 
-func testBadContractExtraLongIntLoop(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
+func testBadContractExtraLongIntLoop(t *testing.T, executorFactory executor.ExecutorNewAbstractFactory) {
 	testCase := test.BuildInstanceCallTest(t).WithContracts(
 		test.CreateInstanceContract(test.ParentAddress).
 			WithCode(test.GetTestSCCode("bad-extra", "../../"))).
@@ -307,7 +307,7 @@ func TestBadContractExtra_NoPanic_BadRecursive(t *testing.T) {
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("bad-recursive", "../../")).
 				WithBalance(1000)).
-		WithExecutorFactory(wasmer2.ExecutorFactory())
+		WithExecutorFactory(wasmer2.ExecutorFactoryNew())
 
 	input := test.CreateTestContractCallInputBuilder().
 		WithRecipientAddr(test.ParentAddress).

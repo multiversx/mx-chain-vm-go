@@ -71,12 +71,15 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 
 	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	execFactory := testexecutor.NewDefaultTestExecutorFactory(tb)
-	exec, err := execFactory.CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks:       vmhooks.NewVMHooksImpl(host),
-		OpcodeVersion: executor.OpcodeVersionV2,
-		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	exec, err := execFactory.CreateExecutorNew(executor.ExecutorFactoryArgsNew{
+		Runtime: testExecutorRuntime{host: host},
 	})
 	require.Nil(tb, err)
+	// The cost table is not optional - an executor without one meters every opcode at zero.
+	opcodeConfig := &executor.OpcodeConfig{
+		OpcodeVersion: executor.OpcodeVersionV2,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	}
 	runtimeCtx, err := NewRuntimeContext(
 		host,
 		testVMType,
@@ -86,6 +89,7 @@ func initializeVMAndWasmerAsyncContextWithBuiltIn(tb testing.TB, isBuiltinFunc b
 	)
 	require.Nil(tb, err)
 
+	runtimeCtx.SetOpcodeConfig(opcodeConfig)
 	runtimeCtx.iTracker.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeCtx
 
@@ -1084,4 +1088,22 @@ func defaultOutputDataLengthAsArgs(asyncCall *vmhost.AsyncCall, vmOutput *vmcomm
 	}
 
 	return uint64(dataLength)
+}
+
+// testExecutorRuntime is the ExecutorRuntime a mock host cannot be.
+//
+// The real host implements it directly, but mock/context cannot: vmhooks' own tests import
+// it, so it must not import vmhooks back. Stated here, where both are already in scope.
+type testExecutorRuntime struct {
+	host vmhost.VMHost
+}
+
+// VMHooksForCall returns hooks servicing one host call.
+func (runtime testExecutorRuntime) VMHooksForCall(instanceState executor.InstanceState) executor.VMHooks {
+	return vmhooks.NewVMHooksImpl(runtime.host, instanceState)
+}
+
+// IsInterfaceNil returns true if there is no value under the interface.
+func (runtime testExecutorRuntime) IsInterfaceNil() bool {
+	return false
 }

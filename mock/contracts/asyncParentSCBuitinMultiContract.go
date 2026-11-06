@@ -24,7 +24,7 @@ func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 

@@ -28,7 +28,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -110,7 +110,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -137,7 +137,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 				GasLocked:       150,
 			})
 			if err != nil {
-				host.Runtime().FailExecution(err)
+				test.FailMockContract(host, err)
 			}
 		}
 
@@ -160,7 +160,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			closureHandle := managed.NewManagedBuffer()
 			err := vmhooks.GetCallbackClosureWithHost(host, closureHandle)
 			if err != nil {
-				vmhooks.FailExecution(host, err)
+				test.FailMockContract(host, err)
 			}
 			closure, err := managed.GetBytes(closureHandle)
 			if err != nil {
@@ -175,7 +175,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -186,7 +186,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 		loadedData, _, _, err := host.Storage().GetStorage(test.ParentKeyB)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 			return instance
 		}
 

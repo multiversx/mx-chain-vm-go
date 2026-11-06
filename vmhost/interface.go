@@ -117,8 +117,17 @@ type BlockchainContext interface {
 type RuntimeContext interface {
 	StateStack
 
-	GetVMExecutor() executor.Executor
-	ReplaceVMExecutor(vmExecutor executor.Executor)
+	GetVMExecutor() executor.ExecutorNew
+	ReplaceVMExecutor(vmExecutor executor.ExecutorNew)
+
+	// SetOpcodeConfig sets the opcode set and gas costs instances are compiled with from
+	// here on.
+	//
+	// Replaces Executor.SetOpcodeConfig: the opcode config is compilation configuration and
+	// travels per instance, so it is held where the compilation options are assembled
+	// rather than on the executor. Callers must clear the warm instance cache afterwards,
+	// since anything already compiled was compiled under the previous config.
+	SetOpcodeConfig(opcodeConfig *executor.OpcodeConfig)
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.ContractCallInput
@@ -137,8 +146,21 @@ type RuntimeContext interface {
 	SignalUserError(message string)
 	FailExecution(err error)
 	MustVerifyNextContractCode()
-	SetRuntimeBreakpointValue(value BreakpointValue)
-	GetRuntimeBreakpointValue() BreakpointValue
+
+	// InterruptExecution asks the contract currently executing to stop as soon as it can.
+	//
+	// The one operation here that is called from another goroutine: it is how the execution
+	// deadline is enforced, from the watchdog that is waiting on the execution to finish.
+	//
+	// Best effort. A contract inside a VM hook does not notice until control returns to
+	// wasm, and one already past its last checkpoint may finish first, so the caller still
+	// needs its own timeout - after which AbandonInstance is the remedy.
+	//
+	// This replaces SetRuntimeBreakpointValue, which was the same thing expressed as a
+	// mutation of an instance's internals. Every other caller of that method was a hook
+	// reporting its own exit, which is now the error the hook returns.
+	InterruptExecution()
+
 	GetInstanceStackSize() uint64
 	CountSameContractInstancesOnStack(address []byte) uint64
 	IsFunctionImported(name string) bool
@@ -148,10 +170,18 @@ type RuntimeContext interface {
 	ClearWarmInstanceCache()
 	SetMaxInstanceStackSize(uint64)
 	VerifyContractCode() error
-	GetInstance() executor.Instance
+	GetInstance() executor.InstanceNew
 	GetInstanceTracker() InstanceTracker
 	FunctionNameChecked() (string, error)
-	CallSCFunction(functionName string) error
+
+	// CallSCFunction runs an exported function of the current instance and reports how it
+	// ended.
+	//
+	// Returns the executor's own account of the call rather than an error, because "the
+	// contract asked to start an async call" and "the contract ran out of gas" are not
+	// failures of the call - they are how it ended, and the host has to tell them apart.
+	// This is what reading the breakpoint global after the call turns into.
+	CallSCFunction(functionName string) executor.InstanceCallResult
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
 	UseGasBoundedShouldFailExecution() bool
@@ -180,7 +210,7 @@ type RuntimeContext interface {
 type InstanceTracker interface {
 	StateStack
 
-	TrackedInstances() map[string]executor.Instance
+	TrackedInstances() map[string]executor.InstanceNew
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context

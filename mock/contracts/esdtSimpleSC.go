@@ -21,7 +21,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -44,7 +44,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
+			test.FailMockContract(host, fmt.Errorf("return value %d", returnValue))
 		}
 
 		return instance
@@ -59,7 +59,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -97,7 +97,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			functionName,
 			args)
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance
@@ -112,7 +112,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+			instance.SetEarlyExit(vmhost.ExitOutOfGas())
 			return instance
 		}
 
@@ -161,7 +161,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		}
 
 		if err != nil {
-			host.Runtime().FailExecution(err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance

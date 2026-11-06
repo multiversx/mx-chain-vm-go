@@ -5,9 +5,7 @@ import (
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
-	runtime := host.Runtime()
 	async := host.Async()
-	runtime.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	legacyGroupID := vmhost.LegacyAsyncCallGroupID
 	legacyGroup, exists := async.GetCallGroup(legacyGroupID)

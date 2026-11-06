@@ -2,6 +2,7 @@ package contracts
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
@@ -84,7 +85,7 @@ func (config DirectCallGasTestConfig) GetGasUsedByChild() uint64 {
 func ExecuteOnSameContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
 	retCode, err := vmhooks.ExecuteOnSameContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
 	if err != nil {
-		vmhooks.FailExecution(host, err)
+		test.FailMockContract(host, err)
 	}
 	return retCode
 }
@@ -93,7 +94,7 @@ func ExecuteOnSameContextInMockContracts(host vmhost.VMHost, input *vmcommon.Con
 func ExecuteOnDestContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
 	retCode, err := vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments, true)
 	if err != nil {
-		vmhooks.FailExecution(host, err)
+		test.FailMockContract(host, err)
 	}
 	return retCode
 }

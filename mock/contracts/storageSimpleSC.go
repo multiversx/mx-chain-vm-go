@@ -2,6 +2,7 @@ package contracts
 
 import (
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
@@ -66,11 +67,11 @@ func SetStore(instanceMock *mock.InstanceMock, _ interface{}) {
 
 		_, err := vmhooks.StorageStoreWithTypedArgs(host, key, value)
 		if err != nil {
-			vmhooks.FailExecution(host, err)
+			test.FailMockContract(host, err)
 		}
 		_, err = vmhooks.StorageStoreWithTypedArgs(host, key, value)
 		if err != nil {
-			vmhooks.FailExecution(host, err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance

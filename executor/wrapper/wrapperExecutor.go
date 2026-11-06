@@ -1,37 +1,27 @@
 package executorwrapper
 
 import (
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
+
+var _ executor.ExecutorNew = (*WrapperExecutor)(nil)
 
 // WrapperExecutor is a wrapper around an executor, who additionally caches all created instances.
 // It also offers support for logging the executor operations. This logging is designed for testing and debugging.
 // It is meant for testing the behavior of an executor.
 type WrapperExecutor struct {
 	logger          ExecutorLogger
-	wrappedExecutor executor.Executor
+	wrappedExecutor executor.ExecutorNew
 
-	WrappedInstances map[string][]executor.Instance
+	WrappedInstances map[string][]executor.InstanceNew
 }
 
-// SetOpcodeConfig wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) SetOpcodeConfig(opcodeVersion executor.OpcodeVersion, wasmOps *executor.WASMOpcodeCost) error {
-	return wexec.wrappedExecutor.SetOpcodeConfig(opcodeVersion, wasmOps)
-}
-
-// FunctionNames wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) FunctionNames() vmcommon.FunctionNames {
-	functionNames := wexec.wrappedExecutor.FunctionNames()
-	return functionNames
-}
-
-// NewInstanceWithOptions wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) NewInstanceWithOptions(
+// NewInstance wraps the call to the underlying executor.
+func (wexec *WrapperExecutor) NewInstance(
 	contractCode []byte,
-	options executor.CompilationOptions,
-) (executor.Instance, error) {
-	wrappedInstance, err := wexec.wrappedExecutor.NewInstanceWithOptions(contractCode, options)
+	options *executor.CompilationOptionsNew,
+) (executor.InstanceNew, error) {
+	wrappedInstance, err := wexec.wrappedExecutor.NewInstance(contractCode, options)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +32,12 @@ func (wexec *WrapperExecutor) NewInstanceWithOptions(
 	}, nil
 }
 
-// NewInstanceFromCompiledCodeWithOptions wraps the call to the underlying executor.
-func (wexec *WrapperExecutor) NewInstanceFromCompiledCodeWithOptions(
+// NewInstanceFromCache wraps the call to the underlying executor.
+func (wexec *WrapperExecutor) NewInstanceFromCache(
 	compiledCode []byte,
-	options executor.CompilationOptions,
-) (executor.Instance, error) {
-	wrappedInstance, err := wexec.wrappedExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	options *executor.CompilationOptionsNew,
+) (executor.InstanceNew, error) {
+	wrappedInstance, err := wexec.wrappedExecutor.NewInstanceFromCache(compiledCode, options)
 	if err != nil {
 		return nil, err
 	}
@@ -59,18 +49,18 @@ func (wexec *WrapperExecutor) NewInstanceFromCompiledCodeWithOptions(
 }
 
 // add contract instance to the instance map for the given code
-func (wexec *WrapperExecutor) addContractInstanceToInstanceMap(code []byte, instance executor.Instance) {
+func (wexec *WrapperExecutor) addContractInstanceToInstanceMap(code []byte, instance executor.InstanceNew) {
 	instances, ok := wexec.WrappedInstances[string(code)]
 	if ok {
 		instances = append(instances, instance)
 	} else {
-		instances = []executor.Instance{instance}
+		instances = []executor.InstanceNew{instance}
 	}
 	wexec.WrappedInstances[string(code)] = instances
 }
 
 // GetContractInstances gets contract instances for code
-func (wexec *WrapperExecutor) GetContractInstances(code []byte) []executor.Instance {
+func (wexec *WrapperExecutor) GetContractInstances(code []byte) []executor.InstanceNew {
 	return wexec.WrappedInstances[string(code)]
 }
 

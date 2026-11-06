@@ -38,7 +38,7 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 				[][]byte{},
 			)
 			if err != nil {
-				vmhooks.FailExecution(host, err)
+				test.FailMockContract(host, err)
 			}
 		}
 
@@ -64,7 +64,7 @@ func TransferEGLDToParent(instanceMock *mock.InstanceMock, config interface{}) {
 			[][]byte{},
 		)
 		if err != nil {
-			vmhooks.FailExecution(host, err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance
@@ -88,7 +88,7 @@ func TransferAndExecuteWithBuiltIn(instanceMock *mock.InstanceMock, config inter
 			[][]byte{},
 		)
 		if err != nil {
-			vmhooks.FailExecution(host, err)
+			test.FailMockContract(host, err)
 		}
 
 		return instance

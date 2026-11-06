@@ -17,20 +17,49 @@ func WriteVMHooksLegacyAdapter(out *eiGenWriter, eiMetadata *EIMetadata) {
 // mock contracts, tests - because a contract never sees the error channel either: it is
 // simply stopped.
 //
-// Counterpart of the Rust VMHooksLegacyAdapter, generated from the same metadata.
+// Counterpart of the Rust VMHooksLegacyAdapter, generated from the same metadata and holding
+// what it holds: the host behind the executor, and the state of the one instance these hooks
+// belong to. The hooks themselves are asked for per hook rather than held, which is what
+// makes them serve whichever execution the host has current instead of the one that happened
+// to be current when the instance was created.
+//
+// The error handler is the field Rust does not need, its InstanceState carrying
+// handle_early_exit_legacy instead.
 type VMHooksLegacyAdapter struct {
-	vmHooks      VMHooks
-	errorHandler VMHooksErrorHandler
+	runtime       ExecutorRuntime
+	instanceState InstanceState
+	errorHandler  VMHooksErrorHandler
 }
 
-// NewVMHooksLegacyAdapter wraps VM hooks so that they can be used through VMHooksLegacy.
+// NewVMHooksLegacyAdapter wraps one fixed hooks object so that it can be used through
+// VMHooksLegacy.
+//
+// For a caller that reaches the hooks directly and has no instance: mock contracts and
+// tests, which simulate a contract and so never see the error channel either.
 //
 // The error handler is a separate argument rather than being pulled off vmHooks, so that the
 // two roles stay distinct; in practice one object plays both.
 func NewVMHooksLegacyAdapter(vmHooks VMHooks, errorHandler VMHooksErrorHandler) *VMHooksLegacyAdapter {
+	return NewVMHooksLegacyAdapterForRuntime(
+		fixedVMHooksRuntime{vmHooks: vmHooks},
+		nil,
+		errorHandler)
+}
+
+// NewVMHooksLegacyAdapterForRuntime wraps the hooks of one instance, resolved through the
+// host on every hook.
+//
+// For a backend whose imported functions cannot carry an error. errorHandler is what applies
+// the failure to that instance, since a legacy hook has nowhere to report it.
+func NewVMHooksLegacyAdapterForRuntime(
+	runtime ExecutorRuntime,
+	instanceState InstanceState,
+	errorHandler VMHooksErrorHandler,
+) *VMHooksLegacyAdapter {
 	return &VMHooksLegacyAdapter{
-		vmHooks:      vmHooks,
-		errorHandler: errorHandler,
+		runtime:       runtime,
+		instanceState: instanceState,
+		errorHandler:  errorHandler,
 	}
 }
 `)
@@ -48,6 +77,8 @@ func NewVMHooksLegacyAdapter(vmHooks VMHooks, errorHandler VMHooksErrorHandler) 
 		out.WriteString(goResultSignatureLegacy(funcMetadata, vmHooksType))
 		out.WriteString(" {")
 
+		out.WriteString("\n\tvmHooks := adapter.runtime.VMHooksForCall(adapter.instanceState)")
+
 		out.WriteString("\n\t")
 		switch {
 		case funcMetadata.Result != nil && funcMetadata.ReturnsError:
@@ -57,7 +88,7 @@ func NewVMHooksLegacyAdapter(vmHooks VMHooks, errorHandler VMHooksErrorHandler) 
 		case funcMetadata.ReturnsError:
 			out.WriteString("err := ")
 		}
-		out.WriteString(fmt.Sprintf("adapter.vmHooks.%s(", upperInitial(funcMetadata.Name)))
+		out.WriteString(fmt.Sprintf("vmHooks.%s(", upperInitial(funcMetadata.Name)))
 		writeCommaSeparatedArgumentNames(out, funcMetadata.Arguments)
 		out.WriteString(")")
 

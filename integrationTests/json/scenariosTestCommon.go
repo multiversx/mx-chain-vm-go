@@ -42,7 +42,7 @@ type ScenariosTestBuilder struct {
 	exclusions          []string
 	pathReplacements    map[string]string
 	executorLogger      executorwrapper.ExecutorLogger
-	executorFactory     executor.ExecutorAbstractFactory
+	executorFactory     executor.ExecutorNewAbstractFactory
 	enableEpochsHandler vmcommon.EnableEpochsHandler
 	currentError        error
 	overrideVMType      []byte
@@ -100,7 +100,7 @@ func (mtb *ScenariosTestBuilder) WithConsoleExecutorLogs() *ScenariosTestBuilder
 }
 
 // WithExecutorFactory sets an executor factory
-func (mtb *ScenariosTestBuilder) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *ScenariosTestBuilder {
+func (mtb *ScenariosTestBuilder) WithExecutorFactory(executorFactory executor.ExecutorNewAbstractFactory) *ScenariosTestBuilder {
 	mtb.executorFactory = executorFactory
 	return mtb
 }

@@ -3,7 +3,6 @@ package executor
 
 import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
-	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // CompilationOptions contains configurations for instantiating an executor instance.
@@ -23,9 +22,6 @@ type Executor interface {
 
 	// SetOpcodeConfig sets gas costs globally inside an executor.
 	SetOpcodeConfig(opcodeVersion OpcodeVersion, wasmOps *WASMOpcodeCost) error
-
-	// FunctionNames return the low-level function names provided to contracts.
-	FunctionNames() vmcommon.FunctionNames
 
 	// NewInstanceWithOptions creates a new executor instance.
 	NewInstanceWithOptions(

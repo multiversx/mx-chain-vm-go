@@ -1,7 +1,6 @@
 package hostCore
 
 import (
-	"errors"
 	"math"
 	"testing"
 
@@ -117,30 +116,18 @@ func TestValidateVMInput(t *testing.T) {
 	require.Nil(t, err)
 }
 
-type opcodeConfigExecutorStub struct {
-	executor.Executor
-	setOpcodeConfigErr error
-	version            executor.OpcodeVersion
-	calls              int
-}
-
-func (e *opcodeConfigExecutorStub) SetOpcodeConfig(version executor.OpcodeVersion, _ *executor.WASMOpcodeCost) error {
-	e.calls++
-	if e.setOpcodeConfigErr != nil {
-		return e.setOpcodeConfigErr
-	}
-	e.version = version
-	return nil
-}
-
 type opcodeConfigRuntimeStub struct {
 	vmhost.RuntimeContext
-	exec          executor.Executor
+	opcodeConfig  *executor.OpcodeConfig
+	configCalls   int
 	warmCacheWipe int
 }
 
-func (r *opcodeConfigRuntimeStub) GetVMExecutor() executor.Executor { return r.exec }
-func (r *opcodeConfigRuntimeStub) ClearWarmInstanceCache()          { r.warmCacheWipe++ }
+func (r *opcodeConfigRuntimeStub) SetOpcodeConfig(opcodeConfig *executor.OpcodeConfig) {
+	r.configCalls++
+	r.opcodeConfig = opcodeConfig
+}
+func (r *opcodeConfigRuntimeStub) ClearWarmInstanceCache() { r.warmCacheWipe++ }
 
 type opcodeConfigMeteringStub struct {
 	vmhost.MeteringContext
@@ -158,9 +145,8 @@ type opcodeConfigBlockchainStub struct {
 
 func (b *opcodeConfigBlockchainStub) ClearCompiledCodes() { b.codesCleared++ }
 
-func newOpcodeConfigTestHost(v2Enabled *bool) (*vmHost, *opcodeConfigExecutorStub, *opcodeConfigRuntimeStub, *opcodeConfigMeteringStub, *opcodeConfigBlockchainStub) {
-	exec := &opcodeConfigExecutorStub{}
-	runtime := &opcodeConfigRuntimeStub{exec: exec}
+func newOpcodeConfigTestHost(v2Enabled *bool) (*vmHost, *opcodeConfigRuntimeStub, *opcodeConfigMeteringStub, *opcodeConfigBlockchainStub) {
+	runtime := &opcodeConfigRuntimeStub{}
 	metering := &opcodeConfigMeteringStub{}
 	blockchain := &opcodeConfigBlockchainStub{}
 	host := &vmHost{
@@ -174,12 +160,12 @@ func newOpcodeConfigTestHost(v2Enabled *bool) (*vmHost, *opcodeConfigExecutorStu
 		},
 		activationEpochMap: map[uint32]struct{}{},
 	}
-	return host, exec, runtime, metering, blockchain
+	return host, runtime, metering, blockchain
 }
 
 func TestVMHost_GetOpcodeVersionForCurrentEpoch(t *testing.T) {
 	v2 := false
-	host, _, _, _, _ := newOpcodeConfigTestHost(&v2)
+	host, _, _, _ := newOpcodeConfigTestHost(&v2)
 
 	require.Equal(t, executor.OpcodeVersionV1, host.getOpcodeVersionForCurrentEpoch())
 	v2 = true
@@ -190,12 +176,13 @@ func TestVMHost_ApplyExecutionConfig(t *testing.T) {
 	v2 := false
 
 	t.Run("success clears caches", func(t *testing.T) {
-		host, exec, runtime, metering, blockchain := newOpcodeConfigTestHost(&v2)
+		host, runtime, metering, blockchain := newOpcodeConfigTestHost(&v2)
 		schedule := config.MakeGasMapForTests()
 
 		err := host.applyExecutionConfig(executor.OpcodeVersionV2, schedule)
 		require.Nil(t, err)
-		require.Equal(t, executor.OpcodeVersionV2, exec.version)
+		require.Equal(t, executor.OpcodeVersionV2, runtime.opcodeConfig.OpcodeVersion)
+		require.NotNil(t, runtime.opcodeConfig.OpcodeCosts)
 		require.Equal(t, executor.OpcodeVersionV2, host.opcodeVersion)
 		require.Equal(t, schedule, host.gasSchedule)
 		require.Equal(t, schedule, metering.schedule)
@@ -203,23 +190,11 @@ func TestVMHost_ApplyExecutionConfig(t *testing.T) {
 		require.Equal(t, 1, blockchain.codesCleared)
 	})
 	t.Run("invalid gas schedule", func(t *testing.T) {
-		host, exec, runtime, _, blockchain := newOpcodeConfigTestHost(&v2)
+		host, runtime, _, blockchain := newOpcodeConfigTestHost(&v2)
 
 		err := host.applyExecutionConfig(executor.OpcodeVersionV2, config.GasScheduleMap{})
 		require.NotNil(t, err)
-		require.Equal(t, 0, exec.calls)
-		require.Equal(t, 0, runtime.warmCacheWipe)
-		require.Equal(t, 0, blockchain.codesCleared)
-	})
-	t.Run("executor error leaves state untouched", func(t *testing.T) {
-		host, exec, runtime, metering, blockchain := newOpcodeConfigTestHost(&v2)
-		exec.setOpcodeConfigErr = errors.New("set opcode config failed")
-
-		err := host.applyExecutionConfig(executor.OpcodeVersionV2, config.MakeGasMapForTests())
-		require.Equal(t, exec.setOpcodeConfigErr, err)
-		require.Equal(t, executor.OpcodeVersionV1, host.opcodeVersion)
-		require.Nil(t, host.gasSchedule)
-		require.Nil(t, metering.schedule)
+		require.Equal(t, 0, runtime.configCalls)
 		require.Equal(t, 0, runtime.warmCacheWipe)
 		require.Equal(t, 0, blockchain.codesCleared)
 	})
@@ -227,49 +202,48 @@ func TestVMHost_ApplyExecutionConfig(t *testing.T) {
 
 func TestVMHost_ReconfigureExecutorOpcodeVersion(t *testing.T) {
 	v2 := false
-	host, exec, runtime, _, blockchain := newOpcodeConfigTestHost(&v2)
+	host, runtime, _, blockchain := newOpcodeConfigTestHost(&v2)
 	host.gasSchedule = config.MakeGasMapForTests()
 
 	// unchanged version: nothing happens
 	host.reconfigureExecutorOpcodeVersion()
-	require.Equal(t, 0, exec.calls)
+	require.Equal(t, 0, runtime.configCalls)
 
-	// flag flips: executor reconfigured and caches wiped
+	// flag flips: opcode config replaced and caches wiped
 	v2 = true
 	host.reconfigureExecutorOpcodeVersion()
-	require.Equal(t, 1, exec.calls)
+	require.Equal(t, 1, runtime.configCalls)
 	require.Equal(t, executor.OpcodeVersionV2, host.opcodeVersion)
 	require.Equal(t, 1, runtime.warmCacheWipe)
 	require.Equal(t, 1, blockchain.codesCleared)
 
-	// executor failure is only logged, the old version is kept
+	// failure is only logged, the old version is kept
 	v2 = false
-	exec.setOpcodeConfigErr = errors.New("boom")
+	host.gasSchedule = config.GasScheduleMap{}
 	host.reconfigureExecutorOpcodeVersion()
 	require.Equal(t, executor.OpcodeVersionV2, host.opcodeVersion)
 }
 
 func TestVMHost_GasScheduleChange(t *testing.T) {
 	v2 := true
-	host, exec, _, metering, _ := newOpcodeConfigTestHost(&v2)
+	host, runtime, metering, _ := newOpcodeConfigTestHost(&v2)
 	schedule := config.MakeGasMapForTests()
 
 	host.GasScheduleChange(schedule)
-	require.Equal(t, executor.OpcodeVersionV2, exec.version)
+	require.Equal(t, executor.OpcodeVersionV2, runtime.opcodeConfig.OpcodeVersion)
 	require.Equal(t, schedule, metering.schedule)
 
 	// error path is only logged
-	exec.setOpcodeConfigErr = errors.New("boom")
-	host.GasScheduleChange(schedule)
-	require.Equal(t, 2, exec.calls)
+	host.GasScheduleChange(config.GasScheduleMap{})
+	require.Equal(t, 1, runtime.configCalls)
 }
 
 func TestVMHost_EpochConfirmedReconfiguresExecutor(t *testing.T) {
 	v2 := false
-	host, exec, _, _, _ := newOpcodeConfigTestHost(&v2)
+	host, runtime, _, _ := newOpcodeConfigTestHost(&v2)
 	host.gasSchedule = config.MakeGasMapForTests()
 
 	v2 = true
 	host.EpochConfirmed(5, 0)
-	require.Equal(t, executor.OpcodeVersionV2, exec.version)
+	require.Equal(t, executor.OpcodeVersionV2, runtime.opcodeConfig.OpcodeVersion)
 }

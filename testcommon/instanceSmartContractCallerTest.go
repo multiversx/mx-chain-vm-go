@@ -106,7 +106,7 @@ func (template *InstanceCallTestTemplate) WithGasSchedule(gasSchedule config.Gas
 }
 
 // WithExecutorFactory provides the wasmer executor for the test
-func (template *InstanceCallTestTemplate) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *InstanceCallTestTemplate {
+func (template *InstanceCallTestTemplate) WithExecutorFactory(executorFactory executor.ExecutorNewAbstractFactory) *InstanceCallTestTemplate {
 	template.hostBuilder.WithExecutorFactory(executorFactory)
 	return template
 }

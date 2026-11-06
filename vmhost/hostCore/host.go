@@ -168,6 +168,15 @@ func NewVMHost(
 		return nil, err
 	}
 
+	// The opcode config has to be in place before the first instance is compiled; an
+	// instance compiled without it is not metered at all. It used to reach the executor
+	// through ExecutorFactoryArgs, which is why createExecutor was the natural place for it;
+	// now that it travels per instance, the runtime context is.
+	err = host.setInitialOpcodeConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
 		return nil, err
@@ -219,32 +228,61 @@ func NewVMHost(
 	return host, nil
 }
 
-// Creates a new executor instance. Should only be called once per VM host instantiation.
-func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.Executor, error) {
-	vmHooks := vmhooks.NewVMHooksImpl(host)
+// setInitialOpcodeConfig gives the runtime context the opcode set and gas costs that
+// instances are compiled with until the first gas schedule or epoch change.
+//
+// Separate from applyExecutionConfig, which does this and more - it also resets the metering
+// context and clears the instance caches - none of which exists yet at construction.
+func (host *vmHost) setInitialOpcodeConfig() error {
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var vmExecutorFactory executor.ExecutorAbstractFactory
+	host.runtimeContext.SetOpcodeConfig(&executor.OpcodeConfig{
+		OpcodeVersion: host.opcodeVersion,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	})
+
+	return nil
+}
+
+// Creates a new executor instance. Should only be called once per VM host instantiation.
+//
+// The executor is built with one argument, the host itself as its ExecutorRuntime, and is
+// never reconfigured afterwards. Everything the old ExecutorFactoryArgs carried besides the
+// hooks - the opcode version, the gas costs - is compilation configuration and now travels
+// per instance, in CompilationOptionsNew.
+func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.ExecutorNew, error) {
+	var vmExecutorFactory executor.ExecutorNewAbstractFactory
 
 	if hostParameters.OverrideVMExecutor != nil {
 		vmExecutorFactory = hostParameters.OverrideVMExecutor
 	} else {
-		vmExecutorFactory = wasmer2.ExecutorFactory()
+		vmExecutorFactory = wasmer2.ExecutorFactoryNew()
 	}
 
 	host.opcodeVersion = host.getOpcodeVersionForCurrentEpoch()
 
-	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
-		VMHooks:                  vmHooks,
-		OpcodeVersion:            host.opcodeVersion,
-		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
-		RkyvSerializationEnabled: true,
-		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
-	}
-	return vmExecutorFactory.CreateExecutor(vmExecutorFactoryArgs)
+	return vmExecutorFactory.CreateExecutorNew(executor.ExecutorFactoryArgsNew{
+		Runtime: host,
+	})
+}
+
+// VMHooksForCall returns the VM hooks servicing one host call, built around the state of the
+// instance making it.
+//
+// This is what makes the host an executor.ExecutorRuntime. Which execution the hooks serve
+// is resolved here, from the host's own call stack, rather than being captured when the
+// instance was created - which is what lets a cached instance be reused across transactions.
+//
+// A fresh VMHooksImpl per call, deliberately. Host calls nest, because a hook can run
+// another contract, and the outer hook goes on using its own state after the inner call
+// unwinds; a single shared instance with a swapped field would have the inner call clobber
+// the outer. The Rust trait avoids the allocation by lending the hooks to a closure, which
+// Go has no way to express.
+func (host *vmHost) VMHooksForCall(instanceState executor.InstanceState) executor.VMHooks {
+	return vmhooks.NewVMHooksImpl(host, instanceState)
 }
 
 // GetVersion returns the VM version string
@@ -395,10 +433,10 @@ func (host *vmHost) applyExecutionConfig(
 		return err
 	}
 
-	err = host.runtimeContext.GetVMExecutor().SetOpcodeConfig(opcodeVersion, gasCostConfig.WASMOpcodeCost)
-	if err != nil {
-		return err
-	}
+	host.runtimeContext.SetOpcodeConfig(&executor.OpcodeConfig{
+		OpcodeVersion: opcodeVersion,
+		OpcodeCosts:   gasCostConfig.WASMOpcodeCost,
+	})
 
 	host.gasSchedule = gasSchedule
 	host.opcodeVersion = opcodeVersion
@@ -530,7 +568,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	case <-done:
 		return localOutput, localErr
 	case <-ctx.Done():
-		host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
+		host.Runtime().InterruptExecution()
 		select {
 		case <-done:
 			host.Runtime().CleanInstance()
@@ -635,7 +673,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		// reading the `done` channel with a grace period, awaiting the call to `close(done)`
 		// from above. If the execution does not stop within the grace period, the instance
 		// is abandoned without destroying C memory to prevent crashes.
-		host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
+		host.Runtime().InterruptExecution()
 		select {
 		case <-done:
 			host.Runtime().CleanInstance()

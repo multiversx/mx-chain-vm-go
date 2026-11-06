@@ -43,21 +43,21 @@ type instanceTracker struct {
 	codeSize            uint64
 	numRunningInstances int
 	warmInstanceCache   Cacher
-	instance            executor.Instance
+	instance            executor.InstanceNew
 	cacheLevel          instanceCacheLevel
-	instanceStack       []executor.Instance
+	instanceStack       []executor.InstanceNew
 	codeHashStack       [][]byte
 	codeSizeStack       []uint64
 	enableEpochsHandler core.EnableEpochsHandler
 
-	instances map[string]executor.Instance
+	instances map[string]executor.InstanceNew
 }
 
 // NewInstanceTracker creates a new instanceTracker instance
 func NewInstanceTracker() (*instanceTracker, error) {
 	tracker := &instanceTracker{
-		instances:           make(map[string]executor.Instance),
-		instanceStack:       make([]executor.Instance, 0),
+		instances:           make(map[string]executor.InstanceNew),
+		instanceStack:       make([]executor.InstanceNew, 0),
 		codeHashStack:       make([][]byte, 0),
 		codeSizeStack:       make([]uint64, 0),
 		numRunningInstances: 0,
@@ -80,7 +80,7 @@ func (tracker *instanceTracker) InitState() {
 
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
-	tracker.instances = make(map[string]executor.Instance)
+	tracker.instances = make(map[string]executor.InstanceNew)
 	tracker.codeSize = 0
 }
 
@@ -119,9 +119,26 @@ func (tracker *instanceTracker) PopSetActiveState() {
 	tracker.codeSizeStack = tracker.codeSizeStack[:instanceStackLen-1]
 }
 
-func (tracker *instanceTracker) cleanPoppedInstance(instance executor.Instance, codeHash []byte) {
+// closeInstance releases an instance unless it has already been released, and reports
+// whether this call was the one that did it.
+//
+// The bool is what the tracker's running-instance count is maintained with, and it is why
+// this is a function rather than a bare Close: executor.InstanceNew.Close is idempotent but
+// silent about it, so only IsAlreadyCleaned can tell a real release from a second one. Under
+// the old interface Instance.Clean returned exactly this bool.
+func closeInstance(instance executor.InstanceNew) bool {
+	if instance.IsAlreadyCleaned() {
+		return false
+	}
+
+	instance.Close()
+
+	return true
+}
+
+func (tracker *instanceTracker) cleanPoppedInstance(instance executor.InstanceNew, codeHash []byte) {
 	if !check.IfNil(instance) {
-		if instance.Clean() {
+		if closeInstance(instance) {
 			tracker.updateNumRunningInstances(-1)
 		}
 
@@ -136,7 +153,7 @@ func (tracker *instanceTracker) PopDiscard() {
 // ClearStateStack reinitializes the state stack.
 func (tracker *instanceTracker) ClearStateStack() {
 	tracker.codeHashStack = make([][]byte, 0)
-	tracker.instanceStack = make([]executor.Instance, 0)
+	tracker.instanceStack = make([]executor.InstanceNew, 0)
 	tracker.codeSizeStack = make([]uint64, 0)
 }
 
@@ -146,20 +163,20 @@ func (tracker *instanceTracker) StackSize() uint64 {
 }
 
 // Instance returns the active instance
-func (tracker *instanceTracker) Instance() executor.Instance {
+func (tracker *instanceTracker) Instance() executor.InstanceNew {
 	tracker.mut.RLock()
 	defer tracker.mut.RUnlock()
 	return tracker.instance
 }
 
 // GetWarmInstance retrieves a warm instance from the internal cache
-func (tracker *instanceTracker) GetWarmInstance(codeHash []byte) (executor.Instance, bool) {
+func (tracker *instanceTracker) GetWarmInstance(codeHash []byte) (executor.InstanceNew, bool) {
 	cachedObject, ok := tracker.warmInstanceCache.Get(codeHash)
 	if !ok {
 		return nil, false
 	}
 
-	instance, ok := cachedObject.(executor.Instance)
+	instance, ok := cachedObject.(executor.InstanceNew)
 	if !ok {
 		return nil, false
 	}
@@ -178,7 +195,7 @@ func (tracker *instanceTracker) ClearWarmInstanceCache() {
 }
 
 // TrackedInstances returns the internal map of tracked instances
-func (tracker *instanceTracker) TrackedInstances() map[string]executor.Instance {
+func (tracker *instanceTracker) TrackedInstances() map[string]executor.InstanceNew {
 	return tracker.instances
 }
 
@@ -190,8 +207,10 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) (
 		return false, nil
 	}
 
-	ok = instance.Reset()
-	if !ok {
+	err := instance.ResetNew()
+	if err != nil {
+		logTracker.Trace("warm instance could not be reset; discarding it",
+			"id", instance.ID(), "codeHash", codeHash, "err", err)
 		tracker.warmInstanceCache.Remove(codeHash)
 		return false, nil
 	}
@@ -203,7 +222,7 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) (
 		return false, nil
 	}
 
-	err := tracker.SetNewInstance(instance, Warm)
+	err = tracker.SetNewInstance(instance, Warm)
 	return true, err
 }
 
@@ -222,7 +241,7 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 	}()
 
 	if bypassWarmAndStackChecks {
-		if tracker.instance.Clean() {
+		if closeInstance(tracker.instance) {
 			tracker.updateNumRunningInstances(-1)
 		}
 
@@ -231,7 +250,7 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 
 	onStack := tracker.IsCodeHashOnTheStack(tracker.codeHash)
 	if onStack {
-		if tracker.instance.Clean() {
+		if closeInstance(tracker.instance) {
 			tracker.updateNumRunningInstances(-1)
 		}
 	} else {
@@ -334,7 +353,7 @@ func (tracker *instanceTracker) isAttributeExtraGasUsageEnabled() bool {
 	return tracker.enableEpochsHandler.IsFlagEnabled(vmhost.AttributeExtraGasUsageFlag)
 }
 
-func (tracker *instanceTracker) getInstanceKey(instance executor.Instance) string {
+func (tracker *instanceTracker) getInstanceKey(instance executor.InstanceNew) string {
 	instanceKey := instance.ID()
 	if !tracker.isAttributeExtraGasUsageEnabled() {
 		if idx := strings.Index(instanceKey, "-"); idx != -1 {
@@ -345,7 +364,7 @@ func (tracker *instanceTracker) getInstanceKey(instance executor.Instance) strin
 }
 
 // SetNewInstance sets the given instance as active and tracks its creation
-func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cacheLevel instanceCacheLevel) error {
+func (tracker *instanceTracker) SetNewInstance(instance executor.InstanceNew, cacheLevel instanceCacheLevel) error {
 	if check.IfNil(instance) {
 		return errNilInstance
 	}
@@ -360,7 +379,7 @@ func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cache
 	if tracker.isAttributeExtraGasUsageEnabled() {
 		if newCount >= warmCacheSize-1 {
 			if cacheLevel != Warm {
-				_ = instance.Clean()
+				_ = closeInstance(instance)
 			}
 			return errTooManyInstances
 		}
@@ -383,7 +402,7 @@ func (tracker *instanceTracker) SetNewInstance(instance executor.Instance, cache
 }
 
 // ReplaceInstance replaces the currently active instance with the given one
-func (tracker *instanceTracker) ReplaceInstance(instance executor.Instance) {
+func (tracker *instanceTracker) ReplaceInstance(instance executor.InstanceNew) {
 	tracker.mut.Lock()
 	defer tracker.mut.Unlock()
 
@@ -452,7 +471,7 @@ func (tracker *instanceTracker) CheckInstances() error {
 	unclosedWarm := 0
 	unclosedCold := 0
 
-	warmInstanceCacheByID := make(map[string]executor.Instance)
+	warmInstanceCacheByID := make(map[string]executor.InstanceNew)
 	for _, key := range tracker.warmInstanceCache.Keys() {
 		instance, ok := tracker.GetWarmInstance(key)
 		if !ok {
@@ -486,13 +505,13 @@ func (tracker *instanceTracker) CheckInstances() error {
 
 func (tracker *instanceTracker) makeInstanceEvictionCallback() func(interface{}, interface{}) {
 	return func(_ interface{}, value interface{}) {
-		instance, ok := value.(executor.Instance)
+		instance, ok := value.(executor.InstanceNew)
 		if !ok {
 			return
 		}
 
 		logTracker.Trace("evicted instance", "id", instance.ID())
-		if instance.Clean() {
+		if closeInstance(instance) {
 			tracker.updateNumRunningInstances(-1)
 		}
 	}

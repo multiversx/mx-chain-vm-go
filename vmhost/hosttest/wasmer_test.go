@@ -256,7 +256,10 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 		verify.Ok().ReturnData([]byte(keyword))
 		instance := extractSingleTrackedInstanceFromHost(verify.T, host)
 		require.NotNil(verify.T, instance)
-		memory := instance.MemDump()
+		observer, ok := instance.(memoryObserver)
+		require.True(verify.T, ok, "instance does not expose its memory")
+
+		memory := observer.MemDump()
 		require.Len(verify.T, memory, int(1*vmhost.WASMPageSize))
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
@@ -284,7 +287,10 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 		instance := extractSingleTrackedInstanceFromHost(verify.T, host)
 		require.NotNil(verify.T, instance)
 
-		memory := instance.MemDump()
+		observer, ok := instance.(memoryObserver)
+		require.True(verify.T, ok, "instance does not expose its memory")
+
+		memory := observer.MemDump()
 		require.Len(verify.T, memory, int(1*vmhost.WASMPageSize))
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
@@ -361,13 +367,20 @@ func TestWASMMiddleware_GlobalsUnreachable(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("getglobal").
 			Build()).
-		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		WithExecutorFactory(wasmer2.ExecutorFactoryNew()).
 		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
 
-func extractSingleTrackedInstanceFromHost(tb testing.TB, host vmhost.VMHost) executor.Instance {
+// memoryObserver is what these tests need of an instance beyond executor.InstanceNew: its memory,
+// from outside a call. Offered by the backend for tests only - production code reaches memory
+// through the per-call instance state.
+type memoryObserver interface {
+	MemDump() []byte
+}
+
+func extractSingleTrackedInstanceFromHost(tb testing.TB, host vmhost.VMHost) executor.InstanceNew {
 	trackedInstances := host.Runtime().GetInstanceTracker().TrackedInstances()
 	require.Len(tb, trackedInstances, 1)
 

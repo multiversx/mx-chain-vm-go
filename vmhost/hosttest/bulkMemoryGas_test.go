@@ -315,7 +315,7 @@ func TestBulkMemoryGas_OpcodeV2ActivationClearsCachedCompiledCode(t *testing.T) 
 // V1 executor and reject the bulk memory opcodes even though OpcodeV2Flag is active.
 func TestBulkMemoryGas_WrappedExecutorFactoryForwardsOpcodeVersion(t *testing.T) {
 	host := testcommon.NewTestHostBuilder(t).
-		WithExecutorFactory(executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactory())).
+		WithExecutorFactory(executorwrapper.SimpleWrappedExecutorFactory(wasmer2.ExecutorFactoryNew())).
 		WithBlockchainHook(testcommon.BlockchainHookStubForCall(
 			testcommon.GetTestSCCode("bulk-memory", "../../"),
 			big.NewInt(0))).

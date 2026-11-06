@@ -48,9 +48,10 @@ func main() {
 	writeVMHooksLegacyAdapter(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
-	writeWasmer2Names(eiMetadata)
+	writeWasmer2NewImportsCgo(eiMetadata)
+	writeWasmer2NewOpcodeCost()
 
-	writeNamesForMockExecutor(eiMetadata)
+	writeVMHookNames(eiMetadata)
 
 	tryCreateRustOutputDirectory()
 
@@ -116,16 +117,23 @@ func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
-func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/wasmer2Names.go")
+// The new C API's shims, for the same backend reached through the new boundary.
+func writeWasmer2NewImportsCgo(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2new/wasmer2newImportsCgo.go")
 	defer out.Close()
-	eapigen.WriteNames(out, "wasmer2", eiMetadata)
+	eapigen.WriteWasmer2NewCgo(out, eiMetadata)
 }
 
-func writeNamesForMockExecutor(eiMetadata *eapigen.EIMetadata) {
-	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../mock/context/executorMockFunc.go")
+func writeWasmer2NewOpcodeCost() {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2new/wasmer2newOpcodeCost.go")
 	defer out.Close()
-	eapigen.WriteNames(out, "mock", eiMetadata)
+	eapigen.WriteBackendOpcodeCost(out, "wasmer2new")
+}
+
+func writeVMHookNames(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../vmhost/contexts/vmHookNames.go")
+	defer out.Close()
+	eapigen.WriteNames(out, "contexts", eiMetadata)
 }
 
 func tryCreateRustOutputDirectory() {
@@ -222,7 +230,7 @@ func writeWASMOpcodeCostConfigHelpers() {
 func writeWasmer2OpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../wasmer2/opcodeCost.go")
 	defer out.Close()
-	eapigen.WriteWasmer2OpcodeCost(out)
+	eapigen.WriteBackendOpcodeCost(out, "wasmer2")
 }
 
 func writeRustOpcodeCost() {

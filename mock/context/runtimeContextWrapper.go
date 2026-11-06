@@ -50,9 +50,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	MustVerifyNextContractCodeFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetRuntimeBreakpointValueFunc func(value vmhost.BreakpointValue)
+	InterruptExecutionFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetRuntimeBreakpointValueFunc func() vmhost.BreakpointValue
+	SetOpcodeConfigFunc func(opcodeConfig *executor.OpcodeConfig)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetAsyncCallInfoFunc func() *vmhost.AsyncCallInfo
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -80,11 +80,11 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetInstanceFunc func() executor.Instance
+	GetInstanceFunc func() executor.InstanceNew
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	FunctionNameCheckedFunc func() (string, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	CallSCFunctionFunc func(string) error
+	CallSCFunctionFunc func(string) executor.InstanceCallResult
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetPointsUsedFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -102,7 +102,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetVMExecutorFunc func() executor.Executor
+	GetVMExecutorFunc func() executor.ExecutorNew
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -202,12 +202,12 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		runtimeWrapper.runtimeContext.MustVerifyNextContractCode()
 	}
 
-	runtimeWrapper.SetRuntimeBreakpointValueFunc = func(value vmhost.BreakpointValue) {
-		runtimeWrapper.runtimeContext.SetRuntimeBreakpointValue(value)
+	runtimeWrapper.InterruptExecutionFunc = func() {
+		runtimeWrapper.runtimeContext.InterruptExecution()
 	}
 
-	runtimeWrapper.GetRuntimeBreakpointValueFunc = func() vmhost.BreakpointValue {
-		return runtimeWrapper.runtimeContext.GetRuntimeBreakpointValue()
+	runtimeWrapper.SetOpcodeConfigFunc = func(opcodeConfig *executor.OpcodeConfig) {
+		runtimeWrapper.runtimeContext.SetOpcodeConfig(opcodeConfig)
 	}
 
 	runtimeWrapper.GetInstanceStackSizeFunc = func() uint64 {
@@ -242,7 +242,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		return runtimeWrapper.runtimeContext.VerifyContractCode()
 	}
 
-	runtimeWrapper.GetInstanceFunc = func() executor.Instance {
+	runtimeWrapper.GetInstanceFunc = func() executor.InstanceNew {
 		return runtimeWrapper.runtimeContext.GetInstance()
 	}
 
@@ -250,7 +250,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		return runtimeWrapper.runtimeContext.FunctionNameChecked()
 	}
 
-	runtimeWrapper.CallSCFunctionFunc = func(functionName string) error {
+	runtimeWrapper.CallSCFunctionFunc = func(functionName string) executor.InstanceCallResult {
 		return runtimeWrapper.runtimeContext.CallSCFunction(functionName)
 	}
 
@@ -404,14 +404,14 @@ func (contextWrapper *RuntimeContextWrapper) MustVerifyNextContractCode() {
 	contextWrapper.MustVerifyNextContractCodeFunc()
 }
 
-// SetRuntimeBreakpointValue calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
-	contextWrapper.SetRuntimeBreakpointValueFunc(value)
+// InterruptExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) InterruptExecution() {
+	contextWrapper.InterruptExecutionFunc()
 }
 
-// GetRuntimeBreakpointValue calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
-	return contextWrapper.GetRuntimeBreakpointValueFunc()
+// SetOpcodeConfig calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetOpcodeConfig(opcodeConfig *executor.OpcodeConfig) {
+	contextWrapper.SetOpcodeConfigFunc(opcodeConfig)
 }
 
 // CountSameContractInstancesOnStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -460,7 +460,7 @@ func (contextWrapper *RuntimeContextWrapper) VerifyContractCode() error {
 }
 
 // GetInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetInstance() executor.Instance {
+func (contextWrapper *RuntimeContextWrapper) GetInstance() executor.InstanceNew {
 	return contextWrapper.GetInstanceFunc()
 }
 
@@ -470,7 +470,7 @@ func (contextWrapper *RuntimeContextWrapper) FunctionNameChecked() (string, erro
 }
 
 // CallSCFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) CallSCFunction(functionName string) error {
+func (contextWrapper *RuntimeContextWrapper) CallSCFunction(functionName string) executor.InstanceCallResult {
 	return contextWrapper.CallSCFunctionFunc(functionName)
 }
 
@@ -504,19 +504,18 @@ func (contextWrapper *RuntimeContextWrapper) OutputRollbackOnDestContext() bool 
 	return contextWrapper.runtimeContext.OutputRollbackOnDestContext()
 }
 
-
 // ComputeCodeHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ComputeCodeHash(code []byte) []byte {
 	return contextWrapper.runtimeContext.ComputeCodeHash(code)
 }
 
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
+func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.ExecutorNew {
 	return contextWrapper.GetVMExecutorFunc()
 }
 
 // ReplaceVMExecutor mocked method
-func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(_ executor.Executor) {
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(_ executor.ExecutorNew) {
 }
 
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
