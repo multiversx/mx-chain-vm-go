@@ -249,7 +249,7 @@ func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *Te
 	setGraphCallArg(arguments, syncCallArgIndexes.gasUsedIdx, int(edge.GasUsed))
 
 	LogGraph.Trace("Sync call to ", string(destAddress), " func ", destFunctionName, " gas ", edge.GasLimit)
-	vmhooks.ExecuteOnDestContextWithTypedArgs(
+	_, err := vmhooks.ExecuteOnDestContextWithTypedArgs(
 		host,
 		int64(edge.GasLimit),
 		value,
@@ -258,6 +258,9 @@ func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *Te
 		arguments,
 		true,
 	)
+	if err != nil {
+		vmhooks.FailExecution(host, err)
+	}
 
 	return host.Runtime().GetRuntimeBreakpointValue()
 }
@@ -300,7 +303,7 @@ func makeAsyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *T
 		gasLocked = edge.GasLocked - DefaultCallGraphLockedGas
 	}
 
-	vmhooks.CreateAsyncCallWithTypedArgs(host,
+	_, err := vmhooks.CreateAsyncCallWithTypedArgs(host,
 		destAddress,
 		value.Bytes(),
 		callDataAsBytes,
@@ -309,6 +312,9 @@ func makeAsyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *T
 		int64(edge.GasLimit),
 		int64(gasLocked),
 		[]byte{})
+	if err != nil {
+		vmhooks.FailExecution(host, err)
+	}
 }
 
 func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte) ([]byte, string) {

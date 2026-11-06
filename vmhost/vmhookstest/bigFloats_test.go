@@ -751,7 +751,8 @@ func TestBigFloats_Pow_WithNoBarnardOpcodesFlag(t *testing.T) {
 						arg, err := managedTypes.PutBigFloat(big.NewFloat(10))
 						assert.Nil(t, err)
 
-						hooks.BigFloatPow(destination, arg, 5)
+						err = hooks.BigFloatPow(destination, arg, 5)
+						assert.Nil(t, err)
 
 						result, err := managedTypes.GetBigFloat(destination)
 						assert.Nil(t, err)
@@ -802,7 +803,8 @@ func TestBigFloats_Pow_WithBarnardOpcodesFlag(t *testing.T) {
 						arg, err := managedTypes.PutBigFloat(big.NewFloat(10))
 						assert.Nil(t, err)
 
-						hooks.BigFloatPow(destination, arg, 5)
+						err = hooks.BigFloatPow(destination, arg, 5)
+						assert.Nil(t, err)
 
 						result, err := managedTypes.GetBigFloat(destination)
 						assert.Nil(t, err)

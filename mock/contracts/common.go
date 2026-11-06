@@ -82,10 +82,18 @@ func (config DirectCallGasTestConfig) GetGasUsedByChild() uint64 {
 
 // ExecuteOnSameContextInMockContracts - calls the corresponding method in VM hooks
 func ExecuteOnSameContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
-	return vmhooks.ExecuteOnSameContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
+	retCode, err := vmhooks.ExecuteOnSameContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
+	if err != nil {
+		vmhooks.FailExecution(host, err)
+	}
+	return retCode
 }
 
 // ExecuteOnDestContextInMockContracts - calls the corresponding method in VM hooks
 func ExecuteOnDestContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
-	return vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments, true)
+	retCode, err := vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments, true)
+	if err != nil {
+		vmhooks.FailExecution(host, err)
+	}
+	return retCode
 }

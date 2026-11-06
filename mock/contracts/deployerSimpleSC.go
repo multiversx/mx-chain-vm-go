@@ -100,7 +100,7 @@ func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 		codeMetadata := arguments[2]
 		gasForInit := big.NewInt(0).SetBytes(arguments[3])
 
-		vmhooks.UpgradeFromSourceContractWithTypedArgs(
+		err := vmhooks.UpgradeFromSourceContractWithTypedArgs(
 			host,
 			sourceContractAddress,
 			destinationContractAddress,
@@ -109,6 +109,9 @@ func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 			gasForInit.Int64(),
 			codeMetadata,
 		)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
 
 		return instance
 	})

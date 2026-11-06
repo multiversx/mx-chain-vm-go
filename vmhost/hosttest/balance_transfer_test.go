@@ -44,21 +44,21 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 						argsVecBuf := managedTypes.NewManagedBuffer()
 
 						// 3. Call Child via ManagedExecuteOnDestContext
-						res := hooks.ManagedExecuteOnDestContext(
+						res, _ := handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
 							50000,
 							childAddrBuf,
 							valBuf,
 							fnBuf,
 							argsVecBuf,
 							managedTypes.NewManagedBuffer(),
-						)
+						))
 						require.Equal(t, int32(0), res)
 
 						// 4. Now Child has returned, and Child's output (with sender ChildAddress debited)
 						// is merged into Parent. In Parent's outputState, Child's OutputAccount.Address
 						// points to the backing slice of childAddrBuf!
 						// We now mutate childAddrBuf in place to victimAddress!
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress)
+						handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress))
 
 						// 5. Trigger a second nested execution (dummy call to Child)
 						// This pushes Parent's state to stateStack, executes dummy call,
@@ -66,14 +66,14 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 						// rekeying the debited account under victimAddress!
 						dummyFnBuf := managedTypes.NewManagedBufferFromBytes([]byte("dummy"))
 						dummyAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)
-						res = hooks.ManagedExecuteOnDestContext(
+						res, _ = handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
 							20000,
 							dummyAddrBuf,
 							valBuf,
 							dummyFnBuf,
 							managedTypes.NewManagedBuffer(),
 							managedTypes.NewManagedBuffer(),
-						)
+						))
 						// Re-create Child in OutputAccounts so meteringContext.setGasUsedToOutputAccounts passes!
 						_, _ = host.Output().GetOutputAccount(test.ChildAddress)
 
@@ -168,30 +168,30 @@ func TestHost_StorageOverwriteResistance(t *testing.T) {
 						argsVecBuf := managedTypes.NewManagedBuffer()
 
 						// 3. Call Child via ManagedExecuteOnDestContext
-						res := hooks.ManagedExecuteOnDestContext(
+						res, _ := handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
 							50000,
 							childAddrBuf,
 							valBuf,
 							fnBuf,
 							argsVecBuf,
 							managedTypes.NewManagedBuffer(),
-						)
+						))
 						require.Equal(t, int32(0), res)
 
 						// 4. Mutate childAddrBuf to victimAddress
-						vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress)
+						handleHookErr(host)(vmhooks.ManagedBufferSetByteSliceWithTypedArgs(host, childAddrBuf, 0, int32(len(victimAddress)), victimAddress))
 
 						// 5. Trigger a second nested execution to rekey via PopMergeActiveState
 						dummyFnBuf := managedTypes.NewManagedBufferFromBytes([]byte("dummy"))
 						dummyAddrBuf := managedTypes.NewManagedBufferFromBytes(test.ChildAddress)
-						res = hooks.ManagedExecuteOnDestContext(
+						res, _ = handleHookErr(host)(hooks.ManagedExecuteOnDestContext(
 							20000,
 							dummyAddrBuf,
 							valBuf,
 							dummyFnBuf,
 							managedTypes.NewManagedBuffer(),
 							managedTypes.NewManagedBuffer(),
-						)
+						))
 						// Re-create Child in OutputAccounts so meteringContext.setGasUsedToOutputAccounts passes
 						_, _ = host.Output().GetOutputAccount(test.ChildAddress)
 

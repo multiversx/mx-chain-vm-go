@@ -312,7 +312,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 				ESDTTokenNonce: 0,
 			}
 
-			ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+			ret, _ := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 				host,
 				test.ParentAddress,
 				[]*vmcommon.ESDTTransfer{transfer},

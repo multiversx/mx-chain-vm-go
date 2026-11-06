@@ -1907,7 +1907,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testin
 
 						bufHandle := host.ManagedTypes().NewManagedBuffer()
 
-						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						returnVal, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							int64(testConfig.GasProvidedToChild),
 							big.NewInt(0),
@@ -1917,6 +1917,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithReturnData(t *testin
 							bufHandle,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(0), returnVal)
 
 						results, _, err := host.ManagedTypes().ReadManagedVecOfManagedBuffers(bufHandle)
@@ -1968,7 +1969,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
+						returnVal, err := vmhooks.ManagedExecuteOnDestContextWithErrorReturnWithHost(
 							host,
 							int64(testConfig.GasProvidedToChild),
 							big.NewInt(0),
@@ -1978,6 +1979,7 @@ func TestExecution_ExecuteOnDestContext_NoFailExecution_WithError(t *testing.T) 
 							0,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(1), returnVal)
 
 						return parentInstance
@@ -2025,7 +2027,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *test
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+						returnVal, err := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{
@@ -2042,6 +2044,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithReturnData(t *test
 							false,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(0), returnVal)
 
 						return parentInstance
@@ -2090,7 +2093,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+						returnVal, err := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{},
@@ -2100,6 +2103,7 @@ func TestExecution_TransferESTDNFTExecute_NoFailExecution_WithError(t *testing.T
 							false,
 						)
 
+						require.Nil(t, err)
 						require.Equal(t, int32(1), returnVal)
 
 						return parentInstance
@@ -2146,7 +2150,7 @@ func TestExecution_TransferESDTNFTExecute_RollbackOnFailure(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 
-						returnVal := vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
+						returnVal, _ := handleHookErr(host)(vmhooks.TransferESDTNFTExecuteWithTypedArgsWithFailure(
 							host,
 							[]byte(test.ChildAddress),
 							[]*vmcommon.ESDTTransfer{},
@@ -2154,7 +2158,7 @@ func TestExecution_TransferESDTNFTExecute_RollbackOnFailure(t *testing.T) {
 							[]byte("childFunction"),
 							[][]byte{},
 							false,
-						)
+						))
 
 						require.Equal(t, int32(1), returnVal)
 
@@ -3575,53 +3579,68 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						assert.Equal(t, int32(0), returnValue)
 
 						instance.BreakpointValue = 0
-						returnData := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						returnData, err := vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, zero, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, one, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 2)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
-						vmhooks.DeleteFromReturnDataWithHost(host, 0)
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						assert.Nil(t, err)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, one, string(returnData))
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 1)
+						assert.Nil(t, err)
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
-						vmhooks.DeleteFromReturnDataWithHost(host, 0)
-						vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						assert.Nil(t, err)
+						err = vmhooks.DeleteFromReturnDataWithHost(host, 0)
+						assert.Nil(t, err)
 						remainingReturnData := host.Output().ReturnData()
 						assert.Equal(t, remainingReturnData, [][]byte{})
 						assert.Equal(t, vmhost.BreakpointNone, instance.BreakpointValue)
 
 						// Negative and out-of-bounds indices should safely do nothing
 						require.NotPanics(t, func() {
-							vmhooks.DeleteFromReturnDataWithHost(host, -1)
-							vmhooks.DeleteFromReturnDataWithHost(host, 100)
+							handleHookError(host, vmhooks.DeleteFromReturnDataWithHost(host, -1))
+							handleHookError(host, vmhooks.DeleteFromReturnDataWithHost(host, 100))
 						})
 						assert.Equal(t, [][]byte{}, host.Output().ReturnData())
 
 						instance.BreakpointValue = 0
-						vmhooks.CleanReturnDataWithHost(host)
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						err = vmhooks.CleanReturnDataWithHost(host)
+						assert.Nil(t, err)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, 0)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						assert.Equal(t, vmhost.BreakpointExecutionFailed, instance.BreakpointValue)
 						assert.Nil(t, returnData)
 
 						instance.BreakpointValue = 0
-						returnData = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
+						returnData, err = vmhooks.GetReturnDataWithHostAndTypedArgs(host, -1)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						assert.Equal(t, vmhost.BreakpointOutOfGas, instance.BreakpointValue)
 						assert.Nil(t, returnData)
 
@@ -3872,7 +3891,10 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
 						_ = host.Metering().UseGasBounded(500)
-						vmhooks.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
+						_, err := vmhooks.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						return parentInstance
 					})
 				}),
@@ -3883,7 +3905,10 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
 						_ = host.Metering().UseGasBounded(100)
-						vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2), true)
+						_, err := vmhooks.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2), true)
+						if err != nil {
+							vmhooks.FailExecution(host, err)
+						}
 						return childInstance
 					})
 				}),
