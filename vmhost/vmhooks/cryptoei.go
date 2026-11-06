@@ -826,8 +826,7 @@ func (context *VMHooksImpl) AddEC(
 	// Get100xCurveGasCostMultiplier above reads the very same ecValues map
 	// under the very same ecHandle and already returned early when the
 	// handle is missing, so GetEllipticCurve below can never fail at this
-	// point. Returning here is therefore an exact behavioural no-op; see the
-	// migration report for the full reasoning.
+	// point. Returning here is therefore an exact behavioural no-op.
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
 	if err1 != nil {
 		return err1

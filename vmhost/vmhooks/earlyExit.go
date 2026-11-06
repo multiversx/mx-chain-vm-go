@@ -15,7 +15,7 @@ func (context *VMHooksImpl) HandleHookError(err error) {
 }
 
 // resolveEarlyExit classifies a hook error into the termination it requires.
-// See the contract in the migration document: exactly one call site, never nil in, never nil out.
+// Its only caller is FailExecution. It must not be given a nil error, and it never returns nil.
 func resolveEarlyExit(err error) *executor.EarlyExit {
 	var earlyExit *executor.EarlyExit
 	if errors.As(err, &earlyExit) {
