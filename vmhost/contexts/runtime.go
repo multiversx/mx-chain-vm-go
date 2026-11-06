@@ -95,14 +95,13 @@ func NewRuntimeContext(
 		return nil, vmhost.ErrNilHasher
 	}
 
-	scAPINames := vmExecutor.FunctionNames()
 	enableEpochsHandler := host.EnableEpochsHandler()
 
 	context := &runtimeContext{
 		host:       host,
 		vmType:     vmType,
 		stateStack: make([]*runtimeContext, 0),
-		validator:  newWASMValidator(scAPINames, builtInFuncContainer, enableEpochsHandler),
+		validator:  newWASMValidator(vmHookNames, builtInFuncContainer, enableEpochsHandler),
 		hasher:     hasher,
 		errors:     nil,
 	}
