@@ -158,7 +158,10 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		if !testConfig.IsLegacyAsync {
 			managed := host.ManagedTypes()
 			closureHandle := managed.NewManagedBuffer()
-			vmhooks.GetCallbackClosureWithHost(host, closureHandle)
+			err := vmhooks.GetCallbackClosureWithHost(host, closureHandle)
+			if err != nil {
+				vmhooks.FailExecution(host, err)
+			}
 			closure, err := managed.GetBytes(closureHandle)
 			if err != nil {
 				host.Runtime().SignalUserError("can't get closure")
@@ -220,7 +223,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		retVal := vmhooks.ExecuteOnSameContextWithTypedArgs(
+		retVal, err := vmhooks.ExecuteOnSameContextWithTypedArgs(
 			host,
 			int64(host.Metering().GasLeft()),
 			big.NewInt(0),
@@ -228,6 +231,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
 			[][]byte{},
 		)
+		vmhooks.FailExecution(host, err)
 
 		if retVal != 0 {
 			host.Runtime().SignalUserError("execution by caller failed")

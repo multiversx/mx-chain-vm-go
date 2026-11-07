@@ -21,13 +21,14 @@ func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, _ interface
 		argumentsHandle := managedTypes.NewManagedBuffer()
 		_ = managedTypes.WriteManagedVecOfManagedBuffers([][]byte{}, argumentsHandle)
 
-		vmhooks.ManagedAsyncCallWithHost(
+		err := vmhooks.ManagedAsyncCallWithHost(
 			host,
 			destHandle,
 			valueHandle,
 			functionHandle,
 			argumentsHandle,
 		)
+		vmhooks.FailExecution(host, err)
 
 		return instance
 

@@ -29,11 +29,26 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 
 	signal.Reset()
 
+	// This backend reaches the hooks as plain C functions, which cannot carry an error back,
+	// so it runs them through the legacy adapter. Built here rather than handed in: the VM
+	// and the backends moving to the new interfaces only deal in error-returning hooks.
+	//
+	// Absent hooks are tolerated, as they were before the adapter: tests that only compile
+	// and instantiate a module never reach one.
+	var legacyVMHooks executor.VMHooksLegacy
+	if args.VMHooks != nil {
+		errorHandler, ok := args.VMHooks.(executor.VMHooksErrorHandler)
+		if !ok {
+			return nil, executor.ErrVMHooksCannotHandleErrors
+		}
+		legacyVMHooks = executor.NewVMHooksLegacyAdapter(args.VMHooks, errorHandler)
+	}
+
 	wasmerExecutor, err := CreateExecutor()
 	if err != nil {
 		return nil, err
 	}
-	wasmerExecutor.initVMHooks(args.VMHooks)
+	wasmerExecutor.initVMHooks(legacyVMHooks)
 	err = wasmerExecutor.SetOpcodeConfig(args.OpcodeVersion, args.OpcodeCosts)
 	if err != nil {
 		// the native executor is not garbage collected, release it explicitly

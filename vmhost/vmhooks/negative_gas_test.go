@@ -45,13 +45,13 @@ func TestDeleteContractRejectsNegativeGasLimit(t *testing.T) {
 	async := &asyncContextStub{}
 	host.AsyncContext = async
 
-	deleteContract(host, []byte("dest"), nil, -1)
+	applyEarlyExit(host, resolveEarlyExit(deleteContract(host, []byte("dest"), nil, -1)))
 	require.False(t, async.called)
 	require.Equal(t, vmhost.BreakpointOutOfGas, runtime.breakpoint)
 
 	async.called = false
 	runtime.breakpoint = 0
-	deleteContract(host, []byte("dest"), nil, 0)
+	applyEarlyExit(host, resolveEarlyExit(deleteContract(host, []byte("dest"), nil, 0)))
 	require.False(t, async.called)
 	require.Equal(t, vmhost.BreakpointOutOfGas, runtime.breakpoint)
 }
@@ -73,13 +73,13 @@ func TestUpgradeContractRejectsNegativeGasLimit(t *testing.T) {
 	async := &asyncContextStub{}
 	host.AsyncContext = async
 
-	upgradeContract(host, []byte("dest"), []byte("code"), []byte("meta"), nil, nil, -1)
+	applyEarlyExit(host, resolveEarlyExit(upgradeContract(host, []byte("dest"), []byte("code"), []byte("meta"), nil, nil, -1)))
 	require.False(t, async.called)
 	require.Equal(t, vmhost.BreakpointOutOfGas, runtime.breakpoint)
 
 	async.called = false
 	runtime.breakpoint = 0
-	upgradeContract(host, []byte("dest"), []byte("code"), []byte("meta"), nil, nil, 0)
+	applyEarlyExit(host, resolveEarlyExit(upgradeContract(host, []byte("dest"), []byte("code"), []byte("meta"), nil, nil, 0)))
 	require.False(t, async.called)
 	require.Equal(t, vmhost.BreakpointOutOfGas, runtime.breakpoint)
 }

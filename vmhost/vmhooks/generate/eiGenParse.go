@@ -50,23 +50,37 @@ func extractEIFunctionArguments(decl *ast.FuncDecl) ([]*EIFunctionArg, error) {
 	return arguments, nil
 }
 
-func extractEIFunctionResult(decl *ast.FuncDecl) (*EIFunctionResult, error) {
-	if decl.Type.Results == nil {
-		return nil, nil
+func isErrorType(ty ast.Expr) bool {
+	ident, ok := ty.(*ast.Ident)
+	return ok && ident.Name == "error"
+}
+
+// extractEIFunctionResults returns the value result of a hook, nil if it has none. Every hook
+// must end with an `error` result, which is not part of the returned metadata.
+func extractEIFunctionResults(decl *ast.FuncDecl) (*EIFunctionResult, error) {
+	var list []*ast.Field
+	if decl.Type.Results != nil {
+		list = decl.Type.Results.List
 	}
-	switch len(decl.Type.Results.List) {
+	n := len(list)
+	if n == 0 || !isErrorType(list[n-1].Type) {
+		return nil, fmt.Errorf("VM hook %s must return a trailing error", decl.Name.Name)
+	}
+	list = list[:n-1]
+
+	switch len(list) {
 	case 0:
 		return nil, nil
 	case 1:
-		eiType, err := processType(decl.Type.Results.List[0].Type)
+		eiType, err := processType(list[0].Type)
 		if err != nil {
 			return nil, err
 		}
-		return &EIFunctionResult{
-			Type: eiType,
-		}, nil
+		return &EIFunctionResult{Type: eiType}, nil
 	default:
-		return nil, fmt.Errorf("too many results in function %s, no more than 1 accepted", decl.Name.Name)
+		return nil, fmt.Errorf(
+			"too many results in function %s, at most one value result plus a trailing error accepted",
+			decl.Name.Name)
 	}
 }
 
@@ -111,7 +125,7 @@ func extractEIFunction(decl *ast.FuncDecl) (*EIFunction, error) {
 	if err != nil {
 		return nil, err
 	}
-	result, err := extractEIFunctionResult(decl)
+	result, err := extractEIFunctionResults(decl)
 	if err != nil {
 		return nil, err
 	}

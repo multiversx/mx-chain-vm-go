@@ -43,7 +43,9 @@ func main() {
 		panic(err)
 	}
 
+	writeVMHooksLegacy(eiMetadata)
 	writeVMHooks(eiMetadata)
+	writeVMHooksLegacyAdapter(eiMetadata)
 	writeVMHooksWrapper(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
 	writeWasmer2Names(eiMetadata)
@@ -81,10 +83,25 @@ func main() {
 	tryCopyFilesToMxSdkRsRepo()
 }
 
-func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
+// The legacy interface is the one named vmHooks.go, and the migrated one vmHooksNew.go, so
+// that the Go files line up with the Rust ones: vm_hooks.rs holds VMHooksLegacy and
+// new_traits/vm_hooks_new.rs holds VMHooks.
+func writeVMHooksLegacy(eiMetadata *eapigen.EIMetadata) {
 	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHooks.go")
 	defer out.Close()
+	eapigen.WriteEIInterfaceLegacy(out, eiMetadata)
+}
+
+func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHooksNew.go")
+	defer out.Close()
 	eapigen.WriteEIInterface(out, eiMetadata)
+}
+
+func writeVMHooksLegacyAdapter(eiMetadata *eapigen.EIMetadata) {
+	out := eapigen.NewEIGenWriter(pathToApiPackage, "../../executor/vmHooksLegacyAdapter.go")
+	defer out.Close()
+	eapigen.WriteVMHooksLegacyAdapter(out, eiMetadata)
 }
 
 func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {

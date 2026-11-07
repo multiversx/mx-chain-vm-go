@@ -6,19 +6,32 @@ package executor
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-// VMHooks contains all VM functions that can be called by the executor during SC execution.
-type VMHooks interface {
-	MainVMHooks
-	ManagedVMHooks
-	BigFloatVMHooks
-	BigIntVMHooks
-	ManagedBufferVMHooks
-	ManagedMapVMHooks
-	SmallIntVMHooks
-	CryptoVMHooks
+// VMHooksLegacy is the VM hooks interface in its pre-migration shape: every hook yields a
+// plain value, and a hook that wants to stop execution has to arrange it as a side effect.
+//
+// It exists because an executor reached through a C API cannot do better. Its imported
+// functions return a value and have nowhere to report that the hook wants execution to stop,
+// so the exit has to be applied from inside the hook, before it returns. A backend that
+// reports the outcome of a call properly lets the error travel back up instead, and consumes
+// VMHooks directly.
+//
+// VMHooksLegacyAdapter is the bridge from VMHooks to here.
+//
+// The names carry the suffix and the file does not, matching the Rust side: vm_hooks.rs holds
+// VMHooksLegacy and new_traits/vm_hooks_new.rs holds VMHooks. The migrated interface is in
+// vmHooksNew.go.
+type VMHooksLegacy interface {
+	MainVMHooksLegacy
+	ManagedVMHooksLegacy
+	BigFloatVMHooksLegacy
+	BigIntVMHooksLegacy
+	ManagedBufferVMHooksLegacy
+	ManagedMapVMHooksLegacy
+	SmallIntVMHooksLegacy
+	CryptoVMHooksLegacy
 }
 
-type MainVMHooks interface {
+type MainVMHooksLegacy interface {
 	GetGasLeft() int64
 	GetSCAddress(resultOffset MemPtr)
 	GetOwnerAddress(resultOffset MemPtr)
@@ -108,7 +121,7 @@ type MainVMHooks interface {
 	GetPrevTxHash(dataOffset MemPtr)
 }
 
-type ManagedVMHooks interface {
+type ManagedVMHooksLegacy interface {
 	ManagedSCAddress(destinationHandle int32)
 	ManagedOwnerAddress(destinationHandle int32)
 	ManagedCaller(destinationHandle int32)
@@ -152,7 +165,7 @@ type ManagedVMHooks interface {
 	ManagedIsBuiltinFunction(functionNameHandle int32) int32
 }
 
-type BigFloatVMHooks interface {
+type BigFloatVMHooksLegacy interface {
 	BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32
 	BigFloatNewFromFrac(numerator int64, denominator int64) int32
 	BigFloatNewFromSci(significand int64, exponent int64) int32
@@ -177,7 +190,7 @@ type BigFloatVMHooks interface {
 	BigFloatGetConstE(destinationHandle int32)
 }
 
-type BigIntVMHooks interface {
+type BigIntVMHooksLegacy interface {
 	BigIntGetUnsignedArgument(id int32, destinationHandle int32)
 	BigIntGetSignedArgument(id int32, destinationHandle int32)
 	BigIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, sourceHandle int32) int32
@@ -222,7 +235,7 @@ type BigIntVMHooks interface {
 	BigIntToString(bigIntHandle int32, destinationHandle int32)
 }
 
-type ManagedBufferVMHooks interface {
+type ManagedBufferVMHooksLegacy interface {
 	MBufferNew() int32
 	MBufferNewFromBytes(dataOffset MemPtr, dataLength MemLength) int32
 	MBufferGetLength(mBufferHandle int32) int32
@@ -252,7 +265,7 @@ type ManagedBufferVMHooks interface {
 	MBufferSetRandom(destinationHandle int32, length int32) int32
 }
 
-type ManagedMapVMHooks interface {
+type ManagedMapVMHooksLegacy interface {
 	ManagedMapNew() int32
 	ManagedMapPut(mMapHandle int32, keyHandle int32, valueHandle int32) int32
 	ManagedMapGet(mMapHandle int32, keyHandle int32, outValueHandle int32) int32
@@ -260,7 +273,7 @@ type ManagedMapVMHooks interface {
 	ManagedMapContains(mMapHandle int32, keyHandle int32) int32
 }
 
-type SmallIntVMHooks interface {
+type SmallIntVMHooksLegacy interface {
 	SmallIntGetUnsignedArgument(id int32) int64
 	SmallIntGetSignedArgument(id int32) int64
 	SmallIntFinishUnsigned(value int64)
@@ -275,7 +288,7 @@ type SmallIntVMHooks interface {
 	Int64storageLoad(keyOffset MemPtr, keyLength MemLength) int64
 }
 
-type CryptoVMHooks interface {
+type CryptoVMHooksLegacy interface {
 	Sha256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
 	ManagedSha256(inputHandle int32, outputHandle int32) int32
 	Keccak256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32

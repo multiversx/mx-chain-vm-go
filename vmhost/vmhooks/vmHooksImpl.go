@@ -109,24 +109,20 @@ func (context *VMHooksImpl) GetStorageContext() vmhost.StorageContext {
 	return context.host.Storage()
 }
 
-// FailExecution fails the execution with the provided error
-func (context *VMHooksImpl) FailExecution(err error) {
-	FailExecution(context.host, err)
-}
-
 // GetEnableEpochsHandler returns the enable epochs handler
 func (context *VMHooksImpl) GetEnableEpochsHandler() vmhost.EnableEpochsHandler {
 	return context.host.EnableEpochsHandler()
 }
 
-// FailExecution fails the execution with the provided error
+// FailExecution fails the execution with the provided error.
+//
+// It applies the error the same way a hook's error is applied (see HandleHookError): a plain
+// error consumes the remaining gas and fails execution, an *executor.EarlyExit selects its own
+// termination. Use it for errors returned by the package-level hook helpers, which do not go
+// through the legacy adapter.
 func FailExecution(host vmhost.VMHost, err error) {
 	if err == nil {
 		return
 	}
-
-	runtime := host.Runtime()
-	metering := host.Metering()
-	_ = metering.UseGasBounded(metering.GasLeft())
-	runtime.FailExecution(err)
+	applyEarlyExit(host, resolveEarlyExit(err))
 }

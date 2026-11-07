@@ -118,13 +118,14 @@ func BackTransfer_ChildCallback(instanceMock *mock.InstanceMock, config interfac
 			ESDTTokenNonce: 0,
 		}
 
-		ret := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
+		ret, err := vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
 			testConfig.ParentAddress,
 			[]*vmcommon.ESDTTransfer{transfer},
 			int64(testConfig.GasProvidedToChild),
 			nil,
 			nil)
+		vmhooks.FailExecution(host, err)
 		if ret != 0 {
 			host.Runtime().FailExecution(fmt.Errorf("Transfer ESDT failed"))
 		}
