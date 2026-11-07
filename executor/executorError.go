@@ -21,6 +21,13 @@ var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 // no such check: its zero value is OpcodeVersionV1, a real choice.
 var ErrNilOpcodeCosts = errors.New("nil WASM opcode costs")
 
+// ErrVMHooksCannotHandleErrors signals that the VM hooks given to a backend (or to a wrapper
+// of one) cannot absorb an error returned by a hook. See VMHooksErrorHandler for why
+// such backends need them to.
+//
+// Transitional code: it is pending deletion in a future PR.
+var ErrVMHooksCannotHandleErrors = errors.New("vm hooks do not implement VMHooksErrorHandler")
+
 // ErrMemoryBadBounds signals that a certain variable is out of bounds
 var ErrMemoryBadBounds = errors.New("bad bounds")
 

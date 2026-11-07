@@ -39,7 +39,7 @@ func (wef *Wasmer2ExecutorFactory) CreateExecutor(args executor.ExecutorFactoryA
 	if args.VMHooks != nil {
 		errorHandler, ok := args.VMHooks.(executor.VMHooksErrorHandler)
 		if !ok {
-			return nil, ErrVMHooksCannotHandleErrors
+			return nil, executor.ErrVMHooksCannotHandleErrors
 		}
 		legacyVMHooks = executor.NewVMHooksLegacyAdapter(args.VMHooks, errorHandler)
 	}

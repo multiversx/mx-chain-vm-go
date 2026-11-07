@@ -54,7 +54,7 @@ func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFact
 	// Asserted here, at construction, rather than silently dropped at call time.
 	vmHooks, ok := args.VMHooks.(vmHooksWithErrorHandler)
 	if !ok {
-		return nil, ErrVMHooksCannotHandleErrors
+		return nil, executor.ErrVMHooksCannotHandleErrors
 	}
 
 	wrappedExecutor, err := factory.wrappedFactory.CreateExecutor(executor.ExecutorFactoryArgs{
