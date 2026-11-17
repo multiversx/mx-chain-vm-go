@@ -1,0 +1,5 @@
+repo: https://github.com/multiversx/mx-vm-executor-rs
+branch: wasmer-stack-fix
+commit: 36f18da9745fed049978fb099254f808f36597c7
+dirty: no
+wasmer-fork-commit: 294849966131e5ae981d731b5212d97def2b95cf
