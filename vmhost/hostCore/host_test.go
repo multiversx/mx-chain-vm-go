@@ -5,32 +5,38 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core"
-	"github.com/multiversx/mx-chain-scenario-go/worldmock"
+	"github.com/multiversx/mx-chain-core-go/core/mock"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
+	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	hostmock "github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewVMHost(t *testing.T) {
-	blockchainHook := worldmock.NewMockWorld()
+	blockchainHook := &contextmock.BlockchainHookStub{}
 	bfc := builtInFunctions.NewBuiltInFunctionContainer()
-	epochNotifier := &mock.EpochNotifierStub{}
-	epochsHandler := &worldmock.EnableEpochsHandlerStub{}
+	epochNotifier := &hostmock.EpochNotifierStub{}
 	vmType := []byte("vmType")
-	esdtTransferParser, err := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	esdtTransferParser, err := parsers.NewESDTTransferParser(&mock.MarshalizerMock{})
 	require.Nil(t, err)
 
 	makeHostParameters := func() *vmhost.VMHostParameters {
+		epochsHandler := &mock.EnableEpochsHandlerStub{
+			IsFlagDefinedCalled: func(flag core.EnableEpochFlag) bool {
+				return true
+			},
+		}
+
 		return &vmhost.VMHostParameters{
 			VMType:                    vmType,
 			ESDTTransferParser:        esdtTransferParser,
 			BuiltInFuncContainer:      bfc,
 			EpochNotifier:             epochNotifier,
 			EnableEpochsHandler:       epochsHandler,
-			Hasher:                    worldmock.DefaultHasher,
+			Hasher:                    &mock.HasherMock{},
 			MapOpcodeAddressIsAllowed: map[string]map[string]struct{}{},
 		}
 	}
@@ -75,7 +81,7 @@ func TestNewVMHost(t *testing.T) {
 	})
 	t.Run("InvalidEnableEpochsHandler", func(t *testing.T) {
 		hostParameters := makeHostParameters()
-		hostParameters.EnableEpochsHandler = &worldmock.EnableEpochsHandlerStub{
+		hostParameters.EnableEpochsHandler = &mock.EnableEpochsHandlerStub{
 			IsFlagDefinedCalled: func(flag core.EnableEpochFlag) bool {
 				return false
 			},
