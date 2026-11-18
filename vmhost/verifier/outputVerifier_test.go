@@ -491,15 +491,13 @@ func TestVerifier_NonNegativeBalanceCheck(t *testing.T) {
 		acc.Balance = big.NewInt(100)
 		acc.BalanceDelta = big.NewInt(-40) // final = 60
 
-		output := createBaseVMOutput(acc)
 		input := createBaseInput()
-		input.CallValue = big.NewInt(-40) // matched for net sum test
 		input.CallValue = big.NewInt(0)
 		// compensate in another account
 		addr2 := createValidAddress(41)
 		acc2 := createValidAccount(addr2)
 		acc2.BalanceDelta = big.NewInt(40)
-		output = createBaseVMOutput(acc, acc2)
+		output := createBaseVMOutput(acc, acc2)
 
 		err := v.Verify(input, output)
 		require.NoError(t, err)

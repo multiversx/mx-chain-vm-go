@@ -74,6 +74,7 @@ func TestHost_DestinationAddressMutationResistance(t *testing.T) {
 							managedTypes.NewManagedBuffer(),
 							managedTypes.NewManagedBuffer(),
 						)
+						require.Equal(t, int32(0), res)
 						// Re-create Child in OutputAccounts so meteringContext.setGasUsedToOutputAccounts passes!
 						_, _ = host.Output().GetOutputAccount(test.ChildAddress)
 
@@ -192,6 +193,7 @@ func TestHost_StorageOverwriteResistance(t *testing.T) {
 							managedTypes.NewManagedBuffer(),
 							managedTypes.NewManagedBuffer(),
 						)
+						require.Equal(t, int32(0), res)
 						// Re-create Child in OutputAccounts so meteringContext.setGasUsedToOutputAccounts passes
 						_, _ = host.Output().GetOutputAccount(test.ChildAddress)
 

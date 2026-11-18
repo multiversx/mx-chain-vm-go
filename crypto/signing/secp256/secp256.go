@@ -168,9 +168,18 @@ func (sec *secp256) unmarshalPubKey(key []byte) (*cryptoEcsda.PublicKey, error) 
 	if len(key) != pubKeySize {
 		return nil, errPublicKeyLengthMissmatch
 	}
-	cpk := &cryptoEcsda.PublicKey{Curve: sec.secp256r1}
-	cpk.X, cpk.Y = elliptic.UnmarshalCompressed(sec.secp256r1, key)
-	if cpk.X == nil || cpk.Y == nil {
+	x, y := elliptic.UnmarshalCompressed(sec.secp256r1, key)
+	if x == nil || y == nil {
+		return nil, errInvalidPublicKey
+	}
+
+	uncompressed := make([]byte, 1+2*fieldSize)
+	uncompressed[0] = 0x04
+	x.FillBytes(uncompressed[1 : 1+fieldSize])
+	y.FillBytes(uncompressed[1+fieldSize:])
+
+	cpk, err := cryptoEcsda.ParseUncompressedPublicKey(sec.secp256r1, uncompressed)
+	if err != nil {
 		return nil, errInvalidPublicKey
 	}
 	return cpk, nil
