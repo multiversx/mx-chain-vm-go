@@ -59,8 +59,8 @@ github.com/multiversx/mx-chain-storage-go v1.2.0 h1:c+T7NJdsnbZza5k7ez/pUEHeAT9B
 github.com/multiversx/mx-chain-storage-go v1.2.0/go.mod h1:jzaisAV6n/TdrQpYiMX/+A35yl9Cd8LAG+4Afqi6J5s=
 github.com/multiversx/mx-chain-vm-common-go v1.7.3 h1:vuxVaf02XV6rt2EOiF4HMGEVqYfykNghCD0chBSw+vA=
 github.com/multiversx/mx-chain-vm-common-go v1.7.3/go.mod h1:Lk2ZNxVCThYFbFhjXxy1S8PwqjcEnF7uvTQ0QvA4BbQ=
-github.com/multiversx/mx-components-big-int v1.2.0 h1:PppI54XUxmghhFhsK4mT6pG/Ev9OuZKKlbKUfpsXklg=
-github.com/multiversx/mx-components-big-int v1.2.0/go.mod h1:HhZ2YdqsweLoOXeSufOTmDOdfyckZ1uBDSnr8n4tOe8=
+github.com/multiversx/mx-components-big-int v1.3.0 h1:YBAdMCWlK55Dr2u0qQQeX7QSjPkLCqQQYozdoFoa7ms=
+github.com/multiversx/mx-components-big-int v1.3.0/go.mod h1:HhZ2YdqsweLoOXeSufOTmDOdfyckZ1uBDSnr8n4tOe8=
 github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=

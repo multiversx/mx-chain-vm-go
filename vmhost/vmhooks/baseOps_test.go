@@ -8,7 +8,6 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
-	"github.com/multiversx/mx-chain-vm-go/math"
 	mockcontext "github.com/multiversx/mx-chain-vm-go/mock/context"
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/assert"
@@ -98,11 +97,11 @@ func TestBigIntByteLength_MatchesBytesHooks(t *testing.T) {
 
 	for _, tc := range testCases {
 		// BigIntGetUnsignedBytes / BigIntFinishUnsigned write value.Bytes()
-		require.Equal(t, len(tc.Bytes()), math.UnsignedByteLength(tc),
+		require.Equal(t, len(tc.Bytes()), twos.UnsignedByteLength(tc),
 			"unsigned length mismatch for value %s", tc.String())
 
 		// BigIntGetSignedBytes / BigIntFinishSigned write twos.ToBytes(value)
-		require.Equal(t, len(twos.ToBytes(tc)), math.TwosComplementByteLength(tc),
+		require.Equal(t, len(twos.ToBytes(tc)), twos.ByteLength(tc),
 			"signed length mismatch for value %s", tc.String())
 	}
 }

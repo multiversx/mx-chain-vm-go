@@ -14,7 +14,7 @@ require (
 	github.com/multiversx/mx-chain-scenario-go v1.8.0
 	github.com/multiversx/mx-chain-storage-go v1.2.0
 	github.com/multiversx/mx-chain-vm-common-go v1.7.3
-	github.com/multiversx/mx-components-big-int v1.2.0
+	github.com/multiversx/mx-components-big-int v1.3.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v2 v2.27.7
